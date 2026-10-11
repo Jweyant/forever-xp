@@ -18,6 +18,7 @@ fast leveling guides and fill in quest data that Questie doesn't have yet.
 |---|---|
 | `/fscout` | Status: sessions, events, route points, items missing from Questie |
 | `/fscout pause` / `resume` | Stop or restart recording |
+| `/fscout share on` / `off` | Allow or stop automatic uploads by the uploader app |
 | `/fscout note <text>` | Drop a note at your current spot ("cave is packed", "skip this, elite") |
 | `/fscout report` | Copyable list of quests/NPCs Questie is missing — share it on Questie's Discord |
 | `/fscout export` | Copyable export string of your recorded sessions |
@@ -25,15 +26,19 @@ fast leveling guides and fill in quest data that Questie doesn't have yet.
 
 ## Sharing your data
 
-Your log is written when you log out or `/reload`:
+On first login, ForeverScout asks whether to share automatically. If you say yes, install the
+**ForeverScout Uploader** app once (from the project's Releases page). It sends your log after each
+logout or `/reload`. Change your choice any time with `/fscout share on` or `/fscout share off`.
+Recording on your own computer continues either way.
+
+Your log file is:
 
 ```
 <Forever game folder>\WTF\Account\<ACCOUNT>\SavedVariables\ForeverScout.lua
 ```
 
-Zip that file and attach it to a "Submit a log" issue at
-https://github.com/Jweyant/forever-leveling/issues/new/choose (or paste `/fscout export`
-there). The file is the better option for long sessions.
+Without the uploader, you can zip it and attach it to a "Submit a log" issue at
+https://github.com/Jweyant/forever-leveling/issues/new/choose.
 
 ## What is recorded
 
@@ -45,7 +50,8 @@ there). The file is the better option for long sessions.
 
 ## What is never recorded
 
-- Your character name, realm, account name or GUID. Each character gets a random ID.
+- Your character name, realm, account name or GUID. Each character gets a random ID, kept in
+  per-character data that is never uploaded.
 - Chat, whispers, other players, gold, inventory or anything outside questing.
 - Your name is replaced with `<name>` in any quest text that contains it.
 

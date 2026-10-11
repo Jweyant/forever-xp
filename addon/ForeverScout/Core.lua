@@ -9,12 +9,13 @@
 --         crumbs = { "t,map,x,y,flags", ... } },
 --     } },
 --   },
---   settings = { paused = false, crumbSeconds = 10 },
+--   settings = { paused = false, crumbSeconds = 10, share = true|false|nil, shareAsked },
+-- ForeverScoutCharDB = { charId }   -- per character, never uploaded
 -- }
 
 local ADDON, ns = ...
 ns.SCHEMA = 1
-ns.VERSION = "0.1.0"
+ns.VERSION = "0.2.0"
 
 local GetTime, time, floor = GetTime, time, math.floor
 
@@ -97,22 +98,17 @@ function ns:InitDB()
   local db = ForeverScoutDB
   db.schema = ns.SCHEMA
   db.chars = db.chars or {}
-  db.charIndex = db.charIndex or {}   -- GUID hash -> random id; GUID itself is never stored
+  db.charIndex = nil                  -- removed in 0.2: ids now live in per-character data
   db.settings = db.settings or {}
   if db.settings.paused == nil then db.settings.paused = false end
   db.settings.crumbSeconds = db.settings.crumbSeconds or 10
   self.db = db
 
-  -- Map this character to a stable random id without storing name, realm or GUID.
-  local guid = UnitGUID("player") or ""
-  local key = 0
-  for i = 1, #guid do key = (key * 31 + guid:byte(i)) % 2147483647 end
-  key = tostring(key)
-  local charId = db.charIndex[key]
-  if not charId then
-    charId = newId()
-    db.charIndex[key] = charId
-  end
+  -- Each character keeps its own random id in per-character SavedVariables, so the shared
+  -- account file links sessions without any name, realm or GUID-derived value.
+  ForeverScoutCharDB = ForeverScoutCharDB or {}
+  if not ForeverScoutCharDB.charId then ForeverScoutCharDB.charId = newId() end
+  local charId = ForeverScoutCharDB.charId
   self.charId = charId
 
   local _, race = UnitRace("player")
@@ -200,6 +196,14 @@ SlashCmdList.FOREVERSCOUT = function(input)
   elseif cmd == "resume" then
     ns.db.settings.paused = false
     ns.Print("Recording resumed.")
+  elseif cmd == "share" then
+    local v = rest:lower()
+    if v == "on" or v == "off" then
+      ns.SetShare(v == "on")
+    else
+      ns.Print("Automatic sharing is " .. (ns.db.settings.share and "|cff55ff55on|r" or "|cffff5555off|r")
+        .. ". Use /fscout share on or /fscout share off.")
+    end
   elseif cmd == "note" or cmd == "mark" then
     ns:Log("note", { text = rest:sub(1, 200) })
     ns.Print("Note saved: " .. rest)
@@ -224,20 +228,58 @@ SlashCmdList.FOREVERSCOUT = function(input)
     local state = ns.db.settings.paused and "|cffff5555PAUSED|r" or "|cff55ff55recording|r"
     ns.Print(("%s — %d sessions, %d events, %d route points. Unknown to Questie: %d"):format(
       state, s, e, c, ns.missingCount or 0))
-    ns.Print("Commands: /fscout pause | resume | note <text> | report | export | wipe")
-    ns.Print("Your data is saved to WTF\\Account\\<account>\\SavedVariables\\ForeverScout.lua on logout or /reload.")
+    if ns.db.settings.share then
+      ns.Print("Automatic sharing is |cff55ff55on|r. The ForeverScout Uploader app sends your log after you log out or /reload.")
+    else
+      ns.Print("Automatic sharing is |cffff5555off|r. Turn it on with /fscout share on.")
+    end
+    ns.Print("Commands: /fscout pause | resume | share on|off | note <text> | report | export | wipe")
   end
 end
 
 ------------------------------------------------------------------------------------------
 -- Boot
 ------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+-- Sharing consent. The addon cannot use the network; this flag tells the ForeverScout
+-- Uploader app (which reads the SavedVariables file) whether it may send the log.
+------------------------------------------------------------------------------------------
+function ns.SetShare(on)
+  ns.db.settings.share = on and true or false
+  ns.db.settings.shareAsked = true
+  if on then
+    ns.Print("Automatic sharing |cff55ff55on|r. Install the ForeverScout Uploader app once and your "
+      .. "route is sent after each logout or /reload. Turn off any time with /fscout share off.")
+  else
+    ns.Print("Automatic sharing |cffff5555off|r. Recording continues locally only.")
+  end
+end
+
+local function askToShare()
+  if ns.db.settings.shareAsked or not StaticPopupDialogs or not StaticPopup_Show then return end
+  StaticPopupDialogs.FOREVERSCOUT_SHARE = {
+    text = "|cFF4FC3F7ForeverScout|r records your questing route (quests, XP, positions, timing) "
+      .. "to build free leveling guides for everyone.\n\nShare it automatically? "
+      .. "No names, realms or chat are ever included.",
+    button1 = "Share automatically",
+    button2 = "Keep it local",
+    OnAccept = function() ns.SetShare(true) end,
+    OnCancel = function() ns.SetShare(false) end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = false,
+    preferredIndex = 3,
+  }
+  StaticPopup_Show("FOREVERSCOUT_SHARE")
+end
+
 ns:On("PLAYER_LOGIN", function()
   ns:InitDB()
   ns:StartSession()
   ns:Log("login", { xp = UnitXP("player"), maxxp = UnitXPMax("player"), rested = GetXPExhaustion() })
   if ns.Recorder and ns.Recorder.Start then ns.Recorder.Start() end
   ns.Print("recording your route. Type /fscout for status.")
+  C_Timer.After(5, askToShare)
 end)
 
 ns:On("PLAYER_LOGOUT", function()

@@ -7,6 +7,9 @@
 #   variable CF_GAME_VERSIONS   comma-separated CurseForge game version names, e.g. "1.60.1"
 #                               (must match names in CurseForge's version list exactly)
 # Without these, the workflow still publishes the GitHub Release and skips CurseForge.
+#
+# Uploader app: set the variable UPLOAD_URL to the deployed server address (see server/README.md)
+# so the released uploader binaries know where to send logs.
 
 name: Release ForeverScout
 
@@ -36,11 +39,28 @@ jobs:
           echo "zip=${zip}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build uploader
+        env:
+          UPLOAD_URL: ${{ vars.UPLOAD_URL }}
+        run: |
+          if [ -z "$UPLOAD_URL" ]; then echo "::warning::UPLOAD_URL not set; uploader builds will not send data"; fi
+          flags="-s -w -X main.version=${{ steps.pkg.outputs.version }} -X main.uploadURL=${UPLOAD_URL}"
+          cd uploader
+          go vet ./...
+          GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui ${flags}" -o ../ForeverScoutUploader.exe .
+          GOOS=darwin GOARCH=arm64 go build -ldflags "${flags}" -o ../ForeverScoutUploader-mac-apple-silicon .
+          GOOS=darwin GOARCH=amd64 go build -ldflags "${flags}" -o ../ForeverScoutUploader-mac-intel .
+
       - name: GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${GITHUB_REF_NAME}" "${{ steps.pkg.outputs.zip }}" \
+            ForeverScoutUploader.exe ForeverScoutUploader-mac-apple-silicon ForeverScoutUploader-mac-intel \
             --title "${ADDON} ${{ steps.pkg.outputs.version }}" --generate-notes
 
       - name: Upload to CurseForge

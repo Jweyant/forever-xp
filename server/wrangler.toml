@@ -1,0 +1,10 @@
+name = "foreverscout"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[[r2_buckets]]
+binding = "LOGS"
+bucket_name = "foreverscout-logs"
+
+# Set the admin token (used by tools/pull_logs.py) with:
+#   npx wrangler secret put ADMIN_TOKEN

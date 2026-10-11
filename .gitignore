@@ -5,3 +5,5 @@ tools/test/out/
 __pycache__/
 *.zip
 .cache/
+server/node_modules/
+server/.wrangler/

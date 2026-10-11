@@ -10,17 +10,30 @@ changes. This project collects anonymous route data from players, then uses it t
 
 ## Help out: run ForeverScout
 
-**ForeverScout** is a small addon that records your questing route while you play normally.
+Two one-time installs, then it's fully automatic.
 
-1. Download the latest `ForeverScout-x.y.z.zip` from [Releases](../../releases)
-   (CurseForge listing coming soon).
-2. Unzip the `ForeverScout` folder into your Forever client's `Interface\AddOns\` folder.
-3. Play. Type `/fscout` in game for status.
-4. After a session, open a [**Submit a log**](../../issues/new?template=submit-log.yml) issue and
-   attach your zipped `WTF\Account\<ACCOUNT>\SavedVariables\ForeverScout.lua`.
+1. **The addon.** Download `ForeverScout-x.y.z.zip` from [Releases](../../releases) (CurseForge
+   listing coming soon) and unzip the `ForeverScout` folder into your Forever client's
+   `Interface\AddOns\` folder. On first login, click **Share automatically**.
+2. **The uploader app.** Download `ForeverScoutUploader.exe` (or the Mac build) from the same
+   release, double-click it and choose **Yes**. It starts with your computer and sends your log
+   after each logout or `/reload`.
+
+That's it. Play normally.
+
+```
+ in game                      your computer                    project
+ForeverScout addon  ──saves──▶ ForeverScout.lua ──uploader──▶ upload server ──▶ guides + Questie fixes
+(records quests, XP,          (SavedVariables)   (only if you
+ positions, timing)                               opted in)
+```
 
 It records quests, XP, positions and timing. It never records your character name, realm,
-chat or anything outside questing. Full details: [addon/ForeverScout/README.md](addon/ForeverScout/README.md).
+chat or anything outside questing. You can turn sharing off any time with `/fscout share off`.
+Details: [addon](addon/ForeverScout/README.md), [uploader](uploader/README.md).
+
+Prefer not to install the uploader? Attach your zipped `ForeverScout.lua` to a
+[Submit a log](../../issues/new?template=submit-log.yml) issue instead.
 
 Have Questie installed too? `/fscout report` lists quests and NPCs missing from Questie's
 database, ready to paste into Questie's Discord.
@@ -30,6 +43,9 @@ database, ready to paste into Questie's Discord.
 | Path | What it is |
 |---|---|
 | `addon/ForeverScout/` | The logger addon |
+| `uploader/` | Companion app (Go) that uploads opted-in logs automatically |
+| `server/` | Upload server (Cloudflare Worker + R2) |
+| `tools/pull_logs.py` | Downloads uploaded logs for analysis |
 | `tools/refresh_questie_data.sh` | Builds a local copy of Questie's Forever database (JSON + SQLite) in `data/` |
 | `tools/export_questiedb.lua`, `tools/build_sqlite.py` | The two steps that script runs |
 | `tools/ingest_logs.py` | Merges player logs and compares them with Questie |
@@ -65,6 +81,8 @@ that gap.
 
 - [x] Local export of Questie's Forever database
 - [x] ForeverScout logger and log ingest / Questie diff
+- [x] Automatic uploads (uploader app + server)
+- [ ] Deploy the upload server
 - [ ] First in-game test on the live Forever client
 - [ ] CurseForge listing
 - [ ] Route scorer: XP per minute including travel, skip list

@@ -8,7 +8,8 @@ local addonDir, outFile = arg[1], arg[2]
 local clock = 1000
 local timers = {}
 function GetTime() return clock end
-local epoch = 1791000000
+local epoch = tonumber(os.getenv("SIM_EPOCH") or "") or 1791000000
+math.randomseed(epoch)
 function time() return epoch + math.floor(clock) end
 C_Timer = {
   After = function(d, fn) table.insert(timers, { at = clock + d, fn = fn }) end,
@@ -34,7 +35,7 @@ local P = { level = 1, xp = 0, max = 400, map = 1411, x = 0.4330, y = 0.6850, ta
 local XPMAX = { 400, 900, 1400, 2100, 2800 }
 
 function UnitGUID(unit)
-  if unit == "player" then return "Player-1234-0ABCDEF0" end
+  if unit == "player" then return "Player-1234-0ABCDEF" .. (os.getenv("SIM_PLAYER") or "0") end
   local id = (unit == "target" and P.target) or ((unit == "questnpc" or unit == "npc") and P.questnpc)
   if not id then return nil end
   return ("Creature-0-4372-1-1-%d-0000123456"):format(id)
@@ -85,6 +86,11 @@ function CreateFrame()
 end
 DEFAULT_CHAT_FRAME = { AddMessage = function(_, m) print("[chat] " .. m:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")) end }
 SlashCmdList = {}
+StaticPopupDialogs = {}
+-- SIM_SHARE=0 simulates a player who declines sharing
+StaticPopup_Show = function(name)
+  if os.getenv("SIM_SHARE") == "0" then StaticPopupDialogs[name].OnCancel() else StaticPopupDialogs[name].OnAccept() end
+end
 UISpecialFrames = {}
 function tinsert(t, v) table.insert(t, v) end
 
