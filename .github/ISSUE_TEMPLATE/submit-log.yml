@@ -1,0 +1,39 @@
+name: Submit a ForeverScout log
+description: Share your recorded leveling route so it can improve the guides and Questie's data.
+title: "[log] level X-Y <race> <class>"
+labels: ["log"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping! Your log has no character name, realm or chat in it.
+        Your file is at `<Forever game folder>\WTF\Account\<ACCOUNT>\SavedVariables\ForeverScout.lua`.
+        GitHub won't take `.lua` attachments, so **zip it** (right-click > Compress) and drag the zip below.
+  - type: input
+    id: levels
+    attributes:
+      label: Levels covered
+      placeholder: "1-12"
+    validations:
+      required: true
+  - type: dropdown
+    id: playstyle
+    attributes:
+      label: How were you playing?
+      options:
+        - Normal questing
+        - Following a speed route (RestedXP, Guidelime, etc.)
+        - Grouped / duo
+        - Mixed
+  - type: textarea
+    id: file
+    attributes:
+      label: Log file (zipped) or /fscout export string
+      description: Drag the zipped ForeverScout.lua here, or paste the text from /fscout export.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything worth knowing?
+      description: Quests you skipped, bugged quests, crowded areas, errors you saw.

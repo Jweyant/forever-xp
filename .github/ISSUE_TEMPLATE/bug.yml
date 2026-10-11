@@ -1,0 +1,24 @@
+name: Addon bug
+description: ForeverScout threw an error or recorded something wrong.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: build
+    attributes:
+      label: Game build
+      description: Shown at the top of /fscout report, e.g. 1.60.1.69913
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Error text
+      description: Paste the full error (BugSack/BugGrabber output is best).
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What were you doing?

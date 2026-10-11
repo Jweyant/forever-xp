@@ -1,0 +1,72 @@
+# Push a tag like v0.1.0 to build ForeverScout, publish a GitHub Release,
+# and (once configured) upload the same zip to CurseForge.
+#
+# CurseForge setup (one time, in the repo's Settings > Secrets and variables > Actions):
+#   secret   CF_API_TOKEN       token from https://legacy.curseforge.com/account/api-tokens
+#   variable CF_PROJECT_ID      numeric project ID from the CurseForge project page
+#   variable CF_GAME_VERSIONS   comma-separated CurseForge game version names, e.g. "1.60.1"
+#                               (must match names in CurseForge's version list exactly)
+# Without these, the workflow still publishes the GitHub Release and skips CurseForge.
+
+name: Release ForeverScout
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      ADDON: ForeverScout
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Package
+        id: pkg
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          sed -i "s/^## Version: .*/## Version: ${version}/" "addon/${ADDON}/${ADDON}.toc"
+          sed -i "s/^ns.VERSION = .*/ns.VERSION = \"${version}\"/" "addon/${ADDON}/Core.lua"
+          zip="${ADDON}-${version}.zip"
+          (cd addon && zip -qr "../${zip}" "${ADDON}" -x "${ADDON}/README.md")
+          echo "zip=${zip}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" "${{ steps.pkg.outputs.zip }}" \
+            --title "${ADDON} ${{ steps.pkg.outputs.version }}" --generate-notes
+
+      - name: Upload to CurseForge
+        if: ${{ vars.CF_PROJECT_ID != '' }}
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_PROJECT_ID: ${{ vars.CF_PROJECT_ID }}
+          CF_GAME_VERSIONS: ${{ vars.CF_GAME_VERSIONS }}
+        run: |
+          if [ -z "$CF_API_TOKEN" ]; then echo "CF_API_TOKEN not set; skipping"; exit 0; fi
+          versions=$(curl -sf -H "X-Api-Token: $CF_API_TOKEN" https://wow.curseforge.com/api/game/versions)
+          ids=$(python3 - "$versions" "$CF_GAME_VERSIONS" <<'PY'
+          import json, sys
+          available = json.loads(sys.argv[1])
+          wanted = [w.strip() for w in sys.argv[2].split(",") if w.strip()]
+          ids = [v["id"] for v in available if v["name"] in wanted]
+          missing = set(wanted) - {v["name"] for v in available if v["id"] in ids}
+          if missing or not ids:
+              sys.exit(f"Unknown CurseForge game versions: {sorted(missing) or wanted}")
+          print(json.dumps(ids))
+          PY
+          )
+          tag="${GITHUB_REF_NAME}"
+          case "$tag" in *alpha*) type=alpha ;; *beta*) type=beta ;; *) type=release ;; esac
+          meta=$(python3 -c 'import json,sys; print(json.dumps({"displayName": sys.argv[1], "gameVersions": json.loads(sys.argv[2]), "releaseType": sys.argv[3], "changelog": "See https://github.com/'"$GITHUB_REPOSITORY"'/releases/tag/'"$tag"'", "changelogType": "markdown"}))' \
+            "ForeverScout ${{ steps.pkg.outputs.version }}" "$ids" "$type")
+          curl -sf -H "X-Api-Token: $CF_API_TOKEN" \
+            -F "metadata=$meta" -F "file=@${{ steps.pkg.outputs.zip }}" \
+            "https://wow.curseforge.com/api/projects/${CF_PROJECT_ID}/upload-file"
