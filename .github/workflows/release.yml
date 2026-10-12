@@ -16,6 +16,11 @@ name: Release ForeverScout
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create, e.g. v0.2.0-beta"
+        required: true
 
 permissions:
   contents: write
@@ -25,13 +30,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADDON: ForeverScout
+      TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Package
         id: pkg
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           sed -i "s/^## Version: .*/## Version: ${version}/" "addon/${ADDON}/${ADDON}.toc"
           sed -i "s/^ns.VERSION = .*/ns.VERSION = \"${version}\"/" "addon/${ADDON}/Core.lua"
           zip="${ADDON}-${version}.zip"
@@ -61,7 +67,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" "${{ steps.pkg.outputs.zip }}" \
+          prerelease=""
+          case "$TAG" in *alpha*|*beta*) prerelease="--prerelease" ;; esac
+          gh release create "${TAG}" "${{ steps.pkg.outputs.zip }}" --target "${GITHUB_SHA}" $prerelease \
             ForeverScoutUploader.exe ForeverScoutUploader-mac-apple-silicon ForeverScoutUploader-mac-intel \
             --title "${ADDON} ${{ steps.pkg.outputs.version }}" --generate-notes
 
@@ -85,7 +93,7 @@ jobs:
           print(json.dumps(ids))
           PY
           )
-          tag="${GITHUB_REF_NAME}"
+          tag="${TAG}"
           case "$tag" in *alpha*) type=alpha ;; *beta*) type=beta ;; *) type=release ;; esac
           meta=$(python3 -c 'import json,sys; print(json.dumps({"displayName": sys.argv[1], "gameVersions": json.loads(sys.argv[2]), "releaseType": sys.argv[3], "changelog": "See https://github.com/'"$GITHUB_REPOSITORY"'/releases/tag/'"$tag"'", "changelogType": "markdown"}))' \
             "ForeverScout ${{ steps.pkg.outputs.version }}" "$ids" "$type")
