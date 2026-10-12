@@ -4,26 +4,35 @@ A Cloudflare Worker that receives logs from the ForeverScout Uploader and stores
 It runs on Cloudflare's free tier at this project's scale (free plan: 100k requests/day,
 10 GB of R2 storage).
 
-## Deploy (one time, about 10 minutes)
+## Deploy
 
-You need a free Cloudflare account and Node.js.
+GitHub Actions deploys it (`.github/workflows/deploy-server.yml`) whenever `server/` changes on
+`main`, or when you run the workflow by hand from the Actions tab. One-time setup:
 
-```bash
-cd server
-npx wrangler login                              # opens a browser to sign in to Cloudflare
-npx wrangler r2 bucket create foreverscout-logs
-npx wrangler secret put ADMIN_TOKEN             # paste a long random string; keep it private
-npx wrangler deploy                             # prints https://foreverscout.<you>.workers.dev
-```
+1. **Cloudflare:** open R2 in the dashboard and enable it. It asks for a payment method even for
+   the free tier.
+2. **Cloudflare:** go to My Profile > API Tokens > Create Token, use the **Edit Cloudflare
+   Workers** template, and add the permission **Account > Workers R2 Storage > Edit**. Under Zone
+   Resources, include your domain. Copy the token.
+3. **GitHub** (Settings > Secrets and variables > Actions):
+   - Secret `CLOUDFLARE_API_TOKEN`: the token
+   - Secret `CLOUDFLARE_ACCOUNT_ID`: from the Cloudflare dashboard home page
+   - Secret `FSCOUT_ADMIN_TOKEN`: any long random string; you'll use it to download logs
+   - Variable `UPLOAD_HOST`: e.g. `upload.yourdomain.com`
+4. Go to Actions > **Deploy upload server** > Run workflow.
 
-Then in GitHub, under Settings > Secrets and variables > Actions > Variables, set `UPLOAD_URL`
-to that address. The next tagged release builds uploaders that send to it.
+Cloudflare creates the DNS record and certificate for `UPLOAD_HOST`. The release workflow reads
+the same variable, so the uploader apps in the next release send to `https://UPLOAD_HOST`.
+
+Manual deploy instead: `npx wrangler login`, `npx wrangler r2 bucket create foreverscout-logs`,
+`npx wrangler secret put ADMIN_TOKEN`, then `npx wrangler deploy` (add a `[[routes]]` entry with
+`custom_domain = true` to `wrangler.toml` to use your domain).
 
 ## Pull logs for analysis
 
 ```bash
 FSCOUT_ADMIN_TOKEN=<your token> python3 tools/pull_logs.py \
-    --server https://foreverscout.<you>.workers.dev --dest logs/
+    --server https://upload.yourdomain.com --dest logs/
 python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
     --maps data/questiedb/uiMapIdToAreaId.json --out out/ logs/*.lua
 ```

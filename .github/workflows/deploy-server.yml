@@ -1,0 +1,79 @@
+# Deploys the upload server (server/) to Cloudflare whenever it changes on main.
+#
+# One-time setup in GitHub: Settings > Secrets and variables > Actions
+#   secret   CLOUDFLARE_API_TOKEN   Cloudflare token from the "Edit Cloudflare Workers" template,
+#                                   with Account > Workers R2 Storage > Edit added
+#   secret   CLOUDFLARE_ACCOUNT_ID  shown on the Cloudflare dashboard home page (right side)
+#   secret   FSCOUT_ADMIN_TOKEN     any long random string; used to download logs later
+#   variable UPLOAD_HOST            hostname for the server, e.g. upload.yourdomain.com
+# Cloudflare creates the DNS record and HTTPS certificate for UPLOAD_HOST automatically.
+
+name: Deploy upload server
+
+on:
+  push:
+    branches: [main]
+    paths: ["server/**", ".github/workflows/deploy-server.yml"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check configuration
+        id: cfg
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' && secrets.FSCOUT_ADMIN_TOKEN != '' }}
+          UPLOAD_HOST: ${{ vars.UPLOAD_HOST }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ] || [ -z "$UPLOAD_HOST" ]; then
+            echo "::notice::Cloudflare secrets or UPLOAD_HOST not set yet; skipping deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.cfg.outputs.ready == 'true'
+        with:
+          node-version: "22"
+
+      - name: Test
+        if: steps.cfg.outputs.ready == 'true'
+        run: npm test
+
+      - name: Add custom domain route
+        if: steps.cfg.outputs.ready == 'true'
+        env:
+          UPLOAD_HOST: ${{ vars.UPLOAD_HOST }}
+        run: printf '\n[[routes]]\npattern = "%s"\ncustom_domain = true\n' "$UPLOAD_HOST" >> wrangler.toml
+
+      - name: Deploy
+        if: steps.cfg.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        env:
+          ADMIN_TOKEN: ${{ secrets.FSCOUT_ADMIN_TOKEN }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: server
+          preCommands: npx wrangler r2 bucket create foreverscout-logs || true
+          secrets: |
+            ADMIN_TOKEN
+          command: deploy
+
+      - name: Health check
+        if: steps.cfg.outputs.ready == 'true'
+        env:
+          UPLOAD_HOST: ${{ vars.UPLOAD_HOST }}
+        run: |
+          for i in 1 2 3 4 5 6; do
+            if curl -sf "https://${UPLOAD_HOST}/health"; then echo; exit 0; fi
+            sleep 20
+          done
+          echo "::warning::Deployed, but https://${UPLOAD_HOST}/health is not answering yet (DNS/certificate can take a few minutes)."

@@ -8,8 +8,8 @@
 #                               (must match names in CurseForge's version list exactly)
 # Without these, the workflow still publishes the GitHub Release and skips CurseForge.
 #
-# Uploader app: set the variable UPLOAD_URL to the deployed server address (see server/README.md)
-# so the released uploader binaries know where to send logs.
+# Uploader app: the released binaries send logs to https://<UPLOAD_HOST> (the same variable the
+# server deploy uses). Set UPLOAD_URL instead to override with a full address.
 
 name: Release ForeverScout
 
@@ -46,8 +46,10 @@ jobs:
       - name: Build uploader
         env:
           UPLOAD_URL: ${{ vars.UPLOAD_URL }}
+          UPLOAD_HOST: ${{ vars.UPLOAD_HOST }}
         run: |
-          if [ -z "$UPLOAD_URL" ]; then echo "::warning::UPLOAD_URL not set; uploader builds will not send data"; fi
+          if [ -z "$UPLOAD_URL" ] && [ -n "$UPLOAD_HOST" ]; then UPLOAD_URL="https://${UPLOAD_HOST}"; fi
+          if [ -z "$UPLOAD_URL" ]; then echo "::warning::UPLOAD_HOST not set; uploader builds will not send data"; fi
           flags="-s -w -X main.version=${{ steps.pkg.outputs.version }} -X main.uploadURL=${UPLOAD_URL}"
           cd uploader
           go vet ./...
