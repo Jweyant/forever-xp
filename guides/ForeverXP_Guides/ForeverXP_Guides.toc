@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Forever|cFF4FC3F7XP|r Guides
+## Notes: Free leveling guides for WoW Forever, built from player data. Requires RestedXP Guides.
+## Author: ForeverXP contributors
+## Version: 0.1.0
+## Dependencies: RXPGuides
+
+horde-01-06-valley-of-trials.lua
+horde-06-12-durotar.lua

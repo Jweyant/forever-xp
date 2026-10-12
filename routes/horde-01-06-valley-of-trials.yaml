@@ -1,0 +1,61 @@
+# ForeverXP — Troll/Orc 1-6, Valley of Trials.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+guide:
+  name: 1-6 Valley of Trials
+  display: ForeverXP 1-6 Valley of Trials
+  next: 6-12 Durotar
+  group: ForeverXP Horde
+  for: Orc/Troll
+  class: Hunter
+  start_level: 1
+  start: [1411, 43.29, 68.53]   # Kaltunk, where Orcs and Trolls spawn
+  version: 1
+
+steps:
+  - accept: 4641
+    text: Kaltunk is right in front of you.
+  - turnin: 4641
+    accept: 788
+  - complete: 788
+    text: Boars are all around the Den. Kill them on the way in every direction.
+  - turnin: 788
+    accept: 789
+  - accept: 3082
+    only: Troll Hunter
+  - accept: 3087
+    only: Orc Hunter
+  - accept: 4402
+  - turnin: 3082
+    only: Troll Hunter
+  - turnin: 3087
+    only: Orc Hunter
+  - train: Jen'shan
+    only: Hunter
+    text: Train Raptor Strike or Serpent Sting if you can afford it.
+  - accept: 792
+    text: Needs level 2. Grab it now if you have it, otherwise on the way back.
+  - complete: [4402, 789]
+    text: Apples are on the cacti; scorpids are everywhere west of the Den.
+  - accept: 790
+  - complete: 790
+    text: Sarkoth is on the hill south-west.
+  - turnin: 790
+    accept: 804
+  - turnin: [804, 789]
+  - turnin: 4402
+  - accept: 5441
+  - complete: 5441
+    text: Use the Blackjack on sleeping peons around the lumber piles east of the Den.
+  - turnin: 5441
+    accept: 6394
+  - complete: [792, 6394]
+    text: Familiars fill the cave area north. The pick is on the ground by the cave mouth.
+  - turnin: 6394
+  - turnin: 792
+    accept: 794
+  - complete: 794
+    text: Yarrog Baneshadow is at the back of the cave.
+  - turnin: 794
+    accept: 805
+  - train: Jen'shan
+    only: Hunter

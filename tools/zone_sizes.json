@@ -1,0 +1,639 @@
+{
+ "1411": {
+  "name": "Durotar",
+  "area_id": 14,
+  "map_id": 1,
+  "width_yd": 5287.5,
+  "height_yd": 3525.0,
+  "bounds": {
+   "left": -1962.4998779297,
+   "right": -7249.9995117188,
+   "top": 1808.3332519531,
+   "bottom": -1716.6666259766
+  }
+ },
+ "1412": {
+  "name": "Mulgore",
+  "area_id": 215,
+  "map_id": 1,
+  "width_yd": 6154.2,
+  "height_yd": 4102.1,
+  "bounds": {
+   "left": 2479.1669921875,
+   "right": -3675.0,
+   "top": 266.666015625,
+   "bottom": -3835.416015625
+  }
+ },
+ "1413": {
+  "name": "The Barrens",
+  "area_id": 17,
+  "map_id": 1,
+  "width_yd": 10133.3,
+  "height_yd": 6756.2,
+  "bounds": {
+   "left": 2622.9165039062,
+   "right": -7510.4165039062,
+   "top": 1612.4998779297,
+   "bottom": -5143.75
+  }
+ },
+ "1416": {
+  "name": "Alterac Mountains",
+  "area_id": 36,
+  "map_id": 0,
+  "width_yd": 2800.0,
+  "height_yd": 1866.7,
+  "bounds": {
+   "left": 783.33331298828,
+   "right": -2016.6666259766,
+   "top": 1500.0,
+   "bottom": -366.66665649414
+  }
+ },
+ "1417": {
+  "name": "Arathi Highlands",
+  "area_id": 45,
+  "map_id": 0,
+  "width_yd": 3600.0,
+  "height_yd": 2400.0,
+  "bounds": {
+   "left": -866.66662597656,
+   "right": -4466.6665039062,
+   "top": -133.33332824707,
+   "bottom": -2533.3332519531
+  }
+ },
+ "1418": {
+  "name": "Badlands",
+  "area_id": 3,
+  "map_id": 0,
+  "width_yd": 2487.5,
+  "height_yd": 1658.3,
+  "bounds": {
+   "left": -2079.1665039062,
+   "right": -4566.6665039062,
+   "top": -5889.5830078125,
+   "bottom": -7547.9165039062
+  }
+ },
+ "1419": {
+  "name": "Blasted Lands",
+  "area_id": 4,
+  "map_id": 0,
+  "width_yd": 3350.0,
+  "height_yd": 2233.3,
+  "bounds": {
+   "left": -1241.6666259766,
+   "right": -4591.6665039062,
+   "top": -10566.666015625,
+   "bottom": -12800.0
+  }
+ },
+ "1420": {
+  "name": "Tirisfal Glades",
+  "area_id": 85,
+  "map_id": 0,
+  "width_yd": 4518.7,
+  "height_yd": 3012.5,
+  "bounds": {
+   "left": 3033.3332519531,
+   "right": -1485.4166259766,
+   "top": 3837.4997558594,
+   "bottom": 824.99993896484
+  }
+ },
+ "1421": {
+  "name": "Silverpine Forest",
+  "area_id": 130,
+  "map_id": 0,
+  "width_yd": 4200.0,
+  "height_yd": 2800.0,
+  "bounds": {
+   "left": 3449.9997558594,
+   "right": -750.0,
+   "top": 1666.6666259766,
+   "bottom": -1133.3332519531
+  }
+ },
+ "1422": {
+  "name": "Western Plaguelands",
+  "area_id": 28,
+  "map_id": 0,
+  "width_yd": 4300.0,
+  "height_yd": 2866.7,
+  "bounds": {
+   "left": 416.66665649414,
+   "right": -3883.3332519531,
+   "top": 3366.6665039062,
+   "bottom": 499.99996948242
+  }
+ },
+ "1423": {
+  "name": "Eastern Plaguelands",
+  "area_id": 139,
+  "map_id": 0,
+  "width_yd": 4302.1,
+  "height_yd": 2866.7,
+  "bounds": {
+   "left": -2256.25,
+   "right": -6558.333984375,
+   "top": 3691.6669921875,
+   "bottom": 825.0
+  }
+ },
+ "1424": {
+  "name": "Hillsbrad Foothills",
+  "area_id": 267,
+  "map_id": 0,
+  "width_yd": 3200.0,
+  "height_yd": 2133.3,
+  "bounds": {
+   "left": 1066.6666259766,
+   "right": -2133.3332519531,
+   "top": 400.0,
+   "bottom": -1733.3332519531
+  }
+ },
+ "1425": {
+  "name": "The Hinterlands",
+  "area_id": 47,
+  "map_id": 0,
+  "width_yd": 3850.0,
+  "height_yd": 2566.7,
+  "bounds": {
+   "left": -1575.0,
+   "right": -5425.0,
+   "top": 1466.6666259766,
+   "bottom": -1100.0
+  }
+ },
+ "1426": {
+  "name": "Dun Morogh",
+  "area_id": 1,
+  "map_id": 0,
+  "width_yd": 4925.0,
+  "height_yd": 3283.3,
+  "bounds": {
+   "left": 1802.0832519531,
+   "right": -3122.9165039062,
+   "top": -3877.0832519531,
+   "bottom": -7160.4165039062
+  }
+ },
+ "1427": {
+  "name": "Searing Gorge",
+  "area_id": 51,
+  "map_id": 0,
+  "width_yd": 2231.2,
+  "height_yd": 1487.5,
+  "bounds": {
+   "left": -322.91665649414,
+   "right": -2554.1665039062,
+   "top": -6100.0,
+   "bottom": -7587.4995117188
+  }
+ },
+ "1428": {
+  "name": "Burning Steppes",
+  "area_id": 46,
+  "map_id": 0,
+  "width_yd": 2929.2,
+  "height_yd": 1952.1,
+  "bounds": {
+   "left": -266.66665649414,
+   "right": -3195.8332519531,
+   "top": -7031.2495117188,
+   "bottom": -8983.3330078125
+  }
+ },
+ "1429": {
+  "name": "Elwynn Forest",
+  "area_id": 12,
+  "map_id": 0,
+  "width_yd": 3470.8,
+  "height_yd": 2314.6,
+  "bounds": {
+   "left": 1535.4166259766,
+   "right": -1935.4166259766,
+   "top": -7939.5830078125,
+   "bottom": -10254.166015625
+  }
+ },
+ "1430": {
+  "name": "Deadwind Pass",
+  "area_id": 41,
+  "map_id": 0,
+  "width_yd": 2500.0,
+  "height_yd": 1666.7,
+  "bounds": {
+   "left": -833.33331298828,
+   "right": -3333.3332519531,
+   "top": -9866.666015625,
+   "bottom": -11533.333007812
+  }
+ },
+ "1431": {
+  "name": "Duskwood",
+  "area_id": 10,
+  "map_id": 0,
+  "width_yd": 2700.0,
+  "height_yd": 1800.0,
+  "bounds": {
+   "left": 833.33331298828,
+   "right": -1866.6666259766,
+   "top": -9716.666015625,
+   "bottom": -11516.666015625
+  }
+ },
+ "1432": {
+  "name": "Loch Modan",
+  "area_id": 38,
+  "map_id": 0,
+  "width_yd": 2758.3,
+  "height_yd": 1839.6,
+  "bounds": {
+   "left": -1993.7498779297,
+   "right": -4752.0830078125,
+   "top": -4487.5,
+   "bottom": -6327.0830078125
+  }
+ },
+ "1433": {
+  "name": "Redridge Mountains",
+  "area_id": 44,
+  "map_id": 0,
+  "width_yd": 2170.8,
+  "height_yd": 1447.9,
+  "bounds": {
+   "left": -1681.25,
+   "right": -3852.083984375,
+   "top": -8575.0,
+   "bottom": -10022.916015625
+  }
+ },
+ "1434": {
+  "name": "Stranglethorn Vale",
+  "area_id": 33,
+  "map_id": 0,
+  "width_yd": 6381.2,
+  "height_yd": 4254.2,
+  "bounds": {
+   "left": 2220.8332519531,
+   "right": -4160.4165039062,
+   "top": -11168.75,
+   "bottom": -15422.916015625
+  }
+ },
+ "1435": {
+  "name": "Swamp of Sorrows",
+  "area_id": 8,
+  "map_id": 0,
+  "width_yd": 2293.8,
+  "height_yd": 1529.2,
+  "bounds": {
+   "left": -2222.9165039062,
+   "right": -4516.6665039062,
+   "top": -9620.8330078125,
+   "bottom": -11150.0
+  }
+ },
+ "1436": {
+  "name": "Westfall",
+  "area_id": 40,
+  "map_id": 0,
+  "width_yd": 3500.0,
+  "height_yd": 2333.3,
+  "bounds": {
+   "left": 3016.6665039062,
+   "right": -483.33331298828,
+   "top": -9400.0,
+   "bottom": -11733.333007812
+  }
+ },
+ "1437": {
+  "name": "Wetlands",
+  "area_id": 11,
+  "map_id": 0,
+  "width_yd": 4135.4,
+  "height_yd": 2756.2,
+  "bounds": {
+   "left": -389.58331298828,
+   "right": -4525.0,
+   "top": -2147.9165039062,
+   "bottom": -4904.1665039062
+  }
+ },
+ "1438": {
+  "name": "Teldrassil",
+  "area_id": 141,
+  "map_id": 1,
+  "width_yd": 5091.7,
+  "height_yd": 3393.8,
+  "bounds": {
+   "left": 3814.5832519531,
+   "right": -1277.0832519531,
+   "top": 11831.25,
+   "bottom": 8437.5
+  }
+ },
+ "1439": {
+  "name": "Darkshore",
+  "area_id": 148,
+  "map_id": 1,
+  "width_yd": 6550.0,
+  "height_yd": 4366.7,
+  "bounds": {
+   "left": 2941.6665039062,
+   "right": -3608.3332519531,
+   "top": 8333.3330078125,
+   "bottom": 3966.6665039062
+  }
+ },
+ "1440": {
+  "name": "Ashenvale",
+  "area_id": 331,
+  "map_id": 1,
+  "width_yd": 5766.7,
+  "height_yd": 3843.7,
+  "bounds": {
+   "left": 1699.9998779297,
+   "right": -4066.6665039062,
+   "top": 4672.9165039062,
+   "bottom": 829.16662597656
+  }
+ },
+ "1441": {
+  "name": "Thousand Needles",
+  "area_id": 400,
+  "map_id": 1,
+  "width_yd": 4400.0,
+  "height_yd": 2933.3,
+  "bounds": {
+   "left": -433.33331298828,
+   "right": -4833.3330078125,
+   "top": -3966.6665039062,
+   "bottom": -6899.9995117188
+  }
+ },
+ "1442": {
+  "name": "Stonetalon Mountains",
+  "area_id": 406,
+  "map_id": 1,
+  "width_yd": 4883.3,
+  "height_yd": 3256.2,
+  "bounds": {
+   "left": 3245.8332519531,
+   "right": -1637.4998779297,
+   "top": 2916.6665039062,
+   "bottom": -339.58331298828
+  }
+ },
+ "1443": {
+  "name": "Desolace",
+  "area_id": 405,
+  "map_id": 1,
+  "width_yd": 4495.8,
+  "height_yd": 2997.9,
+  "bounds": {
+   "left": 4233.3330078125,
+   "right": -262.5,
+   "top": 452.08331298828,
+   "bottom": -2545.8332519531
+  }
+ },
+ "1444": {
+  "name": "Feralas",
+  "area_id": 357,
+  "map_id": 1,
+  "width_yd": 6950.0,
+  "height_yd": 4633.3,
+  "bounds": {
+   "left": 5441.6665039062,
+   "right": -1508.3332519531,
+   "top": -2366.6665039062,
+   "bottom": -6999.9995117188
+  }
+ },
+ "1445": {
+  "name": "Dustwallow Marsh",
+  "area_id": 15,
+  "map_id": 1,
+  "width_yd": 5250.0,
+  "height_yd": 3500.0,
+  "bounds": {
+   "left": -974.99993896484,
+   "right": -6225.0,
+   "top": -2033.3332519531,
+   "bottom": -5533.3330078125
+  }
+ },
+ "1446": {
+  "name": "Tanaris",
+  "area_id": 440,
+  "map_id": 1,
+  "width_yd": 6900.0,
+  "height_yd": 4600.0,
+  "bounds": {
+   "left": -218.74998474121,
+   "right": -7118.7495117188,
+   "top": -5875.0,
+   "bottom": -10475.0
+  }
+ },
+ "1447": {
+  "name": "Azshara",
+  "area_id": 16,
+  "map_id": 1,
+  "width_yd": 5070.8,
+  "height_yd": 3381.2,
+  "bounds": {
+   "left": -3277.0832519531,
+   "right": -8347.916015625,
+   "top": 5341.6665039062,
+   "bottom": 1960.4166259766
+  }
+ },
+ "1448": {
+  "name": "Felwood",
+  "area_id": 361,
+  "map_id": 1,
+  "width_yd": 5750.0,
+  "height_yd": 3833.3,
+  "bounds": {
+   "left": 1641.6666259766,
+   "right": -4108.3330078125,
+   "top": 7133.3330078125,
+   "bottom": 3299.9997558594
+  }
+ },
+ "1449": {
+  "name": "Un'Goro Crater",
+  "area_id": 490,
+  "map_id": 1,
+  "width_yd": 3700.0,
+  "height_yd": 2466.7,
+  "bounds": {
+   "left": 533.33331298828,
+   "right": -3166.6665039062,
+   "top": -5966.6665039062,
+   "bottom": -8433.3330078125
+  }
+ },
+ "1450": {
+  "name": "Moonglade",
+  "area_id": 493,
+  "map_id": 1,
+  "width_yd": 2308.3,
+  "height_yd": 1539.6,
+  "bounds": {
+   "left": -1381.25,
+   "right": -3689.5832519531,
+   "top": 8491.666015625,
+   "bottom": 6952.0830078125
+  }
+ },
+ "1451": {
+  "name": "Silithus",
+  "area_id": 1377,
+  "map_id": 1,
+  "width_yd": 3483.3,
+  "height_yd": 2322.9,
+  "bounds": {
+   "left": 2537.5,
+   "right": -945.833984375,
+   "top": -5958.333984375,
+   "bottom": -8281.25
+  }
+ },
+ "1452": {
+  "name": "Winterspring",
+  "area_id": 618,
+  "map_id": 1,
+  "width_yd": 7100.0,
+  "height_yd": 4733.3,
+  "bounds": {
+   "left": -316.66665649414,
+   "right": -7416.6665039062,
+   "top": 8533.3330078125,
+   "bottom": 3799.9997558594
+  }
+ },
+ "1453": {
+  "name": "Stormwind City",
+  "area_id": 1519,
+  "map_id": 0,
+  "width_yd": 1737.5,
+  "height_yd": 1158.3,
+  "bounds": {
+   "left": 1722.9200439453,
+   "right": -14.58399963379,
+   "top": -7995.830078125,
+   "bottom": -9154.169921875
+  }
+ },
+ "1454": {
+  "name": "Orgrimmar",
+  "area_id": 1637,
+  "map_id": 1,
+  "width_yd": 1402.6,
+  "height_yd": 935.4,
+  "bounds": {
+   "left": -3680.6010742188,
+   "right": -5083.2055664062,
+   "top": 2273.8771972656,
+   "bottom": 1338.4605712891
+  }
+ },
+ "1455": {
+  "name": "Ironforge",
+  "area_id": 1537,
+  "map_id": 0,
+  "width_yd": 790.6,
+  "height_yd": 527.6,
+  "bounds": {
+   "left": -713.59136962891,
+   "right": -1504.2164306641,
+   "top": -4569.2412109375,
+   "bottom": -5096.845703125
+  }
+ },
+ "1456": {
+  "name": "Thunder Bluff",
+  "area_id": 1638,
+  "map_id": 1,
+  "width_yd": 1043.7,
+  "height_yd": 695.8,
+  "bounds": {
+   "left": 516.66662597656,
+   "right": -527.08331298828,
+   "top": -849.99993896484,
+   "bottom": -1545.8332519531
+  }
+ },
+ "1457": {
+  "name": "Darnassus",
+  "area_id": 1657,
+  "map_id": 1,
+  "width_yd": 1058.3,
+  "height_yd": 705.7,
+  "bounds": {
+   "left": 2938.3627929688,
+   "right": 1880.0295410156,
+   "top": 10238.31640625,
+   "bottom": 9532.5869140625
+  }
+ },
+ "1458": {
+  "name": "Undercity",
+  "area_id": 1497,
+  "map_id": 0,
+  "width_yd": 959.4,
+  "height_yd": 640.1,
+  "bounds": {
+   "left": 873.19262695313,
+   "right": -86.18240356445,
+   "top": 1877.9453125,
+   "bottom": 1237.8411865234
+  }
+ },
+ "1459": {
+  "name": "Alterac Valley",
+  "area_id": 2597,
+  "map_id": 30,
+  "width_yd": 4237.5,
+  "height_yd": 2825.0,
+  "bounds": {
+   "left": 1781.2498779297,
+   "right": -2456.25,
+   "top": 1085.4166259766,
+   "bottom": -1739.5832519531
+  }
+ },
+ "1460": {
+  "name": "Warsong Gulch",
+  "area_id": 3277,
+  "map_id": 489,
+  "width_yd": 1145.8,
+  "height_yd": 764.6,
+  "bounds": {
+   "left": 2041.6666259766,
+   "right": 895.83331298828,
+   "top": 1627.0832519531,
+   "bottom": 862.49993896484
+  }
+ },
+ "1461": {
+  "name": "Arathi Basin",
+  "area_id": 3358,
+  "map_id": 529,
+  "width_yd": 1756.2,
+  "height_yd": 1170.8,
+  "bounds": {
+   "left": 1858.3332519531,
+   "right": 102.08332824707,
+   "top": 1508.3332519531,
+   "bottom": 337.5
+  }
+ }
+}

@@ -1,0 +1,142 @@
+# ForeverXP — Troll/Orc 6-12, Durotar.
+# Skipped on purpose: 5843 Welcome! (voucher item only some players have),
+# 6069 The Hunter's Path (optional breadcrumb; Thotar gives the pet quest directly).
+# 812/813 Need for a Cure is done at the end because its scorpids are outside Orgrimmar's gate.
+guide:
+  name: 6-12 Durotar
+  display: ForeverXP 6-12 Durotar
+  next: 12-15 The Barrens
+  group: ForeverXP Horde
+  for: Orc/Troll
+  class: Hunter
+  version: 1
+
+steps:
+  # --- Leave the valley east, toward Sen'jin
+  - accept: 2161
+    text: Ukor is on the road just outside the valley.
+  - turnin: 805
+    accept: [823, 808]
+  - accept: 818
+  - accept: 817
+  - accept: 786
+  - complete: 786
+    text: The three attack plans are in the Kolkar camps west of Sen'jin. Grab each from its tent.
+
+  # --- Razor Hill: hearth and quests
+  - turnin: 2161
+  - home: Razor Hill
+  - turnin: 823
+    accept: 806
+  - accept: 784
+  - accept: 791
+  - accept: 815
+    text: Needs level 6. If you're not there yet, it's fine to grab it on the next visit and skip the eggs.
+
+  # --- East coast sweep: Tiragarde Keep, Makrura, south coast, Echo Isles
+  - complete: [784, 791]
+    text: Kul Tiras sailors and marines at Tiragarde Keep. Benedict is upstairs in the keep; his key opens the chest.
+  - accept: 830
+    text: If Lieutenant Benedict dropped Admiral Proudmoore's Orders, start the quest from the item.
+  - complete: 818
+    text: Makrura on the beach north of Sen'jin drop eyes; Surf Crawlers further south drop mucus.
+  - complete: 815
+    text: Taillasher eggs are on the south coast beaches.
+  - complete: 817
+  - complete: 808
+    text: Minshina's Skull is in the circle of power on the Echo Isles.
+  - turnin: 818
+  - turnin: 817
+  - turnin: 808
+    accept: 826
+  - turnin: 786
+  - complete: 826
+    text: Zalazane is in the middle of the Echo Isles. Hexed and Voodoo trolls are around him.
+  - turnin: 826
+
+  # --- Back to Razor Hill
+  - hs: Razor Hill
+    hs_to: [1411, 51.51, 41.64]
+  - turnin: 784
+    accept: 825
+  - turnin: 791
+  - turnin: 815
+  - turnin: 830
+    accept: 831
+  - accept: 837
+
+  # --- North loop
+  - complete: 837
+    text: Razormane quilboar are west of Razor Hill.
+  - accept: 834
+  - complete: 834
+  - turnin: 834
+    accept: 835
+  - complete: 806
+    text: Fizzle Darkstorm is in Thunder Ridge.
+  - complete: 835
+  - turnin: 835
+  - accept: 816
+  - complete: 816
+    text: Kron's Amulet drops from the quilboar west of the farmstead.
+  - turnin: 816
+
+  # --- Razor Hill turn-ins and Hunter pet quests (level 10)
+  - turnin: 837
+  - turnin: 806
+    accept: 828
+  - accept: 840
+    text: Takrin Pathseeker. You'll turn it in at the Barrens bridge after Orgrimmar.
+  - xp: 10
+    only: Hunter
+    text: The pet quests need level 10. Kill boars around Razor Hill if you're short.
+  - accept: 6062
+    only: Hunter
+  - complete: 6062
+    only: Hunter
+    text: Use the Taming Rod on a Dire Mottled Boar just outside Razor Hill.
+  - turnin: 6062
+    accept: 6083
+    only: Hunter
+  - complete: [825, 6083]
+    text: Gnomish Tools are in the wreck in the water east of Tiragarde. Surf Crawlers line the same beach.
+  - turnin: 825
+  - turnin: 6083
+    accept: 6082
+    only: Hunter
+  - complete: 6082
+    only: Hunter
+    text: Armored Scorpids are north-west of Razor Hill.
+  - turnin: 6082
+    accept: 6081
+    only: Hunter
+  - goto: [1411, 51.0, 45.0]
+    only: Hunter
+    text: Tame your real pet now. A Dire Mottled Boar right outside Razor Hill is fine for 1-20.
+  - complete: 825
+    only: "!Hunter"
+    text: Gnomish Tools are in the wreck in the water east of Tiragarde.
+  - turnin: 825
+    only: "!Hunter"
+
+  # --- Skull Rock, then Orgrimmar
+  - turnin: 828
+    accept: 827
+  - complete: 827
+    text: Burning Blade cultists in Skull Rock drop Searing Collars.
+  - turnin: 827
+    accept: 829
+  - accept: 812
+    text: Rhinag is just outside Orgrimmar's gate.
+  - turnin: 831
+  - turnin: 829
+  - turnin: 6081
+    only: Hunter
+  - train: Ormak Grimshot
+    only: Hunter
+  - accept: 813
+    text: Kor'ghan in the Drag.
+  - complete: 813
+    text: Venomtail Scorpids are just outside the gate, north-west of Rhinag.
+  - turnin: 813
+  - turnin: 812
