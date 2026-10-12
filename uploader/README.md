@@ -6,7 +6,7 @@ It works the same way the Raider.IO and Warcraft Logs companion apps do.
 ## For players
 
 1. Download `ForeverScoutUploader.exe` (Windows) or the Mac build for your chip from
-   [Releases](https://github.com/Jweyant/forever-leveling/releases).
+   [Releases](https://github.com/Jweyant/forever-xp/releases).
 2. Double-click it and choose **Yes** to start it automatically when you sign in.
 3. That's it. Whenever the game saves (logout or `/reload`), the uploader checks for new data
    within 30 seconds and sends it, but **only** if you chose "Share automatically" in game.

@@ -1,4 +1,4 @@
-# Forever Leveling
+# Forever XP
 
 Free, open leveling guides for **World of Warcraft: Forever**, built from real player data.
 

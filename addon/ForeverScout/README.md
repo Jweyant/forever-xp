@@ -38,7 +38,7 @@ Your log file is:
 ```
 
 Without the uploader, you can zip it and attach it to a "Submit a log" issue at
-https://github.com/Jweyant/forever-leveling/issues/new/choose.
+https://github.com/Jweyant/forever-xp/issues/new/choose.
 
 ## What is recorded
 
