@@ -1,0 +1,68 @@
+# ForeverXP — Horde 27-29, Hillsbrad Foothills (Tarren Mill).
+# Skipped: 541 Battle of Hillsbrad (Dun Garok, level 30 groups), 547 Humbert's Sword (Dun Garok),
+# 567 Dangerous! (target inside Southshore guard range), Blood of Innocents chain (Thunder Bluff start).
+guide:
+  name: 27-29 Hillsbrad Foothills
+  display: ForeverXP 27-29 Hillsbrad Foothills
+  next: 28-30 Thousand Needles
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  - fly: Orgrimmar
+    fly_to: [1411, 50.8, 13.8]
+    fly_seconds: 300
+    text: Fly from Splintertree to Orgrimmar, then walk out to the zeppelin tower north of the city.
+  - travel: Take the zeppelin to Undercity (Tirisfal Glades).
+    travel_to: [1420, 60.7, 58.8]
+    travel_seconds: 240
+  - fly: Tarren Mill
+    fly_to: [1424, 60.2, 18.6]
+    fly_seconds: 150
+    text: Fly from Undercity to Tarren Mill. If you don't have that flight path, run south through Silverpine Forest.
+  - fp: Tarren Mill
+  - home: Tarren Mill
+  - accept: 527
+  - accept: 549
+  - accept: 498
+  - accept: 496
+  - accept: 501
+  - complete: 527
+    text: Farmers and farmhands work the Hillsbrad Fields west of Tarren Mill; Farmer Ray and Farmer Getz are in the houses.
+  - complete: [496, 501]
+    text: Gray bears and mountain lions roam the hills around the fields; creepers are in the same woods.
+  - turnin: 527
+    accept: 528
+  - accept: 546
+    text: Collect Hillsbrad Human Skulls from every human you kill from here on.
+  - complete: 528
+    text: Peasants work the fields around the town of Hillsbrad.
+  - turnin: 528
+    accept: 529
+  - turnin: 496
+    accept: 499
+  - turnin: 501
+    accept: 502
+  - complete: 529
+    text: Blacksmith Verringtan and his apprentices are at the Hillsbrad smithy.
+  - turnin: 499
+    text: Give Umpi the elixir at the Hillsbrad farmhouse.
+  - turnin: 502
+    text: Feed the elixir to Stanley the dog at the Hillsbrad farm.
+  - turnin: 529
+    accept: 532
+  - complete: 532
+    text: Magistrate Burnside and the councilmen are in the Hillsbrad town hall. Burn the ledger while you're there.
+  - turnin: 532
+    accept: 539
+  - complete: [549, 498]
+    text: Syndicate rogues and watchmen fill Durnholde Keep east of Tarren Mill. Drull and Tog'thar are in its cells.
+  - turnin: [549, 498]
+  - complete: 539
+    text: Foreman Bonds and the miners are in Azurelode Mine south of Hillsbrad.
+  - turnin: 539
+  - complete: 546
+  - turnin: 546

@@ -1,0 +1,64 @@
+# ForeverXP — Horde 22-24, southern Barrens (Camp Taurajo and Bael Modan).
+# Skipped: 899 Consumed by Hatred (about 40 minutes of kills for one quest), 868 Egg Hunt and
+# 862 Dig Rat Stew (low drop rates), 4921 Lost in Battle (needs a trip back to the Crossroads),
+# 906 Betrayal from Within part 2 (Thork is at the Crossroads; grab it if you pass through).
+guide:
+  name: 22-24 Southern Barrens
+  display: ForeverXP 22-24 Southern Barrens
+  next: 24-26 Stonetalon Mountains
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  start_level: 22
+  start_xp: 354
+  start: [1413, 51.5, 30.3]   # Crossroads
+  version: 1
+
+steps:
+  - goto: [1413, 44.4, 59.1]
+    text: Run south down the road to Camp Taurajo.
+  - fp: Camp Taurajo
+  - accept: 878
+  - accept: 893
+  - complete: [878, 893]
+    text: Bristleback quilboar are west of Taurajo; the Razormane items drop from quilboar in the same camps.
+  - turnin: 878
+    accept: 5052
+  - turnin: 5052
+    text: Blood Shards drop from quilboar all over the Barrens. Skip this if you don't have one.
+  - accept: 879
+  - complete: 879
+    text: Nak, Kuz and Lok Orcbane are in the Razormane camps west of Taurajo.
+  - turnin: 879
+  - turnin: 893
+  - accept: 843
+    text: Gann Stonespire stands on the road north of Bael Modan.
+  - complete: 843
+    text: Bael'dun excavators and foremen work the dig site; the journal is in the camp.
+  - turnin: 843
+    accept: 846
+  - complete: 846
+    text: Nitroglycerin drops from the Bael'dun dwarves in the fortress.
+  - turnin: 846
+    accept: 849
+  - complete: 849
+    text: The flying machine sits on the platform in the middle of the dig.
+  - turnin: 849
+  - fly: The Crossroads
+    fly_to: [1413, 51.5, 30.3]
+    fly_seconds: 90
+    text: Fly from Camp Taurajo to the Crossroads, then run west toward Stonetalon.
+  - accept: 1062
+    text: Seereth Stonebreak and Makaba Flathoof camp by the road to Stonetalon.
+  - accept: 6548
+  - complete: [1062, 6548]
+    text: Venture Co. loggers work the trees here; the Grimtotem camp is just north-west.
+  - turnin: 1062
+    accept: 1068
+  - turnin: 6548
+    accept: 6629
+  - complete: [1068, 6629]
+    text: Shredders XT:4 and XT:9 patrol the logging camp. Grundig Darkcloud leads the Grimtotem camp.
+  - turnin: 1068
+  - turnin: 6629

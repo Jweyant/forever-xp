@@ -50,6 +50,7 @@ database, ready to paste into Questie's Discord.
 | `tools/export_questiedb.lua`, `tools/build_sqlite.py` | The two steps that script runs |
 | `tools/ingest_logs.py` | Merges player logs and compares them with Questie |
 | `routes/*.yaml` | Route order for each guide (the only part written by hand) |
+| `tools/score_quests.py` | Scores every quest in a level band by XP/minute, for choosing what to keep or skip |
 | `tools/guidegen.py` | Builds RestedXP-format guides from routes + Questie data, with checks and estimates |
 | `guides/ForeverXP_Guides/` | The generated guide addon (requires RestedXP Guides) |
 | `reports/` | Per-guide estimates: level, time, XP per minute per quest, issues |
@@ -91,7 +92,9 @@ that gap.
 - [ ] CurseForge listing
 - [x] Route generator and XP-per-minute scorer (`tools/guidegen.py`)
 - [x] Horde Troll/Orc 1–12 guide (RestedXP format, `guides/ForeverXP_Guides`)
-- [ ] Horde 12–30 (Barrens onward; 20–30 is where free guides run out)
+- [x] Horde 22–30: southern Barrens, Stonetalon, Ashenvale, Hillsbrad, Thousand Needles
+- [ ] Horde 12–22 (RestedXP's free Barrens guide covers this for now)
+- [ ] Calibrate time/XP estimates from ForeverScout logs
 - [ ] Alliance 1–30 guide
 
 ## License

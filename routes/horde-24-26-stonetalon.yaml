@@ -1,0 +1,63 @@
+# ForeverXP — Horde 24-26, Stonetalon Mountains (Windshear Crag, Sun Rock Retreat, Stonetalon Peak).
+# Skipped: 6461 Blood Feeders and 6421 Boulderslide Ravine (gray at this level),
+# 1058 Jin'Zil's Forest Magic (about 40 minutes), 1094/1095/1096 goblin chain (two trips to Ratchet).
+guide:
+  name: 24-26 Stonetalon Mountains
+  display: ForeverXP 24-26 Stonetalon Mountains
+  next: 26-28 Ashenvale
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  - goto: [1442, 71.0, 94.0]
+    text: Take the road west out of the Barrens into Stonetalon. Malaka'jin is at the bottom of the zone.
+  - accept: 6284
+    text: Wanted poster for Besseleth on the road north.
+  - accept: 1093
+  - accept: 1090
+  - complete: [1093, 1090]
+    text: Venture Co. goblins work Windshear Crag. Stay near Piznik while he mines and kill what attacks him.
+  - turnin: 1090
+    accept: 1092
+  - turnin: [1092, 1093]
+  - complete: 6284
+    text: Besseleth is in the spider cave at the east edge of the Crag.
+  - goto: [1442, 47.3, 61.3]
+    text: Head west to Sun Rock Retreat.
+  - fp: Sun Rock Retreat
+  - home: Sun Rock Retreat
+  - turnin: 6284
+  - accept: 6282
+  - accept: 6393
+  - accept: 6301
+  - accept: 1087
+  - complete: 6301
+    text: Gaea Seeds are on the ground around the lake below Sun Rock.
+  - turnin: 6301
+    accept: 6381
+  - complete: 6381
+    text: Plant the seeds in the dirt mounds near where you found them.
+  - turnin: 6381
+  - complete: 6393
+    text: Fire elementals in the Charred Vale drop Incendrites.
+  - complete: 6282
+    text: Bloodfury harpies roost in the Charred Vale.
+  - turnin: 6282
+    accept: 6283
+  - complete: 6283
+    text: Bloodfury Ripper is with the harpies.
+  - turnin: [6283, 6393]
+  - complete: 1087
+    text: Sons, Daughters and Cenarion Botanists are around Stonetalon Peak to the north.
+  - turnin: 1087
+    accept: 1088
+  - complete: 1088
+    text: Ordanus is in the Cenarion grove on Stonetalon Peak.
+  - turnin: 1088
+    accept: 1089
+  - complete: 1089
+    text: Use the Gatekeeper's Key at the Den's gate on Stonetalon Peak and loot the hoard.
+  - turnin: 1089

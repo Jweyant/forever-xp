@@ -2,7 +2,7 @@
 ## Title: Forever|cFF4FC3F7Scout|r
 ## Notes: Records your questing route (quests, XP, positions, timing) to help build free leveling guides and fix quest data for WoW Forever.
 ## Author: ForeverScout contributors
-## Version: 0.2.0
+## Version: 0.2.1
 ## OptionalDeps: QuestieDB, Questie
 ## SavedVariables: ForeverScoutDB
 ## SavedVariablesPerCharacter: ForeverScoutCharDB

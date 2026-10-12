@@ -167,7 +167,7 @@ class Generator:
         self.race_mask = sum(RACE_BITS[r] for r in self.races)
         self.class_name = g.get("class", "HUNTER").upper()
         self.sim_race = g.get("sim_race", self.races[-1] if self.races else "")
-        self.s = State(level=g.get("start_level", 1))
+        self.s = State(level=g.get("start_level", 1), xp=g.get("start_xp", 0))
         self.lines = []
         self.report = []
         self.quest_stats = {}
@@ -435,6 +435,14 @@ class Generator:
                         self.s.add_xp(mob_xp(self.s.level, mlvl or self.s.level))
                     self.s.seconds += kills * KILL_SEC + (count * LOOT_OBJECT_SEC if kind == "object" else 0)
                 self.quest_stats.setdefault(qid, {"xp": 0, "seconds": 0})["seconds"] += self.s.seconds - start_t
+
+        if "travel" in st:
+            # Zeppelin/boat/long flight: reposition without counting running or kills.
+            self.lines.append(f"    >>{st['travel']}")
+            self.s.seconds += st.get("travel_seconds", 180)
+            if st.get("travel_to"):
+                t_ = st["travel_to"]
+                self.s.pos = (int(t_[0]), float(t_[1]), float(t_[2]))
 
         for cmd in ("home", "hs", "fp", "fly", "train", "tame", "vendor", "trainer"):
             if cmd in st:

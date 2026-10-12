@@ -1,0 +1,52 @@
+# ForeverXP — Horde 26-28, Ashenvale (Zoram'gar and Splintertree Post).
+# Skipped: 6442 Naga and 6462 Troll Charm (gray here), The Ashenvale Hunt chain (elite targets),
+# 6571 Warsong Supplies (level 34 mobs), Blackfathom Deeps dungeon quests.
+guide:
+  name: 26-28 Ashenvale
+  display: ForeverXP 26-28 Ashenvale
+  next: 27-29 Hillsbrad Foothills
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  - goto: [1440, 42.0, 71.0]
+    text: Take the Talondeep Path tunnel from northern Stonetalon into Ashenvale.
+  - accept: 6482
+    text: Ruul Snowhoof is caged in Thistlefur Village. Escort him out.
+  - complete: 6482
+  - goto: [1440, 12.2, 33.8]
+    text: Follow the coast west to Zoram'gar Outpost.
+  - fp: Zoram'gar Outpost
+  - accept: 216
+  - accept: 6641
+  - complete: 6641
+    text: Escort Muglash to the brazier. Kill the naga waves, then Vorsha.
+  - complete: 216
+    text: Thistlefur avengers and shamans are in Thistlefur Village.
+  - turnin: 216
+    accept: 6621
+  - complete: 6621
+    text: Plant the banner on the Foulweald totem mound and defend it.
+  - turnin: [6621, 6641]
+  - goto: [1440, 73.2, 61.6]
+    text: Fly or run east to Splintertree Post.
+  - fp: Splintertree Post
+  - home: Splintertree Post
+  - turnin: 6482
+  - accept: 6441
+  - accept: 6503
+  - accept: 25
+  - accept: 6544
+  - complete: 6544
+    text: Escort Torek and his Splintertree raiders into Silverwing Outpost.
+  - turnin: 6544
+  - complete: 6503
+    text: Ashenvale Outrunners stealth along the roads south of Splintertree.
+  - complete: 25
+    text: Befouled water elementals fill Mystral Lake to the west.
+  - complete: 6441
+    text: Satyr in Night Run and Satyrnaar drop horns.
+  - turnin: [6441, 6503, 25]

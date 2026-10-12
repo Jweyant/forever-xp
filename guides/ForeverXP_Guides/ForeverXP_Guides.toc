@@ -2,9 +2,14 @@
 ## Title: Forever|cFF4FC3F7XP|r Guides
 ## Notes: Free leveling guides for WoW Forever, built from player data. Requires RestedXP Guides.
 ## Author: ForeverXP contributors
-## Version: 0.1.0
+## Version: 0.2.0
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
 ## Dependencies: RXPGuides
 
 horde-01-06-valley-of-trials.lua
 horde-06-12-durotar.lua
+horde-22-24-southern-barrens.lua
+horde-24-26-stonetalon.lua
+horde-26-28-ashenvale.lua
+horde-27-29-hillsbrad.lua
+horde-28-30-thousand-needles.lua

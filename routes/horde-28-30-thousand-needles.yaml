@@ -1,0 +1,83 @@
+# ForeverXP — Horde 28-30, Thousand Needles (Freewind Post, Highperch, Shimmering Flats).
+# Skipped: 4767 Wind Rider and 5062/5088 (Thunder Bluff trips), 1152 Test of Lore (Stonetalon trip),
+# 4966 Protect Kanati (starts from a random drop).
+guide:
+  name: 28-30 Thousand Needles
+  display: ForeverXP 28-30 Thousand Needles
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  - fly: Undercity
+    fly_to: [1420, 60.7, 58.8]
+    fly_seconds: 150
+    text: Fly from Tarren Mill back to Undercity and walk to the zeppelin tower.
+  - travel: Take the zeppelin to Orgrimmar.
+    travel_to: [1411, 50.8, 13.8]
+    travel_seconds: 240
+  - fly: Camp Taurajo
+    fly_to: [1413, 44.4, 59.1]
+    fly_seconds: 300
+    text: Fly from Orgrimmar to Camp Taurajo (or straight to Freewind Post if you have it).
+  - goto: [1441, 45.1, 49.1]
+    text: Run south through the Great Gate and take the lift down to Freewind Post.
+  - fp: Freewind Post
+  - home: Freewind Post
+  - accept: 4841
+  - accept: 4821
+  - accept: 5147
+  - complete: 4841
+    text: Galak centaur camps are north-west of Freewind.
+  - complete: 4821
+    text: The Alien Egg is in the Roguefeather Den, north-west.
+  - turnin: [4841, 4821]
+  - accept: 5064
+  - complete: 5064
+    text: Grimtotem notes are in the camps west of Freewind.
+  - turnin: 5064
+  - accept: 4770
+    text: Pao'ka Swiftmountain is at Highperch, far west. Escort him to Camp E'thok.
+  - complete: 4770
+  - turnin: 4770
+  - accept: 5151
+  - complete: 5151
+    text: The beast is Gnashjaw in Highperch.
+  - turnin: 5151
+  - complete: 5147
+    text: Arnak Grimtotem is in the Darkcloud Pinnacle camps.
+  - accept: 4904
+    text: Lakota Windsong is held at Darkcloud Pinnacle. Escort her out.
+  - complete: 4904
+  - turnin: 4904
+  - hs: Freewind Post
+    hs_to: [1441, 45.1, 49.1]
+  - turnin: 5147
+  - accept: 1149
+  - complete: 1149
+    text: Leap from the planks east of Freewind. You'll land safely.
+  - turnin: 1149
+    accept: 1150
+  - complete: 1150
+  - turnin: 1150
+    accept: 1151
+  - complete: 1151
+  - turnin: 1151
+  - goto: [1441, 78.0, 77.0]
+    text: Head east to the Shimmering Flats racetrack.
+  - accept: [1104, 1105]
+  - accept: 1110
+  - complete: [1104, 1105, 1110]
+    text: Scorpids and tortoises are all over the salt flats. Rocket Car Parts lie around the track.
+  - turnin: [1104, 1105]
+  - turnin: 1110
+  - xp: 29
+    text: Load Lightening needs level 29. If you're short, keep killing scorpids and tortoises on the flats.
+  - accept: 1176
+  - complete: 1176
+    text: Vultures circle the salt flats.
+  - turnin: 1176
+  - xp: 30
+    text: Finish level 30 on the salt flats mobs if the quests didn't get you there.

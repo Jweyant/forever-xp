@@ -224,11 +224,18 @@ ns:On("TAXIMAP_OPENED", function()
   ns:Log("fm", { by = by })
 end)
 
-ns:On("PLAYER_DEAD", function() ns:Log("death") end)
-ns:On("PLAYER_UNGHOST", function() ns:Log("alive") end)
-ns:On("PLAYER_ALIVE", function()
-  if not UnitIsDeadOrGhost("player") then ns:Log("alive") end
-end)
+-- PLAYER_ALIVE also fires after loading screens (hearth, zeppelins), so only log a
+-- resurrection when we actually saw a death first.
+local dead = false
+ns:On("PLAYER_DEAD", function() dead = true; ns:Log("death") end)
+local function revived()
+  if dead and not UnitIsDeadOrGhost("player") then
+    dead = false
+    ns:Log("alive")
+  end
+end
+ns:On("PLAYER_UNGHOST", revived)
+ns:On("PLAYER_ALIVE", revived)
 
 ------------------------------------------------------------------------------------------
 -- NPCs unknown to Questie (any level, once per NPC per session)

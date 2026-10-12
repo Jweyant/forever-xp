@@ -15,7 +15,7 @@
 
 local ADDON, ns = ...
 ns.SCHEMA = 1
-ns.VERSION = "0.2.0"
+ns.VERSION = "0.2.1"
 
 local GetTime, time, floor = GetTime, time, math.floor
 
