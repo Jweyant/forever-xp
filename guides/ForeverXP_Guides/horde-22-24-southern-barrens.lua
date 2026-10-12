@@ -31,17 +31,7 @@ step
     .goto 1413,43.14,47.76
     .complete 878,3
     .mob Bristleback Geomancer
-    .goto 1413,43.7,79.86
-    .complete 893,1
-    .mob Razormane Pathfinder
-    .mob Razormane Stalker
-    .goto 1413,42.51,80.78
-    .complete 893,2
-    .mob Razormane Seer
-    .goto 1413,41.98,81.02
-    .complete 893,3
-    .mob Razormane Warfrenzy
-    >>Bristleback quilboar are west of Taurajo; the Razormane items drop from quilboar in the same camps.
+    >>Bristleback quilboar camp just north-east of Taurajo.
 step
     .goto 1413,44.55,59.26
     .target Mangletooth
@@ -57,6 +47,21 @@ step
     .target Mangletooth
     .accept 879 >> Accept Betrayal from Within
 step
+    .goto 1413,45.89,77.0
+    .target Gann Stonespire
+    .accept 843 >> Accept Gann's Reclamation
+    >>Gann Stonespire stands on the road south, just north of Bael Modan.
+step
+    .goto 1413,44.51,80.37
+    .complete 893,1
+    .mob Razormane Pathfinder
+    .mob Razormane Stalker
+    .goto 1413,42.95,81.98
+    .complete 893,2
+    .mob Razormane Seer
+    .goto 1413,41.85,81.27
+    .complete 893,3
+    .mob Razormane Warfrenzy
     .goto 1413,45.12,80.07
     .complete 879,1
     .mob Kuz
@@ -66,22 +71,14 @@ step
     .goto 1413,40.15,80.54
     .complete 879,3
     .mob Lok Orcbane
-    >>Nak, Kuz and Lok Orcbane are in the Razormane camps west of Taurajo.
+    >>Blackthorn Ridge, the Razormane camps west of Bael Modan. Stalkers and Pathfinders drop the Backstabber, Seers the Wand, Warfrenzies the Shield. Kuz, Nak and Lok Orcbane are in the same camps.
 step
-    .goto 1413,44.55,59.26
-    .target Mangletooth
-    .turnin 879 >> Turn in Betrayal from Within
+    .goto 1413,48.97,86.31
+    .target Feegly the Exiled
+    .accept 857 >> Accept The Tear of the Moons
+    >>Feegly the Exiled hides at the south edge of Bael Modan.
 step
-    .goto 1413,45.1,57.68
-    .target Tatternack Steelforge
-    .turnin 893 >> Turn in Weapons of Choice
-step
-    .goto 1413,45.89,77.0
-    .target Gann Stonespire
-    .accept 843 >> Accept Gann's Reclamation
-    >>Gann Stonespire stands on the road north of Bael Modan.
-step
-    .goto 1413,47.3,84.14
+    .goto 1413,48.13,85.89
     .complete 843,1
     .mob Bael'dun Excavator
     .goto 1413,47.64,85.21
@@ -90,7 +87,7 @@ step
     .goto 1413,47.8,85.66
     .complete 843,3
     .mob Prospector Khazgorm
-    >>Bael'dun excavators and foremen work the dig site; the journal is in the camp.
+    >>Bael'dun excavators and foremen work the dig site; Prospector Khazgorm has the journal.
 step
     .goto 1413,45.89,77.0
     .target Gann Stonespire
@@ -112,7 +109,7 @@ step
     .mob Bael'dun Rifleman
     .mob Bael'dun Soldier
     .mob Bael'dun Officer
-    >>Nitroglycerin drops from the Bael'dun dwarves in the fortress.
+    >>Nitroglycerin, Wood Pulp and Sodium Nitrate drop from the Bael'dun dwarves in the dig.
 step
     .goto 1413,45.89,77.0
     .target Gann Stonespire
@@ -121,62 +118,59 @@ step
 step
     .goto 1413,46.97,85.63
     .complete 849,1
-    >>The flying machine sits on the platform in the middle of the dig.
+    >>The flying machine sits on the platform at the south end of the dig.
+step
+    .goto 1413,49.13,84.25
+    .complete 857,1
+    >>The Tear of the Moons is in the dig site, guarded by the Bael'dun dwarves.
+step
+    .goto 1413,48.97,86.31
+    .target Feegly the Exiled
+    .turnin 857 >> Turn in The Tear of the Moons
 step
     .goto 1413,45.89,77.0
     .target Gann Stonespire
     .turnin 849 >> Turn in Revenge of Gann
 step
+    .goto 1413,44.4,59.1 >> Head back north to Camp Taurajo.
+    >>Head back north to Camp Taurajo.
+step
+    .goto 1413,44.55,59.26
+    .target Mangletooth
+    .turnin 879 >> Turn in Betrayal from Within
+step
+    .goto 1413,45.1,57.68
+    .target Tatternack Steelforge
+    .turnin 893 >> Turn in Weapons of Choice
+step
     .fly The Crossroads >> Fly to The Crossroads
     >>Fly from Camp Taurajo to the Crossroads, then run west toward Stonetalon.
-step
-    .goto 1413,35.26,27.88
-    .target Seereth Stonebreak
-    .accept 1062 >> Accept Goblin Invaders
-    >>Seereth Stonebreak and Makaba Flathoof camp by the road to Stonetalon.
 step
     .goto 1413,35.19,27.76
     .target Makaba Flathoof
     .accept 6548 >> Accept Avenge My Village
+    >>Makaba Flathoof camps by the road into Stonetalon, west of the Crossroads.
 step
-    .goto 1442,73.18,56.9
-    .complete 1062,1
-    .mob Venture Co. Logger
-    .goto 1442,82.91,85.75
+    .goto 1442,82.13,87.84
     .complete 6548,1
     .mob Grimtotem Ruffian
-    .goto 1442,82.6,86.06
+    .goto 1442,81.91,87.34
     .complete 6548,2
     .mob Grimtotem Mercenary
-    >>Venture Co. loggers work the trees here; the Grimtotem camp is just north-west.
-step
-    .goto 1413,35.26,27.88
-    .target Seereth Stonebreak
-    .turnin 1062 >> Turn in Goblin Invaders
-    .accept 1068 >> Accept Shredding Machines
+    >>The Grimtotem camp is just over the border into Stonetalon, north-west of Makaba.
 step
     .goto 1413,35.19,27.76
     .target Makaba Flathoof
     .turnin 6548 >> Turn in Avenge My Village
     .accept 6629 >> Accept Kill Grundig Darkcloud
 step
-    .goto 1442,67.2,46.69
-    .complete 1068,1
-    .mob XT:4
-    .goto 1442,64.09,56.62
-    .complete 1068,2
-    .mob XT:9
     .goto 1442,73.65,86.12
     .complete 6629,1
     .mob Grundig Darkcloud
     .goto 1442,72.96,86.42
     .complete 6629,2
     .mob Grimtotem Brute
-    >>Shredders XT:4 and XT:9 patrol the logging camp. Grundig Darkcloud leads the Grimtotem camp.
-step
-    .goto 1413,35.26,27.88
-    .target Seereth Stonebreak
-    .turnin 1068 >> Turn in Shredding Machines
+    >>Grundig Darkcloud and the brutes are a little further into the same Grimtotem camps.
 step
     .goto 1413,35.19,27.76
     .target Makaba Flathoof

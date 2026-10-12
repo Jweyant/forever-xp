@@ -2,7 +2,7 @@
 ## Title: Forever|cFF4FC3F7XP|r Guides
 ## Notes: Free leveling guides for WoW Forever, built from player data. Requires RestedXP Guides.
 ## Author: ForeverXP contributors
-## Version: 0.2.0
+## Version: 0.2.1
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
 ## Dependencies: RXPGuides
 

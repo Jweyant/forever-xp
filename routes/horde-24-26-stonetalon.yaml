@@ -1,6 +1,7 @@
-# ForeverXP — Horde 24-26, Stonetalon Mountains (Windshear Crag, Sun Rock Retreat, Stonetalon Peak).
+# ForeverXP — Horde 24-26, Stonetalon Mountains (Windshear Crag, Sun Rock Retreat, Charred Vale, Stonetalon Peak).
 # Skipped: 6461 Blood Feeders and 6421 Boulderslide Ravine (gray at this level),
-# 1058 Jin'Zil's Forest Magic (about 40 minutes), 1094/1095/1096 goblin chain (two trips to Ratchet).
+# 1058 Jin'Zil's Forest Magic (about 40 minutes), 1094/1095/1096 goblin chain (two trips to Ratchet),
+# 1088/1089 Ordanus and The Den (Keeper Ordanus is in Ashenvale; turn-in is back at Sun Rock).
 guide:
   name: 24-26 Stonetalon Mountains
   display: ForeverXP 24-26 Stonetalon Mountains
@@ -24,7 +25,7 @@ steps:
     accept: 1092
   - turnin: [1092, 1093]
   - complete: 6284
-    text: Besseleth is in the spider cave at the east edge of the Crag.
+    text: Besseleth's spider cave is south of the road from Windshear Crag to Sun Rock.
   - goto: [1442, 47.3, 61.3]
     text: Head west to Sun Rock Retreat.
   - fp: Sun Rock Retreat
@@ -35,29 +36,17 @@ steps:
   - accept: 6301
   - accept: 1087
   - complete: 6301
-    text: Gaea Seeds are on the ground around the lake below Sun Rock.
+    text: Gaea Seeds are on the ground along the road north of Sun Rock.
   - turnin: 6301
     accept: 6381
-  - complete: 6381
-    text: Plant the seeds in the dirt mounds near where you found them.
-  - turnin: 6381
-  - complete: 6393
-    text: Fire elementals in the Charred Vale drop Incendrites.
-  - complete: 6282
-    text: Bloodfury harpies roost in the Charred Vale.
-  - turnin: 6282
+  - complete: [6393, 6282, 6381]
+    text: Charred Vale, west of Sun Rock. Fire elementals drop Incendrites, Bloodfury harpies roost on the slopes, and the Gaea dirt mounds are in the vale for the seeds.
+  - turnin: [6381, 6282]
     accept: 6283
   - complete: 6283
-    text: Bloodfury Ripper is with the harpies.
+    text: Bloodfury Ripper is with the harpies on the west side of the vale.
   - turnin: [6283, 6393]
   - complete: 1087
-    text: Sons, Daughters and Cenarion Botanists are around Stonetalon Peak to the north.
+    text: Sons, Daughters and Cenarion Botanists are around Stonetalon Peak, north of Sun Rock.
   - turnin: 1087
-    accept: 1088
-  - complete: 1088
-    text: Ordanus is in the Cenarion grove on Stonetalon Peak.
-  - turnin: 1088
-    accept: 1089
-  - complete: 1089
-    text: Use the Gatekeeper's Key at the Den's gate on Stonetalon Peak and loot the hoard.
-  - turnin: 1089
+    text: Back to Braelyn at Sun Rock.

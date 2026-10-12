@@ -9,24 +9,21 @@ RXPGuides.RegisterGuide([[
 #next 27-29 Hillsbrad Foothills
 #displayname ForeverXP 26-28 Ashenvale
 step
-    .goto 1440,42.0,71.0 >> Take the Talondeep Path tunnel from northern Stonetalon into Ashenvale.
-    >>Take the Talondeep Path tunnel from northern Stonetalon into Ashenvale.
+    .goto 1440,42.0,71.0 >> Take the Talondeep Path tunnel from eastern Stonetalon (north of Windshear Crag) into Ashenvale.
+    >>Take the Talondeep Path tunnel from eastern Stonetalon (north of Windshear Crag) into Ashenvale.
 step
-    .goto 1440,41.53,34.49
-    .target Ruul Snowhoof
-    .accept 6482 >> Accept Freedom to Ruul
-    >>Ruul Snowhoof is caged in Thistlefur Village. Escort him out.
-step
-    .complete 6482,1
-step
-    .goto 1440,12.2,33.8 >> Follow the coast west to Zoram'gar Outpost.
-    >>Follow the coast west to Zoram'gar Outpost.
+    .goto 1440,12.2,33.8 >> Head north-west to Zoram'gar Outpost on the coast.
+    >>Head north-west to Zoram'gar Outpost on the coast.
 step
     .fp Zoram'gar Outpost >> Get the Zoram'gar Outpost flight path
 step
     .goto 1440,11.9,34.54
     .target Karang Amakkar
     .accept 216 >> Accept Between a Rock and a Thistlefur
+step
+    .goto 1440,11.65,34.85
+    .target Mitsuwa
+    .accept 6462 >> Accept Troll Charm
 step
     .goto 1440,12.06,34.63
     .target Muglash
@@ -41,25 +38,28 @@ step
     .goto 1440,31.74,41.35
     .complete 216,2
     .mob Thistlefur Shaman
-    >>Thistlefur avengers and shamans are in Thistlefur Village.
+    .goto 1440,40.51,34.07
+    .complete 6462,1
+    >>Thistlefur Village, east of Zoram'gar. Avengers and shamans for Karang; Troll Charms sit in chests around the village.
+step
+    .goto 1440,41.53,34.49
+    .target Ruul Snowhoof
+    .accept 6482 >> Accept Freedom to Ruul
+    >>Ruul Snowhoof is caged in the same village. Escort him out.
+step
+    .complete 6482,1
 step
     .goto 1440,11.9,34.54
     .target Karang Amakkar
     .turnin 216 >> Turn in Between a Rock and a Thistlefur
-    .accept 6621 >> Accept King of the Foulweald
-step
-    .goto 1440,56.47,63.5
-    .complete 6621,1
-    .mob Chief Murgut
-    >>Plant the banner on the Foulweald totem mound and defend it.
-step
-    .goto 1440,11.9,34.54
-    .target Karang Amakkar
-    .turnin 6621 >> Turn in King of the Foulweald
     .turnin 6641 >> Turn in Vorsha the Lasher
 step
-    .goto 1440,73.2,61.6 >> Fly or run east to Splintertree Post.
-    >>Fly or run east to Splintertree Post.
+    .goto 1440,11.65,34.85
+    .target Mitsuwa
+    .turnin 6462 >> Turn in Troll Charm
+step
+    .fly Splintertree Post >> Fly to Splintertree Post
+    >>Fly from Zoram'gar to Splintertree Post. If you don't have it yet, run east along the road.
 step
     .fp Splintertree Post >> Get the Splintertree Post flight path
 step
@@ -107,7 +107,7 @@ step
     .mob Felmusk Satyr
     .mob Felmusk Shadowstalker
     .mob Felmusk Rogue
-    >>Satyr in Night Run and Satyrnaar drop horns.
+    >>Satyr in Night Run, north-west of Splintertree, drop horns.
 step
     .goto 1440,73.06,61.48
     .target Pixel

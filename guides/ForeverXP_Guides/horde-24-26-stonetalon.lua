@@ -45,7 +45,7 @@ step
     .goto 1442,53.65,71.95
     .complete 6284,1
     .mob Besseleth
-    >>Besseleth is in the spider cave at the east edge of the Crag.
+    >>Besseleth's spider cave is south of the road from Windshear Crag to Sun Rock.
 step
     .goto 1442,47.3,61.3 >> Head west to Sun Rock Retreat.
     >>Head west to Sun Rock Retreat.
@@ -76,26 +76,16 @@ step
 step
     .goto 1442,48.86,43.02
     .complete 6301,1
-    >>Gaea Seeds are on the ground around the lake below Sun Rock.
+    >>Gaea Seeds are on the ground along the road north of Sun Rock.
 step
     .goto 1442,47.46,58.38
     .target Tammra Windfield
     .turnin 6301 >> Turn in Cycle of Rebirth
     .accept 6381 >> Accept New Life
 step
-    .goto 1442,35.6,65.3
-    .complete 6381,1
-    >>Plant the seeds in the dirt mounds near where you found them.
-step
-    .goto 1442,47.46,58.38
-    .target Tammra Windfield
-    .turnin 6381 >> Turn in New Life
-step
     .goto 1442,37.18,53.75
     .complete 6393,1
     .mob Rogue Flame Spirit
-    >>Fire elementals in the Charred Vale drop Incendrites.
-step
     .goto 1442,33.95,57.03
     .complete 6282,1
     .mob Bloodfury Harpy
@@ -108,17 +98,22 @@ step
     .goto 1442,32.36,69.09
     .complete 6282,4
     .mob Bloodfury Roguefeather
-    >>Bloodfury harpies roost in the Charred Vale.
+    .goto 1442,32.9,69.17
+    .complete 6381,1
+    >>Charred Vale, west of Sun Rock. Fire elementals drop Incendrites, Bloodfury harpies roost on the slopes, and the Gaea dirt mounds are in the vale for the seeds.
 step
+    .goto 1442,47.46,58.38
+    .target Tammra Windfield
+    .turnin 6381 >> Turn in New Life
+    .turnin 6282 >> Turn in Harpies Threaten
     .goto 1442,47.2,61.16
     .target Maggran Earthbinder
-    .turnin 6282 >> Turn in Harpies Threaten
     .accept 6283 >> Accept Bloodfury Bloodline
 step
     .goto 1442,30.75,61.91
     .complete 6283,1
     .mob Bloodfury Ripper
-    >>Bloodfury Ripper is with the harpies.
+    >>Bloodfury Ripper is with the harpies on the west side of the vale.
 step
     .goto 1442,47.2,61.16
     .target Maggran Earthbinder
@@ -134,31 +129,10 @@ step
     .goto 1442,35.99,13.46
     .complete 1087,3
     .mob Cenarion Botanist
-    >>Sons, Daughters and Cenarion Botanists are around Stonetalon Peak to the north.
+    >>Sons, Daughters and Cenarion Botanists are around Stonetalon Peak, north of Sun Rock.
 step
     .goto 1442,45.94,60.42
     .target Braelyn Firehand
     .turnin 1087 >> Turn in Cenarius' Legacy
-    .accept 1088 >> Accept Ordanus
-step
-    .goto 1440,62.05,51.37
-    .complete 1088,1
-    .mob Keeper Ordanus
-    >>Ordanus is in the Cenarion grove on Stonetalon Peak.
-step
-    .goto 1442,45.94,60.42
-    .target Braelyn Firehand
-    .turnin 1088 >> Turn in Ordanus
-    .accept 1089 >> Accept The Den
-step
-    .goto 1442,25.55,11.36
-    .complete 1089,1
-    .goto 1442,29.55,15.84
-    .complete 1089,2
-    .goto 1442,27.96,13.81
-    .complete 1089,3
-    >>Use the Gatekeeper's Key at the Den's gate on Stonetalon Peak and loot the hoard.
-step
-    .goto 1442,26.6,10.87
-    .turnin 1089 >> Turn in The Den
+    >>Back to Braelyn at Sun Rock.
 ]])

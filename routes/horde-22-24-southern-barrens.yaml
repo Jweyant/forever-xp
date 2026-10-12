@@ -1,7 +1,8 @@
 # ForeverXP — Horde 22-24, southern Barrens (Camp Taurajo and Bael Modan).
 # Skipped: 899 Consumed by Hatred (about 40 minutes of kills for one quest), 868 Egg Hunt and
 # 862 Dig Rat Stew (low drop rates), 4921 Lost in Battle (needs a trip back to the Crossroads),
-# 906 Betrayal from Within part 2 (Thork is at the Crossroads; grab it if you pass through).
+# 906 Betrayal from Within part 2 (Thork is at the Crossroads; grab it if you pass through),
+# 1062/1068 Goblin Invaders chain (targets are deep in Stonetalon, turn-in back at the Barrens edge).
 guide:
   name: 22-24 Southern Barrens
   display: ForeverXP 22-24 Southern Barrens
@@ -21,44 +22,47 @@ steps:
   - fp: Camp Taurajo
   - accept: 878
   - accept: 893
-  - complete: [878, 893]
-    text: Bristleback quilboar are west of Taurajo; the Razormane items drop from quilboar in the same camps.
+  - complete: 878
+    text: Bristleback quilboar camp just north-east of Taurajo.
   - turnin: 878
     accept: 5052
   - turnin: 5052
     text: Blood Shards drop from quilboar all over the Barrens. Skip this if you don't have one.
   - accept: 879
-  - complete: 879
-    text: Nak, Kuz and Lok Orcbane are in the Razormane camps west of Taurajo.
-  - turnin: 879
-  - turnin: 893
   - accept: 843
-    text: Gann Stonespire stands on the road north of Bael Modan.
+    text: Gann Stonespire stands on the road south, just north of Bael Modan.
+  - complete: [893, 879]
+    text: Blackthorn Ridge, the Razormane camps west of Bael Modan. Stalkers and Pathfinders drop the Backstabber, Seers the Wand, Warfrenzies the Shield. Kuz, Nak and Lok Orcbane are in the same camps.
+  - accept: 857
+    text: Feegly the Exiled hides at the south edge of Bael Modan.
   - complete: 843
-    text: Bael'dun excavators and foremen work the dig site; the journal is in the camp.
+    text: Bael'dun excavators and foremen work the dig site; Prospector Khazgorm has the journal.
   - turnin: 843
     accept: 846
   - complete: 846
-    text: Nitroglycerin drops from the Bael'dun dwarves in the fortress.
+    text: Nitroglycerin, Wood Pulp and Sodium Nitrate drop from the Bael'dun dwarves in the dig.
   - turnin: 846
     accept: 849
   - complete: 849
-    text: The flying machine sits on the platform in the middle of the dig.
+    text: The flying machine sits on the platform at the south end of the dig.
+  - complete: 857
+    text: The Tear of the Moons is in the dig site, guarded by the Bael'dun dwarves.
+  - turnin: 857
   - turnin: 849
+  - goto: [1413, 44.4, 59.1]
+    text: Head back north to Camp Taurajo.
+  - turnin: 879
+  - turnin: 893
   - fly: The Crossroads
     fly_to: [1413, 51.5, 30.3]
     fly_seconds: 90
     text: Fly from Camp Taurajo to the Crossroads, then run west toward Stonetalon.
-  - accept: 1062
-    text: Seereth Stonebreak and Makaba Flathoof camp by the road to Stonetalon.
   - accept: 6548
-  - complete: [1062, 6548]
-    text: Venture Co. loggers work the trees here; the Grimtotem camp is just north-west.
-  - turnin: 1062
-    accept: 1068
+    text: Makaba Flathoof camps by the road into Stonetalon, west of the Crossroads.
+  - complete: 6548
+    text: The Grimtotem camp is just over the border into Stonetalon, north-west of Makaba.
   - turnin: 6548
     accept: 6629
-  - complete: [1068, 6629]
-    text: Shredders XT:4 and XT:9 patrol the logging camp. Grundig Darkcloud leads the Grimtotem camp.
-  - turnin: 1068
+  - complete: 6629
+    text: Grundig Darkcloud and the brutes are a little further into the same Grimtotem camps.
   - turnin: 6629

@@ -16,6 +16,11 @@ step
     .fly Camp Taurajo >> Fly to Camp Taurajo
     >>Fly from Orgrimmar to Camp Taurajo (or straight to Freewind Post if you have it).
 step
+    .goto 1413,45.1,57.68
+    .target Tatternack Steelforge
+    .accept 1153 >> Accept A New Ore Sample
+    >>Tatternack Steelforge in Camp Taurajo (unlocked by Weapons of Choice).
+step
     .goto 1441,45.1,49.1 >> Run south through the Great Gate and take the lift down to Freewind Post.
     >>Run south through the Great Gate and take the lift down to Freewind Post.
 step
@@ -43,11 +48,15 @@ step
     .goto 1441,45.91,41.2
     .complete 4841,3
     .mob Galak Windchaser
-    >>Galak centaur camps are north-west of Freewind.
+    >>Galak centaur camps are just north of Freewind.
 step
     .goto 1441,48.78,53.92
     .complete 4821,1
-    >>The Alien Egg is in the Roguefeather Den, north-west.
+    >>The Alien Egg is on a ledge just south of Freewind.
+step
+    .goto 1441,43.76,40.45
+    .complete 1153,1
+    >>Gravelsnout kobolds dig north-west of Freewind; diggers and surveyors drop the ore sample.
 step
     .goto 1441,45.67,50.74
     .target Cliffwatcher Longhorn
@@ -195,4 +204,11 @@ step
 step
     .xp 30 >> Grind to level 30
     >>Finish level 30 on the salt flats mobs if the quests didn't get you there.
+step
+    .fly Camp Taurajo >> Fly to Camp Taurajo
+    >>Fly from Freewind to Camp Taurajo.
+step
+    .goto 1413,45.1,57.68
+    .target Tatternack Steelforge
+    .turnin 1153 >> Turn in A New Ore Sample
 ]])
