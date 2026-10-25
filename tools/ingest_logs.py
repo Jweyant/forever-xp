@@ -311,6 +311,32 @@ def write_timing(db, out_dir):
     (out_dir / "quest_timing.csv").write_text("\n".join(out) + "\n")
 
 
+def write_loot(db, out_dir):
+    """Which NPC or object dropped which item, from ForeverScout 'loot' events."""
+    zones = {}
+    zfile = Path(__file__).parent / "zone_sizes.json"
+    if zfile.exists():
+        zones = {int(k): v.get("name") for k, v in json.loads(zfile.read_text()).items()}
+    names = {}
+    for (raw,) in db.execute("SELECT json FROM events WHERE k = 'newnpc'"):
+        e = json.loads(raw)
+        if e.get("npc") and e.get("name"):
+            names[e["npc"]] = e["name"]
+    seen = defaultdict(set)
+    for char, raw in db.execute("""SELECT s.char_id, e.json FROM events e JOIN sessions s ON s.id = e.session_id
+                                   WHERE e.k = 'loot'"""):
+        e = json.loads(raw)
+        if not e.get("item"):
+            continue
+        src = e.get("src")
+        label = names.get(src) or (f"Object #{src}" if e.get("kind") == "GameObject" else f"NPC #{src}" if src else "")
+        seen[(int(e["item"]), label, zones.get(e.get("map"), ""))].add(char)
+    out = ["item,source,zone,players"]
+    for (item, label, zone), chars in sorted(seen.items()):
+        out.append(",".join([str(item), '"' + label.replace('"', "'") + '"', '"' + (zone or "") + '"', str(len(chars))]))
+    (out_dir / "loot.csv").write_text("\n".join(out) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questie", required=True)
@@ -325,7 +351,8 @@ def main():
     added, skipped = ingest(db, a.files)
     print(f"sessions added: {added}, already present: {skipped}")
     analyze(db, Questie(a.questie, a.maps), out)
-    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv"):
+    write_loot(db, out)
+    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv"):
         print("wrote", out / name)
 
 

@@ -177,10 +177,11 @@ def main():
     if timing.exists():
         with timing.open() as f:
             for r in csv.DictReader(f):
-                q = num(r.get("quest"), int)
-                if q:
-                    measured[q] = {"minutes": num(r.get("median_minutes")),
-                                   "xp_per_min": num(r.get("xp_per_min")),
+                q = num(r.get("quest_id") or r.get("quest"), int)
+                secs = num(r.get("median_seconds"))
+                if q and secs:
+                    measured[q] = {"minutes": round(secs / 60, 1),
+                                   "xp_per_min": num(r.get("xp_per_minute"), lambda v: int(float(v))),
                                    "players": num(r.get("players"), int)}
 
     quests = {}

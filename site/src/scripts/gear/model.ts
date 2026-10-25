@@ -4,10 +4,10 @@
 
 export type Stats = Record<string, number>;
 export interface Item {
-  id: number; name: string; q: number; ilvl: number; req: number; slot: string; inv: number; type: string; cls: number;
+  id: number; name: string; q: number; ilvl: number; req: number; lvl?: number; slot: string; inv: number; type: string; cls: number;
   stats: Stats; weapon?: { min: number; max: number; speed: number; dps: number }; fx?: { on: string; text: string }[];
   classes?: number; side?: "A" | "H"; bop?: 1; pvprank?: number; set?: number;
-  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number }[];
+  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
 
 export const CRIT_RATING = 14;

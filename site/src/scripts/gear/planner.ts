@@ -104,7 +104,7 @@ function importGear(text: string): string {
 // ---------- candidate search ----------
 function allowedSource(it: Item) { return st.sources.has(sourceKind(it)); }
 function candidates(doll: DollSlot): Item[] {
-  return items.filter((it) => it.q >= 1 && it.req <= st.level && (!it.side || it.side === st.side)
+  return items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side)
     && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && allowedSource(it));
 }
 
@@ -159,7 +159,7 @@ function itemCell(id: number | undefined, doll: DollSlot) {
   if (!it) return `<span class="muted">Item #${id} (not in the database yet)</span>`;
   const set = it.set && sets[it.set] ? `<span class="set">${esc(sets[it.set].name)}</span>` : "";
   return `<span class="iname q-${QUALITY[it.q] || "common"}">${esc(it.name)}</span>
-    <span class="meta">Item level ${it.ilvl}${it.req ? `, requires ${it.req}` : ""}. ${esc(srcText(it))}. ${set}</span>
+    <span class="meta">Item level ${it.ilvl}${it.req ? `, requires ${it.req}` : it.lvl ? `, from level ${it.lvl}` : ""}. ${esc(srcText(it))}. ${set}</span>
     <span class="stats">${esc(statLine(it))}</span>${(it.fx || []).map((f) => `<span class="fx">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(f.text)}</span>`).join("")}`;
 }
 
@@ -232,7 +232,7 @@ function fillPicker() {
   const d = picking;
   const q = ($("#g-search") as HTMLInputElement).value.trim().toLowerCase();
   const all = ($("#g-all") as HTMLInputElement).checked;
-  const pool = items.filter((it) => fits(d, it, st.cls) && (all || (it.q >= 1 && it.req <= st.level && (!it.side || it.side === st.side) && canUse(it, st.cls, st.level))));
+  const pool = items.filter((it) => fits(d, it, st.cls) && (all || (it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side) && canUse(it, st.cls, st.level))));
   const list = pool.filter((it) => !q || it.name.toLowerCase().includes(q) || String(it.id) === q)
     .map((it) => ({ it, v: val(d, it) })).sort((a, b) => b.v - a.v).slice(0, 60);
   $("#g-picker-list").innerHTML = (st.cur[d] || st.plan[d] ? `<li><button type="button" data-choose="0" class="link">Clear this slot</button></li>` : "")

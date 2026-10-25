@@ -148,7 +148,7 @@ def client_items(cache, download):
             continue
         ilvl, req = num(s["ItemLevel"], int), num(s["RequiredLevel"], int)
         name = s["Display_lang"]
-        if (not name or re.search(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|QA ?test\w*)\b", name, re.I)
+        if (not name or re.search(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|PH|QA ?test\w*)\b", name, re.I)
                 or re.match(r"^\d+ (Epic|Green|Blue|Rare|Uncommon|Purple) ", name) or name.startswith(("zz", "QA"))):
             continue
         stats = {}
@@ -354,7 +354,8 @@ def cmangos_sources(sql, keep):
         ids = [q.get(f"RewChoiceItemId{i}") for i in range(1, 7)] + [q.get(f"RewItemId{i}") for i in range(1, 5)]
         for item in ids:
             if item in keep:
-                rec = {"t": "quest", "n": q["Title"], "lv": q.get("QuestLevel"), "qid": q["entry"]}
+                rec = {"t": "quest", "n": q["Title"], "lv": q.get("QuestLevel"), "qid": q["entry"],
+                       "min": q.get("MinLevel") or 0}
                 if q.get("RequiredClasses"):
                     rec["qcls"] = q["RequiredClasses"]
                 src[item].append(rec)
@@ -376,6 +377,30 @@ def rank_sources(lst):
         seen.add(key)
         out.append(s)
     return out[:4]
+
+
+def effective_level(rec, sources):
+    """Level a character realistically needs to get and use the item.
+
+    Many items (quest rewards especially) have no required level in the client, so use the
+    easiest way to get it: the quest's minimum level, the dungeon's level range, or a raid at 60.
+    """
+    if rec["req"]:
+        return rec["req"]
+    best = None
+    for s in sources or []:
+        if s["t"] == "quest":
+            v = s.get("min") or max(1, (s.get("lv") or rec["ilvl"]) - 4)
+        elif s["t"] == "dungeon" and isinstance(s.get("lv"), list):
+            v = s["lv"][0]
+        elif s["t"] == "raid":
+            v = 60
+        elif s["t"] == "drop" and s.get("lv"):
+            v = max(1, s["lv"] - 3)
+        else:
+            continue
+        best = v if best is None else min(best, v)
+    return best if best is not None else max(1, min(60, rec["ilvl"] - 5))
 
 
 def main():
@@ -406,6 +431,7 @@ def main():
             rec["src"] = s
         else:
             no_src += 1
+        rec["lvl"] = effective_level(rec, s)
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
