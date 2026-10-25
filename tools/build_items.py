@@ -422,6 +422,9 @@ def main():
     if loot_csv.exists():
         with loot_csv.open() as f:
             for r in csv.DictReader(f):
+                # Player logs are public input: only trust a drop once 2+ different players saw it.
+                if int(r.get("players") or 0) < 2:
+                    continue
                 logged[int(r["item"])].append({"t": "logged", "n": r.get("source") or "", "z": r.get("zone") or "",
                                                "seen": int(r.get("players") or 1)})
     no_src = 0

@@ -63,3 +63,17 @@ test("admin endpoints require the token and return stored logs", async () => {
   const dotted = await worker.fetch(new Request("https://x/v1/logs/../secret", { headers: auth }), e);
   assert.equal(dotted.status, 404); // URL parsing collapses it to /v1/secret
 });
+
+test("caps new logs per network address per day, but not updates to existing ones", async () => {
+  const e = env();
+  const from = (i, ip = "203.0.113.7") => new Request("https://x/v1/upload", {
+    method: "POST", body: gzipSync(GOOD),
+    headers: { "x-fscout-install": i.toString(16).padStart(32, "0"), "x-fscout-slot": SLOT, "cf-connecting-ip": ip },
+  });
+  for (let i = 1; i <= 12; i++) assert.equal((await worker.fetch(from(i), e)).status, 200);
+  assert.equal((await worker.fetch(from(13), e)).status, 429);
+  assert.equal((await worker.fetch(from(13, "198.51.100.2"), e)).status, 200);
+  const logs = [...e.LOGS.store.keys()].filter((k) => k.startsWith("logs/"));
+  assert.equal(logs.length, 13);
+  assert.ok([...e.LOGS.store.keys()].every((k) => !k.includes("203.0.113.7")));
+});

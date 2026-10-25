@@ -64,7 +64,6 @@ database, ready to paste into Questie's Discord.
 ```bash
 tools/refresh_questie_data.sh            # Linux x64; needs git and python3
 
-python3 -m pip install lupa
 python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
     --maps data/questiedb/uiMapIdToAreaId.json --out out/ logs/*
 ```

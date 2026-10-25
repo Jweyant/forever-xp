@@ -18,11 +18,12 @@ import json
 import math
 import re
 import sqlite3
+import sys
 import statistics
 from collections import defaultdict
 from pathlib import Path
 
-from lupa import LuaRuntime, lua_type
+import luadata
 
 GIVER_TOLERANCE = 3.0   # map-percent distance before we call an NPC "moved"
 FULL_XP_LEVEL_GAP = 5   # Classic rule: full quest XP until player level > quest level + 5
@@ -31,16 +32,6 @@ FULL_XP_LEVEL_GAP = 5   # Classic rule: full quest XP until player level > quest
 # --------------------------------------------------------------------------------------
 # Loading
 # --------------------------------------------------------------------------------------
-def to_py(obj):
-    """Convert a lupa Lua table into dicts/lists recursively."""
-    if lua_type(obj) == "table":
-        d = {k: to_py(v) for k, v in obj.items()}
-        if d and all(isinstance(k, int) for k in d) and sorted(d) == list(range(1, len(d) + 1)):
-            return [d[i] for i in range(1, len(d) + 1)]
-        return d
-    return obj
-
-
 def as_list(v):
     if v is None:
         return []
@@ -52,26 +43,33 @@ def as_list(v):
 
 
 def load_file(path):
-    """Yield (charId, char_meta, session) from one log file."""
+    """Yield (charId, char_meta, session) from one log file.
+
+    Logs come from the public, so they are read as data only (tools/luadata.py), never run as Lua.
+    Files that aren't plain data are skipped with a warning.
+    """
     text = Path(path).read_text(encoding="utf-8", errors="replace")
-    lua = LuaRuntime(unpack_returned_tuples=True)
-    # Sandbox: only plain table data is expected. No libraries are needed to read it.
-    # load() with an empty environment and text-only mode: no globals, no bytecode.
-    sandbox = lua.eval("function(code) local env = {}; local f = load(code, 'log', 't', env); "
-                       "if not f then return nil end; local ok, r = pcall(f); "
-                       "if ok and r ~= nil then return r end; return env end")
-    if "FSCOUT1:" in text:
-        for m in re.finditer(r"FSCOUT1:(\{.*?\})(?=\s*(?:FSCOUT1:|$))", text, re.S):
-            payload = to_py(sandbox("return " + m.group(1)))
-            if not payload:
-                continue
-            meta = {k: payload.get(k) for k in ("race", "class", "faction")}
-            for s in as_list(payload.get("sessions")):
-                yield payload.get("charId"), meta, s
+    try:
+        if "FSCOUT1:" in text:
+            payloads = [luadata.loads_value(m.group(1))
+                        for m in re.finditer(r"FSCOUT1:(\{.*?\})(?=\s*(?:FSCOUT1:|$))", text, re.S)]
+            for payload in payloads:
+                if not isinstance(payload, dict):
+                    continue
+                meta = {k: payload.get(k) for k in ("race", "class", "faction")}
+                for s in as_list(payload.get("sessions")):
+                    yield payload.get("charId"), meta, s
+            return
+        env = luadata.loads_assignments(text)
+    except luadata.LuaDataError as e:
+        print(f"skipping {path}: not a plain ForeverScout data file ({e})", file=sys.stderr)
         return
-    env = to_py(sandbox(text)) or {}
     db = env.get("ForeverScoutDB") or {}
+    if not isinstance(db, dict):
+        return
     for char_id, char in (db.get("chars") or {}).items():
+        if not isinstance(char, dict):
+            continue
         meta = {k: char.get(k) for k in ("race", "class", "faction")}
         for s in as_list(char.get("sessions")):
             yield char_id, meta, s
