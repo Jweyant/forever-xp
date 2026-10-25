@@ -1,0 +1,14 @@
+{
+  "name": "forever-xp-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "data": "python3 ../tools/site_data.py",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "5.18.2"
+  }
+}

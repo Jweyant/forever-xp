@@ -1,0 +1,94 @@
+---
+import Base from "../layouts/Base.astro";
+import { RELEASES, SUBMIT_LOG, REPO } from "../lib/data";
+const commands = [
+  ["/fscout", "Status: sessions, events, route points, items missing from Questie"],
+  ["/fscout pause", "Stop recording (resume with /fscout resume)"],
+  ["/fscout share on", "Allow automatic uploads by the uploader app (off to stop)"],
+  ["/fscout note <text>", "Drop a note at your spot, like \"cave is packed\" or \"skip, elite\""],
+  ["/fscout report", "Copyable list of quests and NPCs Questie is missing"],
+  ["/fscout export", "Copyable export string of your recorded sessions"],
+  ["/fscout wipe confirm", "Erase everything recorded"],
+];
+---
+<Base title="ForeverScout" description="ForeverScout is a free WoW Forever addon that records how long quests really take, so leveling routes use measured numbers.">
+  <h1>ForeverScout</h1>
+  <p class="lede">
+    A small, read-only addon that records how you level: quests, XP, where things are and how
+    long each one took. Your logs replace our estimates with real numbers.
+  </p>
+  <p><a class="btn" href={RELEASES}>Download the latest release</a></p>
+  <p class="small muted">Free and open source. Works with or without Questie. The download is on GitHub; a CurseForge listing is coming.</p>
+
+  <h2>Install</h2>
+  <ol class="steps">
+    <li>
+      <h3>Add the addon</h3>
+      <p>Download <code>ForeverScout-x.y.z.zip</code> and unzip the <code>ForeverScout</code> folder into your Forever client's <code>Interface\AddOns\</code> folder.</p>
+    </li>
+    <li>
+      <h3>Log in and choose sharing</h3>
+      <p>You'll see "ForeverScout: recording your route." Pick <b>Share automatically</b> if you want your log sent for you.</p>
+    </li>
+    <li>
+      <h3>Install the uploader (optional)</h3>
+      <p>From the same release, run <code>ForeverScoutUploader.exe</code> (Mac builds are there too) and choose <b>Yes</b>. It sends your log after each logout or <code>/reload</code>.</p>
+    </li>
+    <li>
+      <h3>Play normally</h3>
+      <p>That's all. Type <code>/fscout</code> any time to see what's been recorded.</p>
+    </li>
+  </ol>
+  <div class="callout">
+    <p>No uploader? Zip <code>WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\ForeverScout.lua</code> from your Forever folder and attach it to a <a href={SUBMIT_LOG}>Submit a log</a> issue.</p>
+  </div>
+
+  <h2>What it records</h2>
+  <div class="two">
+    <div>
+      <h3>Recorded</h3>
+      <ul>
+        <li>Quests accepted, turned in and abandoned, with the NPC and your position</li>
+        <li>XP gained and where it came from: quest, kill (mob and level) or other</li>
+        <li>Objective progress, like "Mottled Boar slain: 3/10"</li>
+        <li>Your position about every 10 seconds while moving, plus flights, deaths and hearthstones</li>
+        <li>Class, race, faction, level and game build</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Never recorded</h3>
+      <ul>
+        <li>Character name, realm, account name or GUID. Each character gets a random ID that never leaves your computer.</li>
+        <li>Chat, whispers or other players</li>
+        <li>Gold, inventory or anything outside questing</li>
+      </ul>
+    </div>
+  </div>
+  <p class="muted">ForeverScout only reads what the game shows you. It never plays, clicks or automates anything.</p>
+
+  <h2>Commands</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>{commands.map(([c, d]) => <tr><td><code>{c}</code></td><td>{d}</td></tr>)}</tbody>
+    </table>
+  </div>
+
+  <h2>Using Questie too?</h2>
+  <p><code>/fscout report</code> lists quests and NPCs missing from Questie's Forever database, ready to paste into Questie's Discord. Confirmed findings also go upstream from this project. <a href={`${REPO}/blob/main/CONTRIBUTING.md`}>How fixes reach Questie</a></p>
+</Base>
+
+<style>
+  .steps { list-style: none; padding: 0; counter-reset: s; max-width: 70ch; }
+  .steps li { counter-increment: s; position: relative; padding-left: 3rem; margin-bottom: 1.2rem; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 0.1rem;
+    width: 2rem; height: 2rem; display: grid; place-items: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
+    background: var(--xp); color: #fff; border-radius: 3px;
+  }
+  .steps h3 { margin: 0 0 0.2rem; font-size: var(--step-1); }
+  .steps p { margin: 0; }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 2rem; }
+  .two h3 { font-size: var(--step-1); }
+</style>

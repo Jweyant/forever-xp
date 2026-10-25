@@ -1,0 +1,90 @@
+---
+import Base from "../layouts/Base.astro";
+import XpBar from "../components/XpBar.astro";
+import { guides, quests, meta, RELEASES, rateOf, fmtMinutes } from "../lib/data";
+
+const horde = guides.filter((g) => g.faction === "Horde");
+const totalMinutes = horde.reduce((s, g) => s + (g.minutes || 0), 0);
+const skips = quests.filter((q) => q.verdict === "skip");
+const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)).slice(0, 6);
+---
+<Base title="Forever XP" description="Free WoW Forever leveling routes, a quest skip list and the ForeverScout logger. Built from real player data.">
+  <section class="hero">
+    <h1>Level faster in WoW Forever.</h1>
+    <p class="lede">
+      Free Horde routes from 1 to 30, every quest scored by XP per minute, and a list of the
+      ones worth skipping. Players running ForeverScout turn the estimates into measured numbers.
+    </p>
+    <XpBar guides={guides} />
+    <div class="ctas">
+      <a class="btn" href="/scout/">Get ForeverScout</a>
+      <a class="btn secondary" href="/guides/">Browse the guides</a>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="What's here so far">
+    <div><b>{horde.length}</b><span>Horde guides, about {fmtMinutes(totalMinutes)} of routes</span></div>
+    <div><b>{quests.length}</b><span>quests scored by XP per minute</span></div>
+    <div><b>{skips.length}</b><span>quests on the skip list</span></div>
+    <div class="measured"><b>{meta.measured_quests}</b><span>quests measured from player logs so far</span></div>
+  </section>
+
+  <section class="tools" aria-label="Tools">
+    <a href="/talents/"><b>Talent calculator</b><span>All nine classes from the Forever client, with build links you can share.</span></a>
+    <a href="/changes/"><b>What Forever changed</b><span>Talents, quests, items and spells compared with Classic Era.</span></a>
+    <a href="/quests/"><b>Quest XP per minute</b><span>Every scored quest, sortable by zone.</span></a>
+  </section>
+
+  <section>
+    <h2>How the numbers get better</h2>
+    <ol class="loop">
+      <li><h3>You play</h3><p>ForeverScout records quests, XP and how long each one really took. No names, realms or chat.</p></li>
+      <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
+      <li><h3>Routes update</h3><p>Estimated times get replaced by measured ones, slow quests drop out, and missing quests go to Questie.</p></li>
+    </ol>
+    <p><a href="/contribute/">See how to help</a></p>
+  </section>
+
+  <section>
+    <h2>Slowest quests on the skip list</h2>
+    <p class="muted">Estimated XP per minute with travel included. These are the first ones to cut.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Quest</th><th>Zone</th><th class="num">XP/min</th><th>Why</th></tr></thead>
+        <tbody>
+          {worst.map((q) => (
+            <tr>
+              <td><a href={`/quests/${q.id}/`}>{q.name}</a></td>
+              <td>{q.zone}</td>
+              <td class="num">{rateOf(q)}</td>
+              <td class="muted">{q.skip_note?.reason || `Below ${meta.skip_threshold} XP/min`}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p><a href="/skip/">Full skip list by zone</a></p>
+  </section>
+</Base>
+
+<style>
+  .hero { padding: 1.5rem 0 1.5rem; }
+  .hero h1 { max-width: 14ch; }
+  .hero .lede { margin-bottom: 2rem; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.6rem; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; margin: 2.5rem 0 0; border-top: 2px solid var(--ink); }
+  .facts div { padding: 1rem 1rem 1rem 0; display: grid; gap: 0.1rem; }
+  .facts b { font-family: var(--font-display); font-size: var(--step-3); line-height: 1; color: var(--xp); }
+  .facts span { color: var(--muted); font-size: var(--step--1); max-width: 22ch; }
+  .facts .measured b { color: var(--quest); }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
+  .tools a { display: grid; gap: 0.2rem; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
+  .tools a:hover { border-color: var(--xp); }
+  .tools b { font-family: var(--font-display); font-size: var(--step-1); }
+  .tools span { color: var(--muted); font-size: var(--step--1); }
+  .loop { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; counter-reset: s; max-width: none; }
+  .loop li { counter-increment: s; border-top: 3px solid var(--xp); padding-top: 0.8rem; }
+  .loop h3 { margin-top: 0; font-size: var(--step-1); }
+  .loop h3::before { content: counter(s) ". "; color: var(--xp); }
+  .loop p { color: var(--muted); }
+</style>

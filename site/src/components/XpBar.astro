@@ -1,0 +1,98 @@
+---
+// The site's signature: the leveling journey drawn as the in-game XP bar.
+// Each written guide is a filled, clickable segment; levels nobody has routed yet stay empty.
+interface Guide { slug: string; name: string; zone: string; from: number; to: number }
+interface Props { guides: Guide[]; cap?: number; faction?: string }
+const { guides, cap = 30, faction = "Horde" } = Astro.props;
+const list = guides.filter((g) => g.faction === faction && g.from != null).sort((a, b) => a.from - b.from);
+const span = cap - 1;
+const segs = list.map((g, i) => {
+  const next = list[i + 1];
+  const end = next && next.from < g.to ? next.from : g.to;
+  return { ...g, start: g.from, end: Math.min(end, cap) };
+});
+const gaps: { start: number; end: number }[] = [];
+let cursor = 1;
+for (const s of segs) {
+  if (s.start > cursor) gaps.push({ start: cursor, end: s.start });
+  cursor = Math.max(cursor, s.end);
+}
+if (cursor < cap) gaps.push({ start: cursor, end: cap });
+const legend = [
+  ...segs.map((s) => ({ slug: s.slug, from: s.from, to: s.to, zone: s.zone })),
+  ...gaps.map((g) => ({ slug: "", from: g.start, to: g.end, zone: "" })),
+].sort((a, b) => a.from - b.from);
+const pct = (lvl: number) => ((lvl - 1) / span) * 100;
+const ticks = Array.from({ length: 20 }, (_, i) => i);
+---
+<figure class="xpbar">
+  <div class="track" role="list" aria-label={`${faction} leveling routes from level 1 to ${cap}`}>
+    {segs.map((s, i) => (
+      <a role="listitem" class={`seg ${i % 2 ? "alt" : ""}`} href={`/guides/${s.slug}/`}
+         style={`left:${pct(s.start)}%;width:${pct(s.end) - pct(s.start)}%`}
+         title={`${s.name}`}>
+        <span class="sr">{s.name}</span>
+      </a>
+    ))}
+    {gaps.map((g) => (
+      <span class="gap" style={`left:${pct(g.start)}%;width:${pct(g.end) - pct(g.start)}%`}
+            title={`Levels ${g.start}–${g.end}: no route yet`}></span>
+    ))}
+    <span class="ticks" aria-hidden="true">{ticks.map(() => <i></i>)}</span>
+  </div>
+  <div class="labels" aria-hidden="true">
+    {segs.map((s, i) => (
+      <span class={`lab ${i === 0 || gaps.some((g) => g.end === s.start) ? "" : "minor"}`} style={`left:${pct(s.start)}%`}>{s.start}</span>
+    ))}
+    {gaps.map((g) => (
+      <span class="lab gapstart" style={`left:${pct(g.start)}%`}>{g.start}</span>
+    ))}
+    <span class="lab end" style="left:100%">{cap}</span>
+  </div>
+  <figcaption>
+    <ol class="legend">
+      {legend.map((l) => l.slug
+        ? <li><a href={`/guides/${l.slug}/`}><b>{l.from}–{l.to}</b> {l.zone}</a></li>
+        : <li class="none"><b>{l.from}–{l.to}</b> no route yet</li>)}
+    </ol>
+  </figcaption>
+</figure>
+
+<style>
+  .xpbar { margin: 0; }
+  .track {
+    position: relative; height: 34px; background: var(--bar-track);
+    border: 2px solid var(--ink); border-radius: 3px; overflow: hidden;
+  }
+  .seg {
+    position: absolute; top: 0; bottom: 0; background: var(--xp);
+    animation: fill 900ms cubic-bezier(.2,.7,.2,1) both;
+    transform-origin: left center;
+  }
+  .seg.alt { background: color-mix(in srgb, var(--xp) 82%, #fff); }
+  .seg:hover, .seg:focus-visible { background: var(--rested); outline: none; }
+  .seg:focus-visible { box-shadow: inset 0 0 0 3px var(--quest-bright); }
+  .gap {
+    position: absolute; top: 0; bottom: 0;
+    background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255,255,255,.07) 6px 12px);
+  }
+  .ticks { position: absolute; inset: 0; display: flex; pointer-events: none; }
+  .ticks i { flex: 1; border-right: 1px solid rgba(0,0,0,.45); }
+  .ticks i:last-child { border-right: 0; }
+  .labels { position: relative; height: 1.4rem; font-family: var(--font-display); font-weight: 600; color: var(--muted); font-size: 0.95rem; }
+  .lab { position: absolute; transform: translateX(-50%); top: 0.15rem; }
+  .lab:first-child { transform: none; }
+  .lab.end { transform: translateX(-100%); }
+  @media (max-width: 719px) { .lab.minor { display: none; } }
+  .legend { list-style: none; padding: 0; margin: 0.9rem 0 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; max-width: none; font-size: var(--step--1); }
+  .legend a { color: var(--ink); text-decoration: none; }
+  .legend a:hover { text-decoration: underline; }
+  .legend b { font-family: var(--font-display); font-size: 1.05rem; color: var(--xp); margin-right: 0.15rem; }
+  .legend .none { color: var(--muted); }
+  .legend .none b { color: var(--muted); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .seg:nth-child(2) { animation-delay: 80ms; } .seg:nth-child(3) { animation-delay: 160ms; }
+  .seg:nth-child(4) { animation-delay: 240ms; } .seg:nth-child(5) { animation-delay: 320ms; }
+  .seg:nth-child(6) { animation-delay: 400ms; } .seg:nth-child(7) { animation-delay: 480ms; }
+</style>

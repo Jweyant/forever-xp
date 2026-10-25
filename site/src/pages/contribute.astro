@@ -1,0 +1,45 @@
+---
+import Base from "../layouts/Base.astro";
+import { SUBMIT_LOG, REPO, meta, quests } from "../lib/data";
+const unknown = quests.filter((q) => q.verdict === "unknown").length;
+---
+<Base title="Contribute" description="Help make WoW Forever leveling routes faster: run ForeverScout, report a bad step, or improve the code.">
+  <h1>Help make the routes faster</h1>
+  <p class="lede">
+    Every number on this site is an estimate built from Classic rules until players send logs.
+    Right now {meta.measured_quests} quests are measured and {unknown} have no usable location at all.
+  </p>
+
+  <h2>Ways to help</h2>
+  <div class="ways">
+    <section>
+      <h3>Run ForeverScout while you level</h3>
+      <p>The most useful thing you can do. Any level range helps, new Forever zones and quests most of all.</p>
+      <p><a href="/scout/">Install ForeverScout</a></p>
+    </section>
+    <section>
+      <h3>Send a log by hand</h3>
+      <p>Zip your <code>ForeverScout.lua</code> from <code>WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\</code> and attach it.</p>
+      <p><a href={SUBMIT_LOG}>Open a Submit a log issue</a></p>
+    </section>
+    <section>
+      <h3>Report a bad step</h3>
+      <p>Wrong NPC, quest not available in Forever, a step that wastes time? Tell us which guide and step.</p>
+      <p><a href={`${REPO}/issues/new?template=bug.yml`}>Report a problem</a></p>
+    </section>
+    <section>
+      <h3>Write code or routes</h3>
+      <p>Routes are short YAML files. The addon, generator and this site are all in one repository.</p>
+      <p><a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Read the contributing guide</a></p>
+    </section>
+  </div>
+
+  <h2>What happens to your log</h2>
+  <p>Logs are merged and de-duplicated. Quest timings become medians across players, and anything two or more players saw that Questie is missing becomes a draft correction for Questie. Character names, realms and chat are never in the log to begin with.</p>
+</Base>
+
+<style>
+  .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem 2rem; }
+  .ways section { border-top: 2px solid var(--line); padding-top: 0.6rem; }
+  .ways h3 { margin-top: 0; font-size: var(--step-1); }
+</style>

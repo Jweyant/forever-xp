@@ -1,0 +1,67 @@
+# Builds the website (site/) and deploys it to Cloudflare Pages on every push to main
+# that touches the site or its data. Pull requests get a preview deploy.
+#
+# One-time setup:
+#   1. Reuse the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets from the upload server.
+#      The token also needs Account > Cloudflare Pages > Edit.
+#   2. After the first deploy, in Cloudflare: Workers & Pages > forever-xp > Custom domains >
+#      add forever-xp.com (and www.forever-xp.com). The DNS records are created for you.
+
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", "routes/**", "reports/**", "tools/site_data.py", "tools/zone_sizes.json", ".github/workflows/deploy-site.yml"]
+  pull_request:
+    paths: ["site/**", "routes/**", "reports/**", "tools/site_data.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Build data and site
+        working-directory: site
+        run: |
+          npm ci
+          npm run data
+          npm run build
+
+      - name: Check configuration
+        id: cfg
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::notice::Cloudflare secrets not set; built the site but skipped deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.cfg.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          preCommands: npx wrangler pages project create forever-xp --production-branch main || true
+          command: pages deploy site/dist --project-name forever-xp --branch ${{ github.head_ref || github.ref_name }}

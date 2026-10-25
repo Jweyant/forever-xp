@@ -1,0 +1,26 @@
+---
+import Base from "../layouts/Base.astro";
+import talentsJson from "../data/talents.json";
+const data = talentsJson as { build: string; classes: { name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
+---
+<Base title="Talent calculator" description="WoW Forever talent calculator for all nine classes, built from the Forever game client, with shareable build links.">
+  <h1>Talent calculator</h1>
+  <p class="lede">Plan a WoW Forever build and share it as a link. Every talent comes from the Forever game client, so the trees match what's in the game, including Forever's reworked talents.</p>
+  <ul class="picker">
+    {data.classes.map((c) => (
+      <li>
+        <a href={`/talents/${c.slug}/`}>
+          <b>{c.name}</b>
+          <span class="muted small">{c.trees.map((t) => t.name).join(", ")}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="small muted">Game client build {data.build}. Want to see what Forever changed from Classic? <a href="/changes/">See the changes</a>.</p>
+</Base>
+<style>
+  .picker { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; max-width: none; }
+  .picker a { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-left: 4px solid var(--xp); background: var(--surface); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
+  .picker a:hover { border-color: var(--xp); }
+  .picker b { font-family: var(--font-display); font-size: var(--step-1); }
+</style>
