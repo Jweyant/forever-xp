@@ -29,6 +29,12 @@ const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf
     <div class="measured"><b>{meta.measured_quests}</b><span>quests measured from player logs so far</span></div>
   </section>
 
+  <section class="tools" aria-label="Tools">
+    <a href="/talents/"><b>Talent calculator</b><span>All nine classes from the Forever client, with build links you can share.</span></a>
+    <a href="/changes/"><b>What Forever changed</b><span>Talents, quests, items and spells compared with Classic Era.</span></a>
+    <a href="/quests/"><b>Quest XP per minute</b><span>Every scored quest, sortable by zone.</span></a>
+  </section>
+
   <section>
     <h2>How the numbers get better</h2>
     <ol class="loop">
@@ -71,6 +77,11 @@ const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf
   .facts b { font-family: var(--font-display); font-size: var(--step-3); line-height: 1; color: var(--xp); }
   .facts span { color: var(--muted); font-size: var(--step--1); max-width: 22ch; }
   .facts .measured b { color: var(--quest); }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
+  .tools a { display: grid; gap: 0.2rem; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
+  .tools a:hover { border-color: var(--xp); }
+  .tools b { font-family: var(--font-display); font-size: var(--step-1); }
+  .tools span { color: var(--muted); font-size: var(--step--1); }
   .loop { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; counter-reset: s; max-width: none; }
   .loop li { counter-increment: s; border-top: 3px solid var(--xp); padding-top: 0.8rem; }
   .loop h3 { margin-top: 0; font-size: var(--step-1); }

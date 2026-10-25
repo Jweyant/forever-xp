@@ -55,6 +55,9 @@ database, ready to paste into Questie's Discord.
 | `guides/ForeverXP_Guides/` | The generated guide addon (requires RestedXP Guides) |
 | `reports/` | Per-guide estimates: level, time, XP per minute per quest, issues |
 | `tools/test/simulate_session.lua` | Runs the addon against a mocked game client, no game needed |
+| `site/` | The forever-xp.com website (Astro, Cloudflare Pages) |
+| `tools/site_data.py` | Builds the website's data from routes, reports and game data |
+| `gamedata/` | Talent, item, quest and spell data read from the Forever and Classic Era clients |
 
 ### Working with the data
 
@@ -96,6 +99,8 @@ that gap.
 - [ ] Horde 12–22 (RestedXP's free Barrens guide covers this for now)
 - [ ] Calibrate time/XP estimates from ForeverScout logs
 - [ ] Alliance 1–30 guide
+- [x] forever-xp.com: guides, quest XP/min, skip list, talent calculator, Forever vs Classic changes
+- [ ] Deploy forever-xp.com on Cloudflare Pages
 
 ## License
 
