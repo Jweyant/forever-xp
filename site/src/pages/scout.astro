@@ -6,6 +6,7 @@ const commands = [
   ["/fscout pause", "Stop recording (resume with /fscout resume)"],
   ["/fscout share on", "Allow automatic uploads by the uploader app (off to stop)"],
   ["/fscout note <text>", "Drop a note at your spot, like \"cave is packed\" or \"skip, elite\""],
+  ["/fscout gear", "Copy your equipped gear into the BIS planner on this site"],
   ["/fscout report", "Copyable list of quests and NPCs Questie is missing"],
   ["/fscout export", "Copyable export string of your recorded sessions"],
   ["/fscout wipe confirm", "Erase everything recorded"],
@@ -51,6 +52,7 @@ const commands = [
         <li>Quests accepted, turned in and abandoned, with the NPC and your position</li>
         <li>XP gained and where it came from: quest, kill (mob and level) or other</li>
         <li>Objective progress, like "Mottled Boar slain: 3/10"</li>
+        <li>Items you loot (green or better, or any gear) and which NPC or chest dropped them, so the BIS planner knows where Forever's new items come from</li>
         <li>Your position about every 10 seconds while moving, plus flights, deaths and hearthstones</li>
         <li>Class, race, faction, level and game build</li>
       </ul>
@@ -60,7 +62,7 @@ const commands = [
       <ul>
         <li>Character name, realm, account name or GUID. Each character gets a random ID that never leaves your computer.</li>
         <li>Chat, whispers or other players</li>
-        <li>Gold, inventory or anything outside questing</li>
+        <li>Gold, bag contents or anything outside questing and loot</li>
       </ul>
     </div>
   </div>

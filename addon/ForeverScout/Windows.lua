@@ -52,7 +52,7 @@ local function getWindow()
   return f
 end
 
-local function show(title, hint, text)
+function ns.ShowCopy(title, hint, text)
   local f = getWindow()
   f.title:SetText(title)
   f.hint:SetText(hint)
@@ -102,7 +102,7 @@ function ns.ShowExport()
   local out = {}
   serialize(payload, out)
   local text = "FSCOUT1:" .. table.concat(out)
-  show("ForeverScout export",
+  ns.ShowCopy("ForeverScout export",
        "Ctrl+A, Ctrl+C, then paste into the project's submission form. "
        .. "Sending the SavedVariables\\ForeverScout.lua file works too and is better for long sessions.",
        text)
@@ -126,7 +126,7 @@ function ns.ShowReport()
     table.insert(lines, "Not in Questie's database (this session):")
     for _, line in ipairs(ns.missing) do table.insert(lines, "- " .. line) end
   end
-  show("Missing from Questie",
+  ns.ShowCopy("Missing from Questie",
        "Copy this and share it with the Questie team on their Discord (#bug-redirect).",
        table.concat(lines, "\n"))
 end

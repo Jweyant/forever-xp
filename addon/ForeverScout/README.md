@@ -20,6 +20,7 @@ fast leveling guides and fill in quest data that Questie doesn't have yet.
 | `/fscout pause` / `resume` | Stop or restart recording |
 | `/fscout share on` / `off` | Allow or stop automatic uploads by the uploader app |
 | `/fscout note <text>` | Drop a note at your current spot ("cave is packed", "skip this, elite") |
+| `/fscout gear` | Copyable string of your equipped gear for the forever-xp.com BIS planner |
 | `/fscout report` | Copyable list of quests/NPCs Questie is missing — share it on Questie's Discord |
 | `/fscout export` | Copyable export string of your recorded sessions |
 | `/fscout wipe confirm` | Erase everything recorded |
@@ -44,6 +45,7 @@ https://github.com/Jweyant/forever-xp/issues/new/choose.
 
 - Quests accepted, turned in and abandoned, with the quest-giver/turn-in NPC ID and your position
 - XP gained and whether it came from a quest, a kill (with mob ID and level) or something else
+- Items you loot (green or better, or any gear), with the NPC or object it came from
 - Objective progress messages ("Mottled Boar slain: 3/10") with position and mob ID
 - Your position about every 10 seconds while moving, plus taxi, death, hearthstone and zone changes
 - Your class, race, faction and level, and the game build
@@ -52,7 +54,7 @@ https://github.com/Jweyant/forever-xp/issues/new/choose.
 
 - Your character name, realm, account name or GUID. Each character gets a random ID, kept in
   per-character data that is never uploaded.
-- Chat, whispers, other players, gold, inventory or anything outside questing.
+- Chat, whispers, other players, gold, bag contents or anything outside questing and loot.
 - Your name is replaced with `<name>` in any quest text that contains it.
 
 Note: the SavedVariables folder path contains your account folder name, but that path is
