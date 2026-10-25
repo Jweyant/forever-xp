@@ -1,0 +1,6 @@
+---
+interface Props { value: number | null | undefined; max?: number }
+const { value, max = 1500 } = Astro.props;
+const w = value == null ? 0 : Math.max(2, Math.min(60, Math.round((value / max) * 60)));
+---
+{value == null ? <span class="muted">–</span> : <span class="rate"><span>{value}</span><i style={`width:${w}px`} aria-hidden="true"></i></span>}

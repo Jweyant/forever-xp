@@ -1,0 +1,86 @@
+---
+import Base from "../../layouts/Base.astro";
+import Rate from "../../components/Rate.astro";
+import { guides, questById, fmtMinutes, type Guide } from "../../lib/data";
+
+export function getStaticPaths() {
+  return guides.map((g) => ({ params: { slug: g.slug }, props: { guide: g } }));
+}
+const { guide } = Astro.props as { guide: Guide };
+const idx = guides.indexOf(guide);
+const prev = guides[idx - 1]?.faction === guide.faction ? guides[idx - 1] : undefined;
+const next = guides[idx + 1]?.faction === guide.faction ? guides[idx + 1] : undefined;
+const byRate = [...(guide.quests || [])].sort((a, b) => b.xp_per_min - a.xp_per_min);
+const maxRate = Math.max(1, ...byRate.map((q) => q.xp_per_min));
+const steps = (guide.steps || []).filter((s) => s.text);
+---
+<Base title={`${guide.name} ${guide.faction} leveling guide`} description={`Free WoW Forever ${guide.faction} leveling route for ${guide.zone}, levels ${guide.from}–${guide.to}. Estimated ${fmtMinutes(guide.minutes)}, ${guide.quest_ids.length} quests.`}>
+  <p class="crumbs"><a href="/guides/">Guides</a> / {guide.faction}</p>
+  <h1>{guide.zone} <span class="lv">{guide.from}–{guide.to}</span></h1>
+  <dl class="sum">
+    <div><dt>Estimated time</dt><dd>{fmtMinutes(guide.minutes)}</dd></div>
+    <div><dt>Ends at level</dt><dd>{guide.end_level?.toFixed(2) ?? "–"}</dd></div>
+    <div><dt>Quests</dt><dd>{guide.quest_ids.length}</dd></div>
+    <div><dt>Written for</dt><dd>{guide.for}{guide.class ? `, ${guide.class}` : ""}</dd></div>
+  </dl>
+  <div class="callout">
+    <p>Times and levels are estimates from Classic XP rules and generic kill and travel speeds. They get replaced as ForeverScout logs come in. <a href="/scout/">Run ForeverScout on this route</a></p>
+  </div>
+
+  {guide.issues.length > 0 && (
+    <section>
+      <h2>Steps to check</h2>
+      <ul>{guide.issues.map((i) => <li>{i}</li>)}</ul>
+      <p class="muted small">Usually means you may be a little under level when you get there. Grind a few mobs if the quest isn't offered.</p>
+    </section>
+  )}
+
+  <h2>Quests by XP per minute</h2>
+  <p class="muted">Objective time only, so you can see which quests carry this route.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Quest</th><th class="num">XP</th><th class="num">Minutes</th><th class="num">XP/min</th></tr></thead>
+      <tbody>
+        {byRate.map((q) => (
+          <tr>
+            <td>{questById.has(q.id) ? <a href={`/quests/${q.id}/`}>{q.name}</a> : q.name}</td>
+            <td class="num">{q.xp}</td>
+            <td class="num">{q.minutes}</td>
+            <td class="num"><Rate value={q.xp_per_min} max={maxRate} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Step by step</h2>
+  <div class="table-scroll">
+    <table class="steps">
+      <thead><tr><th class="num">Step</th><th>Do</th><th class="num">Level</th><th class="num">Minute</th></tr></thead>
+      <tbody>
+        {steps.map((s) => (
+          <tr>
+            <td class="num muted">{s.n}</td>
+            <td>{s.text}</td>
+            <td class="num">{s.level?.toFixed(2)}</td>
+            <td class="num">{s.minutes}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="pager" aria-label="Other guides">
+    {prev ? <a href={`/guides/${prev.slug}/`}>Previous: {prev.name}</a> : <span></span>}
+    {next ? <a href={`/guides/${next.slug}/`}>Next: {next.name}</a> : <span></span>}
+  </nav>
+</Base>
+
+<style>
+  .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
+  .lv { color: var(--xp); }
+  .sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 1.5rem; margin: 0.5rem 0 1rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; }
+  .sum dt { color: var(--muted); font-size: var(--step--1); }
+  .sum dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); }
+  .pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; flex-wrap: wrap; }
+</style>

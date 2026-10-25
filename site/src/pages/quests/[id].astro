@@ -1,0 +1,60 @@
+---
+import Base from "../../layouts/Base.astro";
+import { quests, questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
+
+export function getStaticPaths() {
+  return quests.map((q) => ({ params: { id: String(q.id) }, props: { quest: q } }));
+}
+const { quest: q } = Astro.props as { quest: Quest };
+const rate = rateOf(q);
+const pre = (q.pre || []).map((id) => questById.get(id) ?? { id, name: `Quest ${id}` });
+const next = q.next ? questById.get(q.next) ?? { id: q.next, name: `Quest ${q.next}` } : null;
+const zoneRates = quests.filter((x) => x.zone === q.zone && !x.unlocated && rateOf(x) != null).map((x) => rateOf(x)!).sort((a, b) => b - a);
+const rank = rate != null && !q.unlocated ? zoneRates.indexOf(rate) + 1 : null;
+const why =
+  q.verdict === "do" ? "Part of a Forever XP route." :
+  q.verdict === "skip" ? (q.skip_note?.reason ? `Skipped in the route: ${q.skip_note.reason}.` : `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
+  q.verdict === "unknown" ? "Some objectives have no known location yet, so it can't be scored." :
+  "Worth doing if you're nearby, but it isn't in a route.";
+const desc = `${q.name}${q.level ? ` (level ${q.level})` : ""} in ${q.zone ?? "WoW Forever"}: ${q.xp ?? "?"} XP${rate != null && !q.unlocated ? `, about ${rate} XP per minute` : ""}. ${VERDICT_LABEL[q.verdict]}.`;
+---
+<Base title={`${q.name} quest`} description={desc}>
+  <p class="crumbs"><a href="/quests/">Quests</a> / {q.zone}</p>
+  <h1>{q.name}</h1>
+  <p class={`verdict big ${q.verdict}`}>{VERDICT_LABEL[q.verdict]}</p>
+  <p class="lede">{why}</p>
+
+  <dl class="facts">
+    <div><dt>Quest level</dt><dd>{q.level ?? "–"}</dd></div>
+    <div><dt>Required level</dt><dd>{q.req ?? "–"}</dd></div>
+    <div><dt>Quest XP</dt><dd>{q.xp ?? "–"}</dd></div>
+    {q.kill_xp ? <div><dt>Kill XP on the way</dt><dd>{q.kill_xp}</dd></div> : null}
+    <div><dt>Estimated minutes</dt><dd>{q.minutes ?? "–"}</dd></div>
+    <div><dt>XP per minute</dt><dd>{q.unlocated || rate == null ? "–" : rate}</dd></div>
+    {rank ? <div><dt>Rank in {q.zone}</dt><dd>{rank} of {zoneRates.length}</dd></div> : null}
+  </dl>
+
+  <h2>Details</h2>
+  <ul class="plain">
+    {q.giver && <li>Starts with <b>{q.giver}</b>{q.ender && q.ender !== q.giver ? <> and ends with <b>{q.ender}</b></> : null}.</li>}
+    {pre.length > 0 && <li>Needs {pre.map((p, i) => <>{i ? ", " : ""}{questById.has(p.id) ? <a href={`/quests/${p.id}/`}>{p.name}</a> : p.name}</>)} first.</li>}
+    {next && <li>Leads to {questById.has(next.id) ? <a href={`/quests/${next.id}/`}>{next.name}</a> : next.name}.</li>}
+    {q.guides.map((s) => { const g = guideBySlug.get(s); return g ? <li>In the <a href={`/guides/${s}/`}>{g.name}</a> route.</li> : null; })}
+    {q.skip_note && <li>Route note: {q.skip_note.note}.</li>}
+    <li>Quest ID {q.id}.</li>
+  </ul>
+
+  <div class="callout">
+    {q.measured
+      ? <p>Measured from {q.measured.players} player logs: median {q.measured.minutes} minutes.</p>
+      : <p>No player has logged this quest yet. If you do it with <a href="/scout/">ForeverScout</a> running, your time replaces this estimate. <a href={SUBMIT_LOG}>Send a log</a></p>}
+  </div>
+</Base>
+<style>
+  .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
+  .verdict.big { font-size: 1rem; padding: 0.15em 0.7em; margin-bottom: 0.6rem; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 1.5rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; margin: 1.2rem 0; }
+  .facts dt { color: var(--muted); font-size: var(--step--1); }
+  .facts dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); }
+  .plain { padding-left: 1.1rem; }
+</style>

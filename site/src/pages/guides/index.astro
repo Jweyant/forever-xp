@@ -1,0 +1,41 @@
+---
+import Base from "../../layouts/Base.astro";
+import XpBar from "../../components/XpBar.astro";
+import { guides, fmtMinutes } from "../../lib/data";
+const horde = guides.filter((g) => g.faction === "Horde");
+---
+<Base title="Leveling guides" description="Free WoW Forever Horde leveling guides, 1 to 30, with estimated time and XP for every step.">
+  <h1>Leveling guides</h1>
+  <p class="lede">Horde routes for Orc and Troll, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step.</p>
+  <XpBar guides={guides} />
+
+  <h2>Horde</h2>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Levels</th><th>Zone</th><th class="num">Est. time</th><th class="num">Ends at</th><th class="num">Quests</th><th>Checks</th></tr></thead>
+      <tbody>
+        {horde.map((g) => (
+          <tr>
+            <td><b>{g.from}–{g.to}</b></td>
+            <td><a href={`/guides/${g.slug}/`}>{g.zone}</a></td>
+            <td class="num">{fmtMinutes(g.minutes)}</td>
+            <td class="num">{g.end_level?.toFixed(1) ?? "–"}</td>
+            <td class="num">{g.quest_ids.length}</td>
+            <td>{g.issues.length ? <span class="verdict skip">{g.issues.length} to check</span> : <span class="verdict do">Clean</span>}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">Levels 12–22 aren't written yet. RestedXP's free Barrens guide covers that range for now.</p>
+
+  <h2>Install the guides</h2>
+  <ol>
+    <li>Install the free <b>RestedXP Guides</b> addon.</li>
+    <li>Copy the <code>ForeverXP_Guides</code> folder from the <a href="https://github.com/Jweyant/forever-xp/tree/main/guides/ForeverXP_Guides">repository</a> into <code>Interface\AddOns\</code>.</li>
+    <li>In game, open the RestedXP guide list and pick the <b>ForeverXP Horde</b> group.</li>
+  </ol>
+
+  <h2>Alliance</h2>
+  <p>Not written yet. Alliance logs from ForeverScout are what will get these started. <a href="/contribute/">Help with a log</a></p>
+</Base>

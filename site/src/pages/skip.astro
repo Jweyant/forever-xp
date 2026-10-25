@@ -1,0 +1,47 @@
+---
+import Base from "../layouts/Base.astro";
+import { quests, zones, rateOf, meta } from "../lib/data";
+const byZone = zones
+  .map((z) => ({
+    ...z,
+    list: quests.filter((q) => (q.zone || "Unknown") === z.name && q.verdict === "skip")
+      .sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)),
+  }))
+  .filter((z) => z.list.length);
+const total = byZone.reduce((s, z) => s + z.list.length, 0);
+---
+<Base title="Quest skip list" description={`${total} WoW Forever quests to skip while leveling, by zone, with the reason for each.`}>
+  <h1>Quests to skip</h1>
+  <p class="lede">{total} quests that cost more time than they're worth, or send you somewhere dangerous or far away. Zone by zone, with the reason.</p>
+  <p class="muted small">A quest lands here when a route skips it on purpose, or when it scores under {meta.skip_threshold} XP per minute with travel counted.</p>
+
+  <nav class="jump" aria-label="Zones">
+    {byZone.map((z) => <a href={`#${z.slug}`}>{z.name} <span class="muted">{z.list.length}</span></a>)}
+  </nav>
+
+  {byZone.map((z) => (
+    <section id={z.slug}>
+      <h2>{z.name}</h2>
+      <p class="muted small">Median quest here: {z.median_xp_per_min ?? "–"} XP per minute.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Quest</th><th class="num opt">Level</th><th class="num">XP/min</th><th>Why skip</th></tr></thead>
+          <tbody>
+            {z.list.map((q) => (
+              <tr>
+                <td><a href={`/quests/${q.id}/`}>{q.name}</a></td>
+                <td class="num opt">{q.level ?? "–"}</td>
+                <td class="num">{rateOf(q) ?? "–"}</td>
+                <td>{q.skip_note?.reason ? q.skip_note.reason.charAt(0).toUpperCase() + q.skip_note.reason.slice(1) : "Slow for the XP"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+</Base>
+<style>
+  .jump { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 1rem 0; }
+  section { scroll-margin-top: 1rem; }
+</style>

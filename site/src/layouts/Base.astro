@@ -1,0 +1,101 @@
+---
+import "../styles/global.css";
+interface Props { title: string; description?: string; wide?: boolean }
+const { title, description = "Free WoW Forever leveling routes and quest data, built from real player logs.", wide = false } = Astro.props;
+const fullTitle = title === "Forever XP" ? title : `${title} | Forever XP`;
+const path = Astro.url.pathname;
+const nav = [
+  { href: "/guides/", label: "Guides" },
+  { href: "/quests/", label: "Quests" },
+  { href: "/skip/", label: "Skip list" },
+  { href: "/talents/", label: "Talents" },
+  { href: "/changes/", label: "Changes" },
+  { href: "/scout/", label: "ForeverScout" },
+];
+const canonical = new URL(path, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta name="theme-color" content="#6b3fc4" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <script is:inline>
+    try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href="/" aria-label="Forever XP home">
+        <span class="brand-mark" aria-hidden="true"><i></i></span>
+        Forever XP
+      </a>
+      <nav aria-label="Main">
+        <ul>
+          {nav.map((n) => (
+            <li><a href={n.href} aria-current={path.startsWith(n.href) ? "page" : undefined}>{n.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <button class="theme" type="button" aria-label="Switch light or dark theme" title="Switch theme"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
+    </div>
+  </header>
+  <main id="main" class={wide ? "wrap wide" : "wrap"}>
+    <slot />
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        Forever XP is a free community project.
+        <a href="https://github.com/Jweyant/forever-xp">Source and data on GitHub</a> (GPL-3.0).
+        <a href="/contribute/">Help with a log</a>.
+      </p>
+      <p class="small muted">Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc.</p>
+    </div>
+  </footer>
+  <script is:inline>
+    document.querySelector(".theme").addEventListener("click", () => {
+      const root = document.documentElement;
+      const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      root.dataset.theme = dark ? "light" : "dark";
+      try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+    });
+  </script>
+</body>
+</html>
+
+<style is:global>
+  .skip-link { position: absolute; left: -999px; top: 0; background: var(--surface); padding: 0.5rem 1rem; z-index: 10; }
+  .skip-link:focus { left: 1rem; }
+  .site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .site-header .bar { display: flex; align-items: center; gap: 1rem; min-height: 60px; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+  .brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; color: var(--ink); text-decoration: none; }
+  .brand-mark { width: 34px; height: 10px; background: var(--bar-track); border-radius: 2px; overflow: hidden; display: inline-block; }
+  .brand-mark i { display: block; height: 100%; width: 62%; background: var(--xp); box-shadow: 6px 0 0 var(--rested); }
+  .site-header nav { flex: 1 1 auto; }
+  .site-header nav ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1.1rem; list-style: none; margin: 0; padding: 0; max-width: none; }
+  .site-header nav a { color: var(--ink); text-decoration: none; font-weight: 600; padding: 0.2rem 0; border-bottom: 2px solid transparent; }
+  .site-header nav a:hover { border-bottom-color: var(--line); }
+  .site-header nav a[aria-current="page"] { border-bottom-color: var(--xp); }
+  .theme { font: inherit; font-size: 1.2rem; background: none; border: 1px solid var(--line); color: var(--ink); border-radius: var(--radius); width: 38px; height: 38px; cursor: pointer; display: grid; place-items: center; }
+  @media (max-width: 719px) {
+    .site-header nav { order: 3; flex-basis: 100%; }
+    .site-header .theme { margin-left: auto; }
+  }
+  main { padding-top: 2rem; padding-bottom: 3rem; min-height: 60vh; }
+  .site-footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2rem; background: var(--surface); }
+  .site-footer p { margin-bottom: 0.4rem; }
+</style>
