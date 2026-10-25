@@ -1,0 +1,58 @@
+# Rebuilds gamedata/items.json (the BIS planner's gear database) from:
+#   - the WoW Forever game client tables, via wago.tools
+#   - cmangos classic-db (GPL-3.0) for boss drops, vendors, quest rewards and crafting
+#   - AtlasLoot Classic (GPL-2.0) for instance, boss, PvP and faction reward lists
+# and commits the result to the branch it ran on.
+#
+# Runs every Monday, on demand (Actions > Refresh gear data > Run workflow), and on pushes to
+# branches that change the builder.
+
+name: Refresh gear data
+
+on:
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: ["tools/build_items.py", "tools/mysqldump.py", ".github/workflows/gear-data.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gear-data-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Get open-source data
+        run: |
+          git clone -q --depth 1 https://github.com/cmangos/classic-db ext/classic-db
+          git clone -q --depth 1 https://github.com/Hoizame/AtlasLootClassic ext/AtlasLootClassic
+          zcat ext/classic-db/Full_DB/*.sql.gz > ext/cmangos.sql
+          echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD)" > ext/versions.txt
+
+      - name: Build gear database
+        run: |
+          python3 tools/build_items.py --download --cache .cache/wago \
+            --cmangos ext/cmangos.sql --atlasloot ext/AtlasLootClassic \
+            --out gamedata/items.json --report gamedata/items-report.md
+          printf '\nSources: %s\n' "$(cat ext/versions.txt)" >> gamedata/items-report.md
+
+      - name: Commit if changed
+        run: |
+          git config user.name "forever-xp data bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gamedata/items.json gamedata/items-report.md
+          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
+          git commit -m "Refresh gear data from Forever client, cmangos and AtlasLoot"
+          git push
