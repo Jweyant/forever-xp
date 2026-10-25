@@ -198,9 +198,9 @@ function render() {
     const own = p && st.owned.has(p.id);
     return `<tr data-doll="${d}">
       <th scope="row">${DOLL_LABEL[d]}</th>
-      <td class="item">${itemCell(st.cur[d], d)}</td>
-      <td class="item">${itemCell(st.plan[d], d)}</td>
-      <td class="num"><b class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${dv > 0 ? "+" : ""}${p || c ? dv : ""}</b></td>
+      <td class="item" data-label="Current">${itemCell(st.cur[d], d)}</td>
+      <td class="item" data-label="Plan">${itemCell(st.plan[d], d)}</td>
+      <td class="num" data-label="Gain"><b class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${dv > 0 ? "+" : ""}${p || c ? dv : ""}</b></td>
       <td class="acts">
         <button type="button" class="link" data-pick="${d}">Change</button>
         ${p ? `<label class="own"><input type="checkbox" data-own="${p.id}"${own ? " checked" : ""}> Owned</label>` : ""}

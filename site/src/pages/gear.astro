@@ -104,7 +104,19 @@ import { SOURCE_KINDS } from "../scripts/gear/model";
   #gear .summary dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); }
   #gear .summary .xp { color: var(--xp); }
   #gear .up { color: var(--do); } #gear .down { color: var(--skip); }
-  #gear .doll th[scope="row"] { white-space: nowrap; color: var(--muted); font-weight: 600; }
+  #gear .doll th[scope="row"] { white-space: nowrap; color: var(--muted); font-weight: 600; position: static; background: none; }
+  @media (max-width: 719px) {
+    #gear .doll thead { display: none; }
+    #gear .doll, #gear .doll tbody, #gear .doll tr, #gear .doll td, #gear .doll th[scope="row"] { display: block; }
+    #gear .doll tr { padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--line); }
+    #gear .doll tbody tr:last-child { border-bottom: 0; }
+    #gear .doll td, #gear .doll th[scope="row"] { border: 0; padding: 0.15rem 0; max-width: none; min-width: 0; text-align: left; }
+    #gear .doll th[scope="row"] { font-family: var(--font-display); font-size: var(--step-1); color: var(--ink); }
+    #gear .doll td.item::before, #gear .doll td.num::before { content: attr(data-label); display: block; font-size: 0.75rem; color: var(--muted); }
+    #gear .doll td.num::before { display: inline; margin-right: 0.4rem; }
+    #gear .doll .acts { display: flex; gap: 1rem; align-items: center; }
+    #gear .doll .acts .own { margin: 0; }
+  }
   #gear .doll td.item { min-width: 15rem; max-width: 26rem; }
   #gear .iname { display: block; font-weight: 600; }
   #gear .meta, #gear .stats, #gear .fx { display: block; font-size: 0.85rem; color: var(--muted); }
