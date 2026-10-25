@@ -1,0 +1,137 @@
+---
+import Base from "../layouts/Base.astro";
+import { SOURCE_KINDS } from "../scripts/gear/model";
+---
+<Base title="BIS gear planner" description="WoW Forever best-in-slot planner: import your character's gear, pick PvE, PvP, leveling or your own stat weights, and get the best item for every slot from Forever's own item data.">
+  <h1>Best-in-slot planner</h1>
+  <p class="lede">Start from the gear you're wearing, choose what you're gearing for, and get the best item for every slot. Stats come from the Forever game client, and drop sources come from open databases and ForeverScout players.</p>
+
+  <section id="gear" aria-busy="true">
+    <details class="import" open>
+      <summary><b>Import your character</b> <span class="muted">from the game</span></summary>
+      <p>In game, type <code>/fscout gear</code>, press Ctrl+C, then paste below. It needs <a href="/scout/">ForeverScout</a> 0.3 or newer.</p>
+      <div class="import-row">
+        <textarea id="g-import" rows="2" placeholder="FXPG1:WARRIOR:60:Orc:H:head=..." aria-label="Gear string from /fscout gear"></textarea>
+        <button type="button" class="btn" id="g-import-go">Import gear</button>
+      </div>
+    </details>
+
+    <div class="controls">
+      <label>Class<select id="g-class"></select></label>
+      <label>Spec<select id="g-spec"></select></label>
+      <label>Gearing for<select id="g-goal"></select></label>
+      <label>Faction<select id="g-side"><option value="H">Horde</option><option value="A">Alliance</option></select></label>
+      <label class="lvl">Level <output id="g-level-out">60</output><input type="range" id="g-level" min="10" max="60" step="1" value="60" /></label>
+    </div>
+    <fieldset class="sources">
+      <legend>Where items can come from</legend>
+      {SOURCE_KINDS.map((s) => <label><input type="checkbox" data-src={s.key} checked /> {s.name}</label>)}
+    </fieldset>
+
+    <div class="actions">
+      <button type="button" class="btn" id="g-suggest">Suggest best in slot</button>
+      <button type="button" class="btn secondary" id="g-keep">Reset plan to current gear</button>
+      <button type="button" class="btn secondary" id="g-copy">Copy plan link</button>
+    </div>
+    <p id="g-status" class="status" aria-live="polite"></p>
+
+    <dl id="g-summary" class="summary"></dl>
+
+    <div class="table-scroll">
+      <table class="doll">
+        <thead><tr><th>Slot</th><th>Current</th><th>Plan</th><th class="num">Gain</th><th></th></tr></thead>
+        <tbody id="g-rows"><tr><td colspan="5" class="muted">Loading Forever's gear database…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="lower">
+      <section>
+        <h2>Stat totals</h2>
+        <div class="table-scroll"><table id="g-totals"></table></div>
+      </section>
+      <section>
+        <h2>Stat weights</h2>
+        <p id="g-weights-note" class="small muted"></p>
+        <div id="g-weights" class="weights"></div>
+      </section>
+    </div>
+
+    <dialog id="g-picker">
+      <form method="dialog" class="picker-head">
+        <h2 id="g-picker-title">Choose an item</h2>
+        <button class="btn secondary" value="close">Close</button>
+      </form>
+      <div class="picker-tools">
+        <input type="search" id="g-search" placeholder="Search by name or item ID" aria-label="Search items" />
+        <label>Put it in <select id="g-target"><option value="plan">My plan</option><option value="cur">My current gear</option></select></label>
+        <label><input type="checkbox" id="g-all" /> Show items I can't use yet</label>
+      </div>
+      <ul id="g-picker-list" class="picker-list"></ul>
+    </dialog>
+  </section>
+
+  <h2>How suggestions work</h2>
+  <ul>
+    <li>Each item's score is its stats multiplied by your stat weights. Weapon DPS counts most in the slot it's built for, and two-handers are compared against your best main hand and off hand together.</li>
+    <li>Starting weights are a reasonable baseline for each spec and goal, not a simulation. Pick <b>Custom weights</b> to set your own, and share the link to show your reasoning.</li>
+    <li>Hit caps and set bonuses aren't factored in yet. Set items are labeled so you can judge them yourself.</li>
+    <li>Items Forever added don't have known drop sources yet. Players running ForeverScout log loot, and those sources appear here as they come in.</li>
+  </ul>
+  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs.</p>
+</Base>
+<script>import "../scripts/gear/planner.ts";</script>
+
+<style is:global>
+  #gear[aria-busy="true"] .doll { opacity: 0.6; }
+  #gear .import { border: 1px solid var(--line); border-left: 4px solid var(--xp); background: var(--surface); border-radius: var(--radius); padding: 0.7rem 1rem; margin: 1rem 0; }
+  #gear .import summary { cursor: pointer; }
+  #gear .import p { margin: 0.5rem 0; }
+  #gear .import-row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: stretch; }
+  #gear .import-row textarea { flex: 1 1 260px; font: 0.85rem ui-monospace, Consolas, monospace; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.4rem 0.6rem; min-width: 0; }
+  #gear .controls { display: flex; flex-wrap: wrap; gap: 0.7rem 1.2rem; align-items: end; margin: 1rem 0 0.6rem; }
+  #gear .controls label { display: grid; gap: 0.2rem; font-size: var(--step--1); color: var(--muted); }
+  #gear .controls .lvl { min-width: 200px; }
+  #gear .controls output { color: var(--ink); font-weight: 600; }
+  #gear input[type="range"] { accent-color: var(--xp); width: 100%; }
+  #gear .sources { border: 0; padding: 0; margin: 0.4rem 0 1rem; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; }
+  #gear .sources legend { font-size: var(--step--1); color: var(--muted); margin-bottom: 0.3rem; padding: 0; }
+  #gear .sources label { font-size: 0.95rem; white-space: nowrap; }
+  #gear .sources input, #gear .own input { accent-color: var(--xp); }
+  #gear .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  #gear .status { min-height: 1.5em; color: var(--muted); margin: 0.6rem 0; }
+  #gear .summary { display: flex; flex-wrap: wrap; gap: 0.4rem 2.2rem; border-top: 2px solid var(--ink); padding-top: 0.7rem; margin: 0 0 1rem; }
+  #gear .summary dt { color: var(--muted); font-size: var(--step--1); }
+  #gear .summary dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); }
+  #gear .summary .xp { color: var(--xp); }
+  #gear .up { color: var(--do); } #gear .down { color: var(--skip); }
+  #gear .doll th[scope="row"] { white-space: nowrap; color: var(--muted); font-weight: 600; }
+  #gear .doll td.item { min-width: 15rem; max-width: 26rem; }
+  #gear .iname { display: block; font-weight: 600; }
+  #gear .meta, #gear .stats, #gear .fx { display: block; font-size: 0.85rem; color: var(--muted); }
+  #gear .stats { color: var(--ink); }
+  #gear .fx { color: var(--do); }
+  #gear .set { color: var(--quest); }
+  #gear .acts { white-space: nowrap; }
+  #gear .acts .own { display: block; font-size: 0.85rem; margin-top: 0.3rem; }
+  .link { background: none; border: 0; padding: 0; color: var(--rested); font: inherit; text-decoration: underline; cursor: pointer; }
+  .q-poor { color: #9d9d9d; } .q-common { color: var(--ink); } .q-uncommon { color: #1eaa1e; } .q-rare { color: #2b6fd6; } .q-epic { color: #9f45e6; } .q-legendary { color: #e07b00; } .q-artifact { color: #c9a227; }
+  :root[data-theme="dark"] .q-rare { color: #4f9bff; } :root[data-theme="dark"] .q-uncommon { color: #3ed13e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .q-rare { color: #4f9bff; } :root:not([data-theme="light"]) .q-uncommon { color: #3ed13e; } }
+  #gear .lower { display: grid; gap: 1rem 2rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  #gear .weights { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.4rem 0.8rem; }
+  #gear .weights label { display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+  #gear .weights input { width: 5.2rem; font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.2rem 0.35rem; }
+  #gear .weights input:disabled { opacity: 0.7; }
+  #g-picker { width: min(760px, calc(100vw - 32px)); max-height: 85vh; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink); padding: 1rem; }
+  #g-picker::backdrop { background: rgba(10, 16, 22, 0.6); }
+  #g-picker .picker-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  #g-picker .picker-head h2 { margin: 0; font-size: var(--step-2); }
+  #g-picker .picker-tools { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; margin: 0.8rem 0; }
+  #g-picker .picker-tools input[type="search"] { flex: 1 1 220px; }
+  #g-picker .picker-list { list-style: none; padding: 0; margin: 0; max-width: none; }
+  #g-picker .picker-list li + li { border-top: 1px solid var(--line); }
+  #g-picker .picker-list button[data-choose]:not(.link) { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 3.5rem 1fr; gap: 0.6rem; width: 100%; padding: 0.5rem 0.3rem; cursor: pointer; }
+  #g-picker .picker-list button[data-choose]:not(.link):hover, #g-picker .picker-list button[data-choose]:not(.link):focus-visible { background: var(--surface); outline: 2px solid var(--focus); }
+  #g-picker .score { font-family: var(--font-display); font-weight: 600; color: var(--xp); font-size: 1.1rem; text-align: right; }
+  #g-picker .picker-list .link { margin: 0.5rem 0.3rem; }
+</style>

@@ -12,9 +12,9 @@ name: Deploy website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "routes/**", "reports/**", "tools/site_data.py", "tools/zone_sizes.json", ".github/workflows/deploy-site.yml"]
+    paths: ["site/**", "routes/**", "reports/**", "gamedata/**", "tools/site_data.py", "tools/zone_sizes.json", ".github/workflows/deploy-site.yml"]
   pull_request:
-    paths: ["site/**", "routes/**", "reports/**", "tools/site_data.py"]
+    paths: ["site/**", "routes/**", "reports/**", "gamedata/**", "tools/site_data.py"]
   workflow_dispatch:
 
 permissions:

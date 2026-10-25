@@ -242,6 +242,11 @@ def main():
 
     OUT.mkdir(parents=True, exist_ok=True)
     build_game_data()
+    gear = ROOT / "gamedata" / "items.json"
+    if gear.exists():
+        pub = ROOT / "site" / "public" / "data"
+        pub.mkdir(parents=True, exist_ok=True)
+        (pub / "items.json").write_bytes(gear.read_bytes())
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))

@@ -148,7 +148,8 @@ def client_items(cache, download):
             continue
         ilvl, req = num(s["ItemLevel"], int), num(s["RequiredLevel"], int)
         name = s["Display_lang"]
-        if not name or re.search(r"\b(test|deprecated|unused|monster|NPC|\[PH\])\b", name, re.I) or name.startswith("zz"):
+        if (not name or re.search(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|QA ?test\w*)\b", name, re.I)
+                or re.match(r"^\d+ (Epic|Green|Blue|Rare|Uncommon|Purple) ", name) or name.startswith(("zz", "QA"))):
             continue
         stats = {}
         prow = rpp.get(ilvl)
@@ -239,8 +240,20 @@ def client_items(cache, download):
     return items, sets_out
 
 
+INSTANCE_NAMES = {
+    "Ragefire": "Ragefire Chasm", "TheTempleOfAtal'Hakkar": "Sunken Temple", "TheRuinsofAhnQiraj": "Ruins of Ahn'Qiraj",
+    "TheTempleofAhnQiraj": "Temple of Ahn'Qiraj", "Zul'Farrak": "Zul'Farrak", "Zul'Gurub": "Zul'Gurub",
+    "ScarletMonasteryGraveyard": "Scarlet Monastery: Graveyard", "ScarletMonasteryLibrary": "Scarlet Monastery: Library",
+    "ScarletMonasteryArmory": "Scarlet Monastery: Armory", "ScarletMonasteryCathedral": "Scarlet Monastery: Cathedral",
+    "DireMaulEast": "Dire Maul East", "DireMaulWest": "Dire Maul West", "DireMaulNorth": "Dire Maul North",
+    "TheStockade": "The Stockade", "TheDeadmines": "The Deadmines", "WorldBosses": "World bosses",
+}
+
+
 def camel_words(key):
-    return re.sub(r"(?<=[a-z])(?=[A-Z])|(?<=[A-Za-z])(?=Of|The)", " ", key).replace("'", "'").strip()
+    if key in INSTANCE_NAMES:
+        return INSTANCE_NAMES[key]
+    return re.sub(r"(?<=[a-z])(?=[A-Z])", " ", key).strip()
 
 
 def atlasloot(path):
@@ -252,7 +265,7 @@ def atlasloot(path):
         key = block.split('"', 1)[0]
         content = "raid" if "RAID" in block[:1200].split("items =")[0] else "dungeon"
         lr = re.search(r"LevelRange = (?:GetForVersion\()?\{(\d+), (\d+), (\d+)\}", block)
-        inst = {"WorldBosses": "World bosses"}.get(key, camel_words(key))
+        inst = camel_words(key)
         for boss in re.finditer(r'name = AL\["([^"]+)"\](.*?)(?=\n\t\t\},|\n\t\t\{ --|\Z)', block, re.S):
             bname, body = boss.group(1), boss.group(2)
             for m in re.finditer(r"\{\s*\d+,\s*(\d{3,6})\s*[,}]", body):
@@ -341,7 +354,10 @@ def cmangos_sources(sql, keep):
         ids = [q.get(f"RewChoiceItemId{i}") for i in range(1, 7)] + [q.get(f"RewItemId{i}") for i in range(1, 5)]
         for item in ids:
             if item in keep:
-                src[item].append({"t": "quest", "n": q["Title"], "lv": q.get("QuestLevel"), "qid": q["entry"]})
+                rec = {"t": "quest", "n": q["Title"], "lv": q.get("QuestLevel"), "qid": q["entry"]}
+                if q.get("RequiredClasses"):
+                    rec["qcls"] = q["RequiredClasses"]
+                src[item].append(rec)
     for sp in d["spell_template"]:
         for i in (1, 2, 3):
             if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep:

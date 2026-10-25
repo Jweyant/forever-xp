@@ -211,6 +211,8 @@ SlashCmdList.FOREVERSCOUT = function(input)
     ns.ShowReport()
   elseif cmd == "export" then
     ns.ShowExport()
+  elseif cmd == "gear" then
+    ns.ShowGear()
   elseif cmd == "debug" then
     ns.debug = not ns.debug
     ns.Print("Debug " .. (ns.debug and "on" or "off"))
@@ -233,7 +235,7 @@ SlashCmdList.FOREVERSCOUT = function(input)
     else
       ns.Print("Automatic sharing is |cffff5555off|r. Turn it on with /fscout share on.")
     end
-    ns.Print("Commands: /fscout pause | resume | share on|off | note <text> | report | export | wipe")
+    ns.Print("Commands: /fscout pause | resume | share on|off | note <text> | gear | report | export | wipe")
   end
 end
 
