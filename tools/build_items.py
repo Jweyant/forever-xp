@@ -31,7 +31,8 @@ FOREVER_BUILD = "1.60.1.70532"
 TABLES = ["ItemSparse", "Item", "RandPropPoints", "ItemArmorQuality", "ItemArmorTotal", "ArmorLocation",
           "ItemArmorShield", "ItemDamageOneHand", "ItemDamageOneHandCaster", "ItemDamageTwoHand",
           "ItemDamageTwoHandCaster", "ItemDamageRanged", "ItemDamageThrown", "ItemDamageWand",
-          "ItemEffect", "ItemXItemEffect", "ItemSet", "ItemSetSpell", "Spell", "SpellName", "SpellEffect"]
+          "ItemEffect", "ItemXItemEffect", "ItemSet", "ItemSetSpell", "Spell", "SpellName", "SpellEffect",
+          "AreaTable"]  # AreaTable: zone names for tools/build_quests.py
 
 # Modern item stat ids used by the Forever client -> our stat keys.
 STAT = {3: "agi", 4: "str", 5: "int", 6: "spi", 7: "sta", 12: "def", 13: "dodge", 14: "parry", 15: "block",
@@ -90,8 +91,22 @@ def by_level(rows, key="ItemLevel"):
     return out
 
 
+def icon_names(cache, download):
+    """IconFileDataID -> icon file name (for render.worldofwarcraft.com/us/icons/56/<name>.jpg)."""
+    path = Path(cache) / "icons.json"
+    if not path.exists():
+        if not download:
+            return {}
+        req = urllib.request.Request("https://wago.tools/api/files?search=interface/icons/",
+                                     headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
+        path.write_bytes(urllib.request.urlopen(req, timeout=180).read())
+    raw = json.loads(path.read_text())
+    return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower() for k, v in raw.items() if v.startswith("interface/icons/")}
+
+
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
+    icons = icon_names(cache, download)
     item = {r["ID"]: r for r in T["Item"]}
     rpp = {num(r["ID"], int): r for r in T["RandPropPoints"]}
     aq = {num(r["ID"], int): r for r in T["ItemArmorQuality"]}
@@ -210,6 +225,9 @@ def client_items(cache, download):
         rec = {"id": int(iid), "name": name, "q": q, "ilvl": ilvl, "req": req, "slot": SLOTS[inv], "inv": inv,
                "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc", "cls": cls,
                "stats": stats}
+        icon = icons.get(num(it.get("IconFileDataID"), int))
+        if icon:
+            rec["icon"] = icon
         if weapon:
             rec["weapon"] = weapon
         if effects:
@@ -366,9 +384,69 @@ def cmangos_sources(sql, keep):
     return src
 
 
+def questie_sources(qdir, keep):
+    """Item sources from Questie's Forever database: drops, chests, vendors and quest rewards."""
+    q = Path(qdir)
+    items = json.loads((q / "items.json").read_text())
+    npcs = {n["id"]: n for n in json.loads((q / "npcs.json").read_text())}
+    objs = {o["id"]: o for o in json.loads((q / "objects.json").read_text())}
+    quests = {x["id"]: x for x in json.loads((q / "quests.json").read_text())}
+    dungeons = {}
+    for k, v in json.loads((q / "dungeons.json").read_text()).items():
+        if isinstance(v, list) and v:
+            dungeons[int(k)] = v[0]
+    zone_names = {}
+    zfile = q / "zoneIDs.json"
+    if zfile.exists():
+        for k, v in json.loads(zfile.read_text()).items():
+            if isinstance(v, int):
+                w = re.sub(r"\b(Of|The|And)\b", lambda m: m.group(1).lower(), k.replace("_", " ").title())
+                zone_names[v] = w[:1].upper() + w[1:]
+    zone_names.update(dungeons)
+    src = defaultdict(list)
+    for it in items:
+        iid = it["id"]
+        if iid not in keep:
+            continue
+        drops = it.get("npcDrops") or []
+        for nid in drops[:12]:
+            n = npcs.get(nid)
+            if not n or not n.get("name"):
+                continue
+            z = n.get("zoneID")
+            rec = {"t": "drop", "n": n["name"], "lv": n.get("maxLevel")}
+            if z in zone_names:
+                rec["z"] = zone_names[z]
+            if z in dungeons:
+                rec["t"] = "dungeon"
+                if n.get("rank") == 3 or n.get("maxLevel", 0) >= 63:
+                    rec["boss"] = 1
+            elif n.get("rank") == 3:
+                rec["boss"] = 1
+            src[iid].append(rec)
+        if len(drops) > 12 and not any(s.get("boss") for s in src[iid]):
+            src[iid] = [{"t": "world"}]
+        for oid in (it.get("objectDrops") or [])[:3]:
+            o = objs.get(oid)
+            if o and o.get("name"):
+                src[iid].append({"t": "chest", "n": o["name"], **({"z": zone_names[o["zoneID"]]} if o.get("zoneID") in zone_names else {})})
+        for vid in (it.get("vendors") or [])[:3]:
+            n = npcs.get(vid)
+            if n and n.get("name"):
+                src[iid].append({"t": "vendor", "n": n["name"], **({"z": zone_names[n["zoneID"]]} if n.get("zoneID") in zone_names else {})})
+        for qid in (it.get("questRewards") or [])[:3]:
+            x = quests.get(qid)
+            if x:
+                rec = {"t": "quest", "n": x["name"], "lv": x.get("questLevel"), "qid": qid, "min": x.get("requiredLevel") or 0}
+                if x.get("requiredClasses"):
+                    rec["qcls"] = x["requiredClasses"]
+                src[iid].append(rec)
+    return src
+
+
 def rank_sources(lst):
-    order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "drop": 7,
-             "world": 8, "logged": -1}
+    order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
+             "drop": 8, "world": 9, "logged": -1}
     seen, out = set(), []
     for s in sorted(lst, key=lambda s: (order.get(s["t"], 9), -s.get("ch", 0))):
         key = (s["t"], s.get("n"), s.get("z"))
@@ -409,6 +487,7 @@ def main():
     ap.add_argument("--download", action="store_true")
     ap.add_argument("--cmangos")
     ap.add_argument("--atlasloot")
+    ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
     ap.add_argument("--report", default="gamedata/items-report.md")
     a = ap.parse_args()
@@ -417,6 +496,7 @@ def main():
     keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
     cm = cmangos_sources(a.cmangos, keep) if a.cmangos else {}
+    qs = questie_sources(a.questie, keep) if a.questie else {}
     logged = defaultdict(list)
     loot_csv = Path("out/loot.csv")
     if loot_csv.exists():
@@ -429,7 +509,7 @@ def main():
                                                "seen": int(r.get("players") or 1)})
     no_src = 0
     for iid, rec in items.items():
-        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + cm.get(iid, []))
+        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
         if s:
             rec["src"] = s
         else:

@@ -16,6 +16,7 @@ const st: State = {
   sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null,
 };
 
+let view: "plan" | "cur" = "plan";
 let items: Item[] = [];
 let byId = new Map<number, Item>();
 let sets: Record<string, { name: string; bonuses: { n: number; stats: Stats; text: string }[] }> = {};
@@ -140,7 +141,7 @@ function suggest(): State["plan"] {
 
 // ---------- rendering ----------
 const QUALITY = ["poor", "common", "uncommon", "rare", "epic", "legendary", "artifact"];
-const SRC_LABEL: Record<string, string> = { raid: "Raid", dungeon: "Dungeon", pvp: "PvP", rep: "Reputation", quest: "Quest", craft: "Crafted", vendor: "Vendor", drop: "Drop", world: "World drop", logged: "Seen in Forever" };
+const SRC_LABEL: Record<string, string> = { chest: "Chest", raid: "Raid", dungeon: "Dungeon", pvp: "PvP", rep: "Reputation", quest: "Quest", craft: "Crafted", vendor: "Vendor", drop: "Drop", world: "World drop", logged: "Seen in Forever" };
 function srcText(it: Item) {
   const s = it.src?.[0];
   if (!s) return "Source not known yet";
@@ -163,6 +164,93 @@ function itemCell(id: number | undefined, doll: DollSlot) {
     <span class="stats">${esc(statLine(it))}</span>${(it.fx || []).map((f) => `<span class="fx">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(f.text)}</span>`).join("")}`;
 }
 
+const ICON = (n: string) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
+const CLASS_ICON: Record<string, string> = {
+  WARRIOR: "classicon_warrior", PALADIN: "classicon_paladin", HUNTER: "classicon_hunter", ROGUE: "classicon_rogue",
+  PRIEST: "classicon_priest", SHAMAN: "classicon_shaman", MAGE: "classicon_mage", WARLOCK: "classicon_warlock", DRUID: "classicon_druid",
+};
+const LEFT: DollSlot[] = ["head", "neck", "shoulder", "back", "chest", "wrist"];
+const RIGHT: DollSlot[] = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"];
+const BOTTOM: DollSlot[] = ["mainhand", "offhand", "ranged"];
+const SLOT_GLYPH: Record<DollSlot, string> = {
+  head: "Hd", neck: "Nk", shoulder: "Sh", back: "Bk", chest: "Ch", wrist: "Wr", hands: "Ha", waist: "Wa", legs: "Lg",
+  feet: "Ft", finger1: "R1", finger2: "R2", trinket1: "T1", trinket2: "T2", mainhand: "MH", offhand: "OH", ranged: "Rg",
+};
+
+function slotButton(d: DollSlot) {
+  const id = (view === "plan" ? st.plan : st.cur)[d];
+  const it = id ? byId.get(id) : undefined;
+  const other = (view === "plan" ? st.cur : st.plan)[d];
+  const up = view === "plan" && it && (val(d, it) - val(d, other ? byId.get(other) : undefined)) > 0.05;
+  const owned = it && st.owned.has(it.id);
+  const q = it ? QUALITY[it.q] || "common" : "empty";
+  const img = it?.icon ? `<img src="${ICON(it.icon)}" alt="" width="52" height="52" loading="lazy" onerror="this.remove()">` : "";
+  return `<button type="button" class="slot q-b-${q}" data-slot="${d}" aria-label="${DOLL_LABEL[d]}: ${it ? esc(it.name) : "empty"}">
+    ${img}<span class="glyph" aria-hidden="true">${SLOT_GLYPH[d]}</span>
+    ${up ? `<span class="badge up" title="Upgrade over current">▲</span>` : ""}${owned ? `<span class="badge own" title="Owned">✓</span>` : ""}
+  </button>`;
+}
+
+function renderDoll() {
+  const spec = SPECS[st.cls].find((s) => s.key === st.spec);
+  const t = totals(view === "plan" ? st.plan : st.cur);
+  $("#g-doll").dataset.klass = st.cls.toLowerCase();
+  $("#g-doll").innerHTML = `
+    <div class="col left">${LEFT.map(slotButton).join("")}</div>
+    <div class="figure">
+      <svg viewBox="0 0 200 320" class="silhouette" aria-hidden="true">
+        <defs>
+          <radialGradient id="aura" cx="50%" cy="42%" r="55%"><stop offset="0" stop-color="var(--cls)" stop-opacity=".55"/><stop offset="1" stop-color="var(--cls)" stop-opacity="0"/></radialGradient>
+          <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4a5a"/><stop offset="1" stop-color="#1a242e"/></linearGradient>
+        </defs>
+        <ellipse cx="100" cy="150" rx="98" ry="150" fill="url(#aura)"/>
+        <ellipse cx="100" cy="304" rx="62" ry="9" fill="#000" opacity=".35"/>
+        <path fill="url(#body)" stroke="var(--cls)" stroke-opacity=".7" stroke-width="1.5" d="M100 22c15 0 25 12 25 27 0 12-6 21-14 25l2 8c18 3 33 9 43 18 9 9 12 26 14 46l6 52c1 8-3 12-9 12-5 0-8-4-9-10l-7-50-6 7 4 60-11 98c-1 7-6 11-12 11s-10-4-10-11l-3-80h-6l-3 80c0 7-4 11-10 11s-11-4-12-11l-11-98 4-60-6-7-7 50c-1 6-4 10-9 10-6 0-10-4-9-12l6-52c2-20 5-37 14-46 10-9 25-15 43-18l2-8c-8-4-14-13-14-25 0-15 10-27 25-27z"/>
+        <path d="M70 92c10 6 20 8 30 8s20-2 30-8" fill="none" stroke="var(--cls)" stroke-opacity=".5" stroke-width="2"/>
+      </svg>
+      <img class="crest" src="${ICON(CLASS_ICON[st.cls])}" alt="" width="44" height="44" onerror="this.remove()">
+      <p class="who"><b>${esc(CLASSES[st.cls].name)}</b><span>${esc(spec?.name || "")}, level ${st.level}</span></p>
+      <p class="pow"><span>${view === "plan" ? "Plan score" : "Current score"}</span><b>${t.v}</b></p>
+    </div>
+    <div class="col right">${RIGHT.map(slotButton).join("")}</div>
+    <div class="row bottom">${BOTTOM.map(slotButton).join("")}</div>`;
+  document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
+}
+
+function tooltipHtml(d: DollSlot) {
+  const id = (view === "plan" ? st.plan : st.cur)[d];
+  const it = id ? byId.get(id) : undefined;
+  if (!it) return `<p class="tt-name">${DOLL_LABEL[d]}</p><p class="tt-muted">Empty. Click to choose an item.</p>`;
+  const lines: string[] = [];
+  lines.push(`<p class="tt-name q-${QUALITY[it.q]}">${esc(it.name)}</p>`);
+  lines.push(`<p class="tt-muted">Item level ${it.ilvl}</p>`);
+  if (it.bop) lines.push(`<p>Binds when picked up</p>`);
+  lines.push(`<p class="tt-row"><span>${esc(DOLL_LABEL[d])}</span><span>${esc(it.type === "misc" ? "" : it.type.replace(/[12]$/, "").replace(/^./, (c) => c.toUpperCase()))}</span></p>`);
+  if (it.weapon) lines.push(`<p class="tt-row"><span>${it.weapon.min} – ${it.weapon.max} Damage</span><span>Speed ${it.weapon.speed.toFixed(2)}</span></p><p>(${it.weapon.dps} damage per second)</p>`);
+  if (it.stats.armor) lines.push(`<p>${it.stats.armor} Armor</p>`);
+  const primary = ["str", "agi", "sta", "int", "spi"];
+  for (const k of primary) if (it.stats[k]) lines.push(`<p>+${it.stats[k]} ${STAT_LABEL[k]}</p>`);
+  for (const [k, v] of Object.entries(it.stats)) if (!primary.includes(k) && k !== "armor" && k !== "dps") lines.push(`<p class="tt-green">Equip: +${v} ${STAT_LABEL[k] || k}</p>`);
+  for (const f of it.fx || []) lines.push(`<p class="tt-green">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(f.text)}</p>`);
+  if (it.set && sets[it.set]) lines.push(`<p class="tt-gold">${esc(sets[it.set].name)}</p>`);
+  if (it.req) lines.push(`<p>Requires level ${it.req}</p>`);
+  lines.push(`<p class="tt-src">${esc(srcText(it))}</p>`);
+  lines.push(`<p class="tt-score">Score ${val(d, it)} for ${esc(SPECS[st.cls].find((s) => s.key === st.spec)?.name || "")}</p>`);
+  return lines.join("");
+}
+function showTip(btn: HTMLElement) {
+  const tip = $("#g-tip");
+  tip.innerHTML = tooltipHtml(btn.dataset.slot as DollSlot);
+  tip.hidden = false;
+  const r = btn.getBoundingClientRect(), pane = $("#g-doll").getBoundingClientRect();
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = r.right - pane.left + 10, y = r.top - pane.top;
+  if (r.right + w + 20 > window.innerWidth) x = r.left - pane.left - w - 10;
+  if (x < 0) x = Math.max(0, (pane.width - w) / 2);
+  y = Math.min(y, Math.max(0, pane.height - h));
+  tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+}
+
 function totals(o: State["plan"]) {
   const t: Stats = {}; let v = 0;
   for (const d of PAPERDOLL) {
@@ -177,13 +265,14 @@ function totals(o: State["plan"]) {
 function render() {
   const w = weights();
   $("#g-spec").innerHTML = SPECS[st.cls].map((s) => `<option value="${s.key}"${s.key === st.spec ? " selected" : ""}>${s.name}</option>`).join("");
-  ($("#g-class") as HTMLSelectElement).value = st.cls;
   ($("#g-goal") as HTMLSelectElement).value = st.goal;
   ($("#g-level") as HTMLInputElement).value = String(st.level);
   $("#g-level-out").textContent = String(st.level);
   ($("#g-side") as HTMLSelectElement).value = st.side;
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => (c.checked = st.sources.has(c.dataset.src!)));
 
+  renderDoll();
+  document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.pickcls === st.cls)));
   const cur = totals(st.cur), plan = totals(st.plan);
   $("#g-summary").innerHTML = `
     <div><dt>Current gear</dt><dd>${cur.v}</dd></div>
@@ -236,13 +325,12 @@ function fillPicker() {
   const list = pool.filter((it) => !q || it.name.toLowerCase().includes(q) || String(it.id) === q)
     .map((it) => ({ it, v: val(d, it) })).sort((a, b) => b.v - a.v).slice(0, 60);
   $("#g-picker-list").innerHTML = (st.cur[d] || st.plan[d] ? `<li><button type="button" data-choose="0" class="link">Clear this slot</button></li>` : "")
-    + list.map(({ it, v }) => `<li><button type="button" data-choose="${it.id}"><span class="score">${v}</span>${itemCell(it.id, d)}</button></li>`).join("")
+    + list.map(({ it, v }) => `<li><button type="button" data-choose="${it.id}"><span class="pic q-b-${QUALITY[it.q] || "common"}">${it.icon ? `<img src="${ICON(it.icon)}" alt="" width="36" height="36" loading="lazy" onerror="this.remove()">` : ""}</span><span class="score">${v}</span><span>${itemCell(it.id, d)}</span></button></li>`).join("")
     + (list.length ? "" : `<li class="muted">No items match. Try another name, or tick "Show items I can't use yet".</li>`);
 }
 
 // ---------- events ----------
 function bind() {
-  $("#g-class").addEventListener("change", (e) => { st.cls = (e.target as HTMLSelectElement).value; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render(); });
   $("#g-spec").addEventListener("change", (e) => { st.spec = (e.target as HTMLSelectElement).value; st.custom = null; render(); });
   $("#g-goal").addEventListener("change", (e) => {
     const g = (e.target as HTMLSelectElement).value as Goal;
@@ -288,6 +376,22 @@ function bind() {
     const t = e.target as HTMLInputElement;
     if (t.dataset.w && st.goal === "custom") { st.custom = { ...(st.custom || {}), [t.dataset.w]: +t.value || 0 }; render(); }
   });
+  document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.addEventListener("click", () => {
+    st.cls = b.dataset.pickcls!; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
+  }));
+  document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.view as "plan" | "cur"; render(); }));
+  const doll = $("#g-doll");
+  doll.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]");
+    if (!b) return;
+    ($("#g-target") as HTMLSelectElement).value = view;
+    $("#g-tip").hidden = true;
+    openPicker(b.dataset.slot as DollSlot);
+  });
+  doll.addEventListener("mouseover", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]"); if (b) showTip(b); });
+  doll.addEventListener("focusin", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]"); if (b) showTip(b); });
+  doll.addEventListener("mouseleave", () => ($("#g-tip").hidden = true));
+  doll.addEventListener("focusout", () => ($("#g-tip").hidden = true));
   $("#g-search").addEventListener("input", fillPicker);
   $("#g-all").addEventListener("change", fillPicker);
   $("#g-picker-list").addEventListener("click", (e) => {
@@ -310,7 +414,6 @@ async function start() {
   let h = location.hash;
   if (!h) { try { h = localStorage.getItem("fxp-gear") || ""; } catch { /* storage blocked */ } }
   if (h) decode(h);
-  $("#g-class").innerHTML = Object.entries(CLASSES).map(([k, c]) => `<option value="${k}">${c.name}</option>`).join("");
   $("#g-goal").innerHTML = GOALS.map((g) => `<option value="${g.key}">${g.name}</option>`).join("");
   bind(); render();
   $("#gear").removeAttribute("aria-busy");

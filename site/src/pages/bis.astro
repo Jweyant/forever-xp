@@ -1,8 +1,9 @@
 ---
 import Base from "../layouts/Base.astro";
-import { SOURCE_KINDS } from "../scripts/gear/model";
+import { SOURCE_KINDS, CLASSES } from "../scripts/gear/model";
+const ICON = (n: string) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
 ---
-<Base title="BIS gear planner" description="WoW Forever best-in-slot planner: import your character's gear, pick PvE, PvP, leveling or your own stat weights, and get the best item for every slot from Forever's own item data.">
+<Base title="BIS planner" description="WoW Forever best-in-slot planner: import your character's gear, pick PvE, PvP, leveling or your own stat weights, and get the best item for every slot from Forever's own item data.">
   <h1>Best-in-slot planner</h1>
   <p class="lede">Start from the gear you're wearing, choose what you're gearing for, and get the best item for every slot. Stats come from the Forever game client, and drop sources come from open databases and ForeverScout players.</p>
 
@@ -16,8 +17,28 @@ import { SOURCE_KINDS } from "../scripts/gear/model";
       </div>
     </details>
 
+    <div class="classbar" role="group" aria-label="Class">
+      {Object.entries(CLASSES).map(([k, c]) => (
+        <button type="button" class="clsbtn" data-pickcls={k} aria-pressed="false" title={c.name}>
+          <img src={ICON(`classicon_${k.toLowerCase()}`)} alt="" width="36" height="36" loading="lazy" />
+          <span>{c.name}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="doll-wrap">
+      <div class="doll-head">
+        <div class="viewtoggle" role="group" aria-label="Show">
+          <button type="button" data-view="plan" aria-pressed="true">BIS plan</button>
+          <button type="button" data-view="cur" aria-pressed="false">Current gear</button>
+        </div>
+        <p class="small">Hover or focus a slot for details. Click a slot to change it.</p>
+      </div>
+      <div id="g-doll" class="paperdoll"><p class="muted">Loading Forever's gear database…</p></div>
+      <div id="g-tip" class="wowtip" hidden role="tooltip"></div>
+    </div>
+
     <div class="controls">
-      <label>Class<select id="g-class"></select></label>
       <label>Spec<select id="g-spec"></select></label>
       <label>Gearing for<select id="g-goal"></select></label>
       <label>Faction<select id="g-side"><option value="H">Horde</option><option value="A">Alliance</option></select></label>
@@ -37,12 +58,15 @@ import { SOURCE_KINDS } from "../scripts/gear/model";
 
     <dl id="g-summary" class="summary"></dl>
 
+    <details class="slotlist">
+    <summary><b>Slot by slot comparison</b> <span class="muted">current gear against the plan</span></summary>
     <div class="table-scroll">
       <table class="doll">
         <thead><tr><th>Slot</th><th>Current</th><th>Plan</th><th class="num">Gain</th><th></th></tr></thead>
         <tbody id="g-rows"><tr><td colspan="5" class="muted">Loading Forever's gear database…</td></tr></tbody>
       </table>
     </div>
+    </details>
 
     <div class="lower">
       <section>
@@ -75,9 +99,9 @@ import { SOURCE_KINDS } from "../scripts/gear/model";
     <li>Each item's score is its stats multiplied by your stat weights. Weapon DPS counts most in the slot it's built for, and two-handers are compared against your best main hand and off hand together.</li>
     <li>Starting weights are a reasonable baseline for each spec and goal, not a simulation. Pick <b>Custom weights</b> to set your own, and share the link to show your reasoning.</li>
     <li>Hit caps and set bonuses aren't factored in yet. Set items are labeled so you can judge them yourself.</li>
-    <li>Items Forever added don't have known drop sources yet. Players running ForeverScout log loot, and those sources appear here as they come in.</li>
+    <li>Quest rewards, vendors, chests and mob drops for Forever's own items come from Questie's Forever database. Anything still unknown fills in as players running ForeverScout log loot.</li>
   </ul>
-  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs.</p>
+  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs. Icons are Blizzard's, served from their render CDN. World of Warcraft is a trademark of Blizzard Entertainment; this site isn't affiliated with Blizzard.</p>
 </Base>
 <script>import "../scripts/gear/planner.ts";</script>
 
@@ -142,8 +166,87 @@ import { SOURCE_KINDS } from "../scripts/gear/model";
   #g-picker .picker-tools input[type="search"] { flex: 1 1 220px; }
   #g-picker .picker-list { list-style: none; padding: 0; margin: 0; max-width: none; }
   #g-picker .picker-list li + li { border-top: 1px solid var(--line); }
-  #g-picker .picker-list button[data-choose]:not(.link) { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 3.5rem 1fr; gap: 0.6rem; width: 100%; padding: 0.5rem 0.3rem; cursor: pointer; }
+  #g-picker .picker-list button[data-choose]:not(.link) { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 40px 3rem 1fr; align-items: start; gap: 0.6rem; width: 100%; padding: 0.5rem 0.3rem; cursor: pointer; }
   #g-picker .picker-list button[data-choose]:not(.link):hover, #g-picker .picker-list button[data-choose]:not(.link):focus-visible { background: var(--surface); outline: 2px solid var(--focus); }
   #g-picker .score { font-family: var(--font-display); font-weight: 600; color: var(--xp); font-size: 1.1rem; text-align: right; }
   #g-picker .picker-list .link { margin: 0.5rem 0.3rem; }
+  #g-picker .pic { width: 38px; height: 38px; border-radius: 4px; overflow: hidden; background: #10161d; border: 1px solid var(--qb, #555); }
+  #g-picker .pic img { display: block; width: 100%; height: 100%; }
+
+  /* Class picker */
+  #gear .classbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; }
+  #gear .clsbtn { display: flex; align-items: center; gap: 0.45rem; padding: 0.25rem 0.7rem 0.25rem 0.25rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); font: 600 0.95rem var(--font-display); letter-spacing: 0.02em; cursor: pointer; }
+  #gear .clsbtn img { width: 30px; height: 30px; border-radius: 50%; display: block; }
+  #gear .clsbtn[aria-pressed="true"] { border-color: var(--xp); background: color-mix(in srgb, var(--xp) 14%, var(--surface)); box-shadow: 0 0 0 1px var(--xp) inset; }
+  #gear .clsbtn:hover { border-color: var(--xp); }
+  @media (max-width: 719px) { #gear .clsbtn span { display: none; } #gear .clsbtn { padding: 0.2rem; } }
+
+  /* Character panel: always dark, like the in-game window */
+  .doll-wrap { position: relative; margin: 0 0 1.4rem; }
+  .doll-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem 1rem; margin-bottom: 0.5rem; }
+  .doll-head p { margin: 0; color: var(--muted); }
+  .viewtoggle { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .viewtoggle button { border: 0; background: var(--surface); color: var(--ink); font: 600 0.95rem var(--font-display); padding: 0.35rem 0.9rem; cursor: pointer; }
+  .viewtoggle button[aria-pressed="true"] { background: var(--xp); color: #fff; }
+  .paperdoll {
+    --cls: #c79c6e; --frame: #8a6d3b;
+    display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "l f r" "b b b"; gap: 10px 14px;
+    padding: 16px; border-radius: 10px; color: #e9e3d3;
+    background: radial-gradient(ellipse at 50% 35%, #26313d 0%, #141a21 60%, #0c1015 100%);
+    border: 2px solid var(--frame); box-shadow: inset 0 0 0 1px #000, inset 0 0 40px rgba(0,0,0,.6), 0 6px 20px rgba(0,0,0,.25);
+  }
+  .paperdoll[data-klass="warrior"] { --cls: #c79c6e; } .paperdoll[data-klass="paladin"] { --cls: #f58cba; }
+  .paperdoll[data-klass="hunter"] { --cls: #abd473; } .paperdoll[data-klass="rogue"] { --cls: #fff569; }
+  .paperdoll[data-klass="priest"] { --cls: #ffffff; } .paperdoll[data-klass="shaman"] { --cls: #0070de; }
+  .paperdoll[data-klass="mage"] { --cls: #69ccf0; } .paperdoll[data-klass="warlock"] { --cls: #9482c9; }
+  .paperdoll[data-klass="druid"] { --cls: #ff7d0a; }
+  .paperdoll .col { display: grid; gap: 6px; align-content: start; }
+  .paperdoll .left { grid-area: l; } .paperdoll .right { grid-area: r; }
+  .paperdoll .bottom { grid-area: b; display: flex; justify-content: center; gap: 6px; }
+  .paperdoll .figure { grid-area: f; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 340px; text-align: center; }
+  .paperdoll .silhouette { width: min(200px, 100%); max-height: 300px; height: auto; opacity: .95; }
+  .paperdoll .crest { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); border-radius: 50%; border: 2px solid var(--cls); box-shadow: 0 0 14px color-mix(in srgb, var(--cls) 60%, transparent); }
+  .paperdoll .who { margin: 0; display: grid; font-family: var(--font-display); }
+  .paperdoll .who b { font-size: 1.35rem; color: var(--cls); letter-spacing: .03em; text-shadow: 0 1px 2px #000; }
+  .paperdoll .who span { font-size: .9rem; color: #c9c1ad; }
+  .paperdoll .pow { margin: 0; display: flex; justify-content: center; gap: .5rem; align-items: baseline; font-family: var(--font-display); }
+  .paperdoll .pow span { font-size: .8rem; color: #a59c86; text-transform: uppercase; letter-spacing: .08em; }
+  .paperdoll .pow b { font-size: 1.4rem; color: #e8b92e; }
+  .paperdoll .slot {
+    position: relative; width: 52px; height: 52px; padding: 0; border-radius: 6px; cursor: pointer; overflow: hidden;
+    background: linear-gradient(145deg, #1d242c, #0b0f13); border: 2px solid var(--qb, #3a3f46);
+    box-shadow: inset 0 0 0 1px #000, 0 0 0 1px #000, 0 0 10px color-mix(in srgb, var(--qb, #000) 45%, transparent);
+  }
+  .paperdoll .slot img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .paperdoll .slot .glyph { font: 600 .8rem var(--font-display); color: #6d7680; letter-spacing: .04em; }
+  .paperdoll .slot img + .glyph { display: none; }
+  .paperdoll .slot:hover, .paperdoll .slot:focus-visible { outline: 2px solid #e8b92e; outline-offset: 1px; }
+  .paperdoll .badge { position: absolute; font-size: .62rem; line-height: 1; padding: 2px 3px; border-radius: 3px; font-weight: 700; }
+  .paperdoll .badge.up { right: 2px; top: 2px; padding: 0; width: 0; height: 0; border-radius: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 9px solid #3ee05a; filter: drop-shadow(0 0 1px #000); font-size: 0; }
+  .paperdoll .badge.own { left: 1px; bottom: 1px; background: #e8b92e; color: #111; }
+  .q-b-empty { --qb: #3a3f46; } .q-b-poor { --qb: #9d9d9d; } .q-b-common { --qb: #d8d8d8; } .q-b-uncommon { --qb: #1eff00; }
+  .q-b-rare { --qb: #0070dd; } .q-b-epic { --qb: #a335ee; } .q-b-legendary { --qb: #ff8000; } .q-b-artifact { --qb: #e6cc80; }
+  #g-picker .pic.q-b-poor, #g-picker .pic.q-b-common, #g-picker .pic.q-b-uncommon, #g-picker .pic.q-b-rare, #g-picker .pic.q-b-epic, #g-picker .pic.q-b-legendary { border: 2px solid var(--qb); }
+  @media (max-width: 560px) {
+    .paperdoll { grid-template-columns: auto 1fr auto; gap: 6px; padding: 10px; }
+    .paperdoll .slot { width: 44px; height: 44px; }
+    .paperdoll .col { gap: 4px; }
+    .paperdoll .figure { min-height: 280px; }
+    .paperdoll .who b { font-size: 1.1rem; } .paperdoll .silhouette { max-height: 210px; }
+  }
+
+  /* In-game style tooltip */
+  .wowtip { position: absolute; z-index: 20; width: 290px; max-width: calc(100vw - 32px); padding: 8px 10px; border-radius: 6px; pointer-events: none;
+    background: rgba(8, 12, 28, .96); border: 1px solid #5c6578; box-shadow: 0 0 0 1px #000, 0 6px 18px rgba(0,0,0,.5); color: #fff; font-size: .88rem; line-height: 1.35; }
+  .wowtip p { margin: 0; max-width: none; }
+  .wowtip .tt-name { font: 600 1.05rem var(--font-body); margin-bottom: 2px; }
+  .wowtip .tt-muted { color: #c9c1ad; }
+  .wowtip .tt-row { display: flex; justify-content: space-between; gap: 1rem; }
+  .wowtip .tt-green { color: #1eff00; } .wowtip .tt-gold { color: #ffd100; margin-top: 4px; }
+  .wowtip .tt-src { color: #ffd100; margin-top: 6px; font-size: .82rem; }
+  .wowtip .tt-score { color: #b9a4f0; font-size: .82rem; }
+  .wowtip .q-poor { color: #9d9d9d; } .wowtip .q-common { color: #fff; } .wowtip .q-uncommon { color: #1eff00; } .wowtip .q-rare { color: #0070dd; }
+  .wowtip .q-epic { color: #a335ee; } .wowtip .q-legendary { color: #ff8000; }
+  #gear .slotlist { margin: 1rem 0; }
+  #gear .slotlist summary { cursor: pointer; margin-bottom: .6rem; }
 </style>

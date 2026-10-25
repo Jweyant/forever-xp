@@ -30,10 +30,10 @@ const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf
   </section>
 
   <section class="tools" aria-label="Tools">
-    <a href="/gear/"><b>BIS gear planner</b><span>Import your character, pick PvE, PvP or leveling, and see the best item for every slot.</span></a>
-    <a href="/talents/"><b>Talent calculator</b><span>All nine classes from the Forever client, with build links you can share.</span></a>
-    <a href="/changes/"><b>What Forever changed</b><span>Talents, quests, items and spells compared with Classic Era.</span></a>
-    <a href="/quests/"><b>Quest XP per minute</b><span>Every scored quest, sortable by zone.</span></a>
+    <a href="/bis/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_chest_plate06.jpg" alt="" width="44" height="44" loading="lazy" /><b>BIS gear planner</b><span>Import your character, pick PvE, PvP or leveling, and see the best item for every slot.</span></a>
+    <a href="/talents/"><img src="https://render.worldofwarcraft.com/us/icons/56/ability_marksmanship.jpg" alt="" width="44" height="44" loading="lazy" /><b>Talent calculator</b><span>All nine classes from the Forever client, with build links you can share.</span></a>
+    <a href="/changes/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_misc_book_09.jpg" alt="" width="44" height="44" loading="lazy" /><b>What Forever changed</b><span>Talents, quests, items and spells compared with Classic Era.</span></a>
+    <a href="/quests/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_misc_note_01.jpg" alt="" width="44" height="44" loading="lazy" /><b>Quest database</b><span>All Forever quests from Questie: givers, coordinates, chains and rewards.</span></a>
   </section>
 
   <section>
@@ -79,8 +79,10 @@ const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf
   .facts span { color: var(--muted); font-size: var(--step--1); max-width: 22ch; }
   .facts .measured b { color: var(--quest); }
   .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
-  .tools a { display: grid; gap: 0.2rem; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
+  .tools a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.8rem; row-gap: 0.2rem; align-items: start; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
   .tools a:hover { border-color: var(--xp); }
+  .tools img { grid-row: span 2; border-radius: 6px; border: 2px solid #8a6d3b; box-shadow: 0 0 0 1px #000; }
+  .tools span { grid-column: 2; }
   .tools b { font-family: var(--font-display); font-size: var(--step-1); }
   .tools span { color: var(--muted); font-size: var(--step--1); }
   .loop { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; counter-reset: s; max-width: none; }

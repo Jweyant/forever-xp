@@ -1,0 +1,49 @@
+---
+import Base from "../../../layouts/Base.astro";
+import { qdb, qzones, SIDE_LABEL } from "../../../lib/questdb";
+import { questById, VERDICT_LABEL } from "../../../lib/data";
+export function getStaticPaths() {
+  return qzones.map((z) => ({ params: { slug: z.slug }, props: { z } }));
+}
+const { z } = Astro.props as { z: (typeof qzones)[number] };
+const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.lv || 99) || a.n.localeCompare(b.n));
+---
+<Base title={`${z.name} quests`} description={`All ${z.count} WoW Forever quests in ${z.name}${z.max ? `, levels ${z.min} to ${z.max}` : ""}, with quest givers, coordinates and rewards.`}>
+  <p class="crumbs"><a href="/quests/">Quests</a> / {z.name}</p>
+  <h1>{z.name} quests</h1>
+  <p class="lede">{z.count} quests{z.max ? `, levels ${z.min} to ${z.max}` : ""}. Sort any column or filter by name.</p>
+  <div class="filters">
+    <label>Search<input type="search" data-filter="text" data-for="zt" placeholder="Quest or NPC name" /></label>
+    <label>Faction<select data-filter="side" data-for="zt"><option value="">Either</option><option value="h">Horde</option><option value="a">Alliance</option><option value="both">Both factions</option></select></label>
+    <span class="muted small" data-count-for="zt" aria-live="polite"></span>
+  </div>
+  <div class="table-scroll tall">
+    <table id="zt" data-sortable>
+      <thead><tr>
+        <th class="num" data-type="num" aria-sort="ascending"><button>Level</button></th>
+        <th data-type="text"><button>Quest</button></th>
+        <th class="opt" data-type="text"><button>Starts with</button></th>
+        <th class="opt" data-type="text"><button>Faction</button></th>
+        <th class="num opt" data-type="num"><button>XP</button></th>
+        <th data-type="text"><button>Route</button></th>
+      </tr></thead>
+      <tbody>
+        {list.map((q) => { const s = questById.get(q.id); return (
+          <tr data-search={`${q.n} ${q.start?.n ?? ""} ${q.id}`.toLowerCase()} data-side={q.side ? q.side.toLowerCase() : "both"}>
+            <td class="num" data-v={q.lv}>{q.lv > 0 ? q.lv : "–"}</td>
+            <td data-v={q.n}><a href={`/quests/${q.id}/`}>{q.n}</a>{q.rew?.length ? <span class="rw" title="Has item rewards"> ◆</span> : null}</td>
+            <td class="opt">{q.start ? <>{q.start.n}{q.start.x != null ? <span class="muted small"> {q.start.x}, {q.start.y}</span> : null}</> : "–"}</td>
+            <td class="opt">{q.side ? SIDE_LABEL[q.side] : "Both"}</td>
+            <td class="num opt" data-v={q.xp ?? ""}>{q.xp ?? "–"}</td>
+            <td data-v={s?.verdict ?? "z"}>{s ? <span class={`verdict ${s.verdict}`}>{VERDICT_LABEL[s.verdict]}</span> : <span class="muted">–</span>}</td>
+          </tr>); })}
+      </tbody>
+    </table>
+  </div>
+</Base>
+<script>import "../../../scripts/table.ts";</script>
+<style>
+  .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
+  .tall { max-height: 75vh; }
+  .rw { color: var(--quest-bright); }
+</style>
