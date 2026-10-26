@@ -129,6 +129,34 @@ def parse_report(path):
     }
 
 
+def write_questdb(gear):
+    """Every Forever quest from Questie (gamedata/quests.json), with reward item quality and icons
+    joined from the gear database, for quest pages and the client-side quest search."""
+    src = ROOT / "gamedata" / "quests.json"
+    if not src.exists():
+        (OUT / "questdb.json").write_text("[]")
+        return
+    qdb = json.loads(src.read_text())
+    items = {}
+    if gear.exists():
+        g = json.loads(gear.read_text())
+        items = {i["id"]: i for i in (g["items"] if isinstance(g, dict) else g)}
+    for q in qdb:
+        for r in q.get("rew", []):
+            it = items.get(r["id"])
+            if it:
+                r["q"] = it.get("q", 1)
+                if it.get("icon"):
+                    r["icon"] = it["icon"]
+    (OUT / "questdb.json").write_text(json.dumps(qdb, separators=(",", ":"), ensure_ascii=False))
+    # Compact search index: [id, name, level, zone, side, start npc]
+    idx = [[q["id"], q["n"], q.get("lv") or 0, q.get("z", ""), q.get("side", ""), (q.get("start") or {}).get("n", "")]
+           for q in qdb]
+    pub = ROOT / "site" / "public" / "data"
+    pub.mkdir(parents=True, exist_ok=True)
+    (pub / "quest-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
+
+
 def main():
     zones_raw = json.loads((ROOT / "tools" / "zone_sizes.json").read_text())
     zone_name = {int(k): v["name"] for k, v in zones_raw.items()}
@@ -248,6 +276,7 @@ def main():
         pub = ROOT / "site" / "public" / "data"
         pub.mkdir(parents=True, exist_ok=True)
         (pub / "items.json").write_bytes(gear.read_bytes())
+    write_questdb(gear)
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))

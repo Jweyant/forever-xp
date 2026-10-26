@@ -8,7 +8,7 @@ const nav = [
   { href: "/guides/", label: "Guides" },
   { href: "/quests/", label: "Quests" },
   { href: "/skip/", label: "Skip list" },
-  { href: "/gear/", label: "Gear" },
+  { href: "/bis/", label: "BIS" },
   { href: "/talents/", label: "Talents" },
   { href: "/changes/", label: "Changes" },
   { href: "/scout/", label: "ForeverScout" },
@@ -64,6 +64,7 @@ const canonical = new URL(path, Astro.site);
         <a href="https://github.com/Jweyant/forever-xp">Source and data on GitHub</a> (GPL-3.0).
         <a href="/contribute/">Help with a log</a>.
       </p>
+      <p class="small muted">Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Game icons are Blizzard's, loaded from their render service.</p>
       <p class="small muted">Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc.</p>
     </div>
   </footer>
@@ -81,7 +82,8 @@ const canonical = new URL(path, Astro.site);
 <style is:global>
   .skip-link { position: absolute; left: -999px; top: 0; background: var(--surface); padding: 0.5rem 1rem; z-index: 10; }
   .skip-link:focus { left: 1rem; }
-  .site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+  .site-header { border-bottom: 1px solid var(--line); background: var(--surface); position: relative; }
+  .site-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: linear-gradient(90deg, var(--xp) 0 62%, var(--rested) 62% 80%, var(--quest-bright) 80%); }
   .site-header .bar { display: flex; align-items: center; gap: 1rem; min-height: 60px; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
   .brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; color: var(--ink); text-decoration: none; }
   .brand-mark { width: 34px; height: 10px; background: var(--bar-track); border-radius: 2px; overflow: hidden; display: inline-block; }

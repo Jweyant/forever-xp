@@ -48,6 +48,7 @@ database, ready to paste into Questie's Discord.
 | `tools/pull_logs.py` | Downloads uploaded logs for analysis |
 | `tools/refresh_questie_data.sh` | Builds a local copy of Questie's Forever database (JSON + SQLite) in `data/` |
 | `tools/export_questiedb.lua`, `tools/build_sqlite.py` | The two steps that script runs |
+| `tools/build_quests.py` | Turns the Questie export into `gamedata/quests.json`, every Forever quest, for the site's quest database |
 | `tools/ingest_logs.py` | Merges player logs and compares them with Questie |
 | `routes/*.yaml` | Route order for each guide (the only part written by hand) |
 | `tools/score_quests.py` | Scores every quest in a level band by XP/minute, for choosing what to keep or skip |

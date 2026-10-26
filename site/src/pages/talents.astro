@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import talentsJson from "../data/talents.json";
+const CC: Record<string, string> = { warrior: "#c79c6e", paladin: "#f58cba", hunter: "#abd473", rogue: "#d4c33a", priest: "#9aa3ad", shaman: "#0070de", mage: "#3fb3e0", warlock: "#9482c9", druid: "#ff7d0a" };
 const data = talentsJson as { build: string; classes: { name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
 ---
 <Base title="Talent calculator" description="WoW Forever talent calculator for all nine classes, built from the Forever game client, with shareable build links.">
@@ -9,7 +10,8 @@ const data = talentsJson as { build: string; classes: { name: string; slug: stri
   <ul class="picker">
     {data.classes.map((c) => (
       <li>
-        <a href={`/talents/${c.slug}/`}>
+        <a href={`/talents/${c.slug}/`} style={`--cc:${CC[c.slug] || "var(--xp)"}`}>
+          <img src={`https://render.worldofwarcraft.com/us/icons/56/classicon_${c.slug}.jpg`} alt="" width="40" height="40" loading="lazy" />
           <b>{c.name}</b>
           <span class="muted small">{c.trees.map((t) => t.name).join(", ")}</span>
         </a>
@@ -20,7 +22,9 @@ const data = talentsJson as { build: string; classes: { name: string; slug: stri
 </Base>
 <style>
   .picker { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; max-width: none; }
-  .picker a { display: grid; gap: 0.1rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-left: 4px solid var(--xp); background: var(--surface); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
+  .picker a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.7rem; align-items: center; border-left-color: var(--cc) !important; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-left: 4px solid var(--xp); background: var(--surface); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
   .picker a:hover { border-color: var(--xp); }
   .picker b { font-family: var(--font-display); font-size: var(--step-1); }
+  .picker img { grid-row: span 2; border-radius: 50%; border: 2px solid var(--cc); }
+  .picker span { grid-column: 2; }
 </style>

@@ -1,70 +1,94 @@
 ---
 import Base from "../../layouts/Base.astro";
-import Rate from "../../components/Rate.astro";
-import { quests, zones, VERDICT_LABEL, rateOf, meta } from "../../lib/data";
-const score = (q: (typeof quests)[number]) => (q.unlocated ? -1 : rateOf(q) ?? -1);
-const rows = [...quests].sort((a, b) => score(b) - score(a));
-const located = rows.filter((q) => !q.unlocated && rateOf(q) != null);
-const maxRate = Math.max(...located.map((q) => rateOf(q) ?? 0));
+import { qdb, qzones } from "../../lib/questdb";
+import { quests } from "../../lib/data";
+const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.filter((z) => z.kind === k) }));
 ---
-<Base title="Quest XP per minute" description="Every scored WoW Forever quest ranked by XP per minute with travel included. Filter by zone and see which to skip.">
-  <h1>Quests by XP per minute</h1>
-  <p class="lede">Each quest scored on its own, travel included. Sort any column, filter by zone, and share the link: filters stay in the address.</p>
-  <p class="muted small">{meta.measured_quests ? `${meta.measured_quests} quests use measured times from player logs.` : "All times are estimates until ForeverScout logs come in."} Quests marked "No data" have objectives with no known location yet.</p>
+<Base title="Quest database" description={`All ${qdb.length.toLocaleString("en-US")} WoW Forever quests: quest givers with map coordinates, objectives, chains and rewards, from Questie's Forever database.`}>
+  <h1>Quest database</h1>
+  <p class="lede">Every quest in WoW Forever, {qdb.length.toLocaleString("en-US")} in all, with who gives it, where they stand, what it asks and what it pays.</p>
+  <p class="muted small">Want to level fast? The <a href="/quests/xp/">XP per minute ranking</a> scores {quests.length} quests with travel included.</p>
 
-  <div class="filters">
-    <label>Search<input type="search" data-filter="text" data-for="qt" placeholder="Quest or NPC name" /></label>
-    <label>Zone
-      <select data-filter="zone" data-for="qt">
-        <option value="">All zones</option>
-        {zones.map((z) => <option value={z.slug}>{z.name}</option>)}
-      </select>
-    </label>
-    <label>Verdict
-      <select data-filter="verdict" data-for="qt">
-        <option value="">Any</option>
-        <option value="do">In route</option>
-        <option value="optional">Optional</option>
-        <option value="skip">Skip</option>
-        <option value="unknown">No data</option>
-      </select>
-    </label>
-    <span class="muted small" data-count-for="qt" aria-live="polite"></span>
-  </div>
+  <section id="qsearch" class="search">
+    <div class="filters">
+      <label class="grow">Search<input type="search" id="qs-text" placeholder="Quest name, NPC or quest ID" autocomplete="off" /></label>
+      <label>Faction<select id="qs-side"><option value="">Either</option><option value="H">Horde</option><option value="A">Alliance</option></select></label>
+      <label>Levels<span class="lv"><input type="number" id="qs-min" min="1" max="63" placeholder="1" aria-label="Lowest level" /> to <input type="number" id="qs-max" min="1" max="63" placeholder="60" aria-label="Highest level" /></span></label>
+      <span class="muted small" id="qs-count" aria-live="polite"></span>
+    </div>
+    <ol id="qs-results" class="results"><li class="muted">Type to search all quests, or pick a zone below.</li></ol>
+  </section>
 
-  <div class="table-scroll tall">
-    <table id="qt" data-sortable>
-      <thead>
-        <tr>
-          <th data-type="text"><button>Quest</button></th>
-          <th class="opt" data-type="text"><button>Zone</button></th>
-          <th class="num opt" data-type="num"><button>Level</button></th>
-          <th class="num" data-type="num"><button>XP</button></th>
-          <th class="num opt" data-type="num"><button>Minutes</button></th>
-          <th class="num" data-type="num" aria-sort="descending"><button>XP/min</button></th>
-          <th data-type="text"><button>Verdict</button></th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((q) => {
-          const zslug = zones.find((z) => z.name === (q.zone || "Unknown"))?.slug;
-          return (
-            <tr data-search={`${q.name} ${q.giver ?? ""} ${q.id}`.toLowerCase()} data-zone={zslug} data-verdict={q.verdict}>
-              <td data-v={q.name}><a href={`/quests/${q.id}/`}>{q.name}</a></td>
-              <td class="opt">{q.zone}</td>
-              <td class="num opt" data-v={q.level ?? ""}>{q.level ?? "–"}</td>
-              <td class="num" data-v={q.xp ?? ""}>{q.xp ?? "–"}</td>
-              <td class="num opt" data-v={q.minutes ?? ""}>{q.minutes ?? "–"}</td>
-              <td class="num" data-v={q.unlocated ? "" : (rateOf(q) ?? "")}>{q.unlocated ? <span class="muted">–</span> : <Rate value={rateOf(q)} max={maxRate} />}</td>
-              <td data-v={q.verdict}><span class={`verdict ${q.verdict}`}>{VERDICT_LABEL[q.verdict]}</span></td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
-  </div>
+  {groups.map(({ k, zones }) => zones.length > 0 && (
+    <section>
+      <h2>{k === "Zone" ? "By zone" : k === "Class" ? "Class quests" : "Profession quests"}</h2>
+      <ul class="zones">
+        {zones.map((z) => (
+          <li><a href={`/quests/zone/${z.slug}/`}>
+            {k === "Class" && <img src={`https://render.worldofwarcraft.com/us/icons/56/classicon_${z.name.toLowerCase()}.jpg`} alt="" width="24" height="24" loading="lazy" />}
+            <b>{z.name}</b><span>{z.count} quests{z.max ? `, levels ${z.min}–${z.max}` : ""}</span></a></li>
+        ))}
+      </ul>
+    </section>
+  ))}
 </Base>
-<script>import "../../scripts/table.ts";</script>
+<script>
+  type Row = [number, string, number, string, string, string];
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const out = document.getElementById("qs-results")!;
+  const count = document.getElementById("qs-count")!;
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+  let rows: Row[] | null = null;
+  async function load() {
+    if (rows) return rows;
+    const r = await fetch("/data/quest-index.json");
+    rows = r.ok ? await r.json() : [];
+    return rows!;
+  }
+  async function run() {
+    const t = $("qs-text").value.trim().toLowerCase(), side = ($("qs-side") as unknown as HTMLSelectElement).value;
+    const min = +$("qs-min").value || 0, max = +$("qs-max").value || 99;
+    const params = new URLSearchParams();
+    if (t) params.set("q", t); if (side) params.set("side", side); if (min) params.set("min", String(min)); if (max < 99) params.set("max", String(max));
+    history.replaceState(null, "", params.toString() ? `?${params}` : location.pathname);
+    if (!t && !side && !min && max === 99) { out.innerHTML = `<li class="muted">Type to search all quests, or pick a zone below.</li>`; count.textContent = ""; return; }
+    const all = await load();
+    const id = /^\d+$/.test(t) ? +t : 0;
+    const hits = all.filter(([qid, n, lv, , s, npc]) =>
+      (!t || qid === id || n.toLowerCase().includes(t) || npc.toLowerCase().includes(t)) &&
+      (!side || !s || s === side) && (lv <= 0 || (lv >= min && lv <= max)));
+    hits.sort((a, b) => (a[1].toLowerCase().startsWith(t) ? 0 : 1) - (b[1].toLowerCase().startsWith(t) ? 0 : 1) || a[2] - b[2]);
+    count.textContent = `${hits.length.toLocaleString("en-US")} found${hits.length > 100 ? ", showing 100" : ""}`;
+    out.innerHTML = hits.slice(0, 100).map(([qid, n, lv, z, s, npc]) =>
+      `<li><a href="/quests/${qid}/"><span class="lvl">${lv > 0 ? lv : "–"}</span><b>${esc(n)}</b><span class="muted">${esc(z)}${npc ? `, from ${esc(npc)}` : ""}</span>${s ? `<span class="side side-${s}">${s === "H" ? "Horde" : "Alliance"}</span>` : ""}</a></li>`).join("")
+      || `<li class="muted">No quests match.</li>`;
+  }
+  const p = new URLSearchParams(location.search);
+  $("qs-text").value = p.get("q") || ""; ($("qs-side") as unknown as HTMLSelectElement).value = p.get("side") || "";
+  $("qs-min").value = p.get("min") || ""; $("qs-max").value = p.get("max") || "";
+  let timer = 0;
+  ["qs-text", "qs-side", "qs-min", "qs-max"].forEach((k) => $(k).addEventListener("input", () => { clearTimeout(timer); timer = window.setTimeout(run, 120); }));
+  run();
+</script>
 <style>
-  .tall { max-height: 75vh; }
+  .search { margin: 1.2rem 0 2rem; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: end; }
+  .filters label { display: grid; gap: 0.2rem; font-size: var(--step--1); color: var(--muted); }
+  .filters .grow { flex: 1 1 260px; }
+  .lv { display: flex; gap: 0.3rem; align-items: center; } .lv input { width: 4.2rem; }
+  .results { list-style: none; padding: 0; margin: 0.8rem 0 0; max-width: none; border-top: 2px solid var(--ink); }
+  .results li { border-bottom: 1px solid var(--line); }
+  .results li.muted { padding: 0.7rem 0; }
+  .results a { display: grid; grid-template-columns: 2.4rem 1fr auto; grid-template-rows: auto auto; column-gap: 0.7rem; padding: 0.5rem 0.3rem; text-decoration: none; color: var(--ink); }
+  .results a:hover { background: var(--surface); }
+  .results .lvl { grid-row: span 2; font: 600 1.2rem var(--font-display); color: var(--xp); align-self: center; text-align: center; }
+  .results .muted { grid-column: 2; font-size: 0.88rem; }
+  .results .side { grid-column: 3; grid-row: 1 / span 2; align-self: center; font-size: 0.8rem; font-weight: 600; }
+  .side-H { color: #b3261e; } .side-A { color: #2f6fd0; }
+  .zones { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.5rem; max-width: none; }
+  .zones a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.5rem; align-items: center; padding: 0.55rem 0.75rem; border: 1px solid var(--line); border-left: 4px solid var(--quest-bright); border-radius: var(--radius); background: var(--surface); text-decoration: none; color: var(--ink); }
+  .zones a:hover { border-color: var(--xp); }
+  .zones img { grid-row: span 2; border-radius: 50%; }
+  .zones b { font-family: var(--font-display); font-size: 1.05rem; grid-column: -2; }
+  .zones span { color: var(--muted); font-size: 0.85rem; grid-column: -2; }
 </style>

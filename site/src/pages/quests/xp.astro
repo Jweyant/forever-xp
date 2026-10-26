@@ -1,0 +1,72 @@
+---
+import Base from "../../layouts/Base.astro";
+import Rate from "../../components/Rate.astro";
+import { quests, zones, VERDICT_LABEL, rateOf, meta } from "../../lib/data";
+const score = (q: (typeof quests)[number]) => (q.unlocated ? -1 : rateOf(q) ?? -1);
+const rows = [...quests].sort((a, b) => score(b) - score(a));
+const located = rows.filter((q) => !q.unlocated && rateOf(q) != null);
+const maxRate = Math.max(...located.map((q) => rateOf(q) ?? 0));
+---
+<Base title="Quest XP per minute" description="Every scored WoW Forever quest ranked by XP per minute with travel included. Filter by zone and see which to skip.">
+  <p class="crumbs"><a href="/quests/">Quests</a> / XP per minute</p>
+  <h1>Quests by XP per minute</h1>
+  <p class="lede">Each quest scored on its own, travel included. Sort any column, filter by zone, and share the link: filters stay in the address.</p>
+  <p class="muted small">{meta.measured_quests ? `${meta.measured_quests} quests use measured times from player logs.` : "All times are estimates until ForeverScout logs come in."} Quests marked "No data" have objectives with no known location yet.</p>
+
+  <div class="filters">
+    <label>Search<input type="search" data-filter="text" data-for="qt" placeholder="Quest or NPC name" /></label>
+    <label>Zone
+      <select data-filter="zone" data-for="qt">
+        <option value="">All zones</option>
+        {zones.map((z) => <option value={z.slug}>{z.name}</option>)}
+      </select>
+    </label>
+    <label>Verdict
+      <select data-filter="verdict" data-for="qt">
+        <option value="">Any</option>
+        <option value="do">In route</option>
+        <option value="optional">Optional</option>
+        <option value="skip">Skip</option>
+        <option value="unknown">No data</option>
+      </select>
+    </label>
+    <span class="muted small" data-count-for="qt" aria-live="polite"></span>
+  </div>
+
+  <div class="table-scroll tall">
+    <table id="qt" data-sortable>
+      <thead>
+        <tr>
+          <th data-type="text"><button>Quest</button></th>
+          <th class="opt" data-type="text"><button>Zone</button></th>
+          <th class="num opt" data-type="num"><button>Level</button></th>
+          <th class="num" data-type="num"><button>XP</button></th>
+          <th class="num opt" data-type="num"><button>Minutes</button></th>
+          <th class="num" data-type="num" aria-sort="descending"><button>XP/min</button></th>
+          <th data-type="text"><button>Verdict</button></th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((q) => {
+          const zslug = zones.find((z) => z.name === (q.zone || "Unknown"))?.slug;
+          return (
+            <tr data-search={`${q.name} ${q.giver ?? ""} ${q.id}`.toLowerCase()} data-zone={zslug} data-verdict={q.verdict}>
+              <td data-v={q.name}><a href={`/quests/${q.id}/`}>{q.name}</a></td>
+              <td class="opt">{q.zone}</td>
+              <td class="num opt" data-v={q.level ?? ""}>{q.level ?? "–"}</td>
+              <td class="num" data-v={q.xp ?? ""}>{q.xp ?? "–"}</td>
+              <td class="num opt" data-v={q.minutes ?? ""}>{q.minutes ?? "–"}</td>
+              <td class="num" data-v={q.unlocated ? "" : (rateOf(q) ?? "")}>{q.unlocated ? <span class="muted">–</span> : <Rate value={rateOf(q)} max={maxRate} />}</td>
+              <td data-v={q.verdict}><span class={`verdict ${q.verdict}`}>{VERDICT_LABEL[q.verdict]}</span></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</Base>
+<script>import "../../scripts/table.ts";</script>
+<style>
+  .tall { max-height: 75vh; }
+  .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
+</style>

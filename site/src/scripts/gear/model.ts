@@ -6,7 +6,7 @@ export type Stats = Record<string, number>;
 export interface Item {
   id: number; name: string; q: number; ilvl: number; req: number; lvl?: number; slot: string; inv: number; type: string; cls: number;
   stats: Stats; weapon?: { min: number; max: number; speed: number; dps: number }; fx?: { on: string; text: string }[];
-  classes?: number; side?: "A" | "H"; bop?: 1; pvprank?: number; set?: number;
+  classes?: number; side?: "A" | "H"; icon?: string; bop?: 1; pvprank?: number; set?: number;
   src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
 
@@ -160,7 +160,7 @@ export function fits(doll: DollSlot, it: Item, cls: string): boolean {
 export const SOURCE_KINDS = [
   { key: "raid", name: "Raids" }, { key: "dungeon", name: "Dungeons" }, { key: "pvp", name: "PvP rewards" },
   { key: "rep", name: "Reputation" }, { key: "quest", name: "Quests" }, { key: "craft", name: "Crafted" },
-  { key: "vendor", name: "Vendors" }, { key: "drop", name: "Mob drops" }, { key: "world", name: "World drops" },
+  { key: "vendor", name: "Vendors" }, { key: "chest", name: "Chests and objects" }, { key: "drop", name: "Mob drops" }, { key: "world", name: "World drops" },
   { key: "logged", name: "Seen by players" }, { key: "unknown", name: "Source not known yet" },
 ] as const;
 
