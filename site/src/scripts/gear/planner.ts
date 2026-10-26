@@ -32,6 +32,8 @@ let items: Item[] = [];
 let byId = new Map<number, Item>();
 let sets: Record<string, ItemSet> = {};
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+// Strict allow-list lookups: only the object's own keys count, never inherited ones like "constructor".
+const has = (o: object, k: unknown): k is string => typeof k === "string" && Object.prototype.hasOwnProperty.call(o, k);
 const toast = (msg: string, action?: { label: string; run: () => void }) =>
   (window as unknown as { fxpToast?: (m: string, a?: typeof action) => void }).fxpToast?.(msg, action);
 
@@ -66,14 +68,15 @@ function encode(): string {
 }
 function decode(h: string) {
   const p = new URLSearchParams(h.replace(/^#/, ""));
-  if (p.get("c") && CLASSES[p.get("c")!]) st.cls = p.get("c")!;
+  const c = p.get("c");
+  if (has(CLASSES, c)) st.cls = c;
   const specs = SPECS[st.cls];
-  st.spec = specs.some((s) => s.key === p.get("s")) ? p.get("s")! : specs[0].key;
-  if (GOALS.some((g) => g.key === p.get("g"))) st.goal = p.get("g") as Goal;
-  const l = +(p.get("l") || 60); if (l >= 1 && l <= 60) st.level = l;
+  st.spec = specs.find((s) => s.key === p.get("s"))?.key ?? specs[0].key;
+  st.goal = GOALS.find((g) => g.key === p.get("g"))?.key ?? st.goal;
+  const l = Math.round(+(p.get("l") || 60)); if (l >= 1 && l <= 60) st.level = l;
   if (p.get("f") === "A" || p.get("f") === "H") st.side = p.get("f") as Side;
   const [race, body] = (p.get("r") || "").split(".");
-  if (RACES[race]) st.race = race; else st.race = st.side === "A" ? "human" : "orc";
+  st.race = has(RACES, race) ? race : st.side === "A" ? "human" : "orc";
   st.body = body === "F" ? "F" : "M";
   if (p.get("src")) st.sources = new Set(p.get("src")!.split(".").filter((s) => ALL_SOURCES.includes(s as never)));
   const slots = (v: string | null) => {
@@ -99,11 +102,11 @@ function importGear(text: string): string {
   const m = text.trim().match(/^FXPG1:([A-Z]+):(\d+):([A-Za-z]+)(?:\.([MF]))?:([AH]):(.*)$/);
   if (!m) return "That doesn't look like a ForeverScout gear string. In game, type /fscout gear and copy the whole line.";
   const [, cls, lvl, raceTok, body, side, rest] = m;
-  if (!CLASSES[cls]) return `Unknown class ${cls}.`;
+  if (!has(CLASSES, cls)) return "Unknown class in that gear string.";
   if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; }
   st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as Side;
   const rk = RACE_TOKEN[raceTok.toLowerCase()] || raceTok.toLowerCase();
-  if (RACES[rk]) st.race = rk;
+  if (has(RACES, rk)) st.race = rk;
   if (body) st.body = body as "M" | "F";
   st.cur = {}; let missing = 0, n = 0;
   for (const part of rest.split(",")) {
@@ -175,7 +178,7 @@ function slotButton(d: DollSlot) {
   return `<button type="button" class="slot ${it ? `qb-${q} full` : "empty"}" data-slot="${d}"
       aria-label="${DOLL_LABEL[d]}: ${it ? esc(it.name) : "empty"}. Click to change${it ? ", right-click to remove" : ""}.">
     <svg viewBox="0 0 32 32" class="glyph" aria-hidden="true"><path d="${GLYPH[d]}"/></svg>
-    ${it?.icon ? `<img src="${ICON(it.icon)}" alt="" width="52" height="52" loading="lazy">` : ""}
+    ${it?.icon ? `<img src="${esc(ICON(it.icon))}" alt="" width="52" height="52" loading="lazy">` : ""}
     ${up ? `<span class="badge up" title="Upgrade over current"></span>` : ""}${owned ? `<span class="badge own" title="Owned">✓</span>` : ""}
   </button>`;
 }
@@ -246,9 +249,9 @@ function renderDoll() {
   doll.dataset.klass = st.cls.toLowerCase();
   doll.innerHTML = `
     <div class="unit">
-      <span class="portrait"><img src="${ICON(portraitIcon())}" alt="" width="56" height="56"><b class="lvl">${st.level}</b></span>
+      <span class="portrait"><img src="${esc(ICON(portraitIcon()))}" alt="" width="56" height="56"><b class="lvl">${Number(st.level)}</b></span>
       <span class="who"><b>${esc(RACES[st.race]?.name || "")} ${esc(CLASSES[st.cls].name)}</b><span>${esc(spec?.name || "")}, ${st.side === "H" ? "Horde" : "Alliance"}</span></span>
-      <span class="pow"><span>${view === "plan" ? "Plan score" : "Current score"}</span><b>${t.v}</b></span>
+      <span class="pow"><span>${view === "plan" ? "Plan score" : "Current score"}</span><b>${Number(t.v)}</b></span>
     </div>
     <div class="col left">${LEFT.map(slotButton).join("")}</div>
     <div class="figure">${figure()}</div>
@@ -321,7 +324,7 @@ function itemCell(id: number | undefined) {
   const it = byId.get(id);
   if (!it) return `<span class="muted">Item #${id} (not in the database yet)</span>`;
   const q = QUALITY[it.q] || "common";
-  return `<a class="ilink" href="/items/${it.id}/" data-item="${it.id}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${ICON(it.icon, 36)}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span><span class="meta">${esc(srcText(it))}</span></span></a>`;
+  return `<a class="ilink" href="/items/${it.id}/" data-item="${it.id}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span><span class="meta">${esc(srcText(it))}</span></span></a>`;
 }
 function renderRows() {
   $("#g-rows").innerHTML = PAPERDOLL.map((d) => {
@@ -398,7 +401,7 @@ function fillPicker() {
     + list.map(({ it, v }) => {
       const qn = QUALITY[it.q] || "common", dv = Math.round((v - curV) * 10) / 10;
       return `<li><button type="button" data-choose="${it.id}" class="${target[d] === it.id ? "on" : ""}">
-        <span class="ico qb-${qn}">${it.icon ? `<img src="${ICON(it.icon)}" alt="" loading="lazy">` : ""}</span>
+        <span class="ico qb-${qn}">${it.icon ? `<img src="${esc(ICON(it.icon))}" alt="" loading="lazy">` : ""}</span>
         <span class="pn"><span class="iname-t q-${qn}">${esc(it.name)}</span><span class="meta">Item level ${it.ilvl}${it.req ? `, requires ${it.req}` : ""}. ${esc(srcText(it))}</span></span>
         <span class="score">${v}<small class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${target[d] === it.id ? "equipped" : `${dv > 0 ? "+" : ""}${dv}`}</small></span></button></li>`;
     }).join("")
@@ -407,21 +410,23 @@ function fillPicker() {
 
 // ---------- events ----------
 function bind() {
-  $("#g-spec").addEventListener("change", (e) => { st.spec = (e.target as HTMLSelectElement).value; st.custom = null; render(); });
+  $("#g-spec").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; st.spec = SPECS[st.cls].find((s) => s.key === v)?.key ?? st.spec; st.custom = null; render(); });
   $("#g-goal").addEventListener("change", (e) => {
-    const g = (e.target as HTMLSelectElement).value as Goal;
+    const g = GOALS.find((x) => x.key === (e.target as HTMLSelectElement).value)?.key;
+    if (!g) return;
     if (g === "custom" && !st.custom) st.custom = { ...weightsFor(st.cls, st.spec, "pve") };
     st.goal = g; render();
   });
-  $("#g-level").addEventListener("input", (e) => { st.level = +(e.target as HTMLInputElement).value; $("#g-level-out").textContent = String(st.level); });
-  $("#g-level").addEventListener("change", (e) => { st.level = +(e.target as HTMLInputElement).value; render(); });
+  const lvl = (e: Event) => Math.min(60, Math.max(1, Math.round(+(e.target as HTMLInputElement).value) || 60));
+  $("#g-level").addEventListener("input", (e) => { st.level = lvl(e); $("#g-level-out").textContent = String(st.level); });
+  $("#g-level").addEventListener("change", (e) => { st.level = lvl(e); render(); });
   $("#g-side").addEventListener("change", (e) => {
-    st.side = (e.target as HTMLSelectElement).value as Side;
+    st.side = (e.target as HTMLSelectElement).value === "A" ? "A" : "H";
     if (RACES[st.race].side !== "both" && RACES[st.race].side !== st.side) st.race = st.side === "A" ? "human" : "orc";
     render();
   });
-  $("#g-race").addEventListener("change", (e) => { st.race = (e.target as HTMLSelectElement).value; render(); });
-  $("#g-body").addEventListener("change", (e) => { st.body = (e.target as HTMLSelectElement).value as "M" | "F"; render(); });
+  $("#g-race").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; if (has(RACES, v)) { st.race = v; render(); } });
+  $("#g-body").addEventListener("change", (e) => { st.body = (e.target as HTMLSelectElement).value === "F" ? "F" : "M"; render(); });
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => c.addEventListener("change", () => {
     if (c.checked) st.sources.add(c.dataset.src!); else st.sources.delete(c.dataset.src!); render();
   }));
@@ -451,8 +456,9 @@ function bind() {
     if (t.dataset.w && st.goal === "custom") { st.custom = { ...(st.custom || {}), [t.dataset.w]: +t.value || 0 }; render(); }
   });
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.addEventListener("click", () => {
-    if (st.cls === b.dataset.pickcls) return;
-    st.cls = b.dataset.pickcls!; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
+    const c = b.dataset.pickcls;
+    if (!has(CLASSES, c) || st.cls === c) return;
+    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.view as "plan" | "cur"; render(); }));
 

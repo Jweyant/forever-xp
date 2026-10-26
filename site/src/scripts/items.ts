@@ -3,7 +3,8 @@
 import { STAT_LABEL, type Item, type Stats } from "./gear/model";
 
 export const QUALITY = ["poor", "common", "uncommon", "rare", "epic", "legendary", "artifact"];
-export const ICON = (n: string, size = 56) => `https://render.worldofwarcraft.com/us/icons/${size}/${n}.jpg`;
+export const ICON = (n: string, size = 56) =>
+  `https://render.worldofwarcraft.com/us/icons/${[18, 36, 56].includes(size) ? size : 56}/${String(n).toLowerCase().replace(/[^a-z0-9_-]/g, "")}.jpg`;
 // Set bonus and effect text from the client can hold unresolved spell variables ($s1, $/1000;s1).
 export const cleanFx = (s: string) => s.replace(/\$\/?\d*;?[a-zA-Z]+\d*/g, "?").replace(/ for \./g, ".").replace(/\s{2,}/g, " ");
 export const esc = (s: string) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
@@ -41,7 +42,7 @@ const cap = (s: string) => s.replace(/[12]$/, "").replace(/^./, (c) => c.toUpper
 export function tooltipHtml(it: Item, sets: Record<string, ItemSet> = {}, extra: string[] = []) {
   const q = QUALITY[it.q] || "common";
   const L: string[] = [];
-  L.push(`<div class="tt-head"><span class="ico qb-${q}">${it.icon ? `<img src="${ICON(it.icon)}" alt="">` : ""}</span>
+  L.push(`<div class="tt-head"><span class="ico qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon))}" alt="">` : ""}</span>
     <div><p class="tt-name q-${q}">${esc(it.name)}</p><p class="tt-muted">Item level ${it.ilvl}</p></div></div>`);
   if (it.bop) L.push(`<p>Binds when picked up</p>`);
   const slot = SLOT_NAME[it.slot] || cap(it.slot || "");
