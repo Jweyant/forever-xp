@@ -16,7 +16,7 @@ on:
     - cron: "17 9 * * *"
   workflow_dispatch:
   push:
-    branches-ignore: [main]
+    branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
     paths: ["tools/build_items.py", "tools/build_quests.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
 
 permissions:

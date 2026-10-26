@@ -15,7 +15,7 @@ on:
     - cron: "41 8 * * *"
   workflow_dispatch:
   push:
-    branches-ignore: [main, data]
+    branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
     paths: ["tools/build_talents.py", "tools/wago.py", "tools/push_data.sh", ".github/workflows/talent-data.yml"]
   pull_request:
     paths: ["tools/build_talents.py", "tools/wago.py", "tools/test/test_build_talents.py", "tools/test/test_wago.py", "tools/site_data.py", ".github/workflows/talent-data.yml"]
