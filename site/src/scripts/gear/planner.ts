@@ -1,32 +1,44 @@
+// BIS planner: the character sheet, suggestions, picker, stats and sharing.
+// State lives in the URL hash (shareable) and in localStorage (comes back next visit).
 import {
-  CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS,
+  CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
   weightsFor, canUse, fits, score, sourceKind, canDualWield,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
+import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 
 // ---------- state ----------
+type Side = "H" | "A";
 interface State {
-  cls: string; spec: string; goal: Goal; level: number; side: "H" | "A";
+  cls: string; spec: string; goal: Goal; level: number; side: Side; race: string; body: "M" | "F";
   sources: Set<string>; cur: Partial<Record<DollSlot, number>>; plan: Partial<Record<DollSlot, number>>;
   owned: Set<number>; custom: Stats | null;
 }
 const ALL_SOURCES = SOURCE_KINDS.map((s) => s.key);
+const RACES: Record<string, { name: string; side: Side | "both"; icon?: string }> = {
+  human: { name: "Human", side: "A", icon: "human" }, dwarf: { name: "Dwarf", side: "A", icon: "dwarf" },
+  nightelf: { name: "Night Elf", side: "A", icon: "nightelf" }, gnome: { name: "Gnome", side: "A", icon: "gnome" },
+  orc: { name: "Orc", side: "H", icon: "orc" }, undead: { name: "Undead", side: "H", icon: "undead" },
+  tauren: { name: "Tauren", side: "H", icon: "tauren" }, troll: { name: "Troll", side: "H", icon: "troll" },
+  skyborne: { name: "Skyborne", side: "both" },
+};
+const RACE_TOKEN: Record<string, string> = { scourge: "undead", undead: "undead", nightelf: "nightelf" };
 const st: State = {
-  cls: "WARRIOR", spec: "fury", goal: "pve", level: 60, side: "H",
+  cls: "WARRIOR", spec: "fury", goal: "pve", level: 60, side: "H", race: "orc", body: "M",
   sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null,
 };
-
 let view: "plan" | "cur" = "plan";
 let items: Item[] = [];
 let byId = new Map<number, Item>();
-let sets: Record<string, { name: string; bonuses: { n: number; stats: Stats; text: string }[] }> = {};
+let sets: Record<string, ItemSet> = {};
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
-const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+// Strict allow-list lookups: only the object's own keys count, never inherited ones like "constructor".
+const has = (o: object, k: unknown): k is string => typeof k === "string" && Object.prototype.hasOwnProperty.call(o, k);
+const toast = (msg: string, action?: { label: string; run: () => void }) =>
+  (window as unknown as { fxpToast?: (m: string, a?: typeof action) => void }).fxpToast?.(msg, action);
 
 function weights(): Stats { return st.goal === "custom" && st.custom ? st.custom : weightsFor(st.cls, st.spec, st.goal); }
-
-// The same weights, adjusted for where the item sits: melee weapon DPS matters little to hunters,
-// ranged weapon DPS matters little to melee, off-hand weapon DPS counts half.
+// Melee weapon DPS matters little to hunters, ranged DPS little to melee, off-hand DPS counts half.
 function slotWeights(doll: DollSlot, it: Item): Stats {
   const w = weights();
   if (!it.weapon) return w;
@@ -39,11 +51,13 @@ function slotWeights(doll: DollSlot, it: Item): Stats {
   return k === 1 ? w : { ...w, dps: (w.dps || 0) * k };
 }
 const val = (doll: DollSlot, it: Item | undefined) => (it ? score(it, slotWeights(doll, it)) : 0);
+const gearOf = () => (view === "plan" ? st.plan : st.cur);
 
 // ---------- URL + storage ----------
 function encode(): string {
   const p = new URLSearchParams();
   p.set("c", st.cls); p.set("s", st.spec); p.set("g", st.goal); p.set("l", String(st.level)); p.set("f", st.side);
+  p.set("r", `${st.race}.${st.body}`);
   if (st.sources.size !== ALL_SOURCES.length) p.set("src", [...st.sources].join("."));
   const slots = (o: State["cur"]) => PAPERDOLL.filter((d) => o[d]).map((d) => `${PAPERDOLL.indexOf(d)}-${o[d]}`).join(".");
   if (Object.keys(st.cur).length) p.set("cur", slots(st.cur));
@@ -54,12 +68,16 @@ function encode(): string {
 }
 function decode(h: string) {
   const p = new URLSearchParams(h.replace(/^#/, ""));
-  if (p.get("c") && CLASSES[p.get("c")!]) st.cls = p.get("c")!;
+  const c = p.get("c");
+  if (has(CLASSES, c)) st.cls = c;
   const specs = SPECS[st.cls];
-  st.spec = specs.some((s) => s.key === p.get("s")) ? p.get("s")! : specs[0].key;
-  if (GOALS.some((g) => g.key === p.get("g"))) st.goal = p.get("g") as Goal;
-  const l = +(p.get("l") || 60); if (l >= 1 && l <= 60) st.level = l;
-  if (p.get("f") === "A" || p.get("f") === "H") st.side = p.get("f") as "A" | "H";
+  st.spec = specs.find((s) => s.key === p.get("s"))?.key ?? specs[0].key;
+  st.goal = GOALS.find((g) => g.key === p.get("g"))?.key ?? st.goal;
+  const l = Math.round(+(p.get("l") || 60)); if (l >= 1 && l <= 60) st.level = l;
+  if (p.get("f") === "A" || p.get("f") === "H") st.side = p.get("f") as Side;
+  const [race, body] = (p.get("r") || "").split(".");
+  st.race = has(RACES, race) ? race : st.side === "A" ? "human" : "orc";
+  st.body = body === "F" ? "F" : "M";
   if (p.get("src")) st.sources = new Set(p.get("src")!.split(".").filter((s) => ALL_SOURCES.includes(s as never)));
   const slots = (v: string | null) => {
     const o: State["cur"] = {};
@@ -80,36 +98,32 @@ function save() {
 }
 
 // ---------- import from the game ----------
-const IMPORT_SLOT: Record<string, DollSlot> = {
-  head: "head", neck: "neck", shoulder: "shoulder", back: "back", chest: "chest", wrist: "wrist", hands: "hands",
-  waist: "waist", legs: "legs", feet: "feet", finger1: "finger1", finger2: "finger2", trinket1: "trinket1",
-  trinket2: "trinket2", mainhand: "mainhand", offhand: "offhand", ranged: "ranged",
-};
 function importGear(text: string): string {
-  const m = text.trim().match(/^FXPG1:([A-Z]+):(\d+):([A-Za-z]+):([AH]):(.*)$/);
+  const m = text.trim().match(/^FXPG1:([A-Z]+):(\d+):([A-Za-z]+)(?:\.([MF]))?:([AH]):(.*)$/);
   if (!m) return "That doesn't look like a ForeverScout gear string. In game, type /fscout gear and copy the whole line.";
-  const [, cls, lvl, , side, rest] = m;
-  if (!CLASSES[cls]) return `Unknown class ${cls}.`;
+  const [, cls, lvl, raceTok, body, side, rest] = m;
+  if (!has(CLASSES, cls)) return "Unknown class in that gear string.";
   if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; }
-  st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as "A" | "H";
+  st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as Side;
+  const rk = RACE_TOKEN[raceTok.toLowerCase()] || raceTok.toLowerCase();
+  if (has(RACES, rk)) st.race = rk;
+  if (body) st.body = body as "M" | "F";
   st.cur = {}; let missing = 0, n = 0;
   for (const part of rest.split(",")) {
     const [slot, idRaw] = part.split("=");
-    const doll = IMPORT_SLOT[slot]; const id = parseInt(idRaw, 10);
+    const doll = (PAPERDOLL as readonly string[]).includes(slot) ? (slot as DollSlot) : undefined;
+    const id = parseInt(idRaw, 10);
     if (doll && id) { st.cur[doll] = id; n++; if (!byId.has(id)) missing++; }
   }
-  st.plan = { ...st.cur };
-  return `Imported ${n} items for your level ${st.level} ${CLASSES[cls].name}.` + (missing ? ` ${missing} aren't in the gear database yet and count as zero.` : "");
+  st.plan = { ...st.cur }; view = "cur";
+  return `Imported ${n} items for your level ${st.level} ${RACES[st.race]?.name || ""} ${CLASSES[cls].name}.` + (missing ? ` ${missing} aren't in the gear database yet and count as zero.` : "");
 }
 
-// ---------- candidate search ----------
-function allowedSource(it: Item) { return st.sources.has(sourceKind(it)); }
+// ---------- suggestions ----------
 function candidates(doll: DollSlot): Item[] {
   return items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side)
-    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && allowedSource(it));
+    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && st.sources.has(sourceKind(it)));
 }
-
-/** Best item per slot under the current filters. Handles two-hand vs main+off and unique ring/trinket pairs. */
 function suggest(): State["plan"] {
   const plan: State["plan"] = {};
   const best = (doll: DollSlot, exclude: number[] = []) => {
@@ -125,132 +139,141 @@ function suggest(): State["plan"] {
     if (["finger2", "trinket2", "mainhand", "offhand"].includes(d)) continue;
     const it = best(d); if (it) plan[d] = it.id;
   }
-  const r1 = plan.finger1; const r2 = best("finger2", r1 ? [r1] : []); if (r2) plan.finger2 = r2.id;
-  const t1 = plan.trinket1; const t2 = best("trinket2", t1 ? [t1] : []); if (t2) plan.trinket2 = t2.id;
-  // Weapons: best two-hander vs best main hand + off hand.
+  const r2 = best("finger2", plan.finger1 ? [plan.finger1] : []); if (r2) plan.finger2 = r2.id;
+  const t2 = best("trinket2", plan.trinket1 ? [plan.trinket1] : []); if (t2) plan.trinket2 = t2.id;
   const mains = candidates("mainhand");
   const twoH = mains.filter((i) => i.slot === "twohand").sort((a, b) => val("mainhand", b) - val("mainhand", a))[0];
   const oneH = mains.filter((i) => i.slot !== "twohand").sort((a, b) => val("mainhand", b) - val("mainhand", a))[0];
   const offs = candidates("offhand").filter((i) => !oneH || i.id !== oneH.id || canDualWield(st.cls));
   const off = offs.filter((i) => !oneH || i.id !== oneH.id).sort((a, b) => val("offhand", b) - val("offhand", a))[0];
-  const pairV = val("mainhand", oneH) + val("offhand", off);
-  if (twoH && val("mainhand", twoH) >= pairV) plan.mainhand = twoH.id;
+  if (twoH && val("mainhand", twoH) >= val("mainhand", oneH) + val("offhand", off)) plan.mainhand = twoH.id;
   else { if (oneH) plan.mainhand = oneH.id; if (off) plan.offhand = off.id; }
   return plan;
 }
 
-// ---------- rendering ----------
-const QUALITY = ["poor", "common", "uncommon", "rare", "epic", "legendary", "artifact"];
-const SRC_LABEL: Record<string, string> = { chest: "Chest", raid: "Raid", dungeon: "Dungeon", pvp: "PvP", rep: "Reputation", quest: "Quest", craft: "Crafted", vendor: "Vendor", drop: "Drop", world: "World drop", logged: "Seen in Forever" };
-function srcText(it: Item) {
-  const s = it.src?.[0];
-  if (!s) return "Source not known yet";
-  const where = [s.n, s.z].filter(Boolean).join(", ");
-  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}`;
-}
-function statLine(it: Item) {
-  const parts = Object.entries(it.stats).filter(([k]) => k !== "dps" && k !== "armor").map(([k, v]) => `+${v} ${STAT_LABEL[k] || k}`);
-  if (it.weapon) parts.unshift(`${it.weapon.min}–${it.weapon.max}, ${it.weapon.speed.toFixed(1)} speed (${it.weapon.dps} DPS)`);
-  if (it.stats.armor) parts.unshift(`${it.stats.armor} armor`);
-  return parts.join(", ");
-}
-function itemCell(id: number | undefined, doll: DollSlot) {
-  if (!id) return `<span class="muted">Empty</span>`;
-  const it = byId.get(id);
-  if (!it) return `<span class="muted">Item #${id} (not in the database yet)</span>`;
-  const set = it.set && sets[it.set] ? `<span class="set">${esc(sets[it.set].name)}</span>` : "";
-  return `<span class="iname q-${QUALITY[it.q] || "common"}">${esc(it.name)}</span>
-    <span class="meta">Item level ${it.ilvl}${it.req ? `, requires ${it.req}` : it.lvl ? `, from level ${it.lvl}` : ""}. ${esc(srcText(it))}. ${set}</span>
-    <span class="stats">${esc(statLine(it))}</span>${(it.fx || []).map((f) => `<span class="fx">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(f.text)}</span>`).join("")}`;
-}
-
-const ICON = (n: string) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
-const CLASS_ICON: Record<string, string> = {
-  WARRIOR: "classicon_warrior", PALADIN: "classicon_paladin", HUNTER: "classicon_hunter", ROGUE: "classicon_rogue",
-  PRIEST: "classicon_priest", SHAMAN: "classicon_shaman", MAGE: "classicon_mage", WARLOCK: "classicon_warlock", DRUID: "classicon_druid",
-};
+// ---------- character sheet ----------
+const QCOLOR = ["#9d9d9d", "#ffffff", "#1eff00", "#0070dd", "#a335ee", "#ff8000", "#e6cc80"];
 const LEFT: DollSlot[] = ["head", "neck", "shoulder", "back", "chest", "wrist"];
 const RIGHT: DollSlot[] = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"];
 const BOTTOM: DollSlot[] = ["mainhand", "offhand", "ranged"];
-const SLOT_GLYPH: Record<DollSlot, string> = {
-  head: "Hd", neck: "Nk", shoulder: "Sh", back: "Bk", chest: "Ch", wrist: "Wr", hands: "Ha", waist: "Wa", legs: "Lg",
-  feet: "Ft", finger1: "R1", finger2: "R2", trinket1: "T1", trinket2: "T2", mainhand: "MH", offhand: "OH", ranged: "Rg",
+// Empty-slot glyphs: simple line drawings, drawn for this site.
+const GLYPH: Record<string, string> = {
+  head: "M7 16c0-6 4-10 9-10s9 4 9 10v4h-4v-3c-2-1-8-1-10 0v3H7z", neck: "M9 7c2 6 12 6 14 0M16 13v4m-3 2a3 3 0 1 0 6 0 3 3 0 1 0-6 0",
+  shoulder: "M5 20c0-7 5-11 11-11s11 4 11 11l-5-2-6 2-6-2z", back: "M9 6h14l3 20-10 2-10-2z",
+  chest: "M8 7l5-2 3 3 3-3 5 2 2 6-3 1v12H9V14l-3-1z", wrist: "M9 11h14v10H9zM9 16h14",
+  hands: "M11 26V13a2 2 0 0 1 4 0v-3a2 2 0 0 1 4 0v3a2 2 0 0 1 4 0v8c0 3-2 5-5 5z", waist: "M6 13h20v7H6zM14 13h5v7h-5z",
+  legs: "M10 6h12l1 20h-5l-2-12-2 12H9z", feet: "M12 6h6v12l8 4v4H8v-6l4-2z", finger1: "M16 10a7 7 0 1 0 0 14 7 7 0 1 0 0-14zM13 7h6l-3 3z",
+  finger2: "M16 10a7 7 0 1 0 0 14 7 7 0 1 0 0-14zM13 7h6l-3 3z", trinket1: "M16 6l8 10-8 10-8-10z", trinket2: "M16 6l8 10-8 10-8-10z",
+  mainhand: "M22 5l5 0 0 5-13 13 2 2-3 3-2-2-3 3-2-2 3-3-2-2 3-3 2 2z", offhand: "M16 5l10 3v8c0 6-4 9-10 11C10 25 6 22 6 16V8z",
+  ranged: "M9 5c10 3 14 9 14 11S19 24 9 27M9 5v22",
 };
 
 function slotButton(d: DollSlot) {
-  const id = (view === "plan" ? st.plan : st.cur)[d];
-  const it = id ? byId.get(id) : undefined;
+  const gear = gearOf();
+  const it = gear[d] ? byId.get(gear[d]!) : undefined;
   const other = (view === "plan" ? st.cur : st.plan)[d];
-  const up = view === "plan" && it && (val(d, it) - val(d, other ? byId.get(other) : undefined)) > 0.05;
+  const up = view === "plan" && it && val(d, it) - val(d, other ? byId.get(other) : undefined) > 0.05;
   const owned = it && st.owned.has(it.id);
-  const q = it ? QUALITY[it.q] || "common" : "empty";
-  const img = it?.icon ? `<img src="${ICON(it.icon)}" alt="" width="52" height="52" loading="lazy" onerror="this.remove()">` : "";
-  return `<button type="button" class="slot q-b-${q}" data-slot="${d}" aria-label="${DOLL_LABEL[d]}: ${it ? esc(it.name) : "empty"}">
-    ${img}<span class="glyph" aria-hidden="true">${SLOT_GLYPH[d]}</span>
-    ${up ? `<span class="badge up" title="Upgrade over current">▲</span>` : ""}${owned ? `<span class="badge own" title="Owned">✓</span>` : ""}
+  const q = it ? QUALITY[it.q] || "common" : "";
+  return `<button type="button" class="slot ${it ? `qb-${q} full` : "empty"}" data-slot="${d}"
+      aria-label="${DOLL_LABEL[d]}: ${it ? esc(it.name) : "empty"}. Click to change${it ? ", right-click to remove" : ""}.">
+    <svg viewBox="0 0 32 32" class="glyph" aria-hidden="true"><path d="${GLYPH[d]}"/></svg>
+    ${it?.icon ? `<img src="${esc(ICON(it.icon))}" alt="" width="52" height="52" loading="lazy">` : ""}
+    ${up ? `<span class="badge up" title="Upgrade over current"></span>` : ""}${owned ? `<span class="badge own" title="Owned">✓</span>` : ""}
   </button>`;
+}
+
+/** The figure in the middle: each body part takes the quality colour of the item in that slot. */
+function figure() {
+  const gear = gearOf();
+  const item = (d: DollSlot) => (gear[d] ? byId.get(gear[d]!) : undefined);
+  const part = (d: DollSlot, path: string, extra = "") => {
+    const it = item(d);
+    return `<path class="part ${it ? "eq" : ""}" data-part="${d}" d="${path}" ${it ? `style="--c:${QCOLOR[it.q] || "#fff"}"` : ""} ${extra}/>`;
+  };
+  const mirror = (p: string) => p.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_, x, y) => `${200 - +x} ${y}`);
+  const mh = item("mainhand"), oh = item("offhand"), rg = item("ranged");
+  const wcol = (it?: Item) => (it ? QCOLOR[it.q] || "#fff" : "");
+  const weapon = (it: Item | undefined, side: "l" | "r", d: DollSlot) => {
+    if (!it) return "";
+    const x = side === "l" ? 38 : 162, s = side === "l" ? -1 : 1;
+    const t = it.type || "";
+    const c = `style="--c:${wcol(it)}" data-part="${d}" class="part eq wpn"`;
+    if (it.slot === "shield" || t === "shield") return `<path ${c} d="M${x + 8 * s} 196 L${x + 30 * s} 202 L${x + 28 * s} 228 Q${x + 19 * s} 246 ${x + 8 * s} 250 Q${x - 3 * s} 246 ${x - 12 * s} 228 L${x - 12 * s} 202 Z"/>`;
+    if (it.slot === "holdable") return `<circle ${c} cx="${x + 4 * s}" cy="198" r="10"/>`;
+    if (/staff|polearm/.test(t)) return `<path ${c} d="M${x - 3} 120 L${x + 3} 120 L${x + 6 * s + 2} 322 L${x + 6 * s - 4} 322 Z"/><circle ${c} cx="${x}" cy="118" r="7"/>`;
+    if (/axe/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 16 * s + 2} 300 L${x + 16 * s - 2} 300 Z M${x + 9 * s} 262 Q${x + 30 * s} 258 ${x + 30 * s} 282 Q${x + 18 * s} 280 ${x + 14 * s} 288 Z"/>`;
+    if (/mace/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 12 * s + 2} 284 L${x + 12 * s - 2} 284 Z"/><circle ${c} cx="${x + 14 * s}" cy="292" r="10"/>`;
+    if (/dagger|fist/.test(t)) return `<path ${c} d="M${x - 8} 218 L${x + 8} 218 L${x + 2} 222 L${x + 6 * s} 262 L${x - 4 * s} 222 Z"/>`;
+    if (/wand/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 6 * s + 1} 248 L${x + 6 * s - 2} 248 Z"/>`;
+    return `<path ${c} d="M${x - 11} 218 L${x + 11} 218 L${x + 11} 223 L${x + 3} 223 L${x + 18 * s + 3} 304 L${x + 18 * s - 2} 308 L${x - 3} 223 L${x - 11} 223 Z"/>`;
+  };
+  const bow = rg ? (/wand|thrown|relic|idol|totem|libram/.test(rg.type || "") || rg.slot === "relic"
+    ? `<path class="part eq wpn" data-part="ranged" style="--c:${wcol(rg)}" d="M126 170 L131 168 L146 214 L141 216 Z"/>`
+    : /gun|crossbow/.test(rg.type || "")
+    ? `<path class="part eq wpn" data-part="ranged" style="--c:${wcol(rg)}" d="M150 78 L160 84 L72 236 L62 230 Z"/>`
+    : `<path class="part eq wpn bowp" data-part="ranged" style="--c:${wcol(rg)}" d="M154 70 Q196 150 132 252"/><path class="string" d="M154 70 L132 252"/>`) : "";
+  const armL = "M58 92 L44 150 L56 153 L68 100 Z M44 150 L36 200 L48 202 L56 153 Z";
+  return `<svg viewBox="0 0 200 340" class="figure-svg" role="img" aria-label="Your character, coloured by the quality of each equipped item">
+    <defs><radialGradient id="aura" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="var(--cls)" stop-opacity=".45"/><stop offset="1" stop-color="var(--cls)" stop-opacity="0"/></radialGradient></defs>
+    <ellipse cx="100" cy="160" rx="100" ry="170" fill="url(#aura)"/>
+    <ellipse cx="100" cy="318" rx="62" ry="9" fill="#000" opacity=".4"/>
+    ${bow}
+    ${part("back", "M66 84 L134 84 L150 252 Q100 266 50 252 Z")}
+    <path class="body" d="${armL}"/><path class="body" d="${mirror(armL)}"/>
+    ${part("legs", "M71 176 L98 176 L96 292 L78 292 Z M102 176 L129 176 L122 292 L104 292 Z")}
+    ${part("feet", "M75 290 L97 290 L99 308 L64 308 Q64 297 75 290 Z M103 290 L125 290 Q136 297 136 308 L101 308 Z")}
+    ${part("chest", "M70 78 Q100 70 130 78 L140 94 L132 168 L68 168 L60 94 Z")}
+    ${part("waist", "M68 164 L132 164 L131 180 L69 180 Z")}
+    <rect class="buckle" x="94" y="166" width="12" height="12" rx="2"/>
+    ${part("wrist", "M35 184 L49 186 L47 202 L33 200 Z " + mirror("M35 184 L49 186 L47 202 L33 200 Z"))}
+    ${part("hands", "M38 203a9 9 0 1 0 0.1 0 Z M162 203a9 9 0 1 0 0.1 0 Z")}
+    <path class="body" d="M92 60 L108 60 L108 76 L92 76 Z"/>
+    <circle class="body head" cx="100" cy="44" r="20"/>
+    ${item("head") ? part("head", "M77 48 Q77 19 100 19 Q123 19 123 48 L123 55 L114 52 L114 42 Q100 35 86 42 L86 52 L77 55 Z") : ""}
+    ${part("shoulder", "M44 92 Q46 74 64 74 Q78 76 80 88 Q70 98 46 100 Z " + mirror("M44 92 Q46 74 64 74 Q78 76 80 88 Q70 98 46 100 Z"))}
+    ${item("neck") ? part("neck", "M100 80 a5 5 0 1 0 0.1 0 Z") : ""}
+    ${weapon(mh, "l", "mainhand")}${weapon(oh && oh.slot !== "twohand" ? oh : undefined, "r", "offhand")}
+  </svg>`;
+}
+
+function portraitIcon() {
+  const r = RACES[st.race];
+  return r?.icon ? `achievement_character_${r.icon}_${st.body === "F" ? "female" : "male"}` : `classicon_${st.cls.toLowerCase()}`;
 }
 
 function renderDoll() {
   const spec = SPECS[st.cls].find((s) => s.key === st.spec);
-  const t = totals(view === "plan" ? st.plan : st.cur);
-  $("#g-doll").dataset.klass = st.cls.toLowerCase();
-  $("#g-doll").innerHTML = `
-    <div class="col left">${LEFT.map(slotButton).join("")}</div>
-    <div class="figure">
-      <svg viewBox="0 0 200 320" class="silhouette" aria-hidden="true">
-        <defs>
-          <radialGradient id="aura" cx="50%" cy="42%" r="55%"><stop offset="0" stop-color="var(--cls)" stop-opacity=".55"/><stop offset="1" stop-color="var(--cls)" stop-opacity="0"/></radialGradient>
-          <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4a5a"/><stop offset="1" stop-color="#1a242e"/></linearGradient>
-        </defs>
-        <ellipse cx="100" cy="150" rx="98" ry="150" fill="url(#aura)"/>
-        <ellipse cx="100" cy="304" rx="62" ry="9" fill="#000" opacity=".35"/>
-        <path fill="url(#body)" stroke="var(--cls)" stroke-opacity=".7" stroke-width="1.5" d="M100 22c15 0 25 12 25 27 0 12-6 21-14 25l2 8c18 3 33 9 43 18 9 9 12 26 14 46l6 52c1 8-3 12-9 12-5 0-8-4-9-10l-7-50-6 7 4 60-11 98c-1 7-6 11-12 11s-10-4-10-11l-3-80h-6l-3 80c0 7-4 11-10 11s-11-4-12-11l-11-98 4-60-6-7-7 50c-1 6-4 10-9 10-6 0-10-4-9-12l6-52c2-20 5-37 14-46 10-9 25-15 43-18l2-8c-8-4-14-13-14-25 0-15 10-27 25-27z"/>
-        <path d="M70 92c10 6 20 8 30 8s20-2 30-8" fill="none" stroke="var(--cls)" stroke-opacity=".5" stroke-width="2"/>
-      </svg>
-      <img class="crest" src="${ICON(CLASS_ICON[st.cls])}" alt="" width="44" height="44" onerror="this.remove()">
-      <p class="who"><b>${esc(CLASSES[st.cls].name)}</b><span>${esc(spec?.name || "")}, level ${st.level}</span></p>
-      <p class="pow"><span>${view === "plan" ? "Plan score" : "Current score"}</span><b>${t.v}</b></p>
+  const t = totals(gearOf());
+  const doll = $("#g-doll");
+  doll.dataset.klass = st.cls.toLowerCase();
+  doll.innerHTML = `
+    <div class="unit">
+      <span class="portrait"><img src="${esc(ICON(portraitIcon()))}" alt="" width="56" height="56"><b class="lvl">${Number(st.level)}</b></span>
+      <span class="who"><b>${esc(RACES[st.race]?.name || "")} ${esc(CLASSES[st.cls].name)}</b><span>${esc(spec?.name || "")}, ${st.side === "H" ? "Horde" : "Alliance"}</span></span>
+      <span class="pow"><span>${view === "plan" ? "Plan score" : "Current score"}</span><b>${Number(t.v)}</b></span>
     </div>
+    <div class="col left">${LEFT.map(slotButton).join("")}</div>
+    <div class="figure">${figure()}</div>
     <div class="col right">${RIGHT.map(slotButton).join("")}</div>
     <div class="row bottom">${BOTTOM.map(slotButton).join("")}</div>`;
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === view)));
 }
 
-function tooltipHtml(d: DollSlot) {
-  const id = (view === "plan" ? st.plan : st.cur)[d];
+function slotTip(d: DollSlot) {
+  const id = gearOf()[d];
   const it = id ? byId.get(id) : undefined;
   if (!it) return `<p class="tt-name">${DOLL_LABEL[d]}</p><p class="tt-muted">Empty. Click to choose an item.</p>`;
-  const lines: string[] = [];
-  lines.push(`<p class="tt-name q-${QUALITY[it.q]}">${esc(it.name)}</p>`);
-  lines.push(`<p class="tt-muted">Item level ${it.ilvl}</p>`);
-  if (it.bop) lines.push(`<p>Binds when picked up</p>`);
-  lines.push(`<p class="tt-row"><span>${esc(DOLL_LABEL[d])}</span><span>${esc(it.type === "misc" ? "" : it.type.replace(/[12]$/, "").replace(/^./, (c) => c.toUpperCase()))}</span></p>`);
-  if (it.weapon) lines.push(`<p class="tt-row"><span>${it.weapon.min} – ${it.weapon.max} Damage</span><span>Speed ${it.weapon.speed.toFixed(2)}</span></p><p>(${it.weapon.dps} damage per second)</p>`);
-  if (it.stats.armor) lines.push(`<p>${it.stats.armor} Armor</p>`);
-  const primary = ["str", "agi", "sta", "int", "spi"];
-  for (const k of primary) if (it.stats[k]) lines.push(`<p>+${it.stats[k]} ${STAT_LABEL[k]}</p>`);
-  for (const [k, v] of Object.entries(it.stats)) if (!primary.includes(k) && k !== "armor" && k !== "dps") lines.push(`<p class="tt-green">Equip: +${v} ${STAT_LABEL[k] || k}</p>`);
-  for (const f of it.fx || []) lines.push(`<p class="tt-green">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(f.text)}</p>`);
-  if (it.set && sets[it.set]) lines.push(`<p class="tt-gold">${esc(sets[it.set].name)}</p>`);
-  if (it.req) lines.push(`<p>Requires level ${it.req}</p>`);
-  lines.push(`<p class="tt-src">${esc(srcText(it))}</p>`);
-  lines.push(`<p class="tt-score">Score ${val(d, it)} for ${esc(SPECS[st.cls].find((s) => s.key === st.spec)?.name || "")}</p>`);
-  return lines.join("");
-}
-function showTip(btn: HTMLElement) {
-  const tip = $("#g-tip");
-  tip.innerHTML = tooltipHtml(btn.dataset.slot as DollSlot);
-  tip.hidden = false;
-  const r = btn.getBoundingClientRect(), pane = $("#g-doll").getBoundingClientRect();
-  const w = tip.offsetWidth, h = tip.offsetHeight;
-  let x = r.right - pane.left + 10, y = r.top - pane.top;
-  if (r.right + w + 20 > window.innerWidth) x = r.left - pane.left - w - 10;
-  if (x < 0) x = Math.max(0, (pane.width - w) / 2);
-  y = Math.min(y, Math.max(0, pane.height - h));
-  tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+  const other = (view === "plan" ? st.cur : st.plan)[d];
+  const diff = Math.round((val(d, it) - val(d, other ? byId.get(other) : undefined)) * 10) / 10;
+  const spec = SPECS[st.cls].find((s) => s.key === st.spec)?.name || "";
+  return tooltipHtml(it, sets, [
+    `<p class="tt-score">Score ${val(d, it)} for ${esc(spec)}${view === "plan" && other !== it.id ? ` (${diff >= 0 ? "+" : ""}${diff} over current)` : ""}</p>`,
+    `<p class="tt-hint">Click to change. Right-click to remove.</p>`,
+  ]);
 }
 
+// ---------- stats ----------
 function totals(o: State["plan"]) {
   const t: Stats = {}; let v = 0;
   for (const d of PAPERDOLL) {
@@ -259,61 +282,109 @@ function totals(o: State["plan"]) {
     v += val(d, it);
     for (const [k, n] of Object.entries(it.stats)) if (k !== "dps") t[k] = (t[k] || 0) + n;
   }
+  // Set bonuses that grant stats, once enough pieces are worn.
+  const count: Record<string, number> = {};
+  for (const d of PAPERDOLL) { const it = o[d] ? byId.get(o[d]!) : undefined; if (it?.set) count[it.set] = (count[it.set] || 0) + 1; }
+  for (const [sid, n] of Object.entries(count)) for (const b of sets[sid]?.bonuses || []) if (n >= b.n) for (const [k, x] of Object.entries(b.stats)) t[k] = (t[k] || 0) + x;
   return { t, v: Math.round(v) };
 }
+const GROUPS: [string, string[]][] = [
+  ["Base", ["str", "agi", "sta", "int", "spi", "armor"]],
+  ["Physical", ["ap", "rap", "hit", "hit_pct", "crit", "crit_pct", "haste", "expertise"]],
+  ["Spell", ["sp", "sp_fire", "sp_frost", "sp_shadow", "sp_nature", "sp_arcane", "sp_holy", "heal", "spellhit", "spellhit_pct", "spellcrit", "spellcrit_pct", "mp5", "spen"]],
+  ["Defense", ["def", "dodge", "parry", "block", "blockv", "hp5", "fire_res", "frost_res", "shadow_res", "nature_res", "arcane_res"]],
+];
+function statValue(k: string, n: number) {
+  if (k === "crit" || k === "spellcrit") return `${n} <small>(${(n / CRIT_RATING).toFixed(1)}%)</small>`;
+  if (k === "hit" || k === "spellhit") return `${n} <small>(${(n / HIT_RATING).toFixed(1)}%)</small>`;
+  if (k.endsWith("_pct")) return `${n}%`;
+  return String(Math.round(n * 10) / 10);
+}
+function renderStats() {
+  const cur = totals(st.cur), plan = totals(st.plan), w = weights();
+  $("#g-stats").innerHTML = GROUPS.map(([name, keys]) => {
+    const rows = keys.filter((k) => cur.t[k] || plan.t[k]);
+    if (!rows.length) return "";
+    return `<section><h3>${name}</h3><dl>${rows.map((k) => {
+      const a = cur.t[k] || 0, b = plan.t[k] || 0, dlt = Math.round((b - a) * 10) / 10;
+      return `<div class="${(w[k] || 0) > 0 ? "wanted" : ""}"><dt>${esc(STAT_LABEL[k] || k)}</dt><dd>${statValue(k, view === "plan" ? b : a)}${view === "plan" && dlt ? ` <span class="${dlt > 0 ? "up" : "down"}">${dlt > 0 ? "+" : ""}${dlt}</span>` : ""}</dd></div>`;
+    }).join("")}</dl></section>`;
+  }).join("") || `<p class="muted">Add some gear to see your stats.</p>`;
+  const gain = plan.v - cur.v;
+  $("#g-summary").innerHTML = `
+    <div><dt>Current gear</dt><dd>${cur.v}</dd></div>
+    <div><dt>BIS plan</dt><dd class="xp">${plan.v}</dd></div>
+    <div><dt>Gain</dt><dd class="${gain >= 0 ? "up" : "down"}">${gain >= 0 ? "+" : ""}${gain}</dd></div>
+    <div><dt>Plan items owned</dt><dd>${PAPERDOLL.filter((d) => st.plan[d] && st.owned.has(st.plan[d]!)).length} of ${PAPERDOLL.filter((d) => st.plan[d]).length}</dd></div>`;
+}
 
-function render() {
-  const w = weights();
+// ---------- slot list ----------
+function itemCell(id: number | undefined) {
+  if (!id) return `<span class="muted">Empty</span>`;
+  const it = byId.get(id);
+  if (!it) return `<span class="muted">Item #${id} (not in the database yet)</span>`;
+  const q = QUALITY[it.q] || "common";
+  return `<a class="ilink" href="/items/${it.id}/" data-item="${it.id}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span><span class="meta">${esc(srcText(it))}</span></span></a>`;
+}
+function renderRows() {
+  $("#g-rows").innerHTML = PAPERDOLL.map((d) => {
+    const c = st.cur[d] ? byId.get(st.cur[d]!) : undefined;
+    const p = st.plan[d] ? byId.get(st.plan[d]!) : undefined;
+    const dv = Math.round((val(d, p) - val(d, c)) * 10) / 10;
+    return `<tr><th scope="row">${DOLL_LABEL[d]}</th>
+      <td class="item" data-label="Current">${itemCell(st.cur[d])}</td>
+      <td class="item" data-label="Plan">${itemCell(st.plan[d])}</td>
+      <td class="num" data-label="Gain"><b class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${dv > 0 ? "+" : ""}${p || c ? dv : ""}</b></td>
+      <td class="acts"><button type="button" class="link" data-pick="${d}">Change</button>
+        ${p ? `<label class="own"><input type="checkbox" data-own="${p.id}"${st.owned.has(p.id) ? " checked" : ""}> Owned</label>` : ""}</td></tr>`;
+  }).join("");
+}
+
+function renderControls() {
   $("#g-spec").innerHTML = SPECS[st.cls].map((s) => `<option value="${s.key}"${s.key === st.spec ? " selected" : ""}>${s.name}</option>`).join("");
   ($("#g-goal") as HTMLSelectElement).value = st.goal;
   ($("#g-level") as HTMLInputElement).value = String(st.level);
   $("#g-level-out").textContent = String(st.level);
   ($("#g-side") as HTMLSelectElement).value = st.side;
+  $("#g-race").innerHTML = Object.entries(RACES).filter(([, r]) => r.side === "both" || r.side === st.side)
+    .map(([k, r]) => `<option value="${k}"${k === st.race ? " selected" : ""}>${r.name}</option>`).join("");
+  ($("#g-body") as HTMLSelectElement).value = st.body;
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => (c.checked = st.sources.has(c.dataset.src!)));
-
-  renderDoll();
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.pickcls === st.cls)));
-  const cur = totals(st.cur), plan = totals(st.plan);
-  $("#g-summary").innerHTML = `
-    <div><dt>Current gear</dt><dd>${cur.v}</dd></div>
-    <div><dt>Plan</dt><dd class="xp">${plan.v}</dd></div>
-    <div><dt>Gain</dt><dd class="${plan.v - cur.v >= 0 ? "up" : "down"}">${plan.v - cur.v >= 0 ? "+" : ""}${plan.v - cur.v}</dd></div>
-    <div><dt>Plan items owned</dt><dd>${PAPERDOLL.filter((d) => st.plan[d] && st.owned.has(st.plan[d]!)).length} / ${PAPERDOLL.filter((d) => st.plan[d]).length}</dd></div>`;
-
-  $("#g-rows").innerHTML = PAPERDOLL.map((d) => {
-    const c = st.cur[d] ? byId.get(st.cur[d]!) : undefined;
-    const p = st.plan[d] ? byId.get(st.plan[d]!) : undefined;
-    const dv = Math.round((val(d, p) - val(d, c)) * 10) / 10;
-    const own = p && st.owned.has(p.id);
-    return `<tr data-doll="${d}">
-      <th scope="row">${DOLL_LABEL[d]}</th>
-      <td class="item" data-label="Current">${itemCell(st.cur[d], d)}</td>
-      <td class="item" data-label="Plan">${itemCell(st.plan[d], d)}</td>
-      <td class="num" data-label="Gain"><b class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${dv > 0 ? "+" : ""}${p || c ? dv : ""}</b></td>
-      <td class="acts">
-        <button type="button" class="link" data-pick="${d}">Change</button>
-        ${p ? `<label class="own"><input type="checkbox" data-own="${p.id}"${own ? " checked" : ""}> Owned</label>` : ""}
-      </td></tr>`;
-  }).join("");
-
+  const w = weights();
   $("#g-weights").innerHTML = WEIGHT_KEYS.map((k) => `<label><span>${STAT_LABEL[k] || k}</span>
     <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"${st.goal === "custom" ? "" : " disabled"}></label>`).join("");
   $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion." : "Starting weights for this spec and goal. Pick Custom weights to edit them.";
-
-  const keys = Object.keys(plan.t).filter((k) => plan.t[k] || cur.t[k]).sort((a, b) => (w[b] || 0) - (w[a] || 0));
-  $("#g-totals").innerHTML = `<thead><tr><th>Stat</th><th class="num">Current</th><th class="num">Plan</th></tr></thead><tbody>${keys.map((k) => `<tr><td>${STAT_LABEL[k] || k}</td><td class="num">${cur.t[k] || 0}</td><td class="num">${plan.t[k] || 0}</td></tr>`).join("")}</tbody>`;
-  save();
 }
 
-// ---------- item picker ----------
+function render() {
+  renderControls(); renderDoll(); renderStats(); renderRows(); save();
+}
+
+// ---------- editing ----------
+function setSlot(target: State["plan"], d: DollSlot, id: number | undefined) {
+  if (id) target[d] = id; else delete target[d];
+  if (d === "mainhand" && id && byId.get(id)?.slot === "twohand") delete target.offhand;
+}
+function removeSlot(d: DollSlot) {
+  const target = gearOf(), prev = target[d];
+  if (!prev) return;
+  const prevOff = target.offhand;
+  delete target[d];
+  render();
+  const name = byId.get(prev)?.name || "Item";
+  toast(`Removed ${name} from ${DOLL_LABEL[d].toLowerCase()}.`, { label: "Undo", run: () => { target[d] = prev; if (prevOff) target.offhand = prevOff; render(); } });
+}
+
+// ---------- picker ----------
 let picking: DollSlot | null = null;
 function openPicker(d: DollSlot) {
   picking = d;
-  const dlg = $("#g-picker") as HTMLDialogElement;
-  $("#g-picker-title").textContent = `${DOLL_LABEL[d]}: choose an item`;
+  ($("#g-target") as HTMLSelectElement).value = view;
+  $("#g-picker-title").textContent = `${DOLL_LABEL[d]}`;
   ($("#g-search") as HTMLInputElement).value = "";
   fillPicker();
-  dlg.showModal();
+  ($("#g-picker") as HTMLDialogElement).showModal();
   ($("#g-search") as HTMLInputElement).focus();
 }
 function fillPicker() {
@@ -321,53 +392,61 @@ function fillPicker() {
   const d = picking;
   const q = ($("#g-search") as HTMLInputElement).value.trim().toLowerCase();
   const all = ($("#g-all") as HTMLInputElement).checked;
+  const target = ($("#g-target") as HTMLSelectElement).value === "cur" ? st.cur : st.plan;
+  const curV = val(d, target[d] ? byId.get(target[d]!) : undefined);
   const pool = items.filter((it) => fits(d, it, st.cls) && (all || (it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side) && canUse(it, st.cls, st.level))));
   const list = pool.filter((it) => !q || it.name.toLowerCase().includes(q) || String(it.id) === q)
-    .map((it) => ({ it, v: val(d, it) })).sort((a, b) => b.v - a.v).slice(0, 60);
-  $("#g-picker-list").innerHTML = (st.cur[d] || st.plan[d] ? `<li><button type="button" data-choose="0" class="link">Clear this slot</button></li>` : "")
-    + list.map(({ it, v }) => `<li><button type="button" data-choose="${it.id}"><span class="pic q-b-${QUALITY[it.q] || "common"}">${it.icon ? `<img src="${ICON(it.icon)}" alt="" width="36" height="36" loading="lazy" onerror="this.remove()">` : ""}</span><span class="score">${v}</span><span>${itemCell(it.id, d)}</span></button></li>`).join("")
+    .map((it) => ({ it, v: val(d, it) })).sort((a, b) => b.v - a.v).slice(0, 80);
+  $("#g-picker-list").innerHTML = (target[d] ? `<li><button type="button" data-choose="0" class="link">Clear this slot</button></li>` : "")
+    + list.map(({ it, v }) => {
+      const qn = QUALITY[it.q] || "common", dv = Math.round((v - curV) * 10) / 10;
+      return `<li><button type="button" data-choose="${it.id}" class="${target[d] === it.id ? "on" : ""}">
+        <span class="ico qb-${qn}">${it.icon ? `<img src="${esc(ICON(it.icon))}" alt="" loading="lazy">` : ""}</span>
+        <span class="pn"><span class="iname-t q-${qn}">${esc(it.name)}</span><span class="meta">Item level ${it.ilvl}${it.req ? `, requires ${it.req}` : ""}. ${esc(srcText(it))}</span></span>
+        <span class="score">${v}<small class="${dv > 0 ? "up" : dv < 0 ? "down" : ""}">${target[d] === it.id ? "equipped" : `${dv > 0 ? "+" : ""}${dv}`}</small></span></button></li>`;
+    }).join("")
     + (list.length ? "" : `<li class="muted">No items match. Try another name, or tick "Show items I can't use yet".</li>`);
 }
 
 // ---------- events ----------
 function bind() {
-  $("#g-spec").addEventListener("change", (e) => { st.spec = (e.target as HTMLSelectElement).value; st.custom = null; render(); });
+  $("#g-spec").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; st.spec = SPECS[st.cls].find((s) => s.key === v)?.key ?? st.spec; st.custom = null; render(); });
   $("#g-goal").addEventListener("change", (e) => {
-    const g = (e.target as HTMLSelectElement).value as Goal;
+    const g = GOALS.find((x) => x.key === (e.target as HTMLSelectElement).value)?.key;
+    if (!g) return;
     if (g === "custom" && !st.custom) st.custom = { ...weightsFor(st.cls, st.spec, "pve") };
     st.goal = g; render();
   });
-  $("#g-level").addEventListener("input", (e) => { st.level = +(e.target as HTMLInputElement).value; $("#g-level-out").textContent = String(st.level); });
-  $("#g-level").addEventListener("change", (e) => { st.level = +(e.target as HTMLInputElement).value; render(); });
-  $("#g-side").addEventListener("change", (e) => { st.side = (e.target as HTMLSelectElement).value as "A" | "H"; render(); });
+  const lvl = (e: Event) => Math.min(60, Math.max(1, Math.round(+(e.target as HTMLInputElement).value) || 60));
+  $("#g-level").addEventListener("input", (e) => { st.level = lvl(e); $("#g-level-out").textContent = String(st.level); });
+  $("#g-level").addEventListener("change", (e) => { st.level = lvl(e); render(); });
+  $("#g-side").addEventListener("change", (e) => {
+    st.side = (e.target as HTMLSelectElement).value === "A" ? "A" : "H";
+    if (RACES[st.race].side !== "both" && RACES[st.race].side !== st.side) st.race = st.side === "A" ? "human" : "orc";
+    render();
+  });
+  $("#g-race").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; if (has(RACES, v)) { st.race = v; render(); } });
+  $("#g-body").addEventListener("change", (e) => { st.body = (e.target as HTMLSelectElement).value === "F" ? "F" : "M"; render(); });
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => c.addEventListener("change", () => {
     if (c.checked) st.sources.add(c.dataset.src!); else st.sources.delete(c.dataset.src!); render();
   }));
   $("#g-suggest").addEventListener("click", () => {
+    const before = { ...st.plan };
     const next = suggest();
-    // Keep the current item where it already beats the suggestion (or nothing is allowed).
-    for (const d of PAPERDOLL) {
+    for (const d of PAPERDOLL) { // keep current items that already beat the suggestion
       const c = st.cur[d] ? byId.get(st.cur[d]!) : undefined, s = next[d] ? byId.get(next[d]!) : undefined;
       if (c && (!s || val(d, c) >= val(d, s))) next[d] = c.id;
     }
-    st.plan = next; render();
-    $("#g-status").textContent = "Suggested the best item for each slot from the sources you've allowed.";
+    st.plan = next; view = "plan"; render();
+    const changed = PAPERDOLL.filter((d) => before[d] !== next[d]).length;
+    toast(`Suggested ${changed} change${changed === 1 ? "" : "s"} from the sources you allowed.`, { label: "Undo", run: () => { st.plan = before; render(); } });
   });
-  $("#g-keep").addEventListener("click", () => { st.plan = { ...st.cur }; render(); $("#g-status").textContent = "Plan reset to your current gear."; });
-  $("#g-import-go").addEventListener("click", () => {
-    const msg = importGear(($("#g-import") as HTMLTextAreaElement).value);
-    $("#g-status").textContent = msg; render();
+  $("#g-keep").addEventListener("click", () => { const before = { ...st.plan }; st.plan = { ...st.cur }; render(); toast("Plan reset to your current gear.", { label: "Undo", run: () => { st.plan = before; render(); } }); });
+  $("#g-import-go").addEventListener("click", () => { toast(importGear(($("#g-import") as HTMLTextAreaElement).value)); render(); });
+  $("#g-copy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(location.href); toast("Plan link copied. Share it anywhere."); } catch { toast("Copy the address bar to share this plan."); }
   });
-  $("#g-copy").addEventListener("click", async (e) => {
-    const b = e.currentTarget as HTMLButtonElement;
-    try { await navigator.clipboard.writeText(location.href); b.textContent = "Link copied"; } catch { b.textContent = "Copy the address bar"; }
-    setTimeout(() => (b.textContent = "Copy plan link"), 2000);
-  });
-  $("#g-rows").addEventListener("click", (e) => {
-    const t = e.target as HTMLElement;
-    const pick = t.closest<HTMLElement>("[data-pick]");
-    if (pick) openPicker(pick.dataset.pick as DollSlot);
-  });
+  $("#g-rows").addEventListener("click", (e) => { const pick = (e.target as HTMLElement).closest<HTMLElement>("[data-pick]"); if (pick) { view = "plan"; openPicker(pick.dataset.pick as DollSlot); } });
   $("#g-rows").addEventListener("change", (e) => {
     const t = e.target as HTMLInputElement;
     if (t.dataset.own) { const id = +t.dataset.own; if (t.checked) st.owned.add(id); else st.owned.delete(id); render(); }
@@ -377,45 +456,60 @@ function bind() {
     if (t.dataset.w && st.goal === "custom") { st.custom = { ...(st.custom || {}), [t.dataset.w]: +t.value || 0 }; render(); }
   });
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.addEventListener("click", () => {
-    st.cls = b.dataset.pickcls!; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
+    const c = b.dataset.pickcls;
+    if (!has(CLASSES, c) || st.cls === c) return;
+    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.view as "plan" | "cur"; render(); }));
-  const doll = $("#g-doll");
-  doll.addEventListener("click", (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]");
-    if (!b) return;
-    ($("#g-target") as HTMLSelectElement).value = view;
-    $("#g-tip").hidden = true;
-    openPicker(b.dataset.slot as DollSlot);
-  });
-  doll.addEventListener("mouseover", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]"); if (b) showTip(b); });
-  doll.addEventListener("focusin", (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>("[data-slot]"); if (b) showTip(b); });
-  doll.addEventListener("mouseleave", () => ($("#g-tip").hidden = true));
-  doll.addEventListener("focusout", () => ($("#g-tip").hidden = true));
+
+  // Character sheet: hover for the tooltip, click to change, right-click or long-press to remove.
+  const doll = $("#g-doll"), tip = $("#g-tip");
+  const slotOf = (e: Event) => (e.target as Element).closest<HTMLElement>("[data-slot],[data-part]");
+  const dollSlot = (el: HTMLElement) => (el.dataset.slot || el.dataset.part) as DollSlot;
+  const highlight = (d: DollSlot | null) => doll.querySelectorAll<HTMLElement>("[data-slot],[data-part]").forEach((x) => x.classList.toggle("hl", !!d && dollSlot(x) === d));
+  doll.addEventListener("click", (e) => { const el = slotOf(e); if (el) { tip.hidden = true; openPicker(dollSlot(el)); } });
+  doll.addEventListener("contextmenu", (e) => { const el = slotOf(e); if (!el) return; e.preventDefault(); tip.hidden = true; removeSlot(dollSlot(el)); });
+  doll.addEventListener("keydown", (e) => { const el = slotOf(e); if (el && (e.key === "Delete" || e.key === "Backspace")) { e.preventDefault(); removeSlot(dollSlot(el)); } });
+  let press = 0, pressed = false;
+  doll.addEventListener("touchstart", (e) => { const el = slotOf(e); if (!el) return; pressed = false; press = window.setTimeout(() => { pressed = true; removeSlot(dollSlot(el)); }, 550); }, { passive: true });
+  doll.addEventListener("touchend", (e) => { clearTimeout(press); if (pressed) e.preventDefault(); });
+  doll.addEventListener("touchmove", () => clearTimeout(press), { passive: true });
+  const show = (el: HTMLElement) => { const d = dollSlot(el); highlight(d); tip.innerHTML = slotTip(d); placeTip(tip, doll.querySelector(`[data-slot="${d}"]`) || el); };
+  doll.addEventListener("mouseover", (e) => { const el = slotOf(e); if (el) show(el); });
+  doll.addEventListener("focusin", (e) => { const el = slotOf(e); if (el) show(el); });
+  doll.addEventListener("mouseleave", () => { tip.hidden = true; highlight(null); });
+  doll.addEventListener("focusout", () => { tip.hidden = true; highlight(null); });
+  window.addEventListener("scroll", () => (tip.hidden = true), { passive: true });
+
   $("#g-search").addEventListener("input", fillPicker);
   $("#g-all").addEventListener("change", fillPicker);
+  $("#g-target").addEventListener("change", fillPicker);
   $("#g-picker-list").addEventListener("click", (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>("[data-choose]");
     if (!b || !picking) return;
-    const id = +b.dataset.choose!;
     const target = ($("#g-target") as HTMLSelectElement).value === "cur" ? st.cur : st.plan;
-    if (id) target[picking] = id; else delete target[picking];
-    if (picking === "mainhand" && id && byId.get(id)?.slot === "twohand") delete target.offhand;
+    view = target === st.cur ? "cur" : "plan";
+    setSlot(target, picking, +b.dataset.choose! || undefined);
     ($("#g-picker") as HTMLDialogElement).close(); render();
   });
+  $("#g-picker").addEventListener("click", (e) => { if (e.target === e.currentTarget) ($("#g-picker") as HTMLDialogElement).close(); });
 }
 
 async function start() {
-  const res = await fetch("/data/items.json");
-  if (!res.ok) { $("#g-status").textContent = "The gear database didn't load. Refresh to try again."; return; }
-  const data = await res.json();
-  items = data.items; sets = data.sets; byId = new Map(items.map((i: Item) => [i.id, i]));
-  $("#g-build").textContent = data.build;
+  try {
+    const data = await loadGear();
+    items = data.items; sets = data.sets; byId = data.byId;
+    $("#g-build").textContent = data.build;
+  } catch {
+    $("#g-doll").innerHTML = `<p class="muted">The gear database didn't load. Refresh to try again.</p>`;
+    return;
+  }
   let h = location.hash;
   if (!h) { try { h = localStorage.getItem("fxp-gear") || ""; } catch { /* storage blocked */ } }
   if (h) decode(h);
   $("#g-goal").innerHTML = GOALS.map((g) => `<option value="${g.key}">${g.name}</option>`).join("");
   bind(); render();
+  if (!Object.keys(st.plan).length && !Object.keys(st.cur).length) { st.plan = suggest(); render(); }
   $("#gear").removeAttribute("aria-busy");
 }
 start();

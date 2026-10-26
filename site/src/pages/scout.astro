@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import { RELEASES, SUBMIT_LOG, REPO } from "../lib/data";
+import { SITE } from "../config";
 const commands = [
   ["/fscout", "Status: sessions, events, route points, items missing from Questie"],
   ["/fscout pause", "Stop recording (resume with /fscout resume)"],
@@ -18,7 +19,11 @@ const commands = [
     A small, read-only addon that records how you level: quests, XP, where things are and how
     long each one took. Your logs replace our estimates with real numbers.
   </p>
-  <p><a class="btn" href={RELEASES}>Download the latest release</a></p>
+  <p class="dl">
+    {SITE.curseforge && <a class="btn" href={SITE.curseforge} rel="noopener">Get it on CurseForge</a>}
+    <a class={SITE.curseforge ? "btn secondary" : "btn"} href={RELEASES}>Download from GitHub</a>
+    <a class="btn secondary" href={SITE.discord} rel="noopener">Get help on Discord</a>
+  </p>
   <p class="small muted">Free and open source. Works with or without Questie. The download is on GitHub; a CurseForge listing is coming.</p>
 
   <h2>Install</h2>
@@ -81,13 +86,14 @@ const commands = [
 </Base>
 
 <style>
+  .dl { display: flex; flex-wrap: wrap; gap: 0.6rem; }
   .steps { list-style: none; padding: 0; counter-reset: s; max-width: 70ch; }
   .steps li { counter-increment: s; position: relative; padding-left: 3rem; margin-bottom: 1.2rem; }
   .steps li::before {
     content: counter(s); position: absolute; left: 0; top: 0.1rem;
     width: 2rem; height: 2rem; display: grid; place-items: center;
     font-family: var(--font-display); font-weight: 700; font-size: 1.2rem;
-    background: var(--xp); color: #fff; border-radius: 3px;
+    background: var(--xp-fill); color: #fff; border-radius: 3px;
   }
   .steps h3 { margin: 0 0 0.2rem; font-size: var(--step-1); }
   .steps p { margin: 0; }

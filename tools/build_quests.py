@@ -5,13 +5,17 @@ exported by tools/refresh_questie_data.sh into data/questiedb/ and data/forever_
 Zone names come from the Forever client's AreaTable (wago.tools) when cached, otherwise from
 Questie's zone constants.
 
-Usage: python3 tools/build_quests.py [--cache .cache/wago] [--out gamedata/quests.json]
+Quests whose IDs aren't in Classic Era (cmangos classic-db, --cmangos) are marked "new"; quests
+that exist in both but changed level, required level or name get "chg".
+
+Usage: python3 tools/build_quests.py [--cache .cache/wago] [--cmangos cmangos.sql] [--out gamedata/quests.json]
 """
 import argparse
 import csv
 import json
 import re
 import sqlite3
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -70,7 +74,15 @@ def main():
     ap.add_argument("--questie", default=str(ROOT / "data" / "questiedb"))
     ap.add_argument("--sqlite", default=str(ROOT / "data" / "forever_questdb.sqlite"))
     ap.add_argument("--out", default=str(ROOT / "gamedata" / "quests.json"))
+    ap.add_argument("--cmangos", help="cmangos classic-db SQL dump, to mark quests new to Forever")
     a = ap.parse_args()
+
+    classic = {}
+    if a.cmangos:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import mysqldump
+        for q in mysqldump.read(a.cmangos, ["quest_template"])["quest_template"]:
+            classic[q["entry"]] = q
 
     zones = zone_names(a.cache, a.questie)
     items = {i["id"]: i for i in json.loads((Path(a.questie) / "items.json").read_text())}
@@ -130,10 +142,27 @@ def main():
         reps = raw.get("reputationReward") or []
         if reps:
             q["repu"] = len(reps)
+        if classic:
+            c = classic.get(r["id"])
+            if not c:
+                q["new"] = 1
+            else:
+                chg = []
+                if (c.get("QuestLevel") or 0) > 0 and q["lv"] > 0 and c["QuestLevel"] != q["lv"]:
+                    chg.append(f"level {c['QuestLevel']} to {q['lv']}")
+                if (c.get("MinLevel") or 0) and q["req"] and c["MinLevel"] != q["req"]:
+                    chg.append(f"required level {c['MinLevel']} to {q['req']}")
+                alnum = lambda t: re.sub(r"[^a-z0-9]+", "", (t or "").lower())  # noqa: E731
+                if c.get("Title") and alnum(c["Title"]) != alnum(q["n"]):
+                    chg.append(f"renamed from {c['Title']}")
+                if chg:
+                    q["chg"] = chg
         out.append(q)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
-    print(f"{len(out)} quests, {len({q['z'] for q in out})} zones -> {a.out}")
+    new = sum(1 for q in out if q.get("new"))
+    print(f"{len(out)} quests ({new} new to Forever, {sum(1 for q in out if q.get('chg'))} changed), "
+          f"{len({q['z'] for q in out})} zones -> {a.out}")
 
 
 if __name__ == "__main__":

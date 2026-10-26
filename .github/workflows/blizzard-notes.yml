@@ -1,0 +1,41 @@
+# Collects Blizzard's official WoW Forever change notes (development notes, class updates, known
+# issues, and new staff notes as they're posted) into gamedata/blizzard-notes.json for the
+# site's Changes page, and commits the result (to the `data` branch when run on main).
+name: Refresh Blizzard notes
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches-ignore: [main]
+    paths: ["tools/blizzard_notes.py", "tools/push_data.sh", ".github/workflows/blizzard-notes.yml"]
+
+permissions:
+  contents: write
+  actions: write   # to start the site deploy after a data commit on main
+
+concurrency:
+  group: blizzard-notes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Collect notes
+        run: python3 tools/blizzard_notes.py --out gamedata/blizzard-notes.json
+      - name: Commit if changed
+        id: commit
+        run: bash tools/push_data.sh "Refresh Blizzard's WoW Forever notes" gamedata/blizzard-notes.json
+
+      # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
+      - name: Deploy the site with the new data
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-site.yml --ref main

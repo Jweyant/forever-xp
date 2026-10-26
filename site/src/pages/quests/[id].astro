@@ -1,7 +1,9 @@
 ---
 import Base from "../../layouts/Base.astro";
+import Comments from "../../components/Comments.astro";
 import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
 import { qdb, qById, zslug, QUALITY, ICON, SIDE_LABEL, type QQuest, type Place } from "../../lib/questdb";
+import { itemById } from "../../lib/gear";
 
 export function getStaticPaths() {
   return qdb.map((q) => ({ params: { id: String(q.id) }, props: { q } }));
@@ -28,7 +30,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
 ---
 <Base title={`${q.n} quest`} description={desc}>
   <p class="crumbs"><a href="/quests/">Quests</a> / <a href={`/quests/zone/${zslug(q.z)}/`}>{q.z}</a></p>
-  <h1>{q.n}</h1>
+  <h1>{q.n}{q.new && <span class="tag-new" title="Not in Classic Era: added for WoW Forever">NEW</span>}</h1>
   <p class="tags">
     {q.side ? <span class={`tag side-${q.side}`}>{SIDE_LABEL[q.side]}</span> : <span class="tag">Both factions</span>}
     {q.cls?.map((c) => <span class="tag cls"><img src={ICON(`classicon_${c.toLowerCase()}`)} alt="" width="18" height="18" loading="lazy" />{c}</span>)}
@@ -36,6 +38,8 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     {s && <span class={`verdict ${s.verdict}`}>{VERDICT_LABEL[s.verdict]}</span>}
   </p>
   {why && <p class="lede">{why}</p>}
+  {q.new && <p class="lede">This quest is new in WoW Forever. It isn't in Classic Era.</p>}
+  {q.chg && <p class="changed">Changed from Classic Era: {q.chg.join("; ")}.</p>}
 
   <dl class="facts">
     <div><dt>Quest level</dt><dd>{q.lv > 0 ? q.lv : "–"}</dd></div>
@@ -63,12 +67,12 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
             <span class="role">{role}</span>
             <b>{p.n}</b>
             <span class="muted">{kind(p.t)}{p.z ? `, ${p.z}` : ""}{p.x != null ? ` at ${p.x}, ${p.y}` : ""}</span>
-            {p.x != null && <code class="way">/way {p.x} {p.y} {p.n}</code>}
+            {p.x != null && <button type="button" class="way" data-copy={`/way ${p.x} ${p.y} ${p.n}`} title="Copy for TomTom"><code>/way {p.x} {p.y} {p.n}</code><span>Copy</span></button>}
           </figcaption>
         </figure>
       ))}
     </div>
-    <p class="small muted">The square stands in for the zone map: the marker sits at the in-game map coordinates. The <code>/way</code> line works with TomTom.</p>
+    <p class="small muted">The square stands in for the zone map: the marker sits at the in-game map coordinates. Click a <code>/way</code> line to copy it for TomTom.</p>
   </>)}
 
   {q.rew && q.rew.length > 0 && (<>
@@ -76,8 +80,9 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     <ul class="rewards">
       {q.rew.map((r) => (
         <li>
-          <span class={`pic q-b-${QUALITY[r.q ?? 1]}`}>{r.icon && <img src={ICON(r.icon)} alt="" width="36" height="36" loading="lazy" />}</span>
-          <span class={`q-${QUALITY[r.q ?? 1]}`}>{r.n}</span>
+          {itemById.has(r.id)
+            ? <a class="ilink" href={`/items/${r.id}/`} data-item={r.id}><span class={`ico qb-${QUALITY[r.q ?? 1]}`}>{r.icon && <img src={ICON(r.icon)} alt="" width="36" height="36" loading="lazy" />}</span><span class={`iname-t q-${QUALITY[r.q ?? 1]}`}>{r.n}</span></a>
+            : <span class="ilink"><span class={`ico qb-${QUALITY[r.q ?? 1]}`}>{r.icon && <img src={ICON(r.icon)} alt="" width="36" height="36" loading="lazy" />}</span><span class={`q-${QUALITY[r.q ?? 1]}`}>{r.n}</span></span>}
           <span class="muted small">Item {r.id}</span>
         </li>
       ))}
@@ -104,13 +109,14 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
       : <p>No player has logged this quest yet. If you do it with <a href="/scout/">ForeverScout</a> running, your time helps score it. <a href={SUBMIT_LOG}>Send a log</a></p>}
   </div>
   <p class="small muted">Quest ID {q.id}. Quest data from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3).</p>
+  <Comments />
 </Base>
 <style>
   .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
   .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.4rem 0 0.8rem; }
   .tag { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; padding: 0.1em 0.6em; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
   .tag img { border-radius: 50%; }
-  .side-H { border-color: #b3261e; color: #b3261e; } .side-A { border-color: #2f6fd0; color: #2f6fd0; }
+  .tag.side-H { border-color: var(--horde); } .tag.side-A { border-color: var(--alliance); }
   .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem 1.5rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; margin: 1.2rem 0; }
   .facts dt { color: var(--muted); font-size: var(--step--1); }
   .facts dd { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); }
@@ -123,12 +129,13 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   .pin .dot.start { background: #e8b92e; } .pin .dot.end { background: #69ccf0; }
   .pin figcaption { display: grid; gap: 0.1rem; }
   .pin .role { font: 600 0.75rem var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--xp); }
-  .pin .way { font-size: 0.8rem; margin-top: 0.3rem; word-break: break-word; }
   .rewards { list-style: none; padding: 0; display: grid; gap: 0.4rem; }
-  .rewards li { display: grid; grid-template-columns: 40px 1fr auto; gap: 0.6rem; align-items: center; }
-  .pic { width: 38px; height: 38px; border-radius: 4px; overflow: hidden; background: #10161d; border: 2px solid var(--qb, #555); }
-  .pic img { display: block; width: 100%; height: 100%; }
-  .q-b-poor { --qb: #9d9d9d; } .q-b-common { --qb: #bbb; } .q-b-uncommon { --qb: #1eaa1e; } .q-b-rare { --qb: #0070dd; } .q-b-epic { --qb: #a335ee; } .q-b-legendary { --qb: #ff8000; }
-  .q-poor { color: #9d9d9d; } .q-uncommon { color: #1eaa1e; } .q-rare { color: #2b6fd6; } .q-epic { color: #9f45e6; } .q-legendary { color: #e07b00; }
+  .rewards li { display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; }
+  .changed { border-left: 4px solid var(--quest); padding: 0.3rem 0.8rem; }
+  .way { all: unset; cursor: pointer; display: inline-flex; gap: 0.5rem; align-items: center; margin-top: 0.3rem; }
+  .way code { font-size: 0.8rem; word-break: break-word; }
+  .way span { font-size: 0.8rem; color: var(--rested); font-weight: 600; }
+  .way:hover code { border-color: var(--rested); }
+  .way:focus-visible { outline: 3px solid var(--focus); border-radius: 3px; }
   .chain { padding-left: 1.4rem; } .chain .here { color: var(--xp); }
 </style>

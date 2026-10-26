@@ -4,7 +4,7 @@ export interface Place { n: string; t: string; id?: number; z?: string; x?: numb
 export interface QQuest {
   id: number; n: string; lv: number; req: number; z: string; side?: "A" | "H"; cls?: string[]; xp?: number;
   start?: Place; end?: Place; obj?: string; pre?: number[]; next?: number; rep?: 1;
-  rew?: { id: number; n: string; q?: number; icon?: string }[]; repu?: number;
+  rew?: { id: number; n: string; q?: number; icon?: string }[]; repu?: number; new?: 1; chg?: string[];
 }
 export const qdb = qdbJson as QQuest[];
 export const qById = new Map(qdb.map((q) => [q.id, q]));

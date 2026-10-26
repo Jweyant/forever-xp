@@ -1,0 +1,66 @@
+---
+import Base from "../layouts/Base.astro";
+import Logo from "../components/Logo.astro";
+import { SITE } from "../config";
+const invite = SITE.discord.split("/").pop();
+---
+<Base title="Community" description="Join the Forever XP Discord for WoW Forever routes, BIS help, patch notes and data updates. Help build free tools for every player.">
+  <h1>Community</h1>
+  <p class="lede">Forever XP is built by players, for players. Come talk routes, gear and changes, and help make the data better for everyone.</p>
+
+  <section class="discord-card">
+    <div class="dc-mark"><Logo size={110} /></div>
+    <div>
+      <h2>Forever XP on Discord</h2>
+      <p>Ask for BIS help, share your routes, report wrong quest data, and hear first when a guide or tool changes.</p>
+      <p class="count" id="dc-count" data-invite={invite}></p>
+      <p><a class="btn discord" href={SITE.discord} rel="noopener">Join the Discord</a></p>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section>
+      <h2>Forums</h2>
+      <p>The Discord's forum channels are the place for longer threads: class builds, leveling routes, gearing for raids and PvP, and bug reports for this site.</p>
+      <p>Quest, item and guide pages also have a link straight to the Discord, so you can point at the exact thing you're talking about.</p>
+    </section>
+    <section>
+      <h2>Make the data better</h2>
+      <ul>
+        <li>Play with <a href="/scout/">ForeverScout</a> running. It logs quest times and loot, which fills in drop sources and real XP per minute.</li>
+        <li>Found a wrong coordinate or missing quest? Post it in the Discord, or <a href={`${SITE.repo}/issues/new/choose`}>open an issue</a>.</li>
+        <li>Developers can send pull requests on <a href={SITE.repo}>GitHub</a>. Everything is GPL-3.0.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Share a build</h2>
+      <p>Every BIS plan and talent build is a link. Paste it in your guild's Discord and it shows a preview card, so your guildies can open the exact plan.</p>
+      <p><a href="/bis/">Open the BIS planner</a> or the <a href="/talents/">talent calculator</a>.</p>
+    </section>
+  </div>
+</Base>
+<script>
+  const el = document.getElementById("dc-count");
+  const code = el?.dataset.invite;
+  if (el && code) {
+    fetch(`https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && d.approximate_member_count) {
+          el.textContent = `${d.approximate_member_count.toLocaleString("en-US")} members, ${d.approximate_presence_count.toLocaleString("en-US")} online now.`;
+        }
+      })
+      .catch(() => {});
+  }
+</script>
+<style>
+  .discord-card { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2rem; align-items: center; margin: 1.5rem 0 2rem; padding: 1.4rem 1.6rem; border-radius: 12px;
+    background: linear-gradient(120deg, #26215a, #1b2c57 60%, #232f63); color: #eeeaff; box-shadow: var(--shadow); }
+  .discord-card h2 { margin: 0 0 0.3rem; font-size: var(--step-2); }
+  .discord-card p { color: #d6d1f5; }
+  .discord-card .count { min-height: 1.5em; color: #fff; font-weight: 600; }
+  .discord-card { --logo-track: #141838; --logo-edge: #0a0c20; }
+  @media (max-width: 600px) { .discord-card { grid-template-columns: 1fr; } }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 2rem; }
+  .grid h2 { font-size: var(--step-2); margin-top: 0.6rem; }
+</style>

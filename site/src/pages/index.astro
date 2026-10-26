@@ -1,90 +1,130 @@
 ---
 import Base from "../layouts/Base.astro";
 import XpBar from "../components/XpBar.astro";
-import { guides, quests, meta, RELEASES, rateOf, fmtMinutes } from "../lib/data";
+import Logo from "../components/Logo.astro";
+import { guides, quests, meta, rateOf, fmtMinutes } from "../lib/data";
+import { qdb } from "../lib/questdb";
+import { gear } from "../lib/gear";
+import notesJson from "../data/notes.json";
+import { SITE, ICON } from "../config";
 
 const horde = guides.filter((g) => g.faction === "Horde");
 const totalMinutes = horde.reduce((s, g) => s + (g.minutes || 0), 0);
 const skips = quests.filter((q) => q.verdict === "skip");
-const worst = [...skips].filter((q) => rateOf(q) != null).sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)).slice(0, 6);
+const worst = [...skips].filter((q) => (rateOf(q) ?? 0) > 0).sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)).slice(0, 5);
+const notes = notesJson as { rows: { id: string; date: string; kind: string; section: string; path: string[]; text: string; cls?: string; url: string }[] };
+// The newest post, one change from each area so the list isn't all bug fixes.
+const pool = notes.rows.filter((r) => r.kind !== "Known issues" && !("dev" in r) && r.date === notes.rows[0]?.date);
+const seenArea = new Set<string>();
+const latest = [...pool.filter((r) => !seenArea.has(r.section + (r.cls || "")) && seenArea.add(r.section + (r.cls || ""))), ...pool].filter((r, i, a) => a.indexOf(r) === i).slice(0, 6);
+const n = (v: number) => v.toLocaleString("en-US");
+const tools = [
+  { href: "/bis/", icon: "inv_chest_plate06", title: "BIS planner", text: "An in-game style character sheet with the best item for every slot. Import your gear straight from the game." },
+  { href: "/quests/", icon: "inv_misc_note_01", title: "Quest database", text: `All ${n(qdb.length)} quests with givers, coordinates, chains and rewards. ${n(qdb.filter((q) => q.new).length)} are new in Forever.` },
+  { href: "/items/", icon: "inv_sword_39", title: "Item database", text: `${n(gear.items.length)} items with stats from the client and where each one drops.` },
+  { href: "/talents/", icon: "ability_marksmanship", title: "Talent calculator", text: "All nine classes with Forever's reworked talents, and build links you can share." },
+  { href: "/changes/", icon: "inv_misc_book_09", title: "Every Forever change", text: "Blizzard's development notes, one change per row, with class and race filters." },
+  { href: "/guides/", icon: "inv_misc_map_01", title: "Leveling routes", text: "Free routes with every quest scored by XP per minute, and the ones worth skipping." },
+];
+const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 ---
-<Base title="Forever XP" description="Free WoW Forever leveling routes, a quest skip list and the ForeverScout logger. Built from real player data.">
+<Base title={SITE.name} description="Free WoW Forever tools: a BIS gear planner, every quest with coordinates, the item database, talent calculator, all of Blizzard's changes and fast leveling routes.">
   <section class="hero">
-    <h1>Level faster in WoW Forever.</h1>
-    <p class="lede">
-      Free Horde routes from 1 to 30, every quest scored by XP per minute, and a list of the
-      ones worth skipping. Players running ForeverScout turn the estimates into measured numbers.
-    </p>
-    <XpBar guides={guides} />
-    <div class="ctas">
-      <a class="btn" href="/scout/">Get ForeverScout</a>
-      <a class="btn secondary" href="/guides/">Browse the guides</a>
+    <div class="mark"><Logo size={190} animate /></div>
+    <div class="copy">
+      <h1>Everything you need for WoW Forever, in one place.</h1>
+      <p class="lede">Plan your gear, find any quest, read every change Blizzard made, and level on routes built from real player logs. Free, open source, and run by players.</p>
+      <div class="ctas">
+        <a class="btn" href="/bis/">Plan your gear</a>
+        <a class="btn discord" href={SITE.discord} rel="noopener">Join the Discord</a>
+      </div>
+      <p class="launch-count" data-launch={SITE.launch}><b>WoW Forever launches November 4.</b> <span class="cd"></span></p>
     </div>
   </section>
 
-  <section class="facts" aria-label="What's here so far">
-    <div><b>{horde.length}</b><span>Horde guides, about {fmtMinutes(totalMinutes)} of routes</span></div>
-    <div><b>{quests.length}</b><span>quests scored by XP per minute</span></div>
-    <div><b>{skips.length}</b><span>quests on the skip list</span></div>
-    <div class="measured"><b>{meta.measured_quests}</b><span>quests measured from player logs so far</span></div>
+  <section class="tools" aria-label="Tools">
+    {tools.map((t) => (
+      <a href={t.href}>
+        <span class="ico lg"><img src={ICON(t.icon)} alt="" width="58" height="58" loading="lazy" /></span>
+        <b>{t.title}</b><span class="txt">{t.text}</span>
+      </a>
+    ))}
   </section>
 
-  <section class="tools" aria-label="Tools">
-    <a href="/bis/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_chest_plate06.jpg" alt="" width="44" height="44" loading="lazy" /><b>BIS gear planner</b><span>Import your character, pick PvE, PvP or leveling, and see the best item for every slot.</span></a>
-    <a href="/talents/"><img src="https://render.worldofwarcraft.com/us/icons/56/ability_marksmanship.jpg" alt="" width="44" height="44" loading="lazy" /><b>Talent calculator</b><span>All nine classes from the Forever client, with build links you can share.</span></a>
-    <a href="/changes/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_misc_book_09.jpg" alt="" width="44" height="44" loading="lazy" /><b>What Forever changed</b><span>Talents, quests, items and spells compared with Classic Era.</span></a>
-    <a href="/quests/"><img src="https://render.worldofwarcraft.com/us/icons/56/inv_misc_note_01.jpg" alt="" width="44" height="44" loading="lazy" /><b>Quest database</b><span>All Forever quests from Questie: givers, coordinates, chains and rewards.</span></a>
+  <section class="two">
+    <div>
+      <h2>Latest from Blizzard</h2>
+      <ol class="latest">
+        {latest.map((r) => (
+          <li>
+            <span class="muted small">{fmt(r.date)}, {[r.section, ...r.path].join(" › ")}</span>
+            <span>{r.cls && <img src={ICON(`classicon_${r.cls.toLowerCase()}`, 18)} alt="" width="16" height="16" />} {r.text}</span>
+          </li>
+        ))}
+      </ol>
+      <p><a href="/changes/">All {n(notes.rows.length)} changes</a></p>
+    </div>
+    <div>
+      <h2>Slowest quests to skip</h2>
+      <ol class="latest">
+        {worst.map((q) => (
+          <li><span class="muted small">{q.zone}, {rateOf(q)} XP per minute</span><a href={`/quests/${q.id}/`}>{q.name}</a></li>
+        ))}
+      </ol>
+      <p><a href="/skip/">Full skip list by zone</a></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Horde routes, level 1 to 30</h2>
+    <p class="muted">{horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route.</p>
+    <XpBar guides={guides} />
   </section>
 
   <section>
     <h2>How the numbers get better</h2>
     <ol class="loop">
-      <li><h3>You play</h3><p>ForeverScout records quests, XP and how long each one really took. No names, realms or chat.</p></li>
+      <li><h3>You play</h3><p>ForeverScout records quests, XP, loot and how long each quest really took. No names, realms or chat.</p></li>
       <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
-      <li><h3>Routes update</h3><p>Estimated times get replaced by measured ones, slow quests drop out, and missing quests go to Questie.</p></li>
+      <li><h3>Everyone benefits</h3><p>Routes get measured times, new items get drop sources, and missing quests go back to Questie.</p></li>
     </ol>
-    <p><a href="/contribute/">See how to help</a></p>
-  </section>
-
-  <section>
-    <h2>Slowest quests on the skip list</h2>
-    <p class="muted">Estimated XP per minute with travel included. These are the first ones to cut.</p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Quest</th><th>Zone</th><th class="num">XP/min</th><th>Why</th></tr></thead>
-        <tbody>
-          {worst.map((q) => (
-            <tr>
-              <td><a href={`/quests/${q.id}/`}>{q.name}</a></td>
-              <td>{q.zone}</td>
-              <td class="num">{rateOf(q)}</td>
-              <td class="muted">{q.skip_note?.reason || `Below ${meta.skip_threshold} XP/min`}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-    <p><a href="/skip/">Full skip list by zone</a></p>
+    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">{meta.measured_quests} quests measured from player logs so far.</span></p>
   </section>
 </Base>
-
+<script>
+  const el = document.querySelector<HTMLElement>("[data-launch]");
+  if (el) {
+    const at = new Date(`${el.dataset.launch}T15:00:00Z`).getTime();
+    const tick = () => {
+      const ms = at - Date.now();
+      const cd = el.querySelector(".cd")!;
+      if (ms <= 0) { el.innerHTML = "<b>WoW Forever is live.</b> See you in Azeroth."; return; }
+      const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5);
+      cd.textContent = `${d} day${d === 1 ? "" : "s"} and ${h} hour${h === 1 ? "" : "s"} to go. Character creation opens October 27.`;
+    };
+    tick(); setInterval(tick, 60000);
+  }
+</script>
 <style>
-  .hero { padding: 1.5rem 0 1.5rem; }
-  .hero h1 { max-width: 14ch; }
-  .hero .lede { margin-bottom: 2rem; }
-  .ctas { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-top: 1.6rem; }
-  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; margin: 2.5rem 0 0; border-top: 2px solid var(--ink); }
-  .facts div { padding: 1rem 1rem 1rem 0; display: grid; gap: 0.1rem; }
-  .facts b { font-family: var(--font-display); font-size: var(--step-3); line-height: 1; color: var(--xp); }
-  .facts span { color: var(--muted); font-size: var(--step--1); max-width: 22ch; }
-  .facts .measured b { color: var(--quest); }
-  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
-  .tools a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.8rem; row-gap: 0.2rem; align-items: start; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); text-decoration: none; color: var(--ink); }
-  .tools a:hover { border-color: var(--xp); }
-  .tools img { grid-row: span 2; border-radius: 6px; border: 2px solid #8a6d3b; box-shadow: 0 0 0 1px #000; }
-  .tools span { grid-column: 2; }
+  .hero { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2.5rem; align-items: center; padding: 1.5rem 0 1rem; }
+  .hero .mark { padding: 1rem; }
+  .hero h1 { max-width: 18ch; margin-bottom: 0.4em; font-size: clamp(2.4rem, 5vw, 3.7rem); }
+  .hero .lede { margin-bottom: 1.4rem; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+  .launch-count { margin-top: 1.1rem; color: var(--muted); }
+  .launch-count b { color: var(--ink); }
+  @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero .mark { padding: 0; } .hero .mark :global(svg) { width: 130px; height: auto; } }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
+  .tools a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.9rem; row-gap: 0.15rem; align-items: start; padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); transition: border-color .12s, transform .12s; }
+  .tools a:hover { border-color: var(--xp); transform: translateY(-1px); }
+  .tools .ico { grid-row: span 2; --qb: #8a6d3b; }
   .tools b { font-family: var(--font-display); font-size: var(--step-1); }
-  .tools span { color: var(--muted); font-size: var(--step--1); }
+  .tools .txt { grid-column: 2; color: var(--muted); font-size: var(--step--1); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2.5rem; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+  .latest { list-style: none; padding: 0; margin: 0 0 0.8rem; border-top: 2px solid var(--ink); max-width: none; }
+  .latest li { display: grid; gap: 0.1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--line); }
+  .latest img { vertical-align: -2px; border-radius: 50%; }
   .loop { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; counter-reset: s; max-width: none; }
   .loop li { counter-increment: s; border-top: 3px solid var(--xp); padding-top: 0.8rem; }
   .loop h3 { margin-top: 0; font-size: var(--step-1); }

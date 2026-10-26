@@ -1,0 +1,46 @@
+---
+import Base from "../../layouts/Base.astro";
+import { gear } from "../../lib/gear";
+import { SOURCE_KINDS } from "../../scripts/gear/model";
+const n = gear.items.length.toLocaleString("en-US");
+const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","Back"],["chest","Chest"],["wrist","Wrist"],["hands","Hands"],["waist","Waist"],["legs","Legs"],["feet","Feet"],["finger","Ring"],["trinket","Trinket"],["mainhand","Main hand"],["onehand","One-hand"],["twohand","Two-hand"],["offhand","Off hand"],["shield","Shield"],["holdable","Held in off hand"],["ranged","Ranged"],["relic","Relic"]];
+---
+<Base title="Item database" description={`All ${n} equippable WoW Forever items with stats from the game client, icons and where each one drops. Filter by slot, quality, level and source.`}>
+  <h1>Item database</h1>
+  <p class="lede">Every piece of gear in WoW Forever, {n} items, with stats read from the game client and where each one comes from.</p>
+
+  <section id="idb" class="idb" aria-busy="true">
+    <div class="filters">
+      <label class="grow">Search<input type="search" id="f-q" placeholder="Item name or ID" autocomplete="off" /></label>
+      <label>Slot<select id="f-slot"><option value="">Any slot</option>{slots.map(([k, v]) => <option value={k}>{v}</option>)}</select></label>
+      <label>Type<select id="f-type"><option value="">Any type</option></select></label>
+      <label>Quality<select id="f-q2"><option value="">Any</option><option value="2">Uncommon and up</option><option value="3">Rare and up</option><option value="4">Epic and up</option></select></label>
+      <label>Required level<span class="lv"><input type="number" id="f-min" min="1" max="60" placeholder="1" aria-label="Lowest required level" /> to <input type="number" id="f-max" min="1" max="60" placeholder="60" aria-label="Highest required level" /></span></label>
+      <label>Source<select id="f-src"><option value="">Any source</option>{SOURCE_KINDS.map((s) => <option value={s.key}>{s.name}</option>)}</select></label>
+      <label>Stat<select id="f-stat"><option value="">Any stat</option></select></label>
+    </div>
+    <p class="muted small" id="f-count" aria-live="polite">Loading the gear database…</p>
+    <div class="table-scroll">
+      <table id="itbl">
+        <thead><tr>
+          <th data-sort="name"><button>Item</button></th>
+          <th class="num" data-sort="ilvl" aria-sort="descending"><button>Item level</button></th>
+          <th class="num opt" data-sort="req"><button>Requires</button></th>
+          <th class="opt" data-sort="slot"><button>Slot</button></th>
+          <th class="opt" data-sort="src"><button>Source</button></th>
+        </tr></thead>
+        <tbody id="irows"></tbody>
+      </table>
+    </div>
+    <p><button type="button" class="btn secondary" id="f-more" hidden>Show more items</button></p>
+  </section>
+</Base>
+<script>import "../../scripts/itemdb.ts";</script>
+<style>
+  .filters .grow { flex: 1 1 220px; }
+  .lv { display: flex; gap: 0.3rem; align-items: center; } .lv input { width: 4.2rem; }
+  #itbl td { vertical-align: middle; }
+  #itbl .ilink { font-weight: 600; }
+  #itbl .sub { display: block; font-size: 0.82rem; color: var(--muted); font-weight: 400; }
+  .idb[aria-busy="true"] .table-scroll { min-height: 200px; }
+</style>

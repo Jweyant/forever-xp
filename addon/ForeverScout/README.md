@@ -20,7 +20,7 @@ fast leveling guides and fill in quest data that Questie doesn't have yet.
 | `/fscout pause` / `resume` | Stop or restart recording |
 | `/fscout share on` / `off` | Allow or stop automatic uploads by the uploader app |
 | `/fscout note <text>` | Drop a note at your current spot ("cave is packed", "skip this, elite") |
-| `/fscout gear` | Copyable string of your equipped gear for the forever-xp.com BIS planner |
+| `/fscout gear` | Copyable string of your equipped gear, class, level, race and body type for the forever-xp.com BIS planner (forever-xp.com/bis) |
 | `/fscout report` | Copyable list of quests/NPCs Questie is missing — share it on Questie's Discord |
 | `/fscout export` | Copyable export string of your recorded sessions |
 | `/fscout wipe confirm` | Erase everything recorded |

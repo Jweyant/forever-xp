@@ -10,11 +10,13 @@ local SLOTS = {
   { 13, "trinket1" }, { 14, "trinket2" }, { 16, "mainhand" }, { 17, "offhand" }, { 18, "ranged" },
 }
 
--- FXPG1:<CLASS>:<level>:<RACE>:<A|H>:<slot>=<itemId>[.<enchantId>],...
+-- FXPG1:<CLASS>:<level>:<RACE>[.<M|F>]:<A|H>:<slot>=<itemId>[.<enchantId>],...
+-- (the body type after the race lets the site show the matching character portrait)
 function ns.GearString()
   local _, class = UnitClass("player")
   local _, race = UnitRace("player")
   local faction = UnitFactionGroup("player") == "Horde" and "H" or "A"
+  local body = UnitSex and UnitSex("player") == 3 and "F" or "M"
   local parts = {}
   for _, s in ipairs(SLOTS) do
     local link = GetInventoryItemLink("player", s[1])
@@ -27,13 +29,13 @@ function ns.GearString()
       end
     end
   end
-  return ("FXPG1:%s:%d:%s:%s:%s"):format(class or "?", UnitLevel("player") or 0, race or "?", faction,
+  return ("FXPG1:%s:%d:%s.%s:%s:%s"):format(class or "?", UnitLevel("player") or 0, race or "?", body, faction,
     table.concat(parts, ","))
 end
 
 function ns.ShowGear()
   ns.ShowCopy("Your gear for forever-xp.com",
-    "Ctrl+C to copy, then paste it on forever-xp.com/gear under Import from the game. "
+    "Ctrl+C to copy, then paste it on forever-xp.com/bis under Import from the game. "
       .. "It only contains your class, level, race, faction and equipped item IDs.",
     ns.GearString())
 end

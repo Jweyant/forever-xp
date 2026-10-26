@@ -6,13 +6,14 @@ const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.fi
 ---
 <Base title="Quest database" description={`All ${qdb.length.toLocaleString("en-US")} WoW Forever quests: quest givers with map coordinates, objectives, chains and rewards, from Questie's Forever database.`}>
   <h1>Quest database</h1>
-  <p class="lede">Every quest in WoW Forever, {qdb.length.toLocaleString("en-US")} in all, with who gives it, where they stand, what it asks and what it pays.</p>
+  <p class="lede">Every quest in WoW Forever, {qdb.length.toLocaleString("en-US")} in all, with who gives it, where they stand, what it asks and what it pays. <a href="/quests/?new=1">{qdb.filter((q) => q.new).length} are new in Forever</a>.</p>
   <p class="muted small">Want to level fast? The <a href="/quests/xp/">XP per minute ranking</a> scores {quests.length} quests with travel included.</p>
 
   <section id="qsearch" class="search">
     <div class="filters">
       <label class="grow">Search<input type="search" id="qs-text" placeholder="Quest name, NPC or quest ID" autocomplete="off" /></label>
       <label>Faction<select id="qs-side"><option value="">Either</option><option value="H">Horde</option><option value="A">Alliance</option></select></label>
+      <label>Show<select id="qs-new"><option value="">All quests</option><option value="1">New in Forever</option></select></label>
       <label>Levels<span class="lv"><input type="number" id="qs-min" min="1" max="63" placeholder="1" aria-label="Lowest level" /> to <input type="number" id="qs-max" min="1" max="63" placeholder="60" aria-label="Highest level" /></span></label>
       <span class="muted small" id="qs-count" aria-live="polite"></span>
     </div>
@@ -33,7 +34,7 @@ const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.fi
   ))}
 </Base>
 <script>
-  type Row = [number, string, number, string, string, string];
+  type Row = [number, string, number, string, string, string, number];
   const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
   const out = document.getElementById("qs-results")!;
   const count = document.getElementById("qs-count")!;
@@ -48,26 +49,28 @@ const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.fi
   async function run() {
     const t = $("qs-text").value.trim().toLowerCase(), side = ($("qs-side") as unknown as HTMLSelectElement).value;
     const min = +$("qs-min").value || 0, max = +$("qs-max").value || 99;
+    const onlyNew = ($("qs-new") as unknown as HTMLSelectElement).value === "1";
     const params = new URLSearchParams();
-    if (t) params.set("q", t); if (side) params.set("side", side); if (min) params.set("min", String(min)); if (max < 99) params.set("max", String(max));
+    if (t) params.set("q", t); if (side) params.set("side", side); if (min) params.set("min", String(min)); if (max < 99) params.set("max", String(max)); if (onlyNew) params.set("new", "1");
     history.replaceState(null, "", params.toString() ? `?${params}` : location.pathname);
-    if (!t && !side && !min && max === 99) { out.innerHTML = `<li class="muted">Type to search all quests, or pick a zone below.</li>`; count.textContent = ""; return; }
+    if (!t && !side && !min && max === 99 && !onlyNew) { out.innerHTML = `<li class="muted">Type to search all quests, or pick a zone below.</li>`; count.textContent = ""; return; }
     const all = await load();
     const id = /^\d+$/.test(t) ? +t : 0;
-    const hits = all.filter(([qid, n, lv, , s, npc]) =>
+    const hits = all.filter(([qid, n, lv, , s, npc, nw]) => (!onlyNew || nw) &&
       (!t || qid === id || n.toLowerCase().includes(t) || npc.toLowerCase().includes(t)) &&
       (!side || !s || s === side) && (lv <= 0 || (lv >= min && lv <= max)));
     hits.sort((a, b) => (a[1].toLowerCase().startsWith(t) ? 0 : 1) - (b[1].toLowerCase().startsWith(t) ? 0 : 1) || a[2] - b[2]);
     count.textContent = `${hits.length.toLocaleString("en-US")} found${hits.length > 100 ? ", showing 100" : ""}`;
-    out.innerHTML = hits.slice(0, 100).map(([qid, n, lv, z, s, npc]) =>
-      `<li><a href="/quests/${qid}/"><span class="lvl">${lv > 0 ? lv : "–"}</span><b>${esc(n)}</b><span class="muted">${esc(z)}${npc ? `, from ${esc(npc)}` : ""}</span>${s ? `<span class="side side-${s}">${s === "H" ? "Horde" : "Alliance"}</span>` : ""}</a></li>`).join("")
+    out.innerHTML = hits.slice(0, 100).map(([qid, n, lv, z, s, npc, nw]) =>
+      `<li><a href="/quests/${qid}/"><span class="lvl">${lv > 0 ? lv : "–"}</span><b>${esc(n)}${nw ? `<span class="tag-new">NEW</span>` : ""}</b><span class="muted">${esc(z)}${npc ? `, from ${esc(npc)}` : ""}</span>${s ? `<span class="side side-${s}">${s === "H" ? "Horde" : "Alliance"}</span>` : ""}</a></li>`).join("")
       || `<li class="muted">No quests match.</li>`;
   }
   const p = new URLSearchParams(location.search);
   $("qs-text").value = p.get("q") || ""; ($("qs-side") as unknown as HTMLSelectElement).value = p.get("side") || "";
   $("qs-min").value = p.get("min") || ""; $("qs-max").value = p.get("max") || "";
+  ($("qs-new") as unknown as HTMLSelectElement).value = p.get("new") || "";
   let timer = 0;
-  ["qs-text", "qs-side", "qs-min", "qs-max"].forEach((k) => $(k).addEventListener("input", () => { clearTimeout(timer); timer = window.setTimeout(run, 120); }));
+  ["qs-text", "qs-side", "qs-min", "qs-max", "qs-new"].forEach((k) => $(k).addEventListener("input", () => { clearTimeout(timer); timer = window.setTimeout(run, 120); }));
   run();
 </script>
 <style>
@@ -84,7 +87,6 @@ const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.fi
   .results .lvl { grid-row: span 2; font: 600 1.2rem var(--font-display); color: var(--xp); align-self: center; text-align: center; }
   .results .muted { grid-column: 2; font-size: 0.88rem; }
   .results .side { grid-column: 3; grid-row: 1 / span 2; align-self: center; font-size: 0.8rem; font-weight: 600; }
-  .side-H { color: #b3261e; } .side-A { color: #2f6fd0; }
   .zones { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.5rem; max-width: none; }
   .zones a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.5rem; align-items: center; padding: 0.55rem 0.75rem; border: 1px solid var(--line); border-left: 4px solid var(--quest-bright); border-radius: var(--radius); background: var(--surface); text-decoration: none; color: var(--ink); }
   .zones a:hover { border-color: var(--xp); }

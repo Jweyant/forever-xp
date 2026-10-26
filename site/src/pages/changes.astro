@@ -1,105 +1,174 @@
 ---
 import Base from "../layouts/Base.astro";
 import changesJson from "../data/changes.json";
-import talentsJson from "../data/talents.json";
+import notesJson from "../data/notes.json";
+import { qdb } from "../lib/questdb";
+import { ICON } from "../config";
 
-interface Change { cls: string | null; tree: string; name: string; was?: string | null; kinds: string[]; classic: string; forever?: string; est?: boolean; classicRanks?: number; foreverRanks?: number }
-const data = changesJson as { builds: { forever: string; classic: string }; talents: Change[]; stats: { items: number[]; newItemsByQuality: number[]; quests: number[]; spells: number[] }; epics: [number, string, number, number][] };
-const classes = (talentsJson as { classes: { name: string; slug: string }[] }).classes;
+interface Note { id: string; date: string; kind: string; section: string; path: string[]; text: string; url: string; cls?: string; race?: string; spec?: string; detail?: string[]; note?: string[]; dev?: 1 }
+interface Talent { cls: string | null; tree: string; name: string; was?: string | null; kinds: string[]; forever?: string; est?: boolean }
+const notes = notesJson as { updated: string; sources: { id: number; title: string; url: string; kind: string; updated: string; rows: number }[]; articles: { title: string; url: string }[]; rows: Note[] };
+const data = changesJson as unknown as { builds: { forever: string }; talents: Talent[]; stats: { items: number[]; spells: number[] } };
 
-const sure = (c: Change) => c.kinds.includes("reworked") || c.kinds.includes("renamed") || !c.est;
-const confident = data.talents.filter(sure);
-const unconfirmed = data.talents.filter((c) => !sure(c));
-const byClass = classes.map((cl) => ({ ...cl, list: confident.filter((c) => c.cls === cl.name) })).filter((c) => c.list.length);
-const kindLabel: Record<string, string> = { reworked: "Reworked", renamed: "Renamed", numbers: "New numbers", moved: "Moved", "moved tree": "New tree", ranks: "Ranks changed", removed: "Removed" };
-const [itemsF, itemsC, itemsNew] = data.stats.items;
-const [questsF, questsC, questsNew] = data.stats.quests;
-const [spellsF, spellsC, spellsNew] = data.stats.spells;
+const KIND_LABEL: Record<string, string> = { reworked: "Reworked", renamed: "Renamed", numbers: "New numbers", moved: "Moved", "moved tree": "New tree", ranks: "Ranks changed", removed: "Removed" };
+const sure = (c: Talent) => c.kinds.includes("reworked") || c.kinds.includes("renamed") || !c.est;
+const build = data.builds.forever;
+type Row = { id: string; date: string; kind: "Blizzard" | "Known issue" | "Datamined"; area: string; path: string[]; text: string; url?: string; cls?: string; race?: string; detail?: string[]; note?: string[]; dev?: boolean; chips?: string[] };
+const rows: Row[] = [
+  ...notes.rows.map((r) => ({
+    id: r.id, date: r.date, kind: (r.kind === "Known issues" ? "Known issue" : "Blizzard") as Row["kind"], area: r.section,
+    path: r.path, text: r.text, url: r.url, cls: r.cls, race: r.race, detail: r.detail, note: r.note, dev: !!r.dev,
+  })),
+  ...data.talents.filter(sure).map((t, i) => ({
+    id: `t${i}`, date: "", kind: "Datamined" as const, area: "Talents", path: [t.cls || "", t.tree].filter(Boolean),
+    text: `${t.name}${t.was ? ` (was ${t.was})` : ""}: ${t.forever || "Removed."}`, cls: t.cls || undefined,
+    chips: t.kinds.map((k) => KIND_LABEL[k] || k),
+  })),
+].sort((a, b) => (b.date || "0").localeCompare(a.date || "0"));
+
+const areas = [...new Set(rows.map((r) => r.area))].sort((a, b) => a.localeCompare(b));
+const dates = [...new Set(rows.map((r) => r.date).filter(Boolean))].sort().reverse();
+const races = [...new Set(rows.map((r) => r.race).filter(Boolean))].sort() as string[];
+const classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid"];
+const fmt = (d: string) => (d ? new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
+const blizz = rows.filter((r) => r.kind === "Blizzard").length;
+const issues = rows.filter((r) => r.kind === "Known issue").length;
+const mined = rows.filter((r) => r.kind === "Datamined").length;
+const newQuests = qdb.filter((q) => q.new).length;
 const n = (v: number) => v.toLocaleString("en-US");
 ---
-<Base title="Forever vs Classic changes" description={`What WoW Forever changed from Classic Era, read straight from both game clients: ${confident.length} talent changes, ${n(questsNew)} new quest IDs and ${n(itemsNew)} new items.`}>
-  <h1>What Forever changed</h1>
-  <p class="lede">Compared straight from the two game clients: WoW Forever build {data.builds.forever} against Classic Era build {data.builds.classic}.</p>
+<Base title="Every WoW Forever change" description={`All ${n(rows.length)} WoW Forever changes in one searchable table: Blizzard's beta development notes, class and race updates, known issues, and talent changes read from the game client.`}>
+  <h1>Every Forever change</h1>
+  <p class="lede">Blizzard's development notes from the beta, split into single changes you can search and filter, plus what we read out of the game client. Updated within a few hours of each new post.</p>
 
-  <section class="facts" aria-label="Totals">
-    <div><b>{confident.length}</b><span>talents with confirmed changes</span></div>
-    <div><b>{n(questsNew)}</b><span>quest IDs that aren't in Classic Era</span></div>
-    <div><b>{n(itemsNew)}</b><span>items that aren't in Classic Era</span></div>
-    <div><b>{n(spellsNew)}</b><span>spells that aren't in Classic Era</span></div>
+  <section class="totals" aria-label="Totals">
+    <a href="?src=Blizzard"><b>{n(blizz)}</b><span>changes from Blizzard's notes</span></a>
+    <a href="?src=Datamined"><b>{n(mined)}</b><span>talent changes in the client</span></a>
+    <a href="/quests/?new=1"><b>{n(newQuests)}</b><span>quests new in Forever</span></a>
+    <a href="?src=Known%20issue"><b>{n(issues)}</b><span>known issues Blizzard listed</span></a>
   </section>
-  <p class="small muted">The Forever client has {n(questsF)} quest IDs, {n(itemsF)} items and {n(spellsF)} spells, against {n(questsC)}, {n(itemsC)} and {n(spellsC)} in Classic Era. Quest names and rewards live on the game servers, not in the client, so quests are counted here and filled in by ForeverScout logs.</p>
 
-  <h2>Talents by class</h2>
-  <nav class="jump" aria-label="Classes">
-    {byClass.map((c) => <a href={`#${c.slug}`}>{c.name} <span class="muted">{c.list.length}</span></a>)}
-  </nav>
-
-  {byClass.map((cl) => (
-    <section id={cl.slug} class="cls">
-      <h3>{cl.name} <a class="small" href={`/talents/${cl.slug}/`}>Open the {cl.name} calculator</a></h3>
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>Talent</th><th>Change</th><th>Classic Era</th><th>Forever</th></tr></thead>
-          <tbody>
-            {cl.list.map((c) => (
-              <tr>
-                <td><b>{c.name}</b><br /><span class="muted small">{c.tree}{c.was ? `, was ${c.was}` : ""}</span></td>
-                <td>{c.kinds.map((k) => <span class={`kind ${k.replace(" ", "-")}`}>{kindLabel[k] || k}</span>)}</td>
-                <td class="txt">{c.classic}</td>
-                <td class="txt">{c.forever}{c.est ? <span class="est"> Top-rank numbers estimated.</span> : null}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  ))}
-
-  <details class="unconfirmed">
-    <summary><b>{unconfirmed.length} possible number changes</b> <span class="muted">we can't confirm yet</span></summary>
-    <p class="small muted">These talents read the same in both clients apart from the numbers, but Forever's client only stores rank 1's numbers for them. Some of these are real changes, some come from our rank estimates. Player logs and in-game checks will sort them out.</p>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Class</th><th>Talent</th><th>Classic Era top rank</th><th>Forever, estimated top rank</th></tr></thead>
-        <tbody>
-          {unconfirmed.map((c) => (
-            <tr><td>{c.cls}</td><td>{c.name}</td><td class="txt">{c.classic}</td><td class="txt muted">{c.forever}</td></tr>
-          ))}
-        </tbody>
-      </table>
+  <section id="chg" class="chg">
+    <div class="filters">
+      <label class="grow">Search<input type="search" id="c-q" placeholder="Spell, talent, quest, anything" autocomplete="off" /></label>
+      <label>Source<select id="c-src"><option value="">All sources</option><option value="Blizzard">Blizzard's notes</option><option value="Datamined">Read from the client</option><option value="Known issue">Known issues</option></select></label>
+      <label>Area<select id="c-area"><option value="">All areas</option>{areas.map((a) => <option value={a}>{a}</option>)}</select></label>
+      <label>Race<select id="c-race"><option value="">Any race</option>{races.map((r) => <option value={r}>{r}</option>)}</select></label>
+      <label>Posted<select id="c-date"><option value="">Any date</option>{dates.map((d) => <option value={d}>{fmt(d)}</option>)}</select></label>
+      <label class="check"><input type="checkbox" id="c-dev" /> With developer notes</label>
     </div>
-  </details>
+    <div class="clsbar" role="group" aria-label="Filter by class">
+      {classes.map((c) => (
+        <button type="button" data-cls={c} aria-pressed="false" title={c}><img src={ICON(`classicon_${c.toLowerCase()}`, 36)} alt="" width="26" height="26" loading="lazy" /><span>{c}</span></button>
+      ))}
+    </div>
+    <p class="muted small" id="c-count" aria-live="polite">{n(rows.length)} changes</p>
 
-  <h2>New epic gear</h2>
-  <p class="muted">Equippable epics in the Forever client that Classic Era doesn't have, highest item level first. Where they drop isn't in the client.</p>
-  <div class="table-scroll">
-    <table>
-      <thead><tr><th>Item</th><th class="num">Item level</th><th class="num">Required level</th></tr></thead>
-      <tbody>
-        {data.epics.map(([id, name, ilvl, req]) => (
-          <tr><td class="epic">{name}</td><td class="num">{ilvl}</td><td class="num">{req}</td></tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-  <p class="small muted">Data read from the game clients' tables via wago.tools. Spot something wrong? <a href="https://github.com/Jweyant/forever-xp/issues/new?template=bug.yml">Report it</a>.</p>
+    <ol class="rows" id="c-rows">
+      {rows.map((r) => (
+        <li data-src={r.kind} data-area={r.area} data-cls={r.cls || ""} data-race={r.race || ""} data-date={r.date} data-dev={r.note?.length || r.dev ? "1" : ""}
+            data-search={`${r.text} ${(r.detail || []).join(" ")} ${(r.note || []).join(" ")} ${r.path.join(" ")} ${r.area}`.toLowerCase()}>
+          <div class="meta">
+            <span class={`src ${r.kind === "Datamined" ? "mined" : r.kind === "Known issue" ? "issue" : "blz"}`}>{r.kind === "Blizzard" ? "Blizzard" : r.kind === "Datamined" ? "Client" : "Known issue"}</span>
+            {r.date && <time datetime={r.date}>{fmt(r.date)}</time>}
+          </div>
+          <div class="body">
+            <p class="where">
+              {r.cls && <img src={ICON(`classicon_${r.cls.toLowerCase()}`, 18)} alt="" width="16" height="16" loading="lazy" />}
+              {[r.area, ...r.path].filter(Boolean).join(" › ")}
+              {r.chips?.map((c) => <span class="chip">{c}</span>)}
+            </p>
+            <p class={r.dev ? "txt devtxt" : "txt"}>{r.dev && <b>Developers' notes: </b>}{r.text}</p>
+            {r.detail && <ul class="detail">{r.detail.map((d) => <li>{d}</li>)}</ul>}
+            {r.note && r.note.map((d) => <p class="dev"><b>Developers' notes:</b> {d}</p>)}
+          </div>
+          {r.url ? <a class="post" href={r.url} rel="noopener" title="Read Blizzard's original post">Source</a> : <span class="post muted" title={`Forever client build ${build}`}>Build {build.split(".").pop()}</span>}
+        </li>
+      ))}
+    </ol>
+    <p class="empty muted" id="c-empty" hidden>No changes match. Clear a filter or two.</p>
+  </section>
+
+  <h2>Official sources</h2>
+  <ul class="sources">
+    {notes.sources.filter((s) => s.rows).map((s) => <li><a href={s.url} rel="noopener">{s.title}</a> <span class="muted small">{s.rows} entries, last post {fmt(s.updated)}</span></li>)}
+    {notes.articles.map((a) => <li><a href={a.url} rel="noopener">{a.title}</a> <span class="muted small">Blizzard article</span></li>)}
+  </ul>
+  <p class="small muted">Notes are Blizzard's own words, collected from their staff posts on the official forums (last checked {notes.updated}); each row links to the post it came from. Talent changes are read from Forever client build {build}. Talents where the client only stores rank 1's numbers are left out until they can be confirmed.</p>
 </Base>
+<script>
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const rows = [...document.querySelectorAll<HTMLElement>("#c-rows > li")];
+  const picked = new Set<string>();
+  const ctl = { q: "c-q", src: "c-src", area: "c-area", race: "c-race", date: "c-date" } as const;
+  function apply() {
+    const q = $("c-q").value.trim().toLowerCase(), src = $("c-src").value, area = $("c-area").value, race = $("c-race").value, date = $("c-date").value, dev = $("c-dev").checked;
+    let shown = 0;
+    for (const r of rows) {
+      const d = r.dataset;
+      const ok = (!q || d.search!.includes(q)) && (!src || d.src === src) && (!area || d.area === area) && (!race || d.race === race)
+        && (!date || d.date === date) && (!dev || d.dev) && (!picked.size || picked.has(d.cls!));
+      r.hidden = !ok; if (ok) shown++;
+    }
+    document.getElementById("c-count")!.textContent = `${shown.toLocaleString("en-US")} of ${rows.length.toLocaleString("en-US")} changes`;
+    document.getElementById("c-empty")!.hidden = shown > 0;
+    const p = new URLSearchParams();
+    for (const [k, id] of Object.entries(ctl)) { const v = $(id).value.trim(); if (v) p.set(k, v); }
+    if (dev) p.set("dev", "1");
+    if (picked.size) p.set("cls", [...picked].join("."));
+    history.replaceState(null, "", p.toString() ? `?${p}` : location.pathname);
+  }
+  const p = new URLSearchParams(location.search);
+  for (const [k, id] of Object.entries(ctl)) { const v = p.get(k); if (v) $(id).value = v; }
+  $("c-dev").checked = p.get("dev") === "1";
+  (p.get("cls") || "").split(".").filter(Boolean).forEach((c) => picked.add(c));
+  document.querySelectorAll<HTMLButtonElement>("[data-cls]").forEach((b) => {
+    if (b.closest("#c-rows")) return;
+    b.setAttribute("aria-pressed", String(picked.has(b.dataset.cls!)));
+    b.addEventListener("click", () => {
+      const c = b.dataset.cls!;
+      if (picked.has(c)) picked.delete(c); else picked.add(c);
+      b.setAttribute("aria-pressed", String(picked.has(c)));
+      apply();
+    });
+  });
+  let t = 0;
+  [...Object.values(ctl), "c-dev"].forEach((id) => $(id).addEventListener("input", () => { clearTimeout(t); t = window.setTimeout(apply, 90); }));
+  apply();
+</script>
 <style>
-  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); border-top: 2px solid var(--ink); margin: 1.5rem 0 0.8rem; }
-  .facts div { padding: 0.9rem 1rem 0.9rem 0; display: grid; gap: 0.1rem; }
-  .facts b { font-family: var(--font-display); font-size: var(--step-3); line-height: 1; color: var(--xp); }
-  .facts span { color: var(--muted); font-size: var(--step--1); max-width: 22ch; }
-  .jump { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 0.5rem 0 1rem; }
-  .cls { scroll-margin-top: 1rem; }
-  .cls h3 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1rem; }
-  .cls h3 a { font-family: var(--font-body); font-weight: 400; }
-  td.txt { min-width: 16rem; max-width: 34rem; }
-  .kind { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0.05em 0.45em; border-radius: 3px; margin: 0 0.25rem 0.25rem 0; white-space: nowrap; background: var(--xp-soft); color: var(--xp); }
-  .kind.reworked { background: var(--skip-soft); color: var(--skip); }
-  .kind.renamed { background: var(--do-soft); color: var(--do); }
-  .est { color: var(--quest); font-size: 0.85rem; }
-  .epic { color: var(--xp); font-weight: 600; }
-  .unconfirmed { margin: 2rem 0 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 0.7rem 1rem; }
-  .unconfirmed summary { cursor: pointer; }
-  .unconfirmed .table-scroll { margin-top: 0.6rem; }
+  .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border-top: 2px solid var(--ink); margin: 1.4rem 0 0.6rem; }
+  .totals a { display: grid; gap: 0.1rem; padding: 0.9rem 1rem 0.9rem 0; text-decoration: none; color: var(--ink); }
+  .totals b { font: 700 var(--step-3)/1 var(--font-display); color: var(--xp); }
+  .totals span { color: var(--muted); font-size: var(--step--1); }
+  .totals a:hover b { text-decoration: underline; text-decoration-thickness: 2px; }
+  .filters .grow { flex: 1 1 240px; }
+  .filters .check { display: flex; gap: 0.4rem; align-items: center; color: var(--ink); font-size: 0.95rem; padding-bottom: 0.45rem; }
+  .filters .check input { accent-color: var(--xp); }
+  .clsbar { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.2rem 0 0.8rem; }
+  .clsbar button { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.6rem 0.15rem 0.15rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 0.92rem var(--font-display); cursor: pointer; }
+  .clsbar img { border-radius: 50%; }
+  .clsbar button[aria-pressed="true"] { border-color: var(--xp); background: var(--xp-soft); }
+  @media (max-width: 560px) { .clsbar span { display: none; } .clsbar button { padding: 0.15rem; } }
+  .rows { list-style: none; padding: 0; margin: 0; max-width: none; border-top: 1px solid var(--line); }
+  .rows > li { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 0.3rem 1rem; padding: 0.7rem 0.2rem; border-bottom: 1px solid var(--line); }
+  .rows > li[hidden] { display: none; }
+  .meta { display: grid; align-content: start; gap: 0.2rem; font-size: 0.85rem; color: var(--muted); }
+  .src { justify-self: start; font: 600 0.72rem/1 var(--font-body); padding: 0.25em 0.5em; border-radius: 3px; }
+  .src.blz { background: #0f4c9c; color: #fff; } .src.mined { background: var(--xp-soft); color: var(--xp); } .src.issue { background: var(--skip-soft); color: var(--skip); }
+  .body p { margin: 0; max-width: 80ch; }
+  .where { font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
+  .where img { border-radius: 50%; }
+  .chip { font-size: 0.72rem; font-weight: 600; padding: 0.05em 0.45em; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); }
+  .txt { margin-top: 0.1rem !important; }
+  .devtxt, .dev { font-style: italic; color: var(--muted); }
+  .dev { margin-top: 0.3rem !important; border-left: 3px solid var(--quest-bright); padding-left: 0.6rem; font-size: 0.95rem; }
+  .detail { margin: 0.3rem 0 0; padding-left: 1.1rem; font-size: 0.95rem; }
+  .post { font-size: 0.85rem; white-space: nowrap; align-self: start; }
+  @media (max-width: 640px) {
+    .rows > li { grid-template-columns: 1fr auto; }
+    .meta { grid-column: 1 / -1; display: flex; gap: 0.6rem; align-items: center; }
+    .body { grid-column: 1; }
+  }
+  .sources { padding-left: 1.1rem; }
 </style>

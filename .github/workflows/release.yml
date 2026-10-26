@@ -16,10 +16,13 @@ name: Release ForeverScout
 on:
   push:
     tags: ["v*"]
+  # Release tags are protected (only the maintainer can create v* tags), so push the tag yourself:
+  #   git tag v0.3.0 && git push origin v0.3.0
+  # Running this by hand only works for a tag that already exists.
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to create, e.g. v0.2.0-beta"
+        description: "Existing release tag to publish, e.g. v0.3.0"
         required: true
 
 permissions:
@@ -32,7 +35,7 @@ jobs:
       ADDON: ForeverScout
       TAG: ${{ inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Package
         id: pkg
@@ -45,7 +48,7 @@ jobs:
           echo "zip=${zip}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
           go-version: "1.24"
 
