@@ -19,8 +19,8 @@ Suggested channels:
 Turn on **Server Settings > Widget** if you want a live member count; the community page
 already shows one from the invite.
 
-Automation worth adding next: a Discord webhook in #patch-notes fed by the "Refresh Blizzard
-notes" workflow (store the webhook URL as the `DISCORD_NOTES_WEBHOOK` secret).
+The channel layout, roles and the automatic #patch-notes feed are handled by the Forever XP bot:
+see [`docs/discord.md`](discord.md).
 
 ## Comments on pages (giscus)
 

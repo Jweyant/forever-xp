@@ -1,0 +1,57 @@
+# Forever XP Discord bot.
+#  - Pull requests: validate discord/server.json and run the bot's offline tests (no secrets).
+#  - main (or run by hand): apply discord/server.json to the server. Adds and updates channels,
+#    topics, forum tags, read-only settings and roles; never deletes anything.
+# Needs the DISCORD_BOT_TOKEN secret and DISCORD_GUILD_ID variable (see docs/discord.md).
+name: Discord
+
+on:
+  pull_request:
+    paths: ["discord/**", "tools/discord_bot.py", "tools/test/test_discord_bot.py", ".github/workflows/discord.yml"]
+  push:
+    branches: [main]
+    paths: ["discord/**", "tools/discord_bot.py", ".github/workflows/discord.yml"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would change"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: discord-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Discord config and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: python3 tools/discord_bot.py validate
+      - run: python3 tools/test/test_discord_bot.py
+
+  apply:
+    name: Apply server layout
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Apply discord/server.json
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
+          python3 tools/discord_bot.py setup $DRY
