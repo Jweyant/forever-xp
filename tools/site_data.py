@@ -331,29 +331,30 @@ def slugify(s):
 
 
 def build_game_data():
-    """gamedata/client-*.json (Forever + Classic Era client tables) -> talents.json and changes.json."""
+    """gamedata/talents.json (Forever trait tables + Classic Era talents, from tools/build_talents.py)
+    and gamedata/client-*.json (item/spell/quest counts) -> talents.json and changes.json."""
+    src = ROOT / "gamedata" / "talents.json"
     files = sorted((ROOT / "gamedata").glob("client-*.json"))
-    if not files:
+    if not src.exists():
         return
-    g = json.loads(files[-1].read_text())
+    g = json.loads(src.read_text())
+    counts = json.loads(files[-1].read_text()) if files else {}
     classes = []
-    forever = {}
+    forever = []
     for cid, cname, trees in g["talents"]:
         cl = {"id": cid, "name": cname, "slug": slugify(cname), "trees": []}
-        for tid, tname, tals in trees:
-            tr = {"id": tid, "name": tname, "talents": []}
+        for tid, tname, ticon, tals in trees:
+            tr = {"id": tid, "name": tname, "icon": ticon, "talents": []}
             for t in tals:
-                tid_, row, col, name, ranks, req, req_rank, icon, desc, est = t
-                tr["talents"].append({"id": tid_, "row": row, "col": col, "name": name, "ranks": ranks,
+                nid, row, col, name, ranks, req, req_rank, icon, desc, est, need, spell = t
+                tr["talents"].append({"id": nid, "row": row, "col": col, "name": name, "ranks": ranks,
                                       "req": req or None, "reqRank": req_rank or None, "icon": icon or None,
-                                      "desc": desc, "est": bool(est)})
-                forever[tid_] = {"cls": cname, "tree": tname, "name": name, "ranks": ranks, "row": row,
-                                 "col": col, "est": bool(est),
-                                 "first": decode_desc(desc, 1), "max": decode_desc(desc, ranks)}
+                                      "desc": desc, "est": bool(est), "need": need})
+                forever.append({"cls": cname, "tree": tname, "name": name, "ranks": ranks, "row": row, "col": col,
+                                "est": bool(est), "spell": spell, "first": decode_desc(desc, 1),
+                                "max": decode_desc(desc, ranks), "ref": tr["talents"][-1]})
             cl["trees"].append(tr)
         classes.append(cl)
-    (OUT / "talents.json").write_text(json.dumps({"build": g["builds"]["forever"], "classes": classes},
-                                                 separators=(",", ":")))
 
     def nums(s):
         return sorted(float(n) for n in re.findall(r"\d+(?:\.\d+)?", s or "") if float(n) != 0)
@@ -361,37 +362,52 @@ def build_game_data():
     def words(s):
         return {w for w in re.sub(r"[^a-z ]+", " ", (s or "").lower().replace("rage points", "rage")).split() if len(w) > 3}
 
+    # Match each Forever talent to its Classic Era talent: same spell first (catches renames), then
+    # the same name in the same class.
+    classic = g.get("classic", [])
+    by_spell = {(c["cls"], s): c for c in classic for s in c["spells"]}
+    by_name = {(c["cls"], c["name"].lower()): c for c in classic}
+    used = set()
     changes = []
-    for row in g["classic"]:
-        tid, cname, cranks, crow, ccol, ctree, ctext = row[:7]
-        removed = len(row) > 7
-        f = forever.get(tid)
-        if removed or not f:
-            changes.append({"cls": None, "tree": ctree, "name": cname, "kinds": ["removed"], "classic": ctext})
+    for f in forever:
+        c = by_spell.get((f["cls"], f["spell"])) or by_name.get((f["cls"], f["name"].lower()))
+        if c and id(c) in used:
+            c = None
+        if not c:
+            f["ref"]["new"] = True
+            changes.append({"cls": f["cls"], "tree": f["tree"], "name": f["name"], "kinds": ["new"],
+                            "forever": f["max"], "foreverRanks": f["ranks"], "est": f["est"] and f["first"] != f["max"],
+                            "tier": f["row"] + 1})
             continue
+        used.add(id(c))
         kinds = []
-        if cname != f["name"]:
+        if c["name"] != f["name"]:
             kinds.append("renamed")
-        if ctree != f["tree"]:
+        if c["tree"] != f["tree"]:
             kinds.append("moved tree")
-        elif (crow, ccol) != (f["row"], f["col"]):
+        elif (c["row"], c["col"]) != (f["row"], f["col"]):
             kinds.append("moved")
-        if cranks != f["ranks"]:
+        if c["ranks"] != f["ranks"]:
             kinds.append("ranks")
-        a, b = words(ctext), words(f["max"])
+        a, b = words(c["text"]), words(f["max"])
         overlap = len(a & b) / max(1, len(a | b))
         if overlap < 0.5:
             kinds.append("reworked")
-        elif nums(ctext) != nums(f["max"]):
+        elif nums(c["text"]) != nums(f["max"]):
             kinds.append("numbers")
         if not kinds:
             continue
-        changes.append({"cls": f["cls"], "tree": f["tree"], "name": f["name"], "was": cname if cname != f["name"] else None,
-                        "kinds": kinds, "classic": ctext, "classicRanks": cranks, "forever": f["max"],
+        changes.append({"cls": f["cls"], "tree": f["tree"], "name": f["name"], "was": c["name"] if c["name"] != f["name"] else None,
+                        "kinds": kinds, "classic": c["text"], "classicRanks": c["ranks"], "forever": f["max"],
                         "foreverRanks": f["ranks"], "est": f["est"] and f["first"] != f["max"],
-                        "tier": f["row"] + 1, "classicTier": crow + 1})
-    (OUT / "changes.json").write_text(json.dumps({"builds": g["builds"], "talents": changes, "stats": g["stats"],
-                                                  "epics": g["epics"]}, indent=1, ensure_ascii=False))
+                        "tier": f["row"] + 1, "classicTier": c["row"] + 1})
+    (OUT / "talents.json").write_text(json.dumps({"build": g["builds"]["forever"], "hotfixes": g.get("hotfixes", False),
+                                                  "classes": classes}, separators=(",", ":")))
+    for c in classic:
+        if id(c) not in used:
+            changes.append({"cls": c["cls"], "tree": c["tree"], "name": c["name"], "kinds": ["removed"], "classic": c["text"]})
+    (OUT / "changes.json").write_text(json.dumps({"builds": g["builds"], "talents": changes, "stats": counts.get("stats", {}),
+                                                  "epics": counts.get("epics", [])}, indent=1, ensure_ascii=False))
     print(f"game data: {len(forever)} talents, {len(changes)} talent changes")
 
 

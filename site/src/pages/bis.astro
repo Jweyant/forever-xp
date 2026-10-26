@@ -149,15 +149,15 @@ import { ICON } from "../config";
   .paperdoll .bottom { grid-area: b; display: flex; justify-content: center; gap: 8px; padding-top: 4px; }
   .paperdoll .figure { grid-area: f; display: grid; place-items: center; min-width: 0; }
   .paperdoll .figure-svg { width: min(250px, 100%); height: auto; overflow: visible; }
-  .figure-svg .body { fill: #384357; stroke: #56627a; stroke-width: 1.2; }
-  .figure-svg .head { fill: #3e4a5f; }
-  .figure-svg .buckle { fill: #6d5a2a; stroke: #c9a24a; stroke-width: 1; pointer-events: none; }
-  .figure-svg .part { fill: #2a3346; stroke: #46526b; stroke-width: 1.2; stroke-dasharray: 3 3; cursor: pointer; transition: fill .15s, filter .15s; }
-  .figure-svg .part.eq { fill: color-mix(in srgb, var(--c) 42%, #1b2132); stroke: var(--c); stroke-dasharray: none; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--c) 55%, transparent)); }
-  .figure-svg .part.wpn { fill: color-mix(in srgb, var(--c) 55%, #a9b3c6); }
-  .figure-svg .part.bowp { fill: none; stroke-width: 5; }
+  /* The figure (scripts/gear/figure.ts) sets its own fills; these add outlines, glow and hover. */
+  .figure-svg .skin { stroke: #000; stroke-opacity: .28; stroke-width: .8; }
+  .figure-svg .part { stroke: #56627a; stroke-width: 1; stroke-opacity: .55; cursor: pointer; transition: filter .15s, stroke-opacity .15s; }
+  .figure-svg .part.eq { stroke: var(--c); stroke-width: 1.3; stroke-opacity: .95; filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--c) 55%, transparent)); }
+  .figure-svg .part.ghost { stroke: none; }
+  .figure-svg .part.bowp { fill: none; stroke-width: 4; }
   .figure-svg .string { stroke: #c9c1ad; stroke-width: 1; fill: none; pointer-events: none; }
-  .figure-svg .part.hl, .figure-svg .part:hover { fill: color-mix(in srgb, var(--c, #8f9bb3) 70%, #fff); stroke-dasharray: none; }
+  .figure-svg .part.eq.hl, .figure-svg .part.eq:hover { filter: brightness(1.3) drop-shadow(0 0 5px var(--c)); }
+  .figure-svg .part:not(.eq).hl, .figure-svg .part:not(.eq):hover { stroke: #8fb8ff; stroke-opacity: 1; stroke-dasharray: 3 2; }
   .paperdoll .slot { position: relative; width: 52px; height: 52px; padding: 0; border-radius: 6px; cursor: pointer; overflow: hidden;
     background: linear-gradient(145deg, #1d242f, #0a0d13); border: 2px solid var(--qb, #3b4150);
     box-shadow: inset 0 0 0 1px #000, 0 0 0 1px #000, 0 0 10px color-mix(in srgb, var(--qb, #000) 40%, transparent); transition: transform .08s; }

@@ -5,7 +5,9 @@ export const SITE = {
   discord: "https://discord.gg/z8DfMK7Uw",
   repo: "https://github.com/Jweyant/forever-xp",
   curseforge: "", // the ForeverScout CurseForge page, once docs/curseforge.md is done
-  launch: "2026-11-04",
+  // Blizzard's times: name reservation opens Oct 27 at 4 PM Eastern, launch is Nov 4 at 3 PM Pacific.
+  names: "2026-10-27T20:00:00Z",
+  launch: "2026-11-04T23:00:00Z",
   // Comments on quest, item and guide pages use giscus (GitHub Discussions). Leave repoId empty
   // to keep comments off. Get the IDs from https://giscus.app after enabling Discussions.
   giscus: { repo: "Jweyant/forever-xp", repoId: "", category: "Site comments", categoryId: "" },

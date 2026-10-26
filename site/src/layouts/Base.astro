@@ -51,14 +51,14 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://render.worldofwarcraft.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
-  <script is:inline>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem("hide-launch")==="1")document.documentElement.dataset.nolaunch="1"}catch(e){}</script>
+  <script is:inline>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem("hide-launch"))document.documentElement.dataset.nolaunch="1"}catch(e){}</script>
   <script type="application/ld+json" set:html={jsonForHtml(ld)} />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <div class="launch" id="launch">
+  <div class="launch" id="launch" data-names={SITE.names} data-launch={SITE.launch}>
     <div class="wrap">
-      <p>WoW Forever launches <b>November 4</b>, and character creation opens October 27.{" "}
+      <p><span data-launch-msg>Name reservation opens <b>October 27</b> at 4 PM Eastern, and WoW Forever launches <b>November 4</b> at 3 PM Pacific.</span>{" "}
         <a href={SITE.discord} rel="noopener">Join the Forever XP Discord</a> for route and BIS updates.</p>
       <button type="button" class="x" data-hide-launch aria-label="Hide this message">×</button>
     </div>

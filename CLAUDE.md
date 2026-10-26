@@ -58,5 +58,6 @@ reviewed pull request with those checks green.
 - `site/` Astro site (Cloudflare Pages). `src/scripts/` client code, `tests/security.mjs` hostile-input test.
 - `server/` upload Worker (Cloudflare). `uploader/` desktop uploader (Go). `addon/` ForeverScout.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits.
+  `tools/build_talents.py` reads Forever's talent trees (trait tables + hotfixes) from wago.tools.
 - `discord/server.json` Discord layout, `tools/discord_bot.py` bot jobs (setup, patch-notes feed), `docs/discord.md`.
 - `docs/security-settings.md` settings outside the code; `SECURITY.md` reporting and controls.

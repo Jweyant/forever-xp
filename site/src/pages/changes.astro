@@ -10,7 +10,7 @@ interface Talent { cls: string | null; tree: string; name: string; was?: string 
 const notes = notesJson as { updated: string; sources: { id: number; title: string; url: string; kind: string; updated: string; rows: number }[]; articles: { title: string; url: string }[]; rows: Note[] };
 const data = changesJson as unknown as { builds: { forever: string }; talents: Talent[]; stats: { items: number[]; spells: number[] } };
 
-const KIND_LABEL: Record<string, string> = { reworked: "Reworked", renamed: "Renamed", numbers: "New numbers", moved: "Moved", "moved tree": "New tree", ranks: "Ranks changed", removed: "Removed" };
+const KIND_LABEL: Record<string, string> = { new: "New talent", reworked: "Reworked", renamed: "Renamed", numbers: "New numbers", moved: "Moved", "moved tree": "New tree", ranks: "Ranks changed", removed: "Removed" };
 const sure = (c: Talent) => c.kinds.includes("reworked") || c.kinds.includes("renamed") || !c.est;
 const build = data.builds.forever;
 type Row = { id: string; date: string; kind: "Blizzard" | "Known issue" | "Datamined"; area: string; path: string[]; text: string; url?: string; cls?: string; race?: string; detail?: string[]; note?: string[]; dev?: boolean; chips?: string[] };

@@ -3,7 +3,7 @@ import { jsonForHtml } from "../../scripts/items";
 import Base from "../../layouts/Base.astro";
 import talentsJson from "../../data/talents.json";
 
-const data = talentsJson as { build: string; classes: { id: number; name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
+const data = talentsJson as { build: string; hotfixes?: boolean; classes: { id: number; name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
 export function getStaticPaths() {
   return (talentsJson as typeof data).classes.map((c) => ({ params: { cls: c.slug }, props: { c } }));
 }
@@ -35,7 +35,7 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
       <aside class="detail" data-detail aria-live="polite"></aside>
     </div>
   </div>
-  <p class="small muted">From the WoW Forever client, build {data.build}. Click or tap to add a point, right-click or long-press to remove. Higher-rank numbers marked as estimates aren't in the client yet.</p>
+  <p class="small muted">Read from the WoW Forever game client's talent trees (build {data.build}){data.hotfixes ? " with Blizzard's latest hotfixes" : ""}, refreshed daily. Talents tagged NEW aren't in Classic Era. Click or tap to add a point, right-click or long-press to remove.</p>
   <script type="application/json" id="talent-data" set:html={jsonForHtml(c)} />
 </Base>
 <script>import "../../scripts/talents.ts";</script>
@@ -56,10 +56,36 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
   #calc .layout { display: grid; gap: 1.2rem; }
   @media (min-width: 1000px) { #calc .layout { grid-template-columns: 1fr 300px; align-items: start; } #calc .detail { position: sticky; top: 1rem; } }
   #calc .trees { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-  #calc .tree { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.6rem 0.7rem 0.8rem; }
-  #calc .tree h2 { font-size: var(--step-1); margin: 0 0 0.6rem; display: flex; justify-content: space-between; }
-  #calc .tree h2 span { color: var(--xp); }
-  #calc .grid { display: grid; grid-template-columns: repeat(4, 48px); gap: 6px; justify-content: space-between; }
+  #calc .tree { position: relative; isolation: isolate; overflow: hidden; background: #0d1018; color: #e6e8f0; border: 1px solid #2c3249; border-radius: var(--radius); padding: 0.6rem 0.7rem 0.9rem; }
+  /* the tree's own icon, blown up and darkened, stands in for the game's painted tree backgrounds */
+  #calc .tree::before { content: ""; position: absolute; inset: -20%; z-index: -1; background: var(--tree-bg, none) center / cover no-repeat; filter: blur(28px) saturate(1.2); opacity: 0.32; }
+  #calc .tree::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(13,16,24,.15), rgba(13,16,24,.75)); }
+  #calc .tree h2 { font-size: var(--step-1); margin: 0 0 0.7rem; display: flex; align-items: center; gap: 0.5rem; color: #f1e6c8; }
+  #calc .tree h2 .ti { width: 28px; height: 28px; border-radius: 4px; border: 1px solid #8a6d3b; }
+  #calc .tree h2 .tn { flex: 1; }
+  #calc .tree h2 [data-spent] { color: var(--quest-bright); font-variant-numeric: tabular-nums; }
+  #calc .grid { display: grid; grid-template-columns: repeat(4, 48px); gap: 14px 6px; justify-content: space-between; }
+  #calc .tal { z-index: 1; }
+  #calc .tal .new { position: absolute; left: -5px; top: -7px; font-style: normal; font-size: 0.6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; line-height: 1; padding: 2px 3px; border-radius: 3px; background: var(--quest-bright); color: #1a1405; }
+  #calc .detail .new-note { color: var(--quest); font-weight: 600; }
+  /* prerequisite arrows, grey until the earlier talent is learned, then gold like in the game */
+  #calc .arr { position: relative; z-index: 0; pointer-events: none; --c: #565c72; }
+  #calc .arr[data-on] { --c: #e8b92e; }
+  #calc .arr i { position: absolute; display: block; }
+  #calc .arr .ln, #calc .arr .ln2 { background: var(--c); border-radius: 1px; }
+  #calc .arr .hd { width: 0; height: 0; }
+  #calc .arr.v .ln { left: calc(50% - 2px); width: 4px; top: 48px; bottom: 55px; }
+  #calc .arr.v .hd { left: calc(50% - 6px); bottom: 48px; border: 6px solid transparent; border-bottom: 0; border-top: 7px solid var(--c); }
+  #calc .arr.h .ln { top: calc(50% - 2px); height: 4px; left: 48px; right: 55px; }
+  #calc .arr.h .hd { top: calc(50% - 6px); right: 48px; border: 6px solid transparent; border-right: 0; border-left: 7px solid var(--c); }
+  #calc .arr.h[data-dir="l"] .ln { left: 55px; right: 48px; }
+  #calc .arr.h[data-dir="l"] .hd { right: auto; left: 48px; border: 6px solid transparent; border-left: 0; border-right: 7px solid var(--c); }
+  #calc .arr.e .ln { top: 22px; height: 4px; left: 48px; right: 22px; }
+  #calc .arr.e .ln2 { top: 22px; width: 4px; right: 22px; bottom: 55px; }
+  #calc .arr.e .hd { right: 18px; bottom: 48px; border: 6px solid transparent; border-bottom: 0; border-top: 7px solid var(--c); }
+  #calc .arr.e[data-dir="l"] .ln { left: 22px; right: 48px; }
+  #calc .arr.e[data-dir="l"] .ln2 { right: auto; left: 22px; }
+  #calc .arr.e[data-dir="l"] .hd { right: auto; left: 18px; }
   #calc .tal { position: relative; width: 48px; height: 48px; padding: 0; border-radius: 4px; cursor: pointer; overflow: visible;
     border: 2px solid var(--line); background: var(--bar-track); color: #fff; font: inherit; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
   #calc .tal img { width: 100%; height: 100%; display: block; border-radius: 2px; }
@@ -76,6 +102,6 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
   @media (max-width: 999px) { #calc .detail { position: sticky; bottom: 0; z-index: 2; max-height: 42vh; overflow: auto; box-shadow: 0 -6px 16px rgba(0,0,0,.18); } }
   #calc .detail { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); padding: 0.8rem 1rem; min-height: 8rem; }
   #calc .detail h3 { margin: 0 0 0.4rem; font-size: var(--step-1); }
-  #calc .detail p { margin-bottom: 0.5rem; }
+  #calc .detail p { margin-bottom: 0.5rem; white-space: pre-line; }
   #calc .detail .est { color: var(--quest); }
 </style>

@@ -1,0 +1,78 @@
+# Rebuilds gamedata/talents.json (the talent calculator and the datamined talent changes) from the
+# WoW Forever client's trait tables, with Blizzard's server hotfixes for that build, and Classic Era's
+# talent table for comparison. All via wago.tools; see tools/build_talents.py.
+#
+# Runs daily (Blizzard tunes talents with hotfixes between builds), on demand, and on pushes to work
+# branches that change the builder. On main the data goes to the `data` branch (tools/push_data.sh)
+# and the site redeploys; on a work branch it's committed to that branch so the pull request shows
+# the real output. Pull requests only run the offline tests.
+
+name: Talent data
+
+on:
+  schedule:
+    - cron: "41 8 * * *"
+  workflow_dispatch:
+  push:
+    branches-ignore: [main, data]
+    paths: ["tools/build_talents.py", "tools/push_data.sh", ".github/workflows/talent-data.yml"]
+  pull_request:
+    paths: ["tools/build_talents.py", "tools/test/test_build_talents.py", "tools/site_data.py", ".github/workflows/talent-data.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: talent-data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Talent builder tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: python3 tools/test/test_build_talents.py
+
+  build:
+    name: Build talent data
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # commit gamedata/talents.json (to the data branch when on main)
+      actions: write   # start the site deploy after a data commit on main
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      # The report (or the error) is also posted as one annotation so it can be read from the run's
+      # summary page and the API. The raw output is wrapped in stop-commands, since it includes text
+      # from third-party data and must not be able to issue workflow commands.
+      - name: Build talent data
+        run: |
+          set +e
+          python3 tools/build_talents.py --download --hotfixes --cache .cache/wago --out gamedata/talents.json > "$RUNNER_TEMP/build.log" 2>&1
+          status=$?
+          tail -n 60 "$RUNNER_TEMP/build.log" | python3 -c "import sys; t = sys.stdin.read().replace('%', '%25').replace('\r', '').replace('\n', '%0A'); print(('::error title=Talent build failed::' if int(sys.argv[1]) else '::notice title=Talent build report::') + t)" "$status"
+          token=$(python3 -c "import secrets; print(secrets.token_hex(16))")
+          echo "::stop-commands::$token"
+          cat "$RUNNER_TEMP/build.log"
+          echo "::$token::"
+          exit $status
+
+      - name: Commit if changed
+        id: commit
+        run: bash tools/push_data.sh "Refresh talent data from the Forever client and hotfixes" gamedata/talents.json
+
+      # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
+      - name: Deploy the site with the new data
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-site.yml --ref main

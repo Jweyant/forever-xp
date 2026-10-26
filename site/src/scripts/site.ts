@@ -11,10 +11,26 @@ document.querySelector(".theme")?.addEventListener("click", () => {
   try { localStorage.setItem("theme", root.dataset.theme); } catch { /* storage blocked */ }
 });
 
-// Launch banner
+// Launch banner: the message follows Blizzard's launch phases, shown in the reader's time zone.
+// Hiding it lasts until the next phase starts.
+const banner = document.getElementById("launch");
+const NAMES = Date.parse(banner?.dataset.names || ""), LAUNCH = Date.parse(banner?.dataset.launch || "");
+const phase = () => (Date.now() >= LAUNCH ? "live" : Date.now() >= NAMES ? "names" : "pre");
+const when = (t: number) => new Date(t).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+const bold = (s: string) => { const el = document.createElement("b"); el.textContent = s; return el; };
+function launchMessage(el: HTMLElement) {
+  if (!Number.isFinite(NAMES) || !Number.isFinite(LAUNCH)) return;
+  const p = phase();
+  if (p === "pre") el.replaceChildren("Name reservation opens ", bold(when(NAMES)), ", and WoW Forever launches ", bold(when(LAUNCH)), ".");
+  else if (p === "names") el.replaceChildren("Name reservation is open: claim your names now. WoW Forever launches ", bold(when(LAUNCH)), ".");
+  else el.replaceChildren(bold("WoW Forever is live."), " Good luck out there.");
+}
+const msg = banner?.querySelector<HTMLElement>("[data-launch-msg]");
+if (msg) launchMessage(msg);
+try { if (localStorage.getItem("hide-launch") && localStorage.getItem("hide-launch") !== phase()) { localStorage.removeItem("hide-launch"); delete root.dataset.nolaunch; } } catch { /* storage blocked */ }
 document.querySelector("[data-hide-launch]")?.addEventListener("click", () => {
   root.dataset.nolaunch = "1";
-  try { localStorage.setItem("hide-launch", "1"); } catch { /* storage blocked */ }
+  try { localStorage.setItem("hide-launch", phase()); } catch { /* storage blocked */ }
 });
 
 // Phone menu
