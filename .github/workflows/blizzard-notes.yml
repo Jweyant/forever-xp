@@ -1,6 +1,6 @@
 # Collects Blizzard's official WoW Forever change notes (development notes, class updates, known
 # issues, and new staff notes as they're posted) into gamedata/blizzard-notes.json for the
-# site's Changes page, and commits the result to the branch it ran on.
+# site's Changes page, and commits the result (to the `data` branch when run on main).
 name: Refresh Blizzard notes
 
 on:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main]
-    paths: ["tools/blizzard_notes.py", ".github/workflows/blizzard-notes.yml"]
+    paths: ["tools/blizzard_notes.py", "tools/push_data.sh", ".github/workflows/blizzard-notes.yml"]
 
 permissions:
   contents: write
@@ -31,14 +31,7 @@ jobs:
         run: python3 tools/blizzard_notes.py --out gamedata/blizzard-notes.json
       - name: Commit if changed
         id: commit
-        run: |
-          git config user.name "forever-xp data bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add gamedata/blizzard-notes.json
-          if git diff --cached --quiet; then echo "No changes."; exit 0; fi
-          git commit -m "Refresh Blizzard's WoW Forever notes"
-          git pull --rebase -q && git push
-          echo "changed=true" >> "$GITHUB_OUTPUT"
+        run: bash tools/push_data.sh "Refresh Blizzard's WoW Forever notes" gamedata/blizzard-notes.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       - name: Deploy the site with the new data

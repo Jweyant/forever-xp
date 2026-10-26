@@ -26,6 +26,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # Scheduled data refreshes land on the `data` branch (main only changes through reviewed
+      # pull requests). Use whichever copy of each data file is newer.
+      - name: Use the newest generated data
+        if: github.event_name != 'pull_request'
+        run: |
+          git fetch -q origin data || { echo "No data branch yet."; exit 0; }
+          for f in gamedata/items.json gamedata/items-report.md gamedata/quests.json gamedata/blizzard-notes.json; do
+            d=$(git log -1 --format=%ct FETCH_HEAD -- "$f" 2>/dev/null); m=$(git log -1 --format=%ct HEAD -- "$f" 2>/dev/null)
+            if [ "${d:-0}" -gt "${m:-0}" ]; then git show "FETCH_HEAD:$f" > "$f"; echo "Using $f from the data branch"; fi
+          done
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:

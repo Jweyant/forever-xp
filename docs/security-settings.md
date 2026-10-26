@@ -30,14 +30,19 @@ Set **Zone Resources** to *Include > Specific zone > forever-xp.com*, and a TTL 
 year) with a calendar reminder. Paste it into GitHub as the `CLOUDFLARE_API_TOKEN` secret, run the
 two deploy workflows once to confirm, then delete the old token.
 
-## GitHub (needs the repo owner; the API used for automation can't change these)
+## GitHub (done 2026-10-25)
 
-- [ ] **Rulesets:** Settings > Rules > Rulesets > New ruleset > Import a ruleset, once for each file in
-  `.github/rulesets/`. `protect-main` requires a reviewed pull request for every change to `main`
-  (you and the data bot can bypass); `protect-release-tags` stops anyone else creating `v*` tags.
-- [ ] **Actions > General:** "Require approval for all external contributors"; Workflow permissions
-  "Read repository contents"; untick "Allow GitHub Actions to create and approve pull requests".
-- [ ] **Code security:** turn on Dependabot alerts, Dependabot security updates, secret scanning
-  and push protection, and **Private vulnerability reporting** (SECURITY.md points people there).
+- [x] **Rulesets** (imported from `.github/rulesets/`): `Protect main` requires a reviewed pull request
+  for every change to `main`, and blocks force pushes and deletion; `Protect release tags` stops anyone
+  else creating, moving or deleting `v*` tags. Repository admins (you) can bypass both.
+  GitHub doesn't allow the Actions bot as a bypass on personal repos, so scheduled data refreshes
+  commit to the `data` branch instead (`tools/push_data.sh`) and the site deploy uses whichever copy
+  of each data file is newer. Merge `data` into `main` with a pull request whenever you like.
+- [x] **Actions > General:** approval required for all external contributors; default workflow
+  permissions read-only; Actions can't create or approve pull requests.
+- [x] **Advanced Security:** private vulnerability reporting, dependency graph, Dependabot alerts,
+  Dependabot security updates, secret protection and push protection all on.
+- [ ] Optional: Actions > General > "Require actions to be pinned to a full-length commit SHA"
+  (every workflow already is), and Dependabot malware alerts.
 - [ ] **Account:** two-factor on your GitHub account, with a passkey or security key.
 - [ ] **General:** "Automatically delete head branches" on; Wikis off unless you'll use them.
