@@ -6,18 +6,18 @@
 # It also rebuilds gamedata/quests.json (every Forever quest) from Questie, and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
 #
-# Runs every Monday, on demand (Actions > Refresh gear data > Run workflow), and on pushes to
+# Runs daily (Questie and the Forever client change often around launch), on demand (Actions > Refresh gear data > Run workflow), and on pushes to
 # branches that change the builder.
 
 name: Refresh gear data
 
 on:
   schedule:
-    - cron: "17 9 * * 1"
+    - cron: "17 9 * * *"
   workflow_dispatch:
   push:
     branches-ignore: [main]
-    paths: ["tools/build_items.py", "tools/build_quests.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
+    paths: ["tools/build_items.py", "tools/build_quests.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
 
 permissions:
   contents: write

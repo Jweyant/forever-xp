@@ -28,10 +28,11 @@ import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
-WAGO = "https://wago.tools"
-UA = {"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"}
-FOREVER_BUILD = "1.60.1.70532"
-CLASSIC_BUILD = "1.15.9.70003"
+sys.path.insert(0, str(Path(__file__).parent))
+import wago  # noqa: E402
+
+WAGO = wago.WAGO
+UA = wago.UA
 
 TRAIT_TABLES = ["TraitTree", "TraitNode", "TraitNodeEntry", "TraitDefinition", "TraitEdge", "TraitCond",
                 "TraitNodeGroupXTraitNode", "TraitNodeGroupXTraitCond", "TraitNodeXTraitNodeEntry",
@@ -761,12 +762,15 @@ def main():
     ap.add_argument("--cache", default=".cache/wago")
     ap.add_argument("--download", action="store_true", help="fetch missing tables from wago.tools")
     ap.add_argument("--hotfixes", action="store_true", help="apply wago.tools' server hotfixes for the Forever build")
-    ap.add_argument("--forever", default=FOREVER_BUILD)
-    ap.add_argument("--classic", default=CLASSIC_BUILD)
+    ap.add_argument("--forever", help="Forever client build (default: the newest on wago.tools)")
+    ap.add_argument("--classic", help="Classic Era client build (default: the newest on wago.tools)")
     ap.add_argument("--out", default="gamedata/talents.json")
     args = ap.parse_args()
 
     report = []
+    args.forever, fsrc = wago.forever_build(args.forever)
+    args.classic, csrc = wago.classic_build(args.classic)
+    report.append(f"Builds: Forever {args.forever} ({fsrc}), Classic Era {args.classic} ({csrc})")
     F = {t: load(args.cache, args.forever, t, args.download) for t in FOREVER_TABLES}
     if args.hotfixes:
         for t in FOREVER_TABLES:

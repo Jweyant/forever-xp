@@ -48,6 +48,11 @@ jobs:
       - name: Accounts API tests
         working-directory: site
         run: npm run test:api
+      - name: Data tool tests
+        run: |
+          python3 tools/test/test_wago.py
+          python3 tools/test/test_blizzard_notes.py
+          python3 tools/test/test_build_talents.py
 
   uploader:
     name: Uploader security

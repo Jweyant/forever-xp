@@ -1,11 +1,14 @@
 # Collects Blizzard's official WoW Forever change notes (development notes, class updates, known
 # issues, and new staff notes as they're posted) into gamedata/blizzard-notes.json for the
 # site's Changes page, and commits the result (to the `data` branch when run on main).
+# Runs every hour: GitHub delays or skips some scheduled runs, and Blizzard posts hotfix notes at
+# any time. Runs queue rather than cancel each other, so a run that has posted to Discord always
+# gets to save its data (otherwise the next run would post the same notes again).
 name: Refresh Blizzard notes
 
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
   push:
     branches-ignore: [main]
@@ -17,7 +20,7 @@ permissions:
 
 concurrency:
   group: blizzard-notes-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   notes:
