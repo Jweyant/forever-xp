@@ -66,7 +66,7 @@ jobs:
           git add gamedata/items.json gamedata/items-report.md gamedata/quests.json
           if git diff --cached --quiet; then echo "No changes."; exit 0; fi
           git commit -m "Refresh gear and quest data from Forever client, Questie, cmangos and AtlasLoot"
-          git push
+          git pull --rebase -q && git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
