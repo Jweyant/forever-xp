@@ -127,6 +127,8 @@ def num(v, cast=float):
 
 # ---------------------------------------------------------------- hotfixes
 
+HOTFIXED = defaultdict(set)  # table -> record IDs a hotfix changed
+
 DATA_PAGE = re.compile(r'data-page="([^"]+)"')
 
 
@@ -179,6 +181,7 @@ def apply_hotfixes(rows, cols, fixes, report, table):
             rec = dict(zip(cols, flat))
             rec["ID"] = rid
             live[rid] = rec
+            HOTFIXED[table].add(rid)
         elif status == 2:
             live.pop(rid, None)
         elif status == 3:
@@ -660,11 +663,23 @@ def forever_talents(T, S, icons, report):
                                   "est": est, "need": need, "spell": num(sid, int), "def": def_id})
         trees = []
         for k, tals in enumerate(sections):
+            # A hotfix can move a talent onto one whose own move wago.tools didn't capture. Then the
+            # hotfixed talent keeps its spot and the other takes the nearest free spot in its row.
+            moved = HOTFIXED.get("TraitNode", set())
             seen = {}
-            for t in tals:
-                if (t["row"], t["col"]) in seen:
-                    raise SystemExit(f"{cname} {names[k]}: {t['name']} and {seen[(t['row'], t['col'])]} share a spot")
-                seen[(t["row"], t["col"])] = t["name"]
+            for t in sorted(tals, key=lambda t: t["node"] not in moved):
+                spot = (t["row"], t["col"])
+                if spot in seen:
+                    other = seen[spot]
+                    free = [c for c in range(4) if (t["row"], c) not in seen and not any(
+                        x["row"] == t["row"] and x["col"] == c for x in tals if x is not t)]
+                    if other["node"] in moved and t["node"] not in moved and free:
+                        t["col"] = min(free, key=lambda c: abs(c - t["col"]))
+                        report.append(f"{cname} {names[k]}: a hotfix moved {other['name']} onto {t['name']}; "
+                                      f"put {t['name']} in the free column {t['col'] + 1} of row {t['row'] + 1}")
+                    else:
+                        raise SystemExit(f"{cname} {names[k]}: {t['name']} and {other['name']} share a spot")
+                seen[(t["row"], t["col"])] = t
             tals.sort(key=lambda t: (t["row"], t["col"]))
             trees.append([num(tab_ids[k], int), names[k], tals])
         classes.append([cid, cname, trees])

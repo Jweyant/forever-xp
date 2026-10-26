@@ -187,6 +187,35 @@ class ForeverTrees(unittest.TestCase):
         bt.forever_talents(T, spells(), {}, report)
         self.assertEqual(sum("outside the three trees" in r for r in report), 2)
 
+    def test_hotfix_collision_moves_the_other_talent(self):
+        T = trait_tables()
+        # node 2 (Deep Wounds, row 2 col 0) gets a node 5 hotfixed onto its spot
+        T["TraitNode"].append({"ID": "5", "TraitTreeID": "1117", "PosX": str(bt.LEFT), "PosY": str(2130 + 2 * bt.GRID)})
+        T["TraitNodeEntry"].append({"ID": "50", "TraitDefinitionID": "500", "MaxRanks": "1"})
+        T["TraitDefinition"].append({"ID": "500", "SpellID": "500", "OverrideName_lang": ""})
+        T["TraitNodeXTraitNodeEntry"].append({"ID": "5", "TraitNodeID": "5", "TraitNodeEntryID": "50", "_Index": "0"})
+        bt.HOTFIXED["TraitNode"] = {"5"}
+        try:
+            report = []
+            out = bt.forever_talents(T, spells(), {}, report)
+        finally:
+            bt.HOTFIXED.clear()
+        arms = out[0][2][0][3]
+        spots = {t[3]: (t[1], t[2]) for t in arms}
+        self.assertEqual(spots["Rend"], (2, 0))
+        self.assertEqual(spots["Deep Wounds"], (2, 1))
+        self.assertTrue(any("a hotfix moved Rend onto Deep Wounds" in r for r in report))
+
+    def test_collision_without_hotfix_fails(self):
+        T = trait_tables()
+        T["TraitNode"].append({"ID": "5", "TraitTreeID": "1117", "PosX": str(bt.LEFT), "PosY": str(2130 + 2 * bt.GRID)})
+        T["TraitNodeEntry"].append({"ID": "50", "TraitDefinitionID": "500", "MaxRanks": "1"})
+        T["TraitDefinition"].append({"ID": "500", "SpellID": "500", "OverrideName_lang": ""})
+        T["TraitNodeXTraitNodeEntry"].append({"ID": "5", "TraitNodeID": "5", "TraitNodeEntryID": "50", "_Index": "0"})
+        with self.assertRaises(SystemExit) as e:
+            bt.forever_talents(T, spells(), {}, [])
+        self.assertIn("share a spot", str(e.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
