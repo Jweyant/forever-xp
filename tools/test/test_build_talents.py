@@ -65,6 +65,13 @@ class Tooltips(unittest.TestCase):
         self.assertTrue(S.unknown)
 
 
+class MoreTokens(unittest.TestCase):
+    def test_capital_s_word_tokens_and_stats(self):
+        S = spells(Spell=[{"ID": "100", "Description_lang": "By $/-1000;S1 sec, once every $proccooldown. Heals ${$SP*2}."}],
+                   SpellAuraOptions=[{"ID": "1", "SpellID": "100", "DifficultyID": "0", "ProcCategoryRecovery": "6000"}])
+        self.assertEqual(S.render("100"), "By 2 sec, once every 6 sec. Heals ?.")
+
+
 class Arithmetic(unittest.TestCase):
     def test_parser(self):
         self.assertEqual(bt.Expr("2+3*4").eval(), 14)

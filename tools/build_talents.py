@@ -367,7 +367,7 @@ class Tooltip:
         sid = spell or self.sid
         i = max(0, (int(idx) if idx else 1) - 1)
         val = self.value if sid == self.sid else (lambda s, k: S.base(s, k))
-        if letter in "smMw":
+        if letter in "smMSw":
             return val(sid, i)
         if letter == "o":
             e = S.eff.get((sid, i), {})
@@ -454,14 +454,14 @@ class Tooltip:
             return j, self.run(pick)
         m = re.match(r"\{(.*?)\}(?:\.(\d))?", rest, re.S)
         if m and rest.startswith("{"):
-            inner = re.sub(r"\$(\w+)", lambda mm: self.expr_var(mm.group(1)), m.group(1))
             try:
+                inner = re.sub(r"\$(\w+)", lambda mm: self.expr_var(mm.group(1)), m.group(1))
                 v = Expr(inner).eval()
                 return i + 1 + m.end(), fmt_num(v, int(m.group(2)) if m.group(2) else None)
             except (ValueError, TypeError, ZeroDivisionError, OverflowError):
                 self.S.unknown["expr"] += 1
                 return i + 1 + m.end(), "?"
-        m = re.match(r"([/*])([\d.]+);(\d*)([a-zA-Z])(\d?)", rest)
+        m = re.match(r"([/*])(-?[\d.]+);(\d*)([a-zA-Z])(\d?)", rest)
         if m:
             try:
                 v = self.var(m.group(3), m.group(4), m.group(5))
@@ -486,8 +486,14 @@ class Tooltip:
         if m:
             self.S.unknown["<var>"] += 1
             return i + 1 + m.end(), "?"
+        w = re.match(r"[a-zA-Z]{2,}", rest)
+        if w:  # word tokens such as $proccooldown; anything else (player stats) can't be known here
+            if w.group(0).lower() == "proccooldown":
+                return i + 1 + w.end(), fmt_dur(num(self.S.aura.get(self.sid, {}).get("ProcCategoryRecovery")))
+            self.S.unknown[f"${w.group(0)}"] += 1
+            return i + 1 + w.end(), "?"
         m = VAR.match(rest)
-        if m and (m.group(2) in "smMwotaAhunxebqdD"):
+        if m and (m.group(2) in "smMSwotaAhunxebqdD"):
             spell, letter, idx = m.groups()
             try:
                 v = self.var(spell, letter, idx)
@@ -513,8 +519,11 @@ class Tooltip:
                 pass
         if name.lower() in Expr.FUNCS:
             return name.lower()
+        if name.lower() == "proccooldown":
+            return repr(num(self.S.aura.get(self.sid, {}).get("ProcCategoryRecovery")) / 1000)
+        # Player stats ($SP, $AP, $RAP ...) aren't known here: show "?" rather than a wrong number.
         self.S.unknown[f"${name}"] += 1
-        return "0"
+        raise ValueError(f"unknown ${name}")
 
 
 def pack(texts):
