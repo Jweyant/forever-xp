@@ -57,6 +57,16 @@ const cases = [
   ["Quest XP table", `/quests/xp/?text=${E}&zone=${E}&verdict=${E}`],
   ...(slug ? [["Zone page", `/quests/zone/${slug}/?text=${E}&side=${E}&new=${E}`]] : []),
   ["Quick search", "/", { search: P }],
+  // The accounts API answering with hostile names and plan data (as if the database were tampered with).
+  ["Account page, hostile saved plans", "/account/", { api: {
+    "/api/me": { name: P },
+    "/api/plans": { plans: [
+      { id: "AAAAAAAAAAAAAAAA", kind: "bis", name: P, data: P, updated: P },
+      { id: "BBBBBBBBBBBBBBBB", kind: "talents", name: P, data: `warlock#${P}`, updated: 1 },
+      { id: "CCCCCCCCCCCCCCCC", kind: "talents", name: "ok", data: "javascript:alert(1)//#1", updated: 1 },
+      { id: `${P}`, kind: "bis", name: P, data: "c=WARRIOR", updated: 1 },
+    ] },
+  } }],
 ];
 
 const browser = await chromium.launch();
@@ -67,6 +77,13 @@ for (const [name, path, opts = {}] of cases) {
   page.on("dialog", (d) => { problems.push(`dialog opened: ${d.message()}`); d.dismiss().catch(() => {}); });
   page.on("pageerror", (e) => problems.push(`script error: ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error" && /Content Security Policy|Refused to/.test(m.text())) problems.push(`CSP violation: ${m.text().slice(0, 200)}`); });
+  if (opts.api) {
+    await page.route("**/api/**", (route) => {
+      const path = new URL(route.request().url()).pathname;
+      const body = opts.api[path];
+      route.fulfill(body ? { status: 200, contentType: "application/json", body: JSON.stringify(body) } : { status: 404, contentType: "application/json", body: "{}" });
+    });
+  }
   if (opts.storage) {
     await page.addInitScript((s) => { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); }, opts.storage);
   }
@@ -87,7 +104,9 @@ for (const [name, path, opts = {}] of cases) {
     probe: document.querySelectorAll("#xss-probe, [id='xss-probe']").length,
     ran: !!window.__xss,
     scripts: [...document.querySelectorAll("script:not([src])")].filter((s) => s.textContent.includes("__xss")).length,
+    jsLinks: [...document.querySelectorAll("a[href]")].filter((a) => /^\s*javascript:/i.test(a.getAttribute("href") || "")).length,
   }));
+  if (found.jsLinks) problems.push(`${found.jsLinks} javascript: link(s) in the page`);
   if (found.probe) problems.push(`${found.probe} injected element(s) in the page`);
   if (found.ran) problems.push("injected script ran");
   if (found.scripts) problems.push("injected <script> element in the page");

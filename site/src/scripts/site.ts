@@ -1,6 +1,7 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
 import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
+import { accountsOn, me, signInHref, rememberHash, afterSignIn } from "./account";
 
 const root = document.documentElement;
 
@@ -189,3 +190,22 @@ document.addEventListener("click", async (e) => {
   try { await navigator.clipboard.writeText(b.dataset.copy!); toast("Copied. Paste it in game chat."); }
   catch { toast("Couldn't copy. Select the text and press Ctrl+C."); }
 });
+
+// Account button (only when accounts are switched on): your name, or "Sign in".
+const signin = afterSignIn();
+const acct = document.querySelector<HTMLAnchorElement>("[data-acct]");
+if (acct && accountsOn()) {
+  me().then((who) => {
+    if (who === "off") return;
+    if (who) { acct.textContent = who.name; acct.href = "/account/"; acct.title = "Your saved plans"; }
+    else {
+      acct.textContent = "Sign in";
+      acct.href = signInHref();
+      acct.title = "Sign in with Discord to save plans";
+      acct.addEventListener("click", rememberHash);
+    }
+    acct.hidden = false;
+  });
+}
+if (signin === "ok") toast("Signed in. Your saved plans are under your name, top right.");
+else if (signin === "failed") toast("Sign-in didn't work. Please try again.");

@@ -7,6 +7,8 @@ import {
 } from "./model";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 import { drawFigure, type FigItem } from "./figure";
+import { afterSignIn } from "../account";
+afterSignIn(); // put back a plan the sign-in round trip dropped from the address
 
 // ---------- state ----------
 type Side = "H" | "A";

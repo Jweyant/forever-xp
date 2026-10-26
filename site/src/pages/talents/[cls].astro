@@ -29,6 +29,10 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
         <button type="button" class="btn secondary" data-reset>Reset</button>
       </div>
       <label class="share small muted">Build link <input data-share readonly /></label>
+      <div class="save-plan" data-save-plan="talents" hidden>
+        <form><label class="sr" for="save-name">Name</label><input id="save-name" maxlength="60" placeholder="Name this build" autocomplete="off" /><button type="submit" class="btn secondary">Save to my account</button></form>
+        <a class="small" data-save-signin hidden>Sign in with Discord to save this build</a>
+      </div>
     </div>
     <div class="layout">
       <div class="trees" data-trees></div>
@@ -38,7 +42,7 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
   <p class="small muted">Read from the WoW Forever game client's talent trees (build {data.build}){data.hotfixes ? " with Blizzard's latest hotfixes" : ""}, refreshed daily. Talents tagged NEW aren't in Classic Era. Click or tap to add a point, right-click or long-press to remove.</p>
   <script type="application/json" id="talent-data" set:html={jsonForHtml(c)} />
 </Base>
-<script>import "../../scripts/talents.ts";</script>
+<script>import "../../scripts/talents.ts"; import { mountSave } from "../../scripts/saveplan"; mountSave();</script>
 
 <style is:global>
   .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
@@ -52,6 +56,10 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
   #calc .stats dd.big { color: var(--xp); }
   #calc .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   #calc .share { display: grid; gap: 0.2rem; }
+  .save-plan form { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .save-plan input { font: inherit; flex: 1; min-width: 12ch; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.35rem 0.5rem; }
+  .save-plan[hidden], .save-plan [hidden] { display: none; }
+  #calc .save-plan { grid-column: 1 / -1; }
   #calc .share input { font: inherit; font-size: 0.85rem; width: 100%; background: var(--surface); color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.35rem 0.5rem; }
   #calc .layout { display: grid; gap: 1.2rem; }
   @media (min-width: 1000px) { #calc .layout { grid-template-columns: 1fr 300px; align-items: start; } #calc .detail { position: sticky; top: 1rem; } }

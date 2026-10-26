@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build && node ../tools/csp.mjs dist",
     "preview": "astro preview",
-    "test:security": "node tests/security.mjs dist"
+    "test:security": "node tests/security.mjs dist",
+    "test:api": "node --test --no-warnings api/app.test.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
