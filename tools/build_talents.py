@@ -224,11 +224,15 @@ class Spells:
         return num(self.misc.get(sid, {}).get("SpellIconFileDataID"), int)
 
     def base(self, sid, i):
+        """An effect's value. Forever stores it as EffectBasePointsF; Classic Era stores the old
+        EffectBasePoints + a die roll of EffectDieSides (1 = exactly +1), with the float left at 0."""
         e = self.eff.get((sid, i))
         if not e:
             return 0.0
-        v = e.get("EffectBasePointsF")
-        return num(v) if v not in (None, "") else num(e.get("EffectBasePoints"))
+        f = num(e.get("EffectBasePointsF"))
+        if f or "EffectBasePoints" not in e:
+            return f
+        return num(e.get("EffectBasePoints")) + (1 if num(e.get("EffectDieSides")) >= 1 else 0)
 
     def duration_ms(self, sid):
         return self.dur.get(self.misc.get(sid, {}).get("DurationIndex", ""), 0.0)
@@ -238,6 +242,18 @@ class Spells:
         text = self.desc.get(sid, "") or ""
         value = value or (lambda s, i: self.base(s, i))
         return Tooltip(self, sid, value, depth).run(text)
+
+
+def clean(text):
+    """Drop the game's UI escapes (colours, textures, links) and tidy spacing; keep line breaks."""
+    text = re.sub(r"\|c[0-9a-fA-F]{8}", "", text)
+    text = re.sub(r"\|[rR]", "", text)
+    text = re.sub(r"\|[Tt][^|]*\|[tT]", "", text)
+    text = re.sub(r"\|H[^|]*\|h(.*?)\|h", r"\1", text)
+    text = text.replace("|n", "\n").replace("\r", "")
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r" *\n *", "\n", text)
+    return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
 def fmt_num(v, dec=None):
@@ -415,7 +431,7 @@ class Tooltip:
             j, piece = self.token(text, i)
             out.append(piece)
             i = j
-        return re.sub(r"[ \t]+", " ", "".join(out)).replace("\r", "").strip()
+        return clean("".join(out))
 
     def bracket(self, text, i):
         """text[i] == '[' -> (end index after ']', inner text), with nesting."""

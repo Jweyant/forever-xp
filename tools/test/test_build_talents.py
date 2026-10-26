@@ -72,6 +72,14 @@ class MoreTokens(unittest.TestCase):
         self.assertEqual(S.render("100"), "By 2 sec, once every 6 sec. Heals ?.")
 
 
+class ClassicValues(unittest.TestCase):
+    def test_old_base_points_and_ui_codes(self):
+        S = spells(Spell=[{"ID": "100", "Description_lang": "|cFFFFFFFFAxe:|r Reduces cost by $/10;s1 rage.|nNext line."}],
+                   SpellEffect=[{"ID": "1", "SpellID": "100", "EffectIndex": "0", "DifficultyID": "0", "EffectBasePointsF": "0",
+                                 "EffectBasePoints": "-21", "EffectDieSides": "1"}])
+        self.assertEqual(S.render("100"), "Axe: Reduces cost by 2 rage.\nNext line.")
+
+
 class Arithmetic(unittest.TestCase):
     def test_parser(self):
         self.assertEqual(bt.Expr("2+3*4").eval(), 14)
