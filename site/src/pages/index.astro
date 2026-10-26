@@ -27,8 +27,50 @@ const tools = [
   { href: "/guides/", icon: "inv_misc_map_01", title: "Leveling routes", text: "Free routes with every quest scored by XP per minute, and the ones worth skipping." },
 ];
 const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+// "New from Blizzard" banner: the newest post's changes, grouped by race, class or area, each
+// group linking to the changes page already filtered. It keeps itself current: the notes refresh
+// every hour and the site redeploys when they change. Hidden once the newest post is 10 days old.
+type NoteRow = { date: string; kind: string; section: string; text: string; race?: string; cls?: string };
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const posted = (notes.rows as NoteRow[]).filter((r) => r.kind !== "Known issues" && DAY.test(r.date));
+const newDate = posted.reduce((m, r) => (r.date > m ? r.date : m), "");
+const fresh = posted.filter((r) => r.date === newDate);
+const showNew = fresh.length > 0 && (Date.now() - Date.parse(`${newDate}T12:00:00Z`)) / 864e5 <= 10;
+const groupOf = (r: NoteRow) => (r.race ? { key: "race", name: r.race } : r.cls ? { key: "cls", name: r.cls } : { key: "area", name: r.section });
+const groupMap = new Map<string, { key: string; name: string; count: number; first: NoteRow }>();
+for (const r of fresh) {
+  const g = groupOf(r);
+  const id = `${g.key}:${g.name}`;
+  const cur = groupMap.get(id);
+  if (cur) cur.count++; else groupMap.set(id, { ...g, count: 1, first: r });
+}
+const newGroups = [...groupMap.values()].sort((a, b) => b.count - a.count).slice(0, 8);
+const newAreas = [...new Set(fresh.map((r) => r.section))];
+const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate}${g ? `&${g.key}=${encodeURIComponent(g.name)}` : ""}`;
 ---
 <Base title={SITE.name} description="Free WoW Forever tools: a BIS gear planner, every quest with coordinates, the item database, talent calculator, all of Blizzard's changes and fast leveling routes.">
+  {showNew && (
+    <section class="whatsnew" aria-labelledby="wn-title">
+      <div class="wn-head">
+        <span class="wn-pill">New</span>
+        <h2 id="wn-title">{n(fresh.length)} {fresh.length === 1 ? "change" : "changes"} from Blizzard, {fmt(newDate)}</h2>
+        <span class="muted wn-areas">{newAreas.join(", ")}</span>
+      </div>
+      <ul class="wn-groups">
+        {newGroups.map((g) => (
+          <li><a href={newHref(g)}>{g.name} <span>{g.count}</span></a></li>
+        ))}
+      </ul>
+      <ul class="wn-items">
+        {newGroups.slice(0, 3).map((g) => (
+          <li><b>{g.name}:</b> {g.first.text}</li>
+        ))}
+      </ul>
+      <a class="wn-all" href={newHref()}>See all {n(fresh.length)} changes</a>
+    </section>
+  )}
+
   <section class="hero">
     <div class="mark"><Logo size={190} animate /></div>
     <div class="copy">
@@ -112,6 +154,18 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
   }
 </script>
 <style>
+  .whatsnew { margin: 0.6rem 0 0.4rem; padding: 0.9rem 1.1rem; border: 1px solid var(--line); border-left: 4px solid var(--quest-bright); border-radius: var(--radius); background: color-mix(in srgb, var(--quest-bright) 7%, var(--surface)); }
+  .wn-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.7rem; }
+  .wn-head h2 { margin: 0; font-size: var(--step-1); }
+  .wn-pill { font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; letter-spacing: .06em; text-transform: uppercase; padding: 0.1rem 0.45rem; border-radius: 3px; background: var(--quest-bright); color: #1a1405; }
+  .wn-areas { font-size: var(--step--1); }
+  .wn-groups { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; margin: 0.6rem 0 0.5rem; max-width: none; }
+  .wn-groups a { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); text-decoration: none; font-weight: 600; }
+  .wn-groups a:hover { border-color: var(--quest-bright); }
+  .wn-groups a span { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .wn-items { margin: 0 0 0.4rem; padding-left: 1.1rem; max-width: 90ch; }
+  .wn-items li { margin: 0.15rem 0; }
+  .wn-all { font-weight: 600; }
   .hero { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2.5rem; align-items: center; padding: 1.5rem 0 1rem; }
   .hero .mark { padding: 1rem; }
   .hero h1 { max-width: 18ch; margin-bottom: 0.4em; font-size: clamp(2.4rem, 5vw, 3.7rem); }
