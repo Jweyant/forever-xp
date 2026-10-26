@@ -1,0 +1,112 @@
+# ForeverXP — Dwarf/Gnome 1-6, Coldridge Valley.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+guide:
+  name: 1-6 Coldridge Valley
+  display: ForeverXP 1-6 Coldridge Valley
+  next: 6-10 Dun Morogh
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Dwarf/Gnome
+  class: Warrior
+  sim_race: Dwarf
+  start_level: 1
+  start: [1426, 29.93, 71.20]   # Sten Stoutarm, outside Anvilmar
+  version: 1
+
+steps:
+  - accept: 179
+    text: Sten Stoutarm is right in front of you.
+  - complete: 179
+    text: Ragged Young Wolves all around Anvilmar drop the meat.
+  - turnin: 179
+    accept: [233, 170]
+  - accept: 3106
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Warrior
+  - accept: 3107
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Paladin
+  - accept: 3108
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Hunter
+  - accept: 3109
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Rogue
+  - accept: 3110
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Priest
+  - accept: 98581
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Dwarf Shaman
+  - accept: 3112
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Gnome Warrior
+  - accept: 3113
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Gnome Rogue
+  - accept: 3114
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Gnome Mage
+  - accept: 3115
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Gnome Warlock
+  - accept: 98574
+    text: Sten gives you a note for your class trainer inside Anvilmar.
+    only: Gnome Priest
+  - turnin: 3106
+    only: Dwarf Warrior
+  - turnin: 3107
+    only: Dwarf Paladin
+  - turnin: 3108
+    only: Dwarf Hunter
+  - turnin: 3109
+    only: Dwarf Rogue
+  - turnin: 3110
+    only: Dwarf Priest
+  - turnin: 98581
+    only: Dwarf Shaman
+  - turnin: 3112
+    only: Gnome Warrior
+  - turnin: 3113
+    only: Gnome Rogue
+  - turnin: 3114
+    only: Gnome Mage
+  - turnin: 3115
+    only: Gnome Warlock
+  - turnin: 98574
+    only: Gnome Priest
+  - complete: 170
+    text: Rockjaw Troggs are east of Anvilmar.
+  - turnin: 170
+  - accept: 3361
+    text: Felix Whindlebolt is inside Anvilmar. Needs level 3.
+  - turnin: 233
+    accept: [234, 183]
+    text: Talin Keeneye is at his camp west of Anvilmar.
+  - complete: 183
+    text: Small Crag Boars are all over the valley floor.
+  - turnin: 183
+  - turnin: 234
+    accept: 182
+    text: Grelin Whitebeard's camp is south of Talin.
+  - accept: 3364
+    text: Nori Pridedrift is at the same camp.
+  - turnin: 3364
+    accept: 3365
+    text: Durnan Furcutter is inside Anvilmar.
+  - turnin: 3365
+  - complete: [182, 3361]
+    text: Frostmane Troll Whelps are around the troll cave, south-west of Grelin. Felix's box, chest and bucket of bolts are in their camps.
+  - turnin: 182
+    accept: 218
+  - complete: 218
+    text: Grik'nir the Cold is at the back of the troll cave.
+  - turnin: 218
+    accept: 282
+  - turnin: 3361
+    text: Back to Felix in Anvilmar on the way to the tunnel.
+  - accept: 2160
+    text: Hands Springsprocket is at the tunnel out of the valley.
+  - turnin: 282
+    accept: 420
+    text: Mountaineer Thalos guards the tunnel.

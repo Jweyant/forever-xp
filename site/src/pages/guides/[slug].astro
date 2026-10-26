@@ -8,8 +8,12 @@ export function getStaticPaths() {
 }
 const { guide } = Astro.props as { guide: Guide };
 const idx = guides.indexOf(guide);
-const prev = guides[idx - 1]?.faction === guide.faction ? guides[idx - 1] : undefined;
-const next = guides[idx + 1]?.faction === guide.faction ? guides[idx + 1] : undefined;
+// Follow the guide's own chain ("next"), so the three Alliance starting tracks don't mix.
+const same = (g?: Guide) => !!g && g.faction === guide.faction;
+const next = guides.find((g) => same(g) && g.name === guide.next)
+  ?? (guide.faction === "Horde" && same(guides[idx + 1]) ? guides[idx + 1] : undefined);
+const prev = guides.find((g) => same(g) && g.next === guide.name)
+  ?? (guide.faction === "Horde" && same(guides[idx - 1]) ? guides[idx - 1] : undefined);
 const byRate = [...(guide.quests || [])].sort((a, b) => b.xp_per_min - a.xp_per_min);
 const maxRate = Math.max(1, ...byRate.map((q) => q.xp_per_min));
 const steps = (guide.steps || []).filter((s) => s.text);

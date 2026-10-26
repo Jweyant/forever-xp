@@ -1,0 +1,86 @@
+# ForeverXP — Night Elf 1-6, Shadowglen.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever's Nature's Call (Gnarlpine Totems) is included; the client has no XP data for it yet.
+guide:
+  name: 1-6 Shadowglen
+  display: ForeverXP 1-6 Shadowglen
+  next: 6-10 Teldrassil
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: NightElf
+  class: Warrior
+  start_level: 1
+  start: [1438, 58.70, 44.27]   # Conservator Ilthalaine, where Night Elves spawn
+  version: 1
+
+steps:
+  - accept: 456
+    text: Conservator Ilthalaine is right in front of you.
+  - accept: 458
+    text: Melithar Staghelm is just north of him.
+  - turnin: 458
+    accept: [459, 97977]
+    text: Tarindrella is in the grove south-west of Aldrassil.
+  - complete: [456, 459, 97977]
+    text: Young Nightsabers and Young Thistle Boars are all around. Grellkin drop the Fel Moss; Gnarlpine Totems are in their camps.
+  - turnin: [459, 97977]
+  - turnin: 456
+    accept: 457
+  - accept: 3116
+    text: Ilthalaine gives you a sigil for your class trainer, up in Aldrassil.
+    only: Warrior
+  - accept: 3117
+    text: Ilthalaine gives you a sigil for your class trainer, up in Aldrassil.
+    only: Hunter
+  - accept: 3118
+    text: Ilthalaine gives you a sigil for your class trainer, up in Aldrassil.
+    only: Rogue
+  - accept: 3119
+    text: Ilthalaine gives you a sigil for your class trainer, up in Aldrassil.
+    only: Priest
+  - accept: 3120
+    text: Ilthalaine gives you a sigil for your class trainer, up in Aldrassil.
+    only: Druid
+  - turnin: 3116
+    only: Warrior
+  - turnin: 3117
+    only: Hunter
+  - turnin: 3118
+    only: Rogue
+  - turnin: 3119
+    only: Priest
+  - turnin: 3120
+    only: Druid
+  - accept: 916
+    text: Gilshalan Windwalker is on the first floor of Aldrassil.
+  - accept: 4495
+    text: Dirania Silvershine is by the tree's southern ramp.
+  - turnin: 4495
+    accept: 3519
+    text: Iverron is by Shadowthread Cave, north of Aldrassil.
+  - complete: [457, 916]
+    text: Mangy Nightsabers and Thistle Boars are on the way north. Webwood Spiders in and around Shadowthread Cave drop the venom sacs.
+  - turnin: 3519
+    accept: 3521
+  - complete: 3521
+    text: Hyacinth Mushrooms grow by the cave, Moonpetal Lilies by the water, and Webwood Spiders drop the ichor.
+  - turnin: 3521
+    accept: 3522
+  - turnin: 3522
+    text: This one's timed. Go straight to Iverron.
+  - turnin: 457
+  - turnin: 916
+    accept: 917
+  - complete: 917
+    text: The Webwood Egg is at the back of Shadowthread Cave.
+  - turnin: 917
+    accept: 920
+  - turnin: 920
+    accept: 921
+    text: Tenaron Stormgrip is at the top of Aldrassil.
+  - complete: 921
+    text: Fill the phial at the moonwell north of Aldrassil.
+  - turnin: 921
+    accept: 928
+  - accept: 2159
+    text: Porthannius is on the road out of Shadowglen.

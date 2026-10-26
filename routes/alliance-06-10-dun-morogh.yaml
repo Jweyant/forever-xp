@@ -1,0 +1,91 @@
+# ForeverXP — Dwarf/Gnome 6-10, Dun Morogh.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (Secure the Mountain, Flintfire's Shipment,
+# Frosthowl); the client has no XP data for them yet, so the estimate below leaves their XP out.
+# Father Gavin's Forever chain at Misty Pine Refuge closes the guide on the way east to Loch Modan.
+# Skipped on purpose: 310/311 Bitter Rivals (a second trip west), 315 The Perfect Stout chain
+# (it heads to Loch Modan) and the Camping 101 profession quests.
+guide:
+  name: 6-10 Dun Morogh
+  display: ForeverXP 6-10 Dun Morogh
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Dwarf/Gnome
+  class: Warrior
+  sim_race: Dwarf
+  version: 1
+
+steps:
+  # --- Kharanos
+  - turnin: 420
+    accept: 98322
+    text: Senir Whitebeard is in Kharanos, in front of the Thunderbrew Distillery.
+  - turnin: 2160
+  - home: Kharanos
+  - accept: [384, 400]
+  - accept: 98321
+    text: Tognus Flintfire is in Kharanos.
+  - turnin: 400
+    accept: [317, 313, 5541]
+    text: Steelgrill's Depot is just north-east of Kharanos.
+
+  # --- South of Kharanos: boars, bears, the Grizzled Den, Rumbleshot
+  - complete: [384, 317]
+    text: Crag Boars drop ribs and meat; Young Black Bears drop the fur. Buy Rhapsody Malt from the innkeeper for Ragnar.
+  - turnin: 98322
+    accept: 98319
+    text: Mountaineer Gretchen is south-west of Kharanos.
+  - complete: [313, 98321, 98319]
+    text: The Grizzled Den is the wendigo cave south of Kharanos. Flintfire's shipments are inside; Mountaineer Cornelius is at the back.
+  - turnin: 98319
+    accept: 98323
+  - turnin: 5541
+    text: Hegnar Rumbleshot's camp is further south.
+
+  # --- The depot, then Kharanos
+  - turnin: 317
+    accept: 318
+    text: Back to Steelgrill's Depot first.
+  - turnin: 313
+  - turnin: [384, 98321]
+  - turnin: 98323
+    accept: 287
+    text: Frostmane Hold needs level 7.
+  - accept: 412
+    text: Razzle Sprysprocket is in Kharanos. Needs level 7.
+
+  # --- West: Brewnall Village and Frostmane Hold
+  - turnin: 318
+    accept: 319
+    text: Rejold Barleybrew is in Brewnall Village by the frozen lake.
+  - accept: 98326
+    text: Gretta Ganter is in Brewnall Village too.
+  - complete: [319, 98326]
+    text: Ice Claw Bears, Elder Crag Boars and Snow Leopards are around Brewnall. Frosthowl prowls the lake shore.
+  - turnin: 319
+    accept: 320
+  - turnin: 98326
+  - complete: [287, 412]
+    text: Frostmane Hold is the troll cave west of Brewnall. Leper Gnomes north of it, by Gnomeregan, drop the cogs and gears.
+
+  # --- Kharanos turn-ins, then Father Gavin at Misty Pine Refuge
+  - turnin: 287
+    accept: 291
+  - turnin: 412
+  - accept: 99158
+    text: Maxan Anvol is in the Thunderbrew Distillery.
+  - turnin: 320
+  - turnin: 99158
+    accept: 99159
+    text: Father Gavin is at Misty Pine Refuge, north-east of Steelgrill's Depot.
+  - complete: 99159
+    text: Firewood is stacked around the refuge.
+  - turnin: 99159
+    accept: [99160, 99162]
+  - complete: [99160, 99162]
+    text: Minor ice elementals and the fallen mountaineers' rifles are in the hills above the refuge.
+  - turnin: [99160, 99162]
+    accept: 99161
+  - complete: 99161
+    text: Avala is the large ice elemental further up the slope.
+  - turnin: 99161
