@@ -51,8 +51,20 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The report (or the error) is also posted as one annotation so it can be read from the run's
+      # summary page and the API. The raw output is wrapped in stop-commands, since it includes text
+      # from third-party data and must not be able to issue workflow commands.
       - name: Build talent data
-        run: python3 tools/build_talents.py --download --hotfixes --cache .cache/wago --out gamedata/talents.json
+        run: |
+          set +e
+          python3 tools/build_talents.py --download --hotfixes --cache .cache/wago --out gamedata/talents.json > "$RUNNER_TEMP/build.log" 2>&1
+          status=$?
+          tail -n 60 "$RUNNER_TEMP/build.log" | python3 -c "import sys; t = sys.stdin.read().replace('%', '%25').replace('\r', '').replace('\n', '%0A').replace(':', '%3A'); print(('::error title=Talent build failed::' if int(sys.argv[1]) else '::notice title=Talent build report::') + t)" "$status"
+          token=$(python3 -c "import secrets; print(secrets.token_hex(16))")
+          echo "::stop-commands::$token"
+          cat "$RUNNER_TEMP/build.log"
+          echo "::$token::"
+          exit $status
 
       - name: Commit if changed
         id: commit
