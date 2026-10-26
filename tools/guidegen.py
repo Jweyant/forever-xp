@@ -20,6 +20,7 @@ Route spec format (see routes/*.yaml):
     - text: "shown on the step"
     - only: "Hunter"           # RXP class/race tag for the whole step
     - xp: 10                   # wait/grind until this level (makes the step a gate)
+    - where: [uiMapId, x, y]   # on a complete step: where to go for objectives Questie can't place
 """
 import argparse
 import json
@@ -166,6 +167,7 @@ class Generator:
         self.races = [r for r in re.split(r"[/ ]", g.get("for", "")) if r in RACE_BITS]
         self.race_mask = sum(RACE_BITS[r] for r in self.races)
         self.class_name = g.get("class", "HUNTER").upper()
+        self.faction = g.get("faction", "Horde")
         self.sim_race = g.get("sim_race", self.races[-1] if self.races else "")
         self.s = State(level=g.get("start_level", 1), xp=g.get("start_xp", 0))
         self.lines = []
@@ -332,7 +334,7 @@ class Generator:
             for tok in alt.split():
                 neg = tok.startswith("!")
                 tok = tok.lstrip("!")
-                hit = tok.upper() == self.class_name or tok == self.sim_race or tok in ("Horde",)
+                hit = tok.upper() == self.class_name or tok == self.sim_race or tok == self.faction
                 if hit == neg:
                     ok = False
                     break
@@ -412,6 +414,10 @@ class Generator:
                     self.lines.append(f"    .complete {qid},1")
                 for idx, (kind, oid, oname, pts, count, mlvl) in enumerate(objectives, 1):
                     where = self.nearest(pts)
+                    if not where and st.get("where"):
+                        # the route names the spot for objectives Questie has no location for
+                        w = st["where"]
+                        where = (int(w[0]), float(w[1]), float(w[2]))
                     if where:
                         self.goto(where)
                     else:

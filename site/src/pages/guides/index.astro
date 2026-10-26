@@ -3,10 +3,17 @@ import Base from "../../layouts/Base.astro";
 import XpBar from "../../components/XpBar.astro";
 import { guides, fmtMinutes } from "../../lib/data";
 const horde = guides.filter((g) => g.faction === "Horde");
+// Alliance has three starting tracks; show each as its own row group, in chain order.
+const alliance = guides.filter((g) => g.faction === "Alliance");
+const RACE_NAME: Record<string, string> = { Human: "Human", "Dwarf/Gnome": "Dwarf and Gnome", NightElf: "Night Elf" };
+const tracks = [...new Set(alliance.map((g) => g.for || ""))].map((f) => ({
+  name: RACE_NAME[f] || f,
+  list: alliance.filter((g) => (g.for || "") === f).sort((a, b) => a.from - b.from),
+}));
 ---
-<Base title="Leveling guides" description="Free WoW Forever Horde leveling guides, 1 to 30, with estimated time and XP for every step.">
+<Base title="Leveling guides" description="Free WoW Forever leveling guides for Horde and Alliance, with estimated time and XP for every step.">
   <h1>Leveling guides</h1>
-  <p class="lede">Horde routes for Orc and Troll, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step.</p>
+  <p class="lede">Horde and Alliance routes, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step.</p>
   <XpBar guides={guides} />
 
   <h2>Horde</h2>
@@ -33,9 +40,30 @@ const horde = guides.filter((g) => g.faction === "Horde");
   <ol>
     <li>Install the free <b>RestedXP Guides</b> addon.</li>
     <li>Copy the <code>ForeverXP_Guides</code> folder from the <a href="https://github.com/Jweyant/forever-xp/tree/main/guides/ForeverXP_Guides">repository</a> into <code>Interface\AddOns\</code>.</li>
-    <li>In game, open the RestedXP guide list and pick the <b>ForeverXP Horde</b> group.</li>
+    <li>In game, open the RestedXP guide list and pick the <b>ForeverXP Horde</b> or <b>ForeverXP Alliance</b> group.</li>
   </ol>
 
   <h2>Alliance</h2>
-  <p>Not written yet. Alliance logs from ForeverScout are what will get these started. <a href="/contribute/">Help with a log</a></p>
+  <p>Every starting zone to level 10: Northshire and Elwynn Forest for Humans, Coldridge Valley and Dun Morogh for Dwarves and Gnomes, Shadowglen and Teldrassil for Night Elves. They pick up Forever's new quests along the way.</p>
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Levels</th><th>Zone</th><th>For</th><th class="num">Est. time</th><th class="num">Ends at</th><th class="num">Quests</th><th>Checks</th></tr></thead>
+      {tracks.map((t) => (
+        <tbody>
+          {t.list.map((g) => (
+            <tr>
+              <td><b>{g.from}–{g.to}</b></td>
+              <td><a href={`/guides/${g.slug}/`}>{g.zone}</a></td>
+              <td>{t.name}</td>
+              <td class="num">{fmtMinutes(g.minutes)}</td>
+              <td class="num">{g.end_level?.toFixed(1) ?? "–"}</td>
+              <td class="num">{g.quest_ids.length}</td>
+              <td>{g.issues.length ? <span class="verdict skip">{g.issues.length} to check</span> : <span class="verdict do">Clean</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      ))}
+    </table>
+  </div>
+  <p class="muted small">Forever's new quests have no XP numbers in the game data yet, so "Ends at" leaves them out and you'll usually finish a little higher. Levels 10 and up come next; ForeverScout logs from Alliance players make them better. <a href="/contribute/">Help with a log</a></p>
 </Base>

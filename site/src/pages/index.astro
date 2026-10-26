@@ -77,7 +77,7 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
 
   <section>
     <h2>Horde routes, level 1 to 30</h2>
-    <p class="muted">{horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route.</p>
+    <p class="muted">{horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route. <a href="/guides/">Alliance routes</a> cover every starting zone to level 10.</p>
     <XpBar guides={guides} />
   </section>
 

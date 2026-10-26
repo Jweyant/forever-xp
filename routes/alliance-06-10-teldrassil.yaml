@@ -1,0 +1,77 @@
+# ForeverXP — Night Elf 6-10, Teldrassil.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (Soft Saber Pelts, Escaping Ban'ethil); the client has
+# no XP data for them yet, so the estimate below leaves their XP out.
+# Skipped on purpose: 489 Seek Redemption, 1581 Elixirs for
+# the Bladeleafs (needs alchemy or the auction house), 933 and the rest of Crown of the Earth (level
+# 9+, west), and the Camping 101 profession quests.
+guide:
+  name: 6-10 Teldrassil
+  display: ForeverXP 6-10 Teldrassil
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: NightElf
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Dolanaar
+  - turnin: 928
+    accept: 929
+    text: Corithras Moonrage is on the east side of Dolanaar.
+  - turnin: 2159
+  - home: Dolanaar
+  - accept: [997, 475, 2438, 4161, 87288]
+  - accept: 488
+    text: Zenn Foulhoof is just east of Dolanaar.
+
+  # --- East: Starbreeze Village and Lake Al'Ameth
+  - complete: [488, 87288, 4161]
+    text: Nightsabers drop fangs and pelts, Strigid Owls feathers, Webwood Lurkers silk and legs. All of them are east of Dolanaar.
+  - turnin: 475
+    accept: 476
+    text: Gaerolas Talvethren is in Starbreeze Village.
+  - complete: [929, 2438]
+    text: Fill the phial at the Starbreeze moonwell. The Emerald Dreamcatcher is in the house on the hill.
+  - turnin: 997
+    accept: [918, 919]
+    text: Denalan is on the shore of Lake Al'Ameth.
+  - complete: [918, 919]
+    text: Timberlings all around the lake drop seeds and sprouts.
+  - turnin: [918, 919]
+
+  # --- Dolanaar turn-ins and Fel Rock
+  - turnin: 488
+  - turnin: 476
+    accept: 483
+  - turnin: 929
+  - turnin: 2438
+    accept: [932, 2459]
+  - turnin: [4161, 87288]
+  - complete: 932
+    text: Lord Melenas is at the back of Fel Rock, the cave just north of Dolanaar.
+  - turnin: 932
+  - complete: 2459
+    where: [1438, 69.37, 53.41]   # Ferocitas; Questie has no drop data for the jewel
+    text: Ferocitas the Dream Eater's camp is north-east of Dolanaar. Kill the Gnarlpine Mystics around it; Ferocitas drops Tallonkai's Jewel.
+  - turnin: 2459
+
+  # --- West: the road and Ban'ethil Barrow Den
+  - accept: 487
+    text: Moon Priestess Amara is on the road west of Dolanaar.
+  - complete: 487
+    text: Gnarlpine Ambushers wait along the road west.
+  - accept: 2541
+    text: Oben Rageclaw is inside Ban'ethil Barrow Den.
+  - accept: 99053
+    text: Sentinel Lynessa Duskblossom is in the den too.
+  - complete: [483, 2541, 99053]
+    text: The Relics of Wakening are deep in the den. Gnarlpine Shamans drop the voodoo charm.
+  - turnin: 2541
+    accept: 2561
+  - complete: 2561
+    text: Rageclaw is at the bottom of the den. Use the voodoo charm on his body after.
+  - turnin: 2561
+  - turnin: 487
+  - turnin: 483
+  - turnin: 99053

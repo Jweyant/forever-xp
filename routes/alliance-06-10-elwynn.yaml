@@ -1,0 +1,121 @@
+# ForeverXP — Human 6-10, Elwynn Forest. Ends around level 10-11 with the Forever quests.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (Crystal Lake murlocs, Jasperlode Mine, Eastvale and
+# Azora); the client has no XP data for them yet, so the estimate below leaves their XP out.
+# Skipped on purpose: 61 Shipment to Stormwind (a long walk for one turn-in), 176 Hogger (elite,
+# group it if you see one), 46 Bounty on Murlocs and 59 Cloth and Leather Armor (a second trip
+# east), the rest of Jason Mathers' murloc chain (99129+), and the Camping 101 profession quests.
+guide:
+  name: 6-10 Elwynn Forest
+  display: ForeverXP 6-10 Elwynn Forest
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Human
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Goldshire
+  - turnin: 54
+    accept: 62
+    text: Marshal Dughan is in front of the Lion's Pride Inn.
+  - turnin: 2158
+  - home: Goldshire
+  - accept: 47
+  - accept: 60
+    text: William Pestle is upstairs at the inn's side door, by the alchemy table.
+
+  # --- Fargodeep Mine and the farms south of it
+  - complete: [62, 47, 60]
+    text: Kobolds in and around Fargodeep Mine drop gold dust and candles. Walk into the mine to explore it.
+  - accept: 85
+    text: 'Auntie Bernice Stonefield is at the Stonefield Farm, west of the mine.'
+  - accept: 88
+    text: Needs level 6.
+  - turnin: 85
+    accept: 86
+    text: Billy Maclure is at the Maclure Vineyards, east of the mine.
+  - accept: 106
+    text: Maybell Maclure is in the house at the south end of the vineyard.
+  - complete: 86
+    text: Stonetusk Boars all around the farms drop the ribs.
+  - turnin: 106
+    accept: 111
+    text: Tommy Joe Stonefield is by the river, west of the Stonefield Farm.
+  - turnin: 111
+    accept: 107
+  - turnin: 86
+    accept: 84
+  - turnin: 84
+    accept: 87
+  - complete: 87
+    text: Goldtooth is in the lower level of Fargodeep Mine.
+  - turnin: 87
+
+  # --- Back to Goldshire, Crystal Lake
+  - turnin: 62
+    accept: 76
+  - turnin: 47
+  - accept: 40
+    text: Needs level 7.
+  - turnin: 60
+  - turnin: 107
+    accept: 112
+  - turnin: 40
+    accept: 35
+  - accept: [99127, 99143]
+    text: Jason Mathers and Lee Brown are fishing on the west shore of Crystal Lake.
+  - complete: [112, 99127, 99143]
+    text: Murlocs around Crystal Lake drop the kelp and the shiny junk. The fishing traps are along the shore.
+  - turnin: 99127
+    accept: 99128
+  - turnin: 99143
+  - complete: 99128
+  - turnin: 99128
+  - turnin: 112
+    accept: 114
+  - turnin: 114
+    text: Back to Maybell at the Maclure Vineyards.
+
+  # --- East Elwynn
+  - complete: 88
+    text: Princess is in the Brackwell Pumpkin Patch with her boars. Pull the boars off her first.
+  - accept: [91723, 91725]
+    text: Hamish Bergwort is in the Tower of Azora; Blixie Fitzwink is just outside it.
+  - turnin: 35
+    accept: [37, 52]
+    text: Guard Thomas is at the bridge on the east road.
+  - accept: 91733
+    text: Ormin Pelford is by the river below the logging camp.
+  - accept: [5545, 83, 91732]
+    text: Supervisor Raelen, Sara Timberlain and Hagar Lowe are at the Eastvale Logging Camp.
+  - complete: [5545, 83, 52, 91733]
+    text: Wood bundles are under the trees around the camp, the waterlogged tools along the river. Defias Bandits drop the red linen; prowlers and bears count for Thomas.
+  - turnin: [5545, 83, 91733]
+  - turnin: 37
+    accept: 45
+  - turnin: 45
+    accept: 71
+    text: Rolf's corpse is by the murloc camp on Stone Cairn Lake.
+  - complete: 91725
+    text: The stolen supplies are in the gnoll camps around Stone Cairn Lake.
+  - complete: [76, 91723, 91732]
+    text: Jasperlode Mine is north of the east road. Kobold Geomancers are inside; the mining tools are on the ground.
+  - turnin: 91732
+  - turnin: [91723, 91725]
+  - turnin: 71
+    accept: 39
+  - turnin: 52
+
+  # --- Goldshire, then west to Westbrook
+  - turnin: 88
+    text: Ma Stonefield is back at the Stonefield Farm.
+  - turnin: 39
+  - turnin: 76
+    accept: 239
+  - turnin: 239
+    accept: 11
+    text: Deputy Rainer is at the Westbrook Garrison.
+  - complete: 11
+    text: Riverpaw Gnolls in the Forest's Edge, south-west, drop the paws.
+  - turnin: 11

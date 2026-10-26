@@ -1,0 +1,98 @@
+# ForeverXP — Human 1-6, Northshire Valley.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Skipped on purpose: the Forever-only library chain that starts from the Nibbled-On Book drop
+# (91741 → 91777). It walks you to Goldshire and back with no XP data yet; ForeverScout logs will
+# tell us whether it's worth adding.
+guide:
+  name: 1-6 Northshire
+  display: ForeverXP 1-6 Northshire
+  next: 6-10 Elwynn Forest
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Human
+  class: Warrior
+  start_level: 1
+  start: [1429, 48.17, 42.94]   # Deputy Willem, where Humans spawn
+  version: 1
+
+steps:
+  - accept: 783
+    text: Deputy Willem is right in front of you.
+  - turnin: 783
+    accept: 7
+    text: Marshal McBride is inside the abbey.
+  - accept: 5261
+  - turnin: 5261
+    accept: 33
+  - complete: [7, 33]
+    text: Kobold Vermin are in the woods north-west of the abbey. Kill the Timber Wolves around them as you go.
+  - turnin: 33
+  - turnin: 7
+    accept: 15
+  - accept: 3100
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Warrior
+  - accept: 3101
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Paladin
+  - accept: 3102
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Rogue
+  - accept: 3103
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Priest
+  - accept: 3104
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Mage
+  - accept: 3105
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Warlock
+  - accept: 92479
+    text: McBride gives you a letter for your class trainer, all of them inside the abbey.
+    only: Hunter
+  - turnin: 3100
+    only: Warrior
+    text: Train your new spells while you're here.
+  - turnin: 3101
+    text: Train your new spells while you're here.
+    only: Paladin
+  - turnin: 3102
+    text: Train your new spells while you're here.
+    only: Rogue
+  - turnin: 3103
+    text: Train your new spells while you're here.
+    only: Priest
+  - turnin: 3104
+    text: Train your new spells while you're here.
+    only: Mage
+  - turnin: 3105
+    text: Train your new spells while you're here.
+    only: Warlock
+  - turnin: 92479
+    text: Train your new spells while you're here.
+    only: Hunter
+  - accept: 18
+    text: Needs level 2.
+  - complete: 18
+    text: Defias Thugs east of the abbey drop the bandanas.
+  - turnin: 18
+    accept: [3903, 6]
+  - turnin: 3903
+    accept: 3904
+  - complete: [3904, 6]
+    text: The grapes are in crates around the vineyard. Garrick Padfoot is at the cabin at its south end.
+  - turnin: 3904
+    accept: 3905
+  - complete: 15
+    text: Kobold Workers are outside Echo Ridge Mine, north-west of the abbey.
+  - turnin: 15
+    accept: 21
+  - turnin: 3905
+    text: Brother Neals is at the top of the abbey's bell tower.
+  - turnin: 6
+  - complete: 21
+    text: Kobold Laborers are inside Echo Ridge Mine.
+  - turnin: 21
+    accept: 54
+  - accept: 2158
+    text: Falkhaan Isenstrider is on the road out of the valley.
