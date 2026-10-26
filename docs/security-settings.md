@@ -33,7 +33,8 @@ two deploy workflows once to confirm, then delete the old token.
 ## GitHub (done 2026-10-25)
 
 - [x] **Rulesets** (imported from `.github/rulesets/`): `Protect main` requires a reviewed pull request
-  for every change to `main`, and blocks force pushes and deletion; `Protect release tags` stops anyone
+  for every change to `main` with the `Site security`, `Uploader security` and `Upload server tests`
+  checks green and no high-severity CodeQL findings, and blocks force pushes and deletion; `Protect release tags` stops anyone
   else creating, moving or deleting `v*` tags. Repository admins (you) can bypass both.
   GitHub doesn't allow the Actions bot as a bypass on personal repos, so scheduled data refreshes
   commit to the `data` branch instead (`tools/push_data.sh`) and the site deploy uses whichever copy

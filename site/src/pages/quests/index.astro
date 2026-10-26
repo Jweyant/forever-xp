@@ -61,8 +61,9 @@ const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.fi
       (!side || !s || s === side) && (lv <= 0 || (lv >= min && lv <= max)));
     hits.sort((a, b) => (a[1].toLowerCase().startsWith(t) ? 0 : 1) - (b[1].toLowerCase().startsWith(t) ? 0 : 1) || a[2] - b[2]);
     count.textContent = `${hits.length.toLocaleString("en-US")} found${hits.length > 100 ? ", showing 100" : ""}`;
-    out.innerHTML = hits.slice(0, 100).map(([qid, n, lv, z, s, npc, nw]) =>
-      `<li><a href="/quests/${qid}/"><span class="lvl">${lv > 0 ? lv : "–"}</span><b>${esc(n)}${nw ? `<span class="tag-new">NEW</span>` : ""}</b><span class="muted">${esc(z)}${npc ? `, from ${esc(npc)}` : ""}</span>${s ? `<span class="side side-${s}">${s === "H" ? "Horde" : "Alliance"}</span>` : ""}</a></li>`).join("")
+    const num = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    out.innerHTML = hits.slice(0, 100).map(([qid, n, lv, z, rawSide, npc, nw]) => { const s = rawSide === "H" || rawSide === "A" ? rawSide : ""; return (
+      `<li><a href="/quests/${num(qid)}/"><span class="lvl">${num(lv) > 0 ? num(lv) : "–"}</span><b>${esc(n)}${nw ? `<span class="tag-new">NEW</span>` : ""}</b><span class="muted">${esc(z)}${npc ? `, from ${esc(npc)}` : ""}</span>${s ? `<span class="side side-${s}">${s === "H" ? "Horde" : "Alliance"}</span>` : ""}</a></li>`); }).join("")
       || `<li class="muted">No quests match.</li>`;
   }
   const p = new URLSearchParams(location.search);

@@ -1,4 +1,5 @@
 ---
+import { jsonForHtml } from "../../scripts/items";
 import Base from "../../layouts/Base.astro";
 import talentsJson from "../../data/talents.json";
 
@@ -35,7 +36,7 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
     </div>
   </div>
   <p class="small muted">From the WoW Forever client, build {data.build}. Click or tap to add a point, right-click or long-press to remove. Higher-rank numbers marked as estimates aren't in the client yet.</p>
-  <script type="application/json" id="talent-data" set:html={JSON.stringify(c)} />
+  <script type="application/json" id="talent-data" set:html={jsonForHtml(c)} />
 </Base>
 <script>import "../../scripts/talents.ts";</script>
 

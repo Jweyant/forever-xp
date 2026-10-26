@@ -8,6 +8,9 @@ especially brand-new Forever zones and quests. Submit logs with the
 
 ## Code
 
+Read the security rules in [`CLAUDE.md`](CLAUDE.md#secure-development-rules) first; every pull
+request is checked against them.
+
 - Keep ForeverScout read-only. It records game events and never automates gameplay.
 - Never store character names, realms, GUIDs or chat.
 - Before opening a pull request that changes the addon, run the mocked-client test:

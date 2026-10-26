@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Logo from "../components/Logo.astro";
 import { SITE } from "../config";
+import { jsonForHtml } from "../scripts/items";
 interface Props { title: string; description?: string; wide?: boolean; image?: string; type?: string }
 const { title, description = "Free WoW Forever leveling routes, every quest with coordinates, a BIS gear planner and talent calculator.", wide = false, image = "/og.png", type = "website" } = Astro.props;
 const fullTitle = title === SITE.name ? `${SITE.name}: ${SITE.tagline}` : `${title} | ${SITE.name}`;
@@ -51,7 +52,7 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
   <link rel="preconnect" href="https://render.worldofwarcraft.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
   <script is:inline>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem("hide-launch")==="1")document.documentElement.dataset.nolaunch="1"}catch(e){}</script>
-  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script type="application/ld+json" set:html={jsonForHtml(ld)} />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -108,7 +109,8 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
           <li><a href={SITE.repo}>Source on GitHub</a></li><li><a href={`${SITE.repo}/security/policy`}>Security</a></li>
         </ul></nav>
       </div>
-      <p class="small muted credits">Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Change notes are Blizzard's, linked to each original post. Game icons are Blizzard's, loaded from their render service.
+      <p class="small muted credits">Our own data: leveling routes, quest XP-per-minute scores, the skip list, loot and drop sources from <a href="/scout/">ForeverScout</a> player logs, BIS stat weights and scoring, and the change list, built by Forever XP and published openly in the <a href={`${SITE.repo}/tree/main/gamedata`}>repository</a> (GPL-3.0).
+      Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Change notes are Blizzard's, linked to each original post. Game icons are Blizzard's, loaded from their render service.
       Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc. Site code is GPL-3.0.</p>
     </div>
   </footer>

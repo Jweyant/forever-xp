@@ -6,10 +6,14 @@
     "data": "python3 ../tools/site_data.py",
     "dev": "astro dev",
     "build": "astro build && node ../tools/csp.mjs dist",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:security": "node tests/security.mjs dist"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
     "astro": "7.3.8"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

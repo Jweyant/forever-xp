@@ -1,20 +1,26 @@
 # Weekly update PRs for pinned GitHub Actions and the site, server and uploader dependencies.
 # Every update arrives as a pull request and needs the maintainer's review like any other change.
+# Version updates wait 14 days after a release (cooldown), matching the rule in CLAUDE.md;
+# security updates are not delayed.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
     groups:
       actions: { patterns: ["*"] }
   - package-ecosystem: npm
     directory: /site
     schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
     groups:
       site: { patterns: ["*"] }
   - package-ecosystem: npm
     directory: /server
     schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
   - package-ecosystem: gomod
     directory: /uploader
     schedule: { interval: weekly }
+    cooldown: { default-days: 14 }

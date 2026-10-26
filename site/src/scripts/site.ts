@@ -1,6 +1,6 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
-import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc } from "./items";
+import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
 
 const root = document.documentElement;
 
@@ -122,14 +122,20 @@ async function runSearch() {
     .map(([n, href, s]) => ({ href, html: `<span class="lv">›</span><span><b>${esc(n)}</b><br><span class="sub">${esc(s)}</span></span><span></span>` }));
   const qs = quests.map((q) => ({ q, r: q[0] === id ? -1 : Math.min(rank(q[1], t), rank(q[5] || "", t) + 2, rank(q[3], t) + 4) }))
     .filter((x) => x.r < 9).sort((a, b) => a.r - b.r || a.q[2] - b.q[2]).slice(0, 7)
-    .map(({ q }) => ({ href: `/quests/${q[0]}/`, html: `<span class="lv">${q[2] > 0 ? q[2] : "–"}</span><span><b>${esc(q[1])}</b>${q[6] ? `<span class="tag-new">NEW</span>` : ""}<br><span class="sub">${esc(q[3])}${q[5] ? `, from ${esc(q[5])}` : ""}</span></span><span class="sub ${q[4] ? `side-${q[4]}` : ""}">${q[4] === "H" ? "Horde" : q[4] === "A" ? "Alliance" : ""}</span>` }));
+    .map(({ q }) => {
+      const side = q[4] === "H" || q[4] === "A" ? q[4] : "";
+      return { href: `/quests/${num(q[0])}/`, html: `<span class="lv">${num(q[2]) > 0 ? num(q[2]) : "–"}</span><span><b>${esc(q[1])}</b>${q[6] ? `<span class="tag-new">NEW</span>` : ""}<br><span class="sub">${esc(q[3])}${q[5] ? `, from ${esc(q[5])}` : ""}</span></span><span class="sub ${side ? `side-${side}` : ""}">${side === "H" ? "Horde" : side === "A" ? "Alliance" : ""}</span>` };
+    });
   const is = items.map((i) => ({ i, r: i[0] === id ? -1 : rank(i[1], t) })).filter((x) => x.r < 9)
     .sort((a, b) => a.r - b.r || b.i[5] - a.i[5]).slice(0, 7)
-    .map(({ i }) => ({ href: `/items/${i[0]}/`, html: `<span class="ico sm qb-${QUALITY[i[2]]}">${i[3] ? `<img src="${ICON(i[3], 36)}" alt="">` : ""}</span><span><b class="q-${QUALITY[i[2]]}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}, item level ${i[5]}</span></span><span></span>` }));
+    .map(({ i }) => {
+      const q = QUALITY[num(i[2])] || "common";
+      return { href: `/items/${num(i[0])}/`, html: `<span class="ico sm qb-${q}">${i[3] ? `<img src="${esc(ICON(i[3], 36))}" alt="">` : ""}</span><span><b class="q-${q}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}, item level ${num(i[5])}</span></span><span></span>` };
+    });
   hits = [...pageHits, ...qs, ...is];
   sel = 0;
   const group = (title: string, list: Hit[], offset: number) => list.length
-    ? `<h3>${title}</h3>${list.map((h, k) => `<a href="${h.href}" role="option" data-i="${offset + k}" aria-selected="${offset + k === 0}">${h.html}</a>`).join("")}` : "";
+    ? `<h3>${title}</h3>${list.map((h, k) => `<a href="${esc(h.href)}" role="option" data-i="${offset + k}" aria-selected="${offset + k === 0}">${h.html}</a>`).join("")}` : "";
   results.innerHTML = (group("Pages", pageHits, 0) + group("Quests", qs, pageHits.length) + group("Items", is, pageHits.length + qs.length))
     || `<p class="empty">Nothing matches "${esc(input.value)}". Try part of a name, or a quest or item ID.</p>`;
 }

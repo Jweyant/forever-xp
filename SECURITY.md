@@ -22,6 +22,20 @@ Security tab, not in a public issue.
   it reaches the page; nothing from those sources is rendered as HTML.
 - TLS 1.2 or newer, Full (strict) to the origin, DNSSEC, and a rate limit on the upload server.
 
+## Secure development
+
+Security is part of every change. The rules every contributor follows (and the checklist for
+each pull request) are in [`CLAUDE.md`](CLAUDE.md#secure-development-rules). In short: treat all
+outside input as untrusted, allow-list it, escape it, keep the CSP strict, and keep secrets out
+of code.
+
+Every pull request runs:
+- **CodeQL** on the site, tools, server, uploader and workflows. Merges are blocked on any
+  high-severity finding.
+- **A hostile-input browser test** (`site/tests/security.mjs`) that pushes attack strings through
+  every link, saved-data, search and import path and fails on any injected HTML or script.
+- **Dependency audits**: `npm audit` for the site and `govulncheck` for the uploader.
+
 ## Dependencies and code scanning
 
 Dependabot opens weekly update PRs for the site, server, uploader and GitHub Actions. Every Action
