@@ -1,0 +1,66 @@
+{
+  "_comment": "Layout of the Forever XP Discord server. tools/discord_bot.py setup applies it (adds and updates, never deletes). Channel types: text, voice, announcement, forum. readonly = members can read but not post (the bot and moderators still can).",
+  "categories": [
+    {
+      "name": "Start Here",
+      "channels": [
+        { "name": "welcome", "type": "text", "readonly": true, "topic": "Start here: what Forever XP is, where the tools are, and how to get roles." },
+        { "name": "rules", "type": "text", "readonly": true, "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
+        { "name": "announcements", "type": "announcement", "readonly": true, "topic": "Forever XP news: new tools, guides and data updates from forever-xp.com. Follow this channel to get them in your own server." },
+        { "name": "patch-notes", "type": "announcement", "readonly": true, "topic": "Every new Blizzard WoW Forever change, posted automatically. Search them all at https://forever-xp.com/changes/" }
+      ]
+    },
+    {
+      "name": "Gameplay",
+      "aliases": ["Text Channels"],
+      "channels": [
+        { "name": "general", "type": "text", "topic": "WoW Forever chat." },
+        { "name": "bis-and-gearing", "type": "forum", "topic": "One thread per question. Share your BIS plan link from https://forever-xp.com/bis/",
+          "tags": ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid", "PvE", "PvP", "Leveling"] },
+        { "name": "leveling-routes", "type": "forum", "topic": "Route feedback, faster paths and quests worth skipping. Routes: https://forever-xp.com/guides/",
+          "tags": ["Horde", "Alliance", "1-20", "20-40", "40-60", "Skip list"] },
+        { "name": "class-talk", "type": "forum", "topic": "Builds, talents and tips by class. Talent calculator: https://forever-xp.com/talents/",
+          "tags": ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid"] },
+        { "name": "pvp", "type": "text", "topic": "Battlegrounds, world PvP and PvP gear." },
+        { "name": "lfg", "type": "text", "topic": "Looking for group: say your level, role, faction and what you're running." },
+        { "name": "clips-and-highlights", "type": "text", "topic": "Your best moments in WoW Forever." }
+      ]
+    },
+    {
+      "name": "Forever XP",
+      "channels": [
+        { "name": "quest-data", "type": "forum", "topic": "Wrong coordinates, missing quests, new Forever quests. Confirmed fixes go to Questie.",
+          "tags": ["Wrong location", "Missing quest", "Wrong reward", "New in Forever", "Fixed"] },
+        { "name": "site-feedback", "type": "forum", "topic": "Bugs and ideas for forever-xp.com. Security problems: report privately on GitHub, not here.",
+          "tags": ["Bug", "Idea", "BIS planner", "Quests", "Items", "Talents", "Changes", "Mobile"] },
+        { "name": "foreverscout-help", "type": "text", "topic": "Help with the ForeverScout addon and uploader: https://forever-xp.com/scout/" }
+      ]
+    },
+    {
+      "name": "Voice",
+      "aliases": ["Voice Channels"],
+      "channels": [
+        { "name": "Lobby", "type": "voice" },
+        { "name": "Gaming", "type": "voice" },
+        { "name": "Dungeon group", "type": "voice" },
+        { "name": "Raid night", "type": "voice" },
+        { "name": "Battlegrounds", "type": "voice" }
+      ]
+    }
+  ],
+  "roles": [
+    { "name": "Warrior", "color": "#C69B6D" },
+    { "name": "Paladin", "color": "#F48CBA" },
+    { "name": "Hunter", "color": "#AAD372" },
+    { "name": "Rogue", "color": "#FFF468" },
+    { "name": "Priest", "color": "#FFFFFF" },
+    { "name": "Shaman", "color": "#0070DD" },
+    { "name": "Mage", "color": "#3FC7EB" },
+    { "name": "Warlock", "color": "#8788EE" },
+    { "name": "Druid", "color": "#FF7C0A" },
+    { "name": "Horde", "color": "#B3261E" },
+    { "name": "Alliance", "color": "#2A62C4" },
+    { "name": "Contributor", "color": "#E8B92E" },
+    { "name": "ForeverScout tester", "color": "#6B3FC4" }
+  ]
+}
