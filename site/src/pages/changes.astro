@@ -63,6 +63,7 @@ const n = (v: number) => v.toLocaleString("en-US");
       ))}
     </div>
     <p class="muted small" id="c-count" aria-live="polite">{n(rows.length)} changes</p>
+    <p class="muted small hint">Pick a class and a race to see everything for that character: the class's changes plus the race's racial changes.</p>
 
     <ol class="rows" id="c-rows">
       {rows.map((r) => (
@@ -106,8 +107,15 @@ const n = (v: number) => v.toLocaleString("en-US");
     let shown = 0;
     for (const r of rows) {
       const d = r.dataset;
-      const ok = (!q || d.search!.includes(q)) && (!src || d.src === src) && (!area || d.area === area) && (!race || d.race === race)
-        && (!date || d.date === date) && (!dev || d.dev) && (!picked.size || picked.has(d.cls!));
+      // Class and race describe one character: show that class's changes plus that race's
+      // racial changes. A row tied to both (a Priest racial for Undead) needs both to match.
+      const clsOk = !picked.size || (!!d.cls && picked.has(d.cls));
+      const raceOk = !race || (!!d.race && d.race === race);
+      const who = picked.size && race
+        ? (d.cls && d.race ? clsOk && raceOk : d.cls ? clsOk : d.race ? raceOk : false)
+        : picked.size ? clsOk : race ? raceOk : true;
+      const ok = who && (!q || d.search!.includes(q)) && (!src || d.src === src) && (!area || d.area === area)
+        && (!date || d.date === date) && (!dev || d.dev);
       r.hidden = !ok; if (ok) shown++;
     }
     document.getElementById("c-count")!.textContent = `${shown.toLocaleString("en-US")} of ${rows.length.toLocaleString("en-US")} changes`;
@@ -148,6 +156,7 @@ const n = (v: number) => v.toLocaleString("en-US");
   .clsbar { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.2rem 0 0.8rem; }
   .clsbar button { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0.6rem 0.15rem 0.15rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 0.92rem var(--font-display); cursor: pointer; }
   .clsbar img { border-radius: 50%; }
+  .hint { margin: -0.4rem 0 0.8rem; }
   .clsbar button[aria-pressed="true"] { border-color: var(--xp); background: var(--xp-soft); }
   @media (max-width: 560px) { .clsbar span { display: none; } .clsbar button { padding: 0.15rem; } }
   .rows { list-style: none; padding: 0; margin: 0; max-width: none; border-top: 1px solid var(--line); }
