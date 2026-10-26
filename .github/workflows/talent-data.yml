@@ -1,6 +1,7 @@
 # Rebuilds gamedata/talents.json (the talent calculator and the datamined talent changes) from the
-# WoW Forever client's trait tables, with Blizzard's server hotfixes for that build, and Classic Era's
-# talent table for comparison. All via wago.tools; see tools/build_talents.py.
+# newest WoW Forever client build's trait tables (tools/wago.py picks the build), with Blizzard's
+# server hotfixes for that build, and Classic Era's talent table for comparison. All via
+# wago.tools; see tools/build_talents.py.
 #
 # Runs daily (Blizzard tunes talents with hotfixes between builds), on demand, and on pushes to work
 # branches that change the builder. On main the data goes to the `data` branch (tools/push_data.sh)
@@ -15,9 +16,9 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data]
-    paths: ["tools/build_talents.py", "tools/push_data.sh", ".github/workflows/talent-data.yml"]
+    paths: ["tools/build_talents.py", "tools/wago.py", "tools/push_data.sh", ".github/workflows/talent-data.yml"]
   pull_request:
-    paths: ["tools/build_talents.py", "tools/test/test_build_talents.py", "tools/site_data.py", ".github/workflows/talent-data.yml"]
+    paths: ["tools/build_talents.py", "tools/wago.py", "tools/test/test_build_talents.py", "tools/test/test_wago.py", "tools/site_data.py", ".github/workflows/talent-data.yml"]
 
 permissions:
   contents: read
@@ -36,6 +37,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 tools/test/test_build_talents.py
+      - run: python3 tools/test/test_wago.py
 
   build:
     name: Build talent data

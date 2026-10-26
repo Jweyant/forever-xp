@@ -32,10 +32,14 @@ TOPICS = {
     2369360: "Development notes",   # Warrior Updates in Today's Beta Build
     2352687: "Known issues",        # WoW Forever Beta Known Issues
 }
-# Forum categories to watch for new staff notes (349 = WoW Forever Beta Discussion).
-CATEGORIES = [349]
+# Forum categories to watch for new staff notes. Each run looks up every category whose name or
+# parent mentions Forever (so a new launch or bug-report category is picked up by itself); these
+# are used if that lookup fails: 346 WoW: Forever, 347 General Discussion, 348 Community
+# Connections, 349 Beta Discussion.
+CATEGORIES = [346, 347, 348, 349]
 STAFF = ["Kaivax", "Linxy", "Aggrend", "Blizzard"]
-NOTE_TITLE = re.compile(r"(development notes|patch notes|hotfix|known issues|class (changes|updates|tuning)|"
+NOTE_TITLE = re.compile(r"(development notes|patch notes|release notes|launch notes|update notes|hotfix|known issues|"
+                        r"bug fixes|class (changes|updates|tuning)|"
                         r"\b(warrior|paladin|hunter|rogue|priest|shaman|mage|warlock|druid) updates)", re.I)
 # Official overview articles on the WoW website, listed on the changes page as further reading.
 ARTICLES = [
@@ -255,10 +259,34 @@ def get(url):
         return json.loads(r.read().decode("utf-8"))
 
 
+def forever_categories():
+    """IDs of every forum category (and subcategory) about WoW Forever."""
+    try:
+        res = get(f"{FORUM}/categories.json?include_subcategories=true")
+    except Exception as e:  # noqa: BLE001 - fall back to the known list
+        print(f"categories: {e}", file=sys.stderr)
+        return list(CATEGORIES)
+    found = []
+
+    def walk(cats, parent=""):
+        for c in cats or []:
+            if not isinstance(c, dict) or not isinstance(c.get("id"), int):
+                continue
+            text = f"{c.get('slug', '')} {c.get('name', '')} {parent}".lower()
+            if "forever" in text:
+                found.append(c["id"])
+            walk(c.get("subcategory_list"), str(c.get("slug", "")))
+
+    walk((res.get("category_list") or {}).get("categories"))
+    return sorted(set(found)) or list(CATEGORIES)
+
+
 def discover():
     found = {}
+    cats = forever_categories()
+    print(f"watching forum categories {cats}", file=sys.stderr)
     for user in STAFF:
-        for cat in CATEGORIES:
+        for cat in cats:
             q = urllib.parse.quote(f"@{user} category:{cat} in:first order:latest")
             try:
                 res = get(f"{FORUM}/search.json?q={q}")

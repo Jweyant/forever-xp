@@ -38,7 +38,9 @@ def pretty_const(name):
 
 def zone_names(cache, questie_dir):
     names = {}
-    area = Path(cache) / "AreaTable.csv"
+    # tools/build_items.py caches tables per build (<cache>/<build>/); take the newest download.
+    found = sorted(Path(cache).glob("*/AreaTable.csv"), key=lambda p: p.stat().st_mtime) if Path(cache).exists() else []
+    area = found[-1] if found else Path(cache) / "AreaTable.csv"
     if area.exists():
         with area.open(encoding="utf-8", newline="") as f:
             for r in csv.DictReader(f):

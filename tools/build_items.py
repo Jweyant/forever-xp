@@ -26,8 +26,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import mysqldump  # noqa: E402
+import wago  # noqa: E402
 
-FOREVER_BUILD = "1.60.1.70532"
+FOREVER_BUILD = wago.FOREVER_FALLBACK  # replaced in main() by the newest Forever build
 TABLES = ["ItemSparse", "Item", "RandPropPoints", "ItemArmorQuality", "ItemArmorTotal", "ArmorLocation",
           "ItemArmorShield", "ItemDamageOneHand", "ItemDamageOneHandCaster", "ItemDamageTwoHand",
           "ItemDamageTwoHandCaster", "ItemDamageRanged", "ItemDamageThrown", "ItemDamageWand",
@@ -61,11 +62,11 @@ FACTION_RACES = {"alliance": 1 | 4 | 8 | 64, "horde": 2 | 16 | 32 | 128}
 
 
 def load_csv(cache, table, download):
-    path = Path(cache) / f"{table}.csv"
+    path = Path(cache) / FOREVER_BUILD / f"{table}.csv"
     if not path.exists():
         if not download:
             raise SystemExit(f"missing {path}; run with --download")
-        url = f"https://wago.tools/db2/{table}/csv?build={FOREVER_BUILD}"
+        url = f"{wago.WAGO}/db2/{table}/csv?build={FOREVER_BUILD}"
         req = urllib.request.Request(url, headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
         data = urllib.request.urlopen(req, timeout=120).read()
         if data[:1] in (b"{", b"<"):
@@ -490,7 +491,11 @@ def main():
     ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
     ap.add_argument("--report", default="gamedata/items-report.md")
+    ap.add_argument("--build", help="Forever client build to read (default: the newest on wago.tools)")
     a = ap.parse_args()
+    global FOREVER_BUILD
+    FOREVER_BUILD, product = wago.forever_build(a.build)
+    print(f"Forever client build {FOREVER_BUILD} ({product})")
 
     items, sets = client_items(a.cache, a.download)
     keep = set(items)
