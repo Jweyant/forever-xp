@@ -4408,29 +4408,29 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
   },
   {
-   "id": "a70f796b27",
+   "id": "a61e0f4a31",
    "date": "2026-10-08",
-   "kind": "Development notes",
-   "section": "Known Issues – New with this build",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "While texture updates to Skyborne druid bear and travel form are updated, texture updates to Skyborne druid cat form, various creatures in Zephras Isle, and some mounts, pets, and other creatures will arrive in a future build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
   },
   {
-   "id": "a385444ff2",
+   "id": "a9033c74a3",
    "date": "2026-10-08",
-   "kind": "Development notes",
-   "section": "Known Issues – New with this build",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Hunters who selected the Ferocity talent will not see the critical strike chance of their pet increase on the character sheet. This is a visual bug only.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5",
    "cls": "Hunter"
   },
   {
-   "id": "61c7693e53",
+   "id": "8aaa84b1c9",
    "date": "2026-10-08",
-   "kind": "Development notes",
-   "section": "Known Issues – New with this build",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Some of the icons in the Professions window appear broken.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -6090,136 +6090,13 @@
    ]
   },
   {
-   "id": "520dadf76a",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Chaining Spells together does not play the precast spell effects and sounds of the next cast until the first cast finishes.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
-   "detail": [
-    "For example: When you cast Fireball and cast another Fireball right away, you finish your Fireball cast, your hands won’t glow or make the crackling sound of the new Fireball you’re casting, and then once your hand comes down from the first Fireball cast, you then begin the precast animation of the next Fireball spell."
-   ]
-  },
-  {
-   "id": "7884998b72",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Enemies can Parry and Block from behind if the player is close to them. Until this is fixed, it can be avoided by not being too close to targets.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "bcc5c869ff",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "The size of the total installation of WoW: Forever is larger than intended. We’re working to reduce it in a future Beta update.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "7a03db1d7c",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Switching to or from Gamepad UI mode resets the active edit mode layout to the default preset.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "f9779cf79c",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Scroll of Liminal Passage does not function correctly.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "697810ad64",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Dwarf player-characters do not have updated splash sounds in water. This is fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "9ec5da8600",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Eureka does not affect every Damaging Spell or Healing Spell for some classes. This is fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "f4912bbced",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Multiple debuffs like Faerie Fire and Demoralizing Shout don’t cause threat.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "e98c527600",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Mages who learn Research can be prevented from accessing it.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
-   "cls": "Mage"
-  },
-  {
-   "id": "10b3f389e3",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Warriors’ Dual Wield Specialization is granting both your Main hand and Off-hand 2/4/6/8/10% hit chance. It should only be granted to your Off-hand.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
-   "cls": "Warrior"
-  },
-  {
-   "id": "03d0c15ba4",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Retribution Aura uses the target’s spell power instead of the Paladin’s.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
-   "cls": "Paladin"
-  },
-  {
-   "id": "689ed4ac2d",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "The Taillasher Eggs for the quest “Break A Few Eggs” do not respawn as quickly as intended. This will be fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
-   "id": "519689c404",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Known Issues - New to this build",
-   "path": [],
-   "text": "Anduin Wrynn - and many other children – unintentionally have hats. We’re in the process of removing them, but they keep giggling and running away, so this is going to take a while.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
-  },
-  {
    "id": "099f13d5e2",
    "date": "2026-10-01",
    "kind": "Known issues",
    "section": "Known issues",
    "path": [],
    "text": "Chaining Spells together does not play the precast spell effects and sounds of the next cast until the first cast finishes.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
    "detail": [
     "For example: When you cast Fireball and cast another Fireball right away, you finish your Fireball cast, your hands won’t glow or make the crackling sound of the new Fireball you’re casting, and then once your hand comes down from the first Fireball cast, you then begin the precast animation of the next Fireball spell."
    ]
@@ -6231,7 +6108,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Enemies can Parry and Block from behind if the player is close to them. Until this is fixed, it can be avoided by not being too close to targets.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "eafd121d1a",
@@ -6240,7 +6117,7 @@
    "section": "Known issues",
    "path": [],
    "text": "The size of the total installation of WoW: Forever is larger than intended. We’re working to reduce it in a future Beta update.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "b076784a0d",
@@ -6249,7 +6126,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Switching to or from Gamepad UI mode resets the active edit mode layout to the default preset.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "560e3ee68b",
@@ -6258,7 +6135,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Scroll of Liminal Passage does not function correctly.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "5d9e4cae18",
@@ -6267,7 +6144,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Dwarf player-characters do not have updated splash sounds in water. This is fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "83697449a6",
@@ -6276,7 +6153,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Eureka does not affect every Damaging Spell or Healing Spell for some classes. This is fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "fe23648b03",
@@ -6285,7 +6162,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Multiple debuffs like Faerie Fire and Demoralizing Shout don’t cause threat.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "e36337ae89",
@@ -6294,7 +6171,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Mages who learn Research can be prevented from accessing it.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
    "cls": "Mage"
   },
   {
@@ -6304,7 +6181,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Warriors’ Dual Wield Specialization is granting both your Main hand and Off-hand 2/4/6/8/10% hit chance. It should only be granted to your Off-hand.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
    "cls": "Warrior"
   },
   {
@@ -6314,7 +6191,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Retribution Aura uses the target’s spell power instead of the Paladin’s.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
    "cls": "Paladin"
   },
   {
@@ -6324,7 +6201,7 @@
    "section": "Known issues",
    "path": [],
    "text": "The Taillasher Eggs for the quest “Break A Few Eggs” do not respawn as quickly as intended. This will be fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "d2bf74059d",
@@ -6333,7 +6210,7 @@
    "section": "Known issues",
    "path": [],
    "text": "Anduin Wrynn - and many other children – unintentionally have hats. We’re in the process of removing them, but they keep giggling and running away, so this is going to take a while.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
   },
   {
    "id": "87a71153bf",
@@ -7507,7 +7384,7 @@
    "id": "e00342f814",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Quests",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7516,7 +7393,7 @@
    "id": "7c18bd8d92",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Resolved an issue where several dungeon quests were shareable, which granted the receiving player a quest item when shared.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7525,7 +7402,7 @@
    "id": "be9ecf5b22",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Dalaran - Faction adjustments. Spawns are now present in the area just outside the city entrance.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7534,7 +7411,7 @@
    "id": "2da25ad486",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Dun Morogh - Snow Leopard Prowler has a much faster respawn time.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7543,7 +7420,7 @@
    "id": "759ba1d548",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Dun Morogh - Resolved an issue where some players were unable to loot the rifle for “Treacherous Cold”.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7552,7 +7429,7 @@
    "id": "f658234a28",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Durotar - Reduced the respawn time for the escort NPC for “Lost in the Shadows”.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7561,7 +7438,7 @@
    "id": "2026a7fba2",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - The quest “Book Return” now properly removes the extra Book Bag from the player’s inventory when the quest is completed.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7570,7 +7447,7 @@
    "id": "e783e3bc1e",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Increased the amount of crates for the quest “Stolen Enchanting Supplies”.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7579,7 +7456,7 @@
    "id": "50cdd90035",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Murloc camps around Crystal Lake should respawn more quickly. Mrrglrlrlrmgrr!",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7588,7 +7465,7 @@
    "id": "4d4b72a117",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Mother Fang respawns a bit more slowly, and does not always drop a green item.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7597,7 +7474,7 @@
    "id": "1ccb3ce21f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Shinyfinder Narf respawns more quickly. The quest item may now be looted by all party members.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7606,7 +7483,7 @@
    "id": "0c26a3ac8f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Nimsy now respawns more quickly.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7615,7 +7492,7 @@
    "id": "863de66283",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - You can now learn skinning from Helene Peltskinner even while you have a quest with her.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7624,7 +7501,7 @@
    "id": "50d0f4f302",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Increased the amount of supply spawns for “Stolen Enchanting Supplies”.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7633,7 +7510,7 @@
    "id": "8e623dde54",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Elwynn Forest - Jasperlode Mine and Fargodeep Mine are a little more deadly than intended for solo players, so we’re taking their candles away. We do not anticipate any fallout from this theft.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7642,7 +7519,7 @@
    "id": "75bfe6d55b",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Mulgore - Water Pitchers now respawn faster for the quest “A Humble Task”.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7651,7 +7528,7 @@
    "id": "87a08c7e77",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Silthus - Khonsu’s arrival has been removed from the beta phase, and in the future will return to Azeroth once more.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7660,7 +7537,7 @@
    "id": "4e9c9ed7e8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Silverpine Forest - Pyrewood Village worgen respawn more quickly.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7669,7 +7546,7 @@
    "id": "1cbc2a73b2",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Teldrassil - The objective count for the quest “Bounty: Gnarlpine Furbolg” has been reduced to 15 (was 20).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7678,7 +7555,7 @@
    "id": "d06b00d32f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Undercity - The Skyborne quest “Exploring the Horde” now completes the objective to talk with Lady Sylvanas Windrunner. Dark Lady watch over you",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7687,7 +7564,7 @@
    "id": "7e5b838e2e",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Westfall - Increased the spawn rate of the Defias Messenger.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7696,7 +7573,7 @@
    "id": "9ce07600f8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Zephras Isle - The High Order Skyborne quest “Catching Wind” has been redesigned and adjustments were made to the spawns at the Overlook Standing Stones in Shen’dar Highlands.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7705,7 +7582,7 @@
    "id": "37bb566d84",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Zephras Isle - The druids of Nightclaw Cavern now award credit for “Wounds of Betrayal” properly when healed.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7714,7 +7591,7 @@
    "id": "3ca3fe6c9f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Zephras Isle - “A Firm Response” no longer fails to grant credit to players.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7723,7 +7600,7 @@
    "id": "9c9c6a23d2",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "User Interface",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7732,7 +7609,7 @@
    "id": "3e332bce49",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Updated the Nameplate selection display.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7741,98 +7618,98 @@
    "id": "5c7d4b1815",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "General",
    "path": [],
    "text": "Personal Resource Display textures are updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "805b5d26fd",
+   "id": "8c100b17cc",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Banes and Curses do not properly track if you drop your target and re-acquire a target with an existing bane or curse.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "3166b3e4b6",
+   "id": "ed509f6abf",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Healthstone cooldown cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "5deba09b6c",
+   "id": "7bf0187980",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Priest tracks all spells by default.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "cls": "Priest"
   },
   {
-   "id": "0af91e9e6b",
+   "id": "3090f196ad",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Arcane Blast cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "18d5710cfb",
+   "id": "f8b5fbc66d",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Mana gem requires an additional spell to be cast by the mage to properly begin tracking its cooldown.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "7c3c76a571",
+   "id": "76082e858a",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Creating or changing party composition may transfer players to a different world instance. We’re working on improvements and will provide an update soon.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "9ba92ab860",
+   "id": "37cd47fed7",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Pet cooldowns cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "3605f3071b",
+   "id": "3f7df0b3c4",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Item enhancements (such as Windfury or rogue poisons) cannot be tracked",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "d10f2527c8",
+   "id": "0fa3be4503",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "The minimap in Stormwind has display issues and will be fixed in a later build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "ceb7e9af00",
+   "id": "f27a47975e",
    "date": "2026-09-24",
-   "kind": "Development notes",
-   "section": "New to this build - Known Issues",
+   "kind": "Known issues",
+   "section": "Known issues",
    "path": [],
    "text": "Personal Resource Display doesn’t show combo points.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
@@ -7844,97 +7721,6 @@
    "section": "Known issues",
    "path": [],
    "text": "Loch Modan - “Snowbound” gives more XP than intended. This is adjusted in the next beta build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "8c100b17cc",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Banes and Curses do not properly track if you drop your target and re-acquire a target with an existing bane or curse.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "ed509f6abf",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Healthstone cooldown cannot be tracked.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "7bf0187980",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Priest tracks all spells by default.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5",
-   "cls": "Priest"
-  },
-  {
-   "id": "3090f196ad",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Arcane Blast cannot be tracked.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "f8b5fbc66d",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Mana gem requires an additional spell to be cast by the mage to properly begin tracking its cooldown.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "76082e858a",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Creating or changing party composition may transfer players to a different world instance. We’re working on improvements and will provide an update soon.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "37cd47fed7",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Pet cooldowns cannot be tracked.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "3f7df0b3c4",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Item enhancements (such as Windfury or rogue poisons) cannot be tracked",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "0fa3be4503",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "The minimap in Stormwind has display issues and will be fixed in a later build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
-   "id": "f27a47975e",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Personal Resource Display doesn’t show combo points.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
   },
   {
