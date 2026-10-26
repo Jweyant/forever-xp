@@ -206,6 +206,10 @@ def normalize(r):
         section, path = path[0], path[1:]
     if section in CLASSES:                       # class-only threads ("Warrior Updates")
         section, path = "Classes", [section] + path
+    if re.search(r"known issues?", section, re.I):
+        r["kind"] = "Known issues"
+    if section == r["kind"]:
+        section = "General"
     if r["kind"] == "Known issues":
         m = DATE_IN.search(section)
         if m:
