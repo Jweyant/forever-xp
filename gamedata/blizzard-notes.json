@@ -61,7 +61,7 @@
    "id": "ac9c368f1f",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Resolved an issue with extra bright fog at lower shadow settings.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -70,7 +70,7 @@
    "id": "62748c9d9f",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed an issue allowing Horde players to gain Kirin Tor reputation.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -79,7 +79,7 @@
    "id": "c5cedfac53",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Creatures will now properly regenerate health when out of combat.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -88,7 +88,7 @@
    "id": "e9be7cec50",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed an issue with various Horde characters holding the Night Watchman’s Torch.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -97,7 +97,7 @@
    "id": "7feed7bdb9",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed an issue with various drink tooltips that were not displaying the correct amount of total Mana regeneration.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -106,7 +106,7 @@
    "id": "9ca3894373",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Added a new tutorial experience for new players.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -115,7 +115,7 @@
    "id": "7c1766830f",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Improved control over Lighting ‘Bloom Intensity’ in options to be a slider that has moved to the ‘Advanced’ graphics section.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -124,7 +124,7 @@
    "id": "eb4acaad83",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Added ‘Auto Attack/Auto Shot’ setting. If enabled, Hunters will automatically switch between auto attack and auto shot. This is now also supported for gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6",
@@ -134,7 +134,7 @@
    "id": "9eb3d93807",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Racial abilities have been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -143,7 +143,7 @@
    "id": "6fb5efa2a7",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Tauren"
    ],
@@ -155,7 +155,7 @@
    "id": "95ea4c5f3d",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Tauren"
    ],
@@ -167,7 +167,7 @@
    "id": "1585e960ef",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Tauren"
    ],
@@ -182,7 +182,7 @@
    "id": "70ddc0cbbf",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Tauren"
    ],
@@ -194,7 +194,7 @@
    "id": "6cc4e9f4c7",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Tauren"
    ],
@@ -206,7 +206,7 @@
    "id": "41a78af5e3",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Dwarf"
    ],
@@ -218,7 +218,7 @@
    "id": "5d77ca2575",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Dwarf"
    ],
@@ -230,7 +230,7 @@
    "id": "2577869760",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Skyborne"
    ],
@@ -242,7 +242,7 @@
    "id": "a14881267d",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Skyborne"
    ],
@@ -254,7 +254,7 @@
    "id": "66d8a44833",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Skyborne"
    ],
@@ -266,7 +266,7 @@
    "id": "c175432479",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Skyborne"
    ],
@@ -278,7 +278,7 @@
    "id": "377e2dd0b4",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Skyborne"
    ],
@@ -290,7 +290,7 @@
    "id": "b829d66556",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Human"
    ],
@@ -302,7 +302,7 @@
    "id": "1701725ca0",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Orc"
    ],
@@ -314,7 +314,7 @@
    "id": "bc1bedc646",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Orc"
    ],
@@ -326,7 +326,7 @@
    "id": "14a2e76701",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Orc"
    ],
@@ -338,7 +338,7 @@
    "id": "64db27100e",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Undead"
    ],
@@ -350,7 +350,7 @@
    "id": "c560e3fa78",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Undead"
    ],
@@ -362,7 +362,7 @@
    "id": "9219e25217",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Undead"
    ],
@@ -374,7 +374,7 @@
    "id": "8c51ae90e4",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Undead"
    ],
@@ -386,7 +386,7 @@
    "id": "a353d6449f",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Undead"
    ],
@@ -401,7 +401,7 @@
    "id": "8378268501",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Gnome"
    ],
@@ -413,7 +413,7 @@
    "id": "45e501f318",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Gnome"
    ],
@@ -425,7 +425,7 @@
    "id": "1083fd6057",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Night Elf"
    ],
@@ -437,7 +437,7 @@
    "id": "d2764d0b9d",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Night Elf"
    ],
@@ -449,7 +449,7 @@
    "id": "fb4a62841b",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Races",
    "path": [
     "Troll"
    ],
@@ -2416,7 +2416,7 @@
    "id": "d8c4dc600e",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Added a swing timer to the center reticle.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2425,7 +2425,7 @@
    "id": "e9e241d25e",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Added bindings to enable and disable Voice Channel Transcription via the Chat Channels menu.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2434,7 +2434,7 @@
    "id": "e0a0a12fb1",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Ensured your own fishing bobber is always targetable.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2443,7 +2443,7 @@
    "id": "773868e671",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed using ground-targeted items. Using them a second time will now confirm the placement.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2452,7 +2452,7 @@
    "id": "99ae8356e3",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue causing the gamepad action bar to be invisible upon relogging after creating and selecting a custom Edit Mode layout.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2461,7 +2461,7 @@
    "id": "1c993db5b6",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue causing the cast bar to not be properly customizable with Edit Mode.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2470,7 +2470,7 @@
    "id": "caf4292f3b",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue making it difficult to activate actions using the class-specific flyouts.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2479,7 +2479,7 @@
    "id": "d96a340fe1",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue with quest reward selection that prevented completion of certain quests.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2488,7 +2488,7 @@
    "id": "c98b678af3",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue where quests offered by interactive objects or other non-character quest givers could not be turned in with a gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2497,7 +2497,7 @@
    "id": "6eb5da30f7",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Made the “Press and Hold Casting” setting compatible with gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2506,7 +2506,7 @@
    "id": "b10db3afff",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Updated the Trade confirmation dialog to be usable with a gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2515,7 +2515,7 @@
    "id": "d531b057a6",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Updated the Guild & Communities dialogs to be usable with a gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2524,7 +2524,7 @@
    "id": "30adff6ba5",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Updated the Chat Channels menu to be usable with a gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2533,7 +2533,7 @@
    "id": "ea95615293",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Updated the Transmog frame to be useable with a gamepad.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2596,7 +2596,7 @@
    "id": "9bc48160eb",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Legacy System",
+   "section": "Legacy system",
    "path": [],
    "text": "Fixed an issue where Bartering was discounting training and repairing.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2605,7 +2605,7 @@
    "id": "b2c2aea26d",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Legacy System",
+   "section": "Legacy system",
    "path": [],
    "text": "Visually moved the Master Chef and Luremaster perks 1 row to the left.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6",
@@ -2617,7 +2617,7 @@
    "id": "e551cd9571",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Legacy System",
+   "section": "Legacy system",
    "path": [],
    "text": "The Quick and the Dead should now affect more Priest spells.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6",
@@ -2763,7 +2763,7 @@
    "id": "4bd4054b7b",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "Player versus Player",
+   "section": "PvP",
    "path": [],
    "text": "Battleground Marks of Honor now stack up to 30 (was 20).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2772,7 +2772,7 @@
    "id": "baf9f0cc01",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Unit Frames display has been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2781,7 +2781,7 @@
    "id": "5047356f81",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Minimap header display has been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2790,7 +2790,7 @@
    "id": "d0c8e5d5b6",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Spells with different rankings now behaves as a single entry in the Cooldown Manager.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2799,7 +2799,7 @@
    "id": "6d5b2f63a7",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Auction House now displays a column for equippable level.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2808,7 +2808,7 @@
    "id": "dd31100292",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Auction House will now properly display equipment stats from items with suffixes (example: “___ of the Monkey”).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2817,7 +2817,7 @@
    "id": "6b381d6da7",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Added detailed Scrolling Combat Text options under Options > Gameplay > Combat > Scrolling Combat Text for Self > Text on Me/Text on Target.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2826,7 +2826,7 @@
    "id": "0ce73e327a",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Searching for “Threat” will now pull up the Aggro Display option.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2835,7 +2835,7 @@
    "id": "3506f9810c",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "To reduce Nameplate clutter, the distance visibility for Nameplates for enemies and NPCs above and below the player have been adjusted. Your current target’s nameplate is not affected.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2844,7 +2844,7 @@
    "id": "fa7e087771",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Restored level-up messages showing stat increases and talent points gained.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2853,7 +2853,7 @@
    "id": "7ce9bb8b32",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "In-game Tutorials have been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2862,7 +2862,7 @@
    "id": "5e1591b00d",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "If party members are different character levels, the Looking For Group UI will now properly update the eligibility statuses of the dungeon list.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2871,7 +2871,7 @@
    "id": "406b96cd7b",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Group Finder checkbox “Show All Level Ranges” will properly update the dungeon list.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2880,7 +2880,7 @@
    "id": "9a2e3d7620",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Fixed an issue where art assets were running amok on the Professions UI panel.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2889,7 +2889,7 @@
    "id": "d9756c5543",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Who List search now supports subzones (example: characters in Northshire Valley will show up in both queries “/who northshire” and “/who elwynn”).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2898,7 +2898,7 @@
    "id": "fd3d5597b1",
    "date": "2026-10-16",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Players can no longer accept the ‘refresh world’ prompt while in combat.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/6"
@@ -2907,7 +2907,7 @@
    "id": "2418002e06",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "This build reintroduces Classic looting behavior, where creatures that dropped no loot can still be interacted with.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2916,7 +2916,7 @@
    "id": "9c332f2fb4",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed visual effects flickering on large creatures.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2925,7 +2925,7 @@
    "id": "d1cd3d1864",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed creature behavior that could result in unintended long-distance pulls.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2934,7 +2934,7 @@
    "id": "edd6b8e513",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Now available for testing: the new City of Dalaran dungeon.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2943,7 +2943,7 @@
    "id": "bad61420e5",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Players will once again be able to swap multiple weapons within the same GCD, for example via a macro to swap from a two-handed weapon, to a sword and shield.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2952,7 +2952,7 @@
    "id": "9378593d68",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "The experience earned from killing creatures in dungeons has been increased by approximately 20%.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -2961,7 +2961,7 @@
    "id": "2fafdaf68b",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Fixed a bug that reduced XP granted to players who were in a party with higher-level players killing lower-level enemies.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5",
@@ -2974,7 +2974,7 @@
    "id": "bb6ab56c5c",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Cooldown Manager"
    ],
@@ -2988,7 +2988,7 @@
    "id": "362d77f4f7",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -2999,7 +2999,7 @@
    "id": "7fe520dd86",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3010,7 +3010,7 @@
    "id": "1f6e212bf6",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3021,7 +3021,7 @@
    "id": "c0d6a66de7",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3032,7 +3032,7 @@
    "id": "50cf43bcf2",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3043,7 +3043,7 @@
    "id": "213c38e871",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3054,7 +3054,7 @@
    "id": "149fc4e97c",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Gamepad Support"
    ],
@@ -3068,7 +3068,7 @@
    "id": "f8b95f2d6f",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Legacy System"
    ],
@@ -3079,7 +3079,7 @@
    "id": "bbc092d694",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Legacy System"
    ],
@@ -3977,7 +3977,7 @@
    "id": "2a4657f845",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Player versus Player",
+   "section": "PvP",
    "path": [],
    "text": "Critical strikes in PvP no longer have reduced efficacy.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -3986,7 +3986,7 @@
    "id": "f563f82e2c",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "Player versus Player",
+   "section": "PvP",
    "path": [],
    "text": "Fixed an issue where the capture point for Shipwreck Cove appeared in the incorrect location.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4312,7 +4312,7 @@
    "id": "7bccd37555",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Voice Chat can now be set to use Discord Voice under Audio settings and is used for the entire party based on the party leader’s setting.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4321,7 +4321,7 @@
    "id": "d26ac87507",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "An In-Game Voice Mode can now be chosen for Group Finder postings which result in party members receiving a prompt to join the selected voice chat.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4330,7 +4330,7 @@
    "id": "188c53f119",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Inspect player window has been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4339,7 +4339,7 @@
    "id": "206b93f01d",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Combo points have been updated in the Target Frame and Personal Resource Display.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4348,7 +4348,7 @@
    "id": "084876bd42",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Quest Types are now displayed as text in the Quest Log, Quest Tracker, and Quest Dialogue.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4357,7 +4357,7 @@
    "id": "1adf0b58c3",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Quest level requirements are now displayed in the Quest Tracker.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4366,7 +4366,7 @@
    "id": "d90eda91d3",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Fixed an issue where buffed stats were not highlighted in the Character Info panel.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4375,7 +4375,7 @@
    "id": "14abef897c",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Fixed an issue where Specific Macros were showing General Macros.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4384,7 +4384,7 @@
    "id": "e10aa413a0",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Clicking on an earned Legacy Challenge will now open the Legacy Challenge window.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4393,7 +4393,7 @@
    "id": "b2aca39451",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "View Talents is now an option below Inspect in the target frame’s context menu.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4402,7 +4402,7 @@
    "id": "837e89b669",
    "date": "2026-10-08",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Character level and class is now displayed on the left frame of the Character Info pane.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
@@ -4436,333 +4436,25 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/5"
   },
   {
-   "id": "433b3def88",
+   "id": "8bf305f508",
    "date": "2026-10-02",
    "kind": "Development notes",
-   "section": "Warrior",
-   "path": [],
-   "text": "Additional Rage generated from landing Critical Strikes increased to 100% increased Rage (was 75%).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1"
-  },
-  {
-   "id": "f5ba49c834",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [],
-   "text": "Fixed a bug that was causing Dual Wield Specialization to grant its increase to Hit Chance to both weapons.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "note": [
-    "Because of the above bug, our tests needed some correcting, so we did another pass on Fury Warrior."
-   ]
-  },
-  {
-   "id": "0acbf1a945",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
+   "section": "Classes",
    "path": [
+    "Warrior",
     "Fury"
    ],
    "text": "Our goal here is to give Fury more access to utility and meaningful choices early in the tree for leveling, and free up points later for more choices instead of being stuck placing points into Enrage to get Flurry.",
    "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
+   "cls": "Warrior",
    "spec": "Fury",
    "dev": 1
-  },
-  {
-   "id": "fe91b9a950",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Booming Voice is now a 10/20/30/40/50% increase area of effect to your Shouts and a 5/10/15/20/25% reduction to their Rage costs.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "1863f56cd7",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Unbridled Wrath no longer grants twice as much Rage to two-handed weapons.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "e0f1c89612",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "New Talent Lingering Rage in Row 2 of Fury. Lingering Rage increases the time before your Rage begins to decay when leaving combat by 2/4/6/8/10 seconds.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "758e442351",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Blood Craze no longer activates off of Bloodthirst casts.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "d6736c480b",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "The Improved Cleave talent has been removed.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "865b7e5a16",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "The Boundless Rage talent has been removed.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "2a4d0f7146",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "New Talent Furious Precision in Row 3 of Fury. Furious Precision increases your chance to hit with off-hand attacks by 4/7/10%.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "eef0e01d59",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Raging Blows now reduces the Rage cost of your Cleave and Whirlwind abilities by 3.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "6abda5624e",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Raging Blows no longer causes your Whirlwind to strike with your offhand. Whirlwind will now always strike with both weapons without requiring a talent point.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "e56318e032",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Dual Wield Specialization no longer grants hit to your off-hand attacks.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "9ddc43c574",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Enrage is no longer required to reach the Flurry talent.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "c991c797d7",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Death Wish is now required to reach the Flurry talent.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "91238cbfac",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "New Talent Gore Drinker in Row 6 of Fury, requires the Enrage talent. Your Enrage, Berserker Rage, Bloodrage, Death Wish, and Bloodthirst abilities cause your next 3 melee attacks to restore 0.5/1% of your maximum Health.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "b2fdb501e2",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Improved Berserker Rage moved to Row 5 of Fury (Was Row 6).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "e91765cca3",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Berserker Rage is now available at level 30 (Was 32)",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "0e96e4704f",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Fury"
-   ],
-   "text": "Bloodthirst’s Attack Power ratio has been increased to 45% (Was 35%).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Fury"
-  },
-  {
-   "id": "db05278544",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Our goal is to give non-shield users a clear path to the middle of the tree, where Protection could serve as a PvP tech secondary specialization, with more access to Improved Bloodrage, Iron Will, Improved Disarm, Last Stand, and Improved Shield Bash.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection",
-   "dev": 1
-  },
-  {
-   "id": "e2ee7e51cc",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Iron Will moved to the Row 1 of Protection (Was Row 2 of Fury).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "3104fd7a04",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Anticipation moved to Row 2 (Was Row 1).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "4500f752bf",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Toughness has been removed.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "a28b6d5c7e",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Improved Bloodrage moved to Row 1 (Was Row 2).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "75493611b5",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Improved Revenge moved to Row 2 (Was Row 3).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "c07edac2e2",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Improved Disarm moved to Row 3 (Was Row 4).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
-  },
-  {
-   "id": "667f365367",
-   "date": "2026-10-02",
-   "kind": "Development notes",
-   "section": "Warrior",
-   "path": [
-    "Protection"
-   ],
-   "text": "Improved Shield Bash moved to Row 4 (Was Row 5).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360/1",
-   "spec": "Protection"
   },
   {
    "id": "ecf8ac09fe",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Improved rain visibility.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4771,7 +4463,7 @@
    "id": "ca02570a48",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Removed the ‘Ray Traced Shadows’ option. This setting will be re-added to the game in a future update, after the functionality is fixed.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4780,7 +4472,7 @@
    "id": "8ea6ed42f1",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "Fixed an issue where the Night Watchman’s Torch was causing some unintended lag in certain situations and could not be cancelled.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4789,7 +4481,7 @@
    "id": "939c899182",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Bug Fixes",
+   "section": "Bug fixes",
    "path": [],
    "text": "The visual size of weapons when held in hand and sheathed on the back has been adjusted across all races to be more consistent.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4798,7 +4490,7 @@
    "id": "5e54fd1759",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "Players can now level up to a maximum of level 30.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4807,7 +4499,7 @@
    "id": "d4944f93b5",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "New Dungeon - Excavation Site: Wetlands (26-31).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4816,7 +4508,7 @@
    "id": "6c4074fccf",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4827,7 +4519,7 @@
    "id": "f33e957dfe",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4838,7 +4530,7 @@
    "id": "6f5425bb80",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4849,7 +4541,7 @@
    "id": "fbafdfa4c3",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4860,7 +4552,7 @@
    "id": "a440f61bfc",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4871,7 +4563,7 @@
    "id": "f30ce8160d",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4882,7 +4574,7 @@
    "id": "b9684736f7",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4893,7 +4585,7 @@
    "id": "ae9ca65072",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4904,7 +4596,7 @@
    "id": "7b0cef90a0",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4915,7 +4607,7 @@
    "id": "9b568637df",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4926,7 +4618,7 @@
    "id": "dc4a91f5b8",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Players now have access to Razorfen Downs (25+) and Uldaman (30+), in addition to the following, already available, dungeons"
    ],
@@ -4937,7 +4629,7 @@
    "id": "83821c2556",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [],
    "text": "There are now barbershops in Darnassus and Thunder Bluff, all barbershops now have barbers working at them, and city guards will give directions to barbershops.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -4946,7 +4638,7 @@
    "id": "5ca9198ebf",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Camping"
    ],
@@ -4957,7 +4649,7 @@
    "id": "8f6b817038",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Camping"
    ],
@@ -4968,7 +4660,7 @@
    "id": "36ec63d0dd",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Camping"
    ],
@@ -4979,7 +4671,7 @@
    "id": "3228fe0104",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Items"
    ],
@@ -4993,7 +4685,7 @@
    "id": "29095901be",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Changes and Updates",
+   "section": "Changes and updates",
    "path": [
     "Items"
    ],
@@ -5090,20 +4782,6 @@
     "Feral"
    ],
    "text": "The King of the Jungle talent has been removed.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
-   "cls": "Druid",
-   "spec": "Feral"
-  },
-  {
-   "id": "2a95fa48b4",
-   "date": "2026-10-01",
-   "kind": "Development notes",
-   "section": "Classes",
-   "path": [
-    "Druid",
-    "Feral"
-   ],
-   "text": "Tiger’s Fury has been removed.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
    "cls": "Druid",
    "spec": "Feral"
@@ -5957,7 +5635,7 @@
    "id": "989ea509ae",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Cooldown Manager",
+   "section": "Cooldown manager",
    "path": [],
    "text": "Racial abilities are now supported.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -5966,7 +5644,7 @@
    "id": "c995ddf5d7",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Cooldown Manager",
+   "section": "Cooldown manager",
    "path": [],
    "text": "Rogue is now supported.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
@@ -5976,7 +5654,7 @@
    "id": "3e8984513f",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Cooldown Manager",
+   "section": "Cooldown manager",
    "path": [],
    "text": "Duplicate entries for each spell rank on already supported classes should no longer be present.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -5985,7 +5663,7 @@
    "id": "da23ac1011",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "The pet stable interface has been updated for gamepad support.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -5994,7 +5672,7 @@
    "id": "f600c32467",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "The gamepad UI bindings are now static, and any gamepad rebinding only affects the keyboard and mouse interface.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6003,7 +5681,7 @@
    "id": "e339e2a3ae",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "The compact Raid and Party manager frames have been updated for gamepad support.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6012,7 +5690,7 @@
    "id": "d17cdc7beb",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Gamepad Support",
+   "section": "Gamepad support",
    "path": [],
    "text": "Fixed an issue preventing macros placed on a gamepad action bar from being able to be moved.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6021,7 +5699,7 @@
    "id": "0ef0f17b2b",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Player versus Player",
+   "section": "PvP",
    "path": [],
    "text": "Honor costs for PvP gear and upgrade tokens have been adjusted, with most item costs increasing by approximately 50% to better align with gear acquisition targets.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6030,7 +5708,7 @@
    "id": "abc9726433",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "Player versus Player",
+   "section": "PvP",
    "path": [],
    "text": "The Honor cap has been increased from 15,000 to 25,000 to better accommodate the above new costs.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6337,7 +6015,7 @@
    "id": "e63b4d6257",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "On the character sheet, when mousing over Spell Damage and Spell Healing, it is now explained that spells cast using spell ranks vastly below your current level receive less benefit from your Spell Damage and Spell Healing and have a reduced chance to activate your Class abilities and Talents. (examples: Frostbite and Omen of Clarity)",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4",
@@ -6349,7 +6027,7 @@
    "id": "ccd2720f04",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Character Creation will display matching icons when Standard Definition models are toggled.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6358,7 +6036,7 @@
    "id": "23b08e861e",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Stables frame art has been updated.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6367,7 +6045,7 @@
    "id": "c953e2166b",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Combo points on the target frame and Personal Resource Display has updated art.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6376,7 +6054,7 @@
    "id": "ea343d45ab",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "Fixed loot rolls in chat not displaying a player’s full name.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6385,7 +6063,7 @@
    "id": "98ccc00342",
    "date": "2026-10-01",
    "kind": "Development notes",
-   "section": "User Interface",
+   "section": "User interface",
    "path": [],
    "text": "The auction house will now correctly display item suffixes.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/4"
@@ -6538,7 +6216,7 @@
    "id": "099f13d5e2",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Chaining Spells together does not play the precast spell effects and sounds of the next cast until the first cast finishes.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
@@ -6550,7 +6228,7 @@
    "id": "78560e42d4",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Enemies can Parry and Block from behind if the player is close to them. Until this is fixed, it can be avoided by not being too close to targets.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6559,7 +6237,7 @@
    "id": "eafd121d1a",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "The size of the total installation of WoW: Forever is larger than intended. We’re working to reduce it in a future Beta update.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6568,7 +6246,7 @@
    "id": "b076784a0d",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Switching to or from Gamepad UI mode resets the active edit mode layout to the default preset.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6577,7 +6255,7 @@
    "id": "560e3ee68b",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Scroll of Liminal Passage does not function correctly.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6586,7 +6264,7 @@
    "id": "5d9e4cae18",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Dwarf player-characters do not have updated splash sounds in water. This is fixed in a later build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6595,7 +6273,7 @@
    "id": "83697449a6",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Eureka does not affect every Damaging Spell or Healing Spell for some classes. This is fixed in a later build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6604,7 +6282,7 @@
    "id": "fe23648b03",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Multiple debuffs like Faerie Fire and Demoralizing Shout don’t cause threat.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6613,7 +6291,7 @@
    "id": "e36337ae89",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Mages who learn Research can be prevented from accessing it.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
@@ -6623,7 +6301,7 @@
    "id": "5c9d8b942f",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Warriors’ Dual Wield Specialization is granting both your Main hand and Off-hand 2/4/6/8/10% hit chance. It should only be granted to your Off-hand.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
@@ -6633,7 +6311,7 @@
    "id": "1fad9cd829",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Retribution Aura uses the target’s spell power instead of the Paladin’s.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6",
@@ -6643,7 +6321,7 @@
    "id": "9bd0ef8309",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "The Taillasher Eggs for the quest “Break A Few Eggs” do not respawn as quickly as intended. This will be fixed in a later build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
@@ -6652,52 +6330,44 @@
    "id": "d2bf74059d",
    "date": "2026-10-01",
    "kind": "Known issues",
-   "section": "Known Issues - New October 1",
+   "section": "Known issues",
    "path": [],
    "text": "Anduin Wrynn - and many other children – unintentionally have hats. We’re in the process of removing them, but they keep giggling and running away, so this is going to take a while.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/6"
   },
   {
-   "id": "44ed7f452a",
+   "id": "87a71153bf",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed a bug with casters not playing their precast animations and sometimes standing while casting.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "8338011589",
+   "id": "37975881da",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Changed the sound effect that plays while jumping in water to be more aesthetically pleasing.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "ef811048c0",
+   "id": "d5e24643d3",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Adjusted Human death sounds.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "94ced1d4b9",
+   "id": "9d67b60301",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed an issue where attempting to craft items or cast spells was causing players to stand up while waiting to obtain their Campfire buff.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "detail": [
@@ -6706,111 +6376,92 @@
    ]
   },
   {
-   "id": "9f7ff97f4c",
+   "id": "d188fb70b0",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Resolved an issue where Huey Sunnydale’s legs failed to render properly.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "6c2d93679b",
+   "id": "9aa2584150",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed an issue that made a Season of Discovery rune ability visible.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "b960e572c2",
+   "id": "40d6cff732",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed an issue where Pet Happiness was not decreasing once your pet was at max loyalty.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "fb359d96a8",
+   "id": "c987724b51",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed an issue causing the Undercity Canal ooze to be much brighter than intended.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "ae91ae6d84",
+   "id": "3eae332dc2",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Removed a setting that could disable fog in an unintended manner.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "8f65d154e7",
+   "id": "c15519abdd",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Resolved a water display issue and fixed various other display artifacts on Mac.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "09f94af84c",
+   "id": "38a6858457",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed a memory leak causing gradual performance degradation for some players.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "69795e1669",
+   "id": "72214792e1",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Bugfixes"
-   ],
+   "section": "Bug fixes",
+   "path": [],
    "text": "Fixed an issue where in-game mail could ignore surnames.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "cc08ce25a7",
+   "id": "528e0c4999",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Classes"
-   ],
+   "section": "Classes",
+   "path": [],
    "text": "If you have not recently changed your talents, the cost is now 1 silver to re-spec. This is temporary for the Beta only. After your first talent reset, the subsequent cost will be much higher, but it will drop to 1 silver after 1 hour has passed.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "9f8b5bd863",
+   "id": "b1ff3af757",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid"
    ],
    "text": "Corrected an issue and now Rejuvenation can land critical hits.",
@@ -6818,12 +6469,11 @@
    "cls": "Druid"
   },
   {
-   "id": "bd3f0405e2",
+   "id": "b48b55f88c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid"
    ],
    "text": "Corrected an issue and now Tranquility can land critical hits.",
@@ -6831,12 +6481,11 @@
    "cls": "Druid"
   },
   {
-   "id": "58cd8b88d9",
+   "id": "8959e6de47",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid"
    ],
    "text": "Wrath base damage increased ~50%.",
@@ -6844,12 +6493,11 @@
    "cls": "Druid"
   },
   {
-   "id": "e8bf0f13a9",
+   "id": "df9e03e44c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid"
    ],
    "text": "Thorns will now dynamically update its values based on the caster’s spell power.",
@@ -6860,12 +6508,11 @@
    ]
   },
   {
-   "id": "ec824ec0df",
+   "id": "e619b88fdd",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid",
     "Feral"
    ],
@@ -6878,12 +6525,11 @@
    ]
   },
   {
-   "id": "fc1b5ac7d1",
+   "id": "d2067fcfdb",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid",
     "Feral"
    ],
@@ -6893,12 +6539,11 @@
    "spec": "Feral"
   },
   {
-   "id": "f75b9797c0",
+   "id": "0443887a66",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid",
     "Feral"
    ],
@@ -6908,12 +6553,11 @@
    "spec": "Feral"
   },
   {
-   "id": "c1f9f83091",
+   "id": "da846c74db",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Druid",
     "Restoration"
    ],
@@ -6923,12 +6567,11 @@
    "spec": "Restoration"
   },
   {
-   "id": "c91bbe4211",
+   "id": "9295ef3c40",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Pets"
    ],
@@ -6938,12 +6581,11 @@
    "spec": "Pets"
   },
   {
-   "id": "9d0e12dc1f",
+   "id": "f88f821cdb",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Pets"
    ],
@@ -6953,12 +6595,11 @@
    "spec": "Pets"
   },
   {
-   "id": "4a547e7577",
+   "id": "9391de94d6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Pets"
    ],
@@ -6968,12 +6609,11 @@
    "spec": "Pets"
   },
   {
-   "id": "7016840d80",
+   "id": "9e97d70787",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Marksmanship"
    ],
@@ -6983,12 +6623,11 @@
    "spec": "Marksmanship"
   },
   {
-   "id": "6e3d1ab521",
+   "id": "67e2c1ef7d",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Survival"
    ],
@@ -6998,12 +6637,11 @@
    "spec": "Survival"
   },
   {
-   "id": "552bddb750",
+   "id": "758c8ed8bd",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Hunter",
     "Survival"
    ],
@@ -7013,12 +6651,11 @@
    "spec": "Survival"
   },
   {
-   "id": "d26f64766c",
+   "id": "23539359a2",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Mage"
    ],
    "text": "Arcane Missiles no longer checks line of sight on each missile, just once at the beginning of the channel. So targets moving out of line of sight during the channel will not prevent the missiles.",
@@ -7026,12 +6663,11 @@
    "cls": "Mage"
   },
   {
-   "id": "309e77d1c3",
+   "id": "439c30dce1",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Mage",
     "Fire"
    ],
@@ -7044,12 +6680,11 @@
    ]
   },
   {
-   "id": "29ac5f4772",
+   "id": "8052844d15",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Mage",
     "Fire"
    ],
@@ -7059,12 +6694,11 @@
    "spec": "Fire"
   },
   {
-   "id": "dc7611bb45",
+   "id": "a1f89fe0b6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Mage",
     "Fire"
    ],
@@ -7074,12 +6708,11 @@
    "spec": "Fire"
   },
   {
-   "id": "91cb0e7454",
+   "id": "058f94e6a8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Retribution Aura will now dynamically update its values based on the caster’s spell power.",
@@ -7087,12 +6720,11 @@
    "cls": "Paladin"
   },
   {
-   "id": "ad6d7a8cc9",
+   "id": "fa0027ebfe",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Fixed a bug causing the Flash of Light cast animation to not play at the end of the spell cast.",
@@ -7100,12 +6732,11 @@
    "cls": "Paladin"
   },
   {
-   "id": "4a7f1fb0f5",
+   "id": "9b713c5936",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Fixed various issues with Consecration.",
@@ -7118,12 +6749,11 @@
    ]
   },
   {
-   "id": "0e0c187456",
+   "id": "dd5995153f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Holy Strike’s % of weapon damage per rank changed to 25%/29%/32%/36%/39%/43%/46%/50% (was 25%/25%/30%/30%/35%/35%/40%/40%).",
@@ -7134,12 +6764,11 @@
    ]
   },
   {
-   "id": "2691eb7da7",
+   "id": "7564fbc3de",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Fixed a bug with Echo of Justice, causing it to have a higher than intended chance to activate.",
@@ -7147,12 +6776,11 @@
    "cls": "Paladin"
   },
   {
-   "id": "df00bb610d",
+   "id": "b72416546a",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin"
    ],
    "text": "Righteous Fury: Holy threat increase increased to 60% (was 90%).",
@@ -7160,12 +6788,11 @@
    "cls": "Paladin"
   },
   {
-   "id": "8cf703fc5b",
+   "id": "ed0af98381",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Holy"
    ],
@@ -7175,12 +6802,11 @@
    "spec": "Holy"
   },
   {
-   "id": "6131d9acb2",
+   "id": "9f1040e365",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Holy"
    ],
@@ -7193,12 +6819,11 @@
    ]
   },
   {
-   "id": "450f0256b3",
+   "id": "6675456435",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Holy"
    ],
@@ -7208,12 +6833,11 @@
    "spec": "Holy"
   },
   {
-   "id": "3dd4b4284a",
+   "id": "22967b8343",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Holy"
    ],
@@ -7223,12 +6847,11 @@
    "spec": "Holy"
   },
   {
-   "id": "0921793105",
+   "id": "9b435c688c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Retribution"
    ],
@@ -7238,12 +6861,11 @@
    "spec": "Retribution"
   },
   {
-   "id": "10501ab739",
+   "id": "ac7c7801d3",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Retribution"
    ],
@@ -7253,12 +6875,11 @@
    "spec": "Retribution"
   },
   {
-   "id": "7f1bf002fa",
+   "id": "9dbe6c8762",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Retribution"
    ],
@@ -7268,12 +6889,11 @@
    "spec": "Retribution"
   },
   {
-   "id": "4028c4240c",
+   "id": "55a7c71c0b",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Retribution"
    ],
@@ -7283,12 +6903,11 @@
    "spec": "Retribution"
   },
   {
-   "id": "dce6c0d64d",
+   "id": "2fcc84a7d8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Paladin",
     "Retribution"
    ],
@@ -7298,12 +6917,11 @@
    "spec": "Retribution"
   },
   {
-   "id": "3b31485972",
+   "id": "38f8dca772",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest"
    ],
    "text": "Corrected an issue and now Renew can land critical hits.",
@@ -7311,12 +6929,11 @@
    "cls": "Priest"
   },
   {
-   "id": "1e9f70322c",
+   "id": "ff31b8bfe8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest"
    ],
    "text": "Power Word: Shield can now always overwrite an existing Power Word: Shield on a target that does not have Weakened Soul.",
@@ -7324,12 +6941,11 @@
    "cls": "Priest"
   },
   {
-   "id": "286e8b5c3f",
+   "id": "8940bbd418",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest",
     "Gnome"
    ],
@@ -7339,12 +6955,11 @@
    "race": "Gnome"
   },
   {
-   "id": "dd5ccf9c51",
+   "id": "b419204340",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest",
     "Gnome"
    ],
@@ -7354,12 +6969,11 @@
    "race": "Gnome"
   },
   {
-   "id": "c1deb82ea3",
+   "id": "909113ddab",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest",
     "Night Elf"
    ],
@@ -7369,12 +6983,11 @@
    "race": "Night Elf"
   },
   {
-   "id": "3d78ad8aca",
+   "id": "58674ef1df",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest",
     "Undead"
    ],
@@ -7384,12 +6997,11 @@
    "race": "Undead"
   },
   {
-   "id": "5d5a7c4de5",
+   "id": "2f46d643e3",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Priest",
     "Undead"
    ],
@@ -7399,12 +7011,11 @@
    "race": "Undead"
   },
   {
-   "id": "3131dc12c5",
+   "id": "1f974146c0",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Rogue"
    ],
    "text": "Sap now correctly flags the Rogue for PvP when used on a target that is PvP flagged.",
@@ -7412,12 +7023,11 @@
    "cls": "Rogue"
   },
   {
-   "id": "3d77096fad",
+   "id": "51d4bbd612",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Lightning Bolt: Damage on ranks 3 and 4 increased to make these spells always upgrades over previous ranks (despite changing cast times).",
@@ -7425,12 +7035,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "5c4e14bf2c",
+   "id": "568d61f2d6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Windfury Totem: Buff from this spell now displays as “Windfury Totem” instead of “Windfury Totem Passive”.",
@@ -7438,12 +7047,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "d70f4eaf34",
+   "id": "e43756be37",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Flametongue Totem: Buff from this spell now displays as “Flametongue Totem” instead of “Flametongue Totem Effect”.",
@@ -7451,12 +7059,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "08101f4eae",
+   "id": "20af70086b",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Flametongue Totem no longer has a duration and is instantly replaced when placing another totem.",
@@ -7464,12 +7071,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "d70dbc54a3",
+   "id": "d6d723856b",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Flametongue Totem is no longer able to be stacked by repeatedly casting Flametongue Totem.",
@@ -7477,12 +7083,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "17d93fd011",
+   "id": "b776dc3ff6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Flametongue Totem no longer stacks with Flametongue Weapon.",
@@ -7490,12 +7095,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "df0aa22be8",
+   "id": "86be97745f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Flametongue Totem no longer stacks with Windfury Totem.",
@@ -7503,12 +7107,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "6c8ab5c07b",
+   "id": "721a18b444",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman"
    ],
    "text": "Tranquil Air Totem, Windfury Totem, and Grace of Air Totem no longer stack together even if used by different Shamans in the same group.",
@@ -7516,12 +7119,11 @@
    "cls": "Shaman"
   },
   {
-   "id": "aa66009922",
+   "id": "87cecffe7e",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman",
     "Elemental"
    ],
@@ -7534,12 +7136,11 @@
    ]
   },
   {
-   "id": "64edf2f486",
+   "id": "fcd0245066",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman",
     "Elemental"
    ],
@@ -7549,12 +7150,11 @@
    "spec": "Elemental"
   },
   {
-   "id": "fb541c9793",
+   "id": "cf30e934f6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman",
     "Enhancement"
    ],
@@ -7567,12 +7167,11 @@
    ]
   },
   {
-   "id": "78bbccf821",
+   "id": "2f21a02ba9",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Shaman",
     "Restoration"
    ],
@@ -7582,12 +7181,11 @@
    "spec": "Restoration"
   },
   {
-   "id": "8cca34ca5e",
+   "id": "4b9f16eca7",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warlock"
    ],
    "text": "Tooltip of Life Tap has been updated to correctly display the amount of Life converted, and only states that it scales with Spirit.",
@@ -7595,12 +7193,11 @@
    "cls": "Warlock"
   },
   {
-   "id": "91f3f7182b",
+   "id": "4a44976354",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warlock"
    ],
    "text": "Voidwalker Sacrifice now correctly scales with 10% of the Warlock’s spell healing.",
@@ -7608,12 +7205,11 @@
    "cls": "Warlock"
   },
   {
-   "id": "3443c7a8b5",
+   "id": "dfb074719f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior"
    ],
    "text": "Sunder Armor: Corrected the threat values on all ranks, including a small increase to threat generated from Attack Power.",
@@ -7621,12 +7217,11 @@
    "cls": "Warrior"
   },
   {
-   "id": "0a906561a7",
+   "id": "7da80dd3c3",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior",
     "Protection"
    ],
@@ -7639,12 +7234,11 @@
    ]
   },
   {
-   "id": "9025826604",
+   "id": "6fc82821e8",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior",
     "Arms"
    ],
@@ -7654,12 +7248,11 @@
    "spec": "Arms"
   },
   {
-   "id": "fc4d8e2082",
+   "id": "4c0d23c0a1",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior",
     "Arms"
    ],
@@ -7669,12 +7262,11 @@
    "spec": "Arms"
   },
   {
-   "id": "43153876da",
+   "id": "c48360d9b5",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior",
     "Arms"
    ],
@@ -7684,12 +7276,11 @@
    "spec": "Arms"
   },
   {
-   "id": "5ee8bc67d7",
+   "id": "ad7210e078",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Classes",
    "path": [
-    "Classes",
     "Warrior",
     "Arms"
    ],
@@ -7699,12 +7290,11 @@
    "spec": "Arms"
   },
   {
-   "id": "912db587e7",
+   "id": "048377a951",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Races",
    "path": [
-    "Races",
     "Gnome"
    ],
    "text": "Changed Eureka on every class to a 10% discount on Mana, Rage, or Energy abilities.",
@@ -7712,12 +7302,11 @@
    "race": "Gnome"
   },
   {
-   "id": "6e7e6063d6",
+   "id": "1fb1dc9ae6",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
+   "section": "Races",
    "path": [
-    "Races",
     "Human"
    ],
    "text": "Changed the Will to Survive visual to match Dispel Magic instead of Will of the Forsaken.",
@@ -7725,35 +7314,29 @@
    "race": "Human"
   },
   {
-   "id": "f4f87ab68f",
+   "id": "da4ff0976c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Races"
-   ],
+   "section": "Races",
+   "path": [],
    "text": "Tauren",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "e001c8c60b",
+   "id": "e5a679867f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Races"
-   ],
+   "section": "Races",
+   "path": [],
    "text": "Cultivation now has a player-level requirement for every Herb. The level required is equal to the Herb’s level required to pick it divided by 5. Herbs that require a higher than 300 Herbalism skill to pick can be Cultivated at player level 60.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "8fe118eb0b",
+   "id": "dc2947637c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Races"
-   ],
+   "section": "Races",
+   "path": [],
    "text": "Touch of the Grave no longer breaks CC or activates from spells and abilities that don’t have a damage component to them.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "note": [
@@ -7761,68 +7344,56 @@
    ]
   },
   {
-   "id": "cf2e21f853",
+   "id": "10d2f9a05b",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Cooldown Manager"
-   ],
+   "section": "Cooldown manager",
+   "path": [],
    "text": "The Cooldown Manager in World of Warcraft: Forever is intended to enhance gameplay by pulling critical information from the buff bar or action bar and placing it in a fully customizable location. By default, the Cooldown Manager is disabled, and it can be enabled in Options under the Gameplay Enhancement settings.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "236500922b",
+   "id": "8cae9af29a",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Cooldown Manager"
-   ],
+   "section": "Cooldown manager",
+   "path": [],
    "text": "Druid, Mage, Priest, Warrior, and Warlock are available for testing the Cooldown Manager.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "84ad02fe15",
+   "id": "aa4449c708",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Cooldown Manager"
-   ],
+   "section": "Cooldown manager",
+   "path": [],
    "text": "Additional classes will become testable in future updates.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "ba98fb47bf",
+   "id": "7de64e5356",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Cooldown Manager"
-   ],
+   "section": "Cooldown manager",
+   "path": [],
    "text": "The most desired feedback for this feature is currently: spells that you wish were tracked by default.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "0a7380db1f",
+   "id": "c57f28d1e5",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Cooldown Manager"
-   ],
+   "section": "Cooldown manager",
+   "path": [],
    "text": "The Cooldown Manager does not yet support spell ranks. This will be resolved in a future Beta update.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "39128b8437",
+   "id": "1df19d1833",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "Class specific flyouts have been added to the action bar interface of some classes.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "detail": [
@@ -7833,24 +7404,20 @@
    ]
   },
   {
-   "id": "9bbae8f566",
+   "id": "d2e0c273c7",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "The pet bar no longer replaces the bottom gamepad action bar for Hunters and Warlocks.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "2f0f50ba1c",
+   "id": "7b5f21a90c",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "New options have been added to the Gamepad (Alpha) section of the game options.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "detail": [
@@ -7862,24 +7429,20 @@
    ]
   },
   {
-   "id": "e10b9d14c9",
+   "id": "a305711a15",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "Fixed an issue preventing edit mode layouts from being applied while the gamepad UI is enabled.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "3522330e98",
+   "id": "289347ff2e",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "Updated Map and Quest Log bindings.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1",
    "detail": [
@@ -7887,68 +7450,56 @@
    ]
   },
   {
-   "id": "0d4a6e6f6e",
+   "id": "8d817d601f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Gamepad Support"
-   ],
+   "section": "Gamepad support",
+   "path": [],
    "text": "Updated support for Compact Raid Frame Manager and Role Poll Frames.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "62d3b1f449",
+   "id": "b5aec25e60",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Items"
-   ],
+   "section": "Items",
+   "path": [],
    "text": "A handful of guns and bows were not correctly consuming or using ammunition. They have been corrected.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "06bbc132e3",
+   "id": "4a2b91200d",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Items"
-   ],
+   "section": "Items",
+   "path": [],
    "text": "A number of quests have had their rewards updated to be the correct item level.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "f1d65cce8d",
+   "id": "e00614e389",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Items"
-   ],
+   "section": "Items",
+   "path": [],
    "text": "A small number of early caster rewards have been adjusted.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "19e8038064",
+   "id": "b22d0bf39f",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Items"
-   ],
+   "section": "Items",
+   "path": [],
    "text": "Wizard Oil: Minor Wizard Oil has been reverted to Classic Era value of 8 spell power, Lesser Wizard Oil to 16, and Wizard Oil to 24. Brilliant Wizard Oil remains unchanged.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "a5cadf3283",
+   "id": "9b1b51bb47",
    "date": "2026-09-24",
    "kind": "Development notes",
-   "section": "Development notes",
-   "path": [
-    "Items"
-   ],
+   "section": "Items",
+   "path": [],
    "text": "Wands: Wands no longer gain any additional damage from the user’s spell damage.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
@@ -8287,19 +7838,10 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-15/2360696/1"
   },
   {
-   "id": "706713294f",
-   "date": "2026-09-24",
-   "kind": "Known issues",
-   "section": "Resolved Issues",
-   "path": [],
-   "text": "Teldrassil - During the quest “Escaping Ban’ethil”, Sentinel Lynessa Duskblossom runs a bit too fast and spams her Strike ability. This is fixed in the next beta build.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
-  },
-  {
    "id": "82708de6ac",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Resolved Issues",
+   "section": "Known issues",
    "path": [],
    "text": "Loch Modan - “Snowbound” gives more XP than intended. This is adjusted in the next beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8308,7 +7850,7 @@
    "id": "8c100b17cc",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Banes and Curses do not properly track if you drop your target and re-acquire a target with an existing bane or curse.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8317,7 +7859,7 @@
    "id": "ed509f6abf",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Healthstone cooldown cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8326,7 +7868,7 @@
    "id": "7bf0187980",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Priest tracks all spells by default.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5",
@@ -8336,7 +7878,7 @@
    "id": "3090f196ad",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Arcane Blast cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8345,7 +7887,7 @@
    "id": "f8b5fbc66d",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Mana gem requires an additional spell to be cast by the mage to properly begin tracking its cooldown.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8354,7 +7896,7 @@
    "id": "76082e858a",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Creating or changing party composition may transfer players to a different world instance. We’re working on improvements and will provide an update soon.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8363,7 +7905,7 @@
    "id": "37cd47fed7",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Pet cooldowns cannot be tracked.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8372,7 +7914,7 @@
    "id": "3f7df0b3c4",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Item enhancements (such as Windfury or rogue poisons) cannot be tracked",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8381,7 +7923,7 @@
    "id": "0fa3be4503",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "The minimap in Stormwind has display issues and will be fixed in a later build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
@@ -8390,218 +7932,173 @@
    "id": "f27a47975e",
    "date": "2026-09-24",
    "kind": "Known issues",
-   "section": "Known Issues - New September 24",
+   "section": "Known issues",
    "path": [],
    "text": "Personal Resource Display doesn’t show combo points.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/5"
   },
   {
-   "id": "3b60294f2f",
+   "id": "9560da7960",
    "date": "2026-09-18",
    "kind": "Known issues",
    "section": "Known issues",
-   "path": [],
-   "text": "The Cooldown Manager is a work in progress. Complete implementation varies from class to class.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/4"
-  },
-  {
-   "id": "dcde85cad4",
-   "date": "2026-09-18",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Armor bonuses from consumables and buffs are multiplied by Bear Form armor bonuses.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/4"
-  },
-  {
-   "id": "7af4a9de96",
-   "date": "2026-09-18",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Queueing an On-Next Attack ability (Heroic Strike/Cleave/Raptor Strike) disables your spell queue window.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/4"
-  },
-  {
-   "id": "5c45ac5e09",
-   "date": "2026-09-18",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Taking damage while channeling Arcane Missiles will fire off a full damage bolt instead of a bolt with truncated damage.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/4"
-  },
-  {
-   "id": "54e8b4f9fa",
-   "date": "2026-09-18",
-   "kind": "Known issues",
-   "section": "Known issues",
-   "path": [],
-   "text": "Resurrection sickness’s duration is not correct at lower levels.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/4"
-  },
-  {
-   "id": "6c222cf51e",
-   "date": "2026-09-17",
-   "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
    "path": [],
    "text": "Barber Chairs cause a LUA error.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "174ebb68ed",
-   "date": "2026-09-17",
+   "id": "95ddef0a0c",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Character friends in Beta disabled.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "a0aa23a712",
-   "date": "2026-09-17",
+   "id": "daa690bce9",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "The minimap may be partially off the screen.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "699f6ed08e",
-   "date": "2026-09-17",
+   "id": "71030749f1",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Waylaid Crates do not function on items with a maximum stack size smaller than the quantity required. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "d1f02ac0a4",
-   "date": "2026-09-17",
+   "id": "dba2cdf1b4",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Waylaid Crate: Apprentice Curiosities does not accept Greater Magic Essence, and incorrectly allows you to target Lesser Magic Essence. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "100f352568",
-   "date": "2026-09-17",
+   "id": "2f9ea5ca5a",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Teldrassil - During the quest “Escaping Ban’ethil”, Sentinel Lynessa Duskblossom runs a bit too fast and spams her Strike ability. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "62b865bd9b",
-   "date": "2026-09-17",
+   "id": "0eab8fba08",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Starshards (Night Elf Priest Racial) does not benefit from the Twilight Focus talent. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1",
    "cls": "Priest"
   },
   {
-   "id": "ad391172bd",
-   "date": "2026-09-17",
+   "id": "9c1227bb71",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Vengeance (Retribution Paladin Talent) can activate off of periodic critical strikes. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1",
    "cls": "Paladin"
   },
   {
-   "id": "ecbb0d8c10",
-   "date": "2026-09-17",
+   "id": "e4fa507e86",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Ranking up Holy Strike doesn’t feel great per rank. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "7bac3d86a8",
-   "date": "2026-09-17",
+   "id": "2472261d9b",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Character pane does not display Level, Class or Titles (work in progress)",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "b43564962e",
-   "date": "2026-09-17",
+   "id": "b3679f70e2",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Create Firestone Ranks 3 and 4 do not display the conjured item tooltip portion of these abilities. This is fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "503e233f59",
-   "date": "2026-09-17",
+   "id": "d1c0f206b9",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Warlock pets do not display Mana as a resource on the character sheet, and do not mention the scaling from their master (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1",
    "cls": "Warlock"
   },
   {
-   "id": "ec6e2a306a",
-   "date": "2026-09-17",
+   "id": "95ebfc6b5f",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Warlock pets do not display the correct scaling for Health from Stamina on the character sheet (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1",
    "cls": "Warlock"
   },
   {
-   "id": "862e208d89",
-   "date": "2026-09-17",
+   "id": "012e9d665d",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Pet Hit chance for both Hunters and Warlocks do not display the master’s scaling coefficient (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "2c3856e1db",
-   "date": "2026-09-17",
+   "id": "0fb2e240f8",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Pet Expertise is not displayed for both Hunters and Warlocks (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "4c339e491d",
-   "date": "2026-09-17",
+   "id": "682fec4bce",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Pet Movement Speed’s information on the character sheet is not displaying the correct base values in yards per second (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "e8eae94b1b",
-   "date": "2026-09-17",
+   "id": "c61a1f490c",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "The Glancing Blow chance for casters is incorrect at all levels, and the damage reduction of a glancing blow is also incorrect (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "b92cf76095",
-   "date": "2026-09-17",
+   "id": "35df578825",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "The Glancing Blow damage reduction penalty for Melee is incorrect on targets that are higher level than themselves.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1",
@@ -8610,91 +8107,91 @@
    ]
   },
   {
-   "id": "983ef44e26",
-   "date": "2026-09-17",
+   "id": "26364bd3dc",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Because of the above, the Glancing Blow chances displayed on the character sheet are not accurate (work in progress).",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "2cbae378f0",
-   "date": "2026-09-17",
+   "id": "0b661e50b3",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "You can open the Legacy System with the hotkey “Y” before reaching level 25. Doing so results in LUA errors on tab 1 and 3.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "ed468d4185",
-   "date": "2026-09-17",
+   "id": "59cb68f05d",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Player’s may find they are unable to sign guild charters. To alleviate this, we have temporarily made it possible to hand-in a guild charter with no signatures. (work in progress)",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "3aa3472082",
-   "date": "2026-09-17",
+   "id": "ec6e8b86d3",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Coldridge Valley does not reveal on the map when explored. This will be fixed in the next Beta build.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "6d0c1de34f",
-   "date": "2026-09-17",
+   "id": "3b60294f2f",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "The Cooldown Manager is a work in progress. Complete implementation varies from class to class.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "b949150888",
-   "date": "2026-09-17",
+   "id": "dcde85cad4",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Armor bonuses from consumables and buffs are multiplied by Bear Form armor bonuses.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "d4e095863e",
-   "date": "2026-09-17",
+   "id": "7af4a9de96",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Queueing an On-Next Attack ability (Heroic Strike/Cleave/Raptor Strike) disables your spell queue window.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "aeb421e299",
-   "date": "2026-09-17",
+   "id": "5c45ac5e09",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Taking damage while channeling Arcane Missiles will fire off a full damage bolt instead of a bolt with truncated damage.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "f4d308f4da",
-   "date": "2026-09-17",
+   "id": "54e8b4f9fa",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "Resurrection sickness’s duration is not correct at lower levels.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
   },
   {
-   "id": "3e2bbc9445",
-   "date": "2026-09-17",
+   "id": "d9a7686597",
+   "date": "2026-09-18",
    "kind": "Known issues",
-   "section": "Known Issues September 18, 2026",
+   "section": "Known issues",
    "path": [],
    "text": "This post will be updated as issues are resolved and/or added to this list.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687/1"
