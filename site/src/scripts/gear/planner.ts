@@ -6,6 +6,7 @@ import {
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
+import { drawFigure, type FigItem } from "./figure";
 
 // ---------- state ----------
 type Side = "H" | "A";
@@ -152,7 +153,6 @@ function suggest(): State["plan"] {
 }
 
 // ---------- character sheet ----------
-const QCOLOR = ["#9d9d9d", "#ffffff", "#1eff00", "#0070dd", "#a335ee", "#ff8000", "#e6cc80"];
 const LEFT: DollSlot[] = ["head", "neck", "shoulder", "back", "chest", "wrist"];
 const RIGHT: DollSlot[] = ["hands", "waist", "legs", "feet", "finger1", "finger2", "trinket1", "trinket2"];
 const BOTTOM: DollSlot[] = ["mainhand", "offhand", "ranged"];
@@ -183,58 +183,15 @@ function slotButton(d: DollSlot) {
   </button>`;
 }
 
-/** The figure in the middle: each body part takes the quality colour of the item in that slot. */
+/** The figure in the middle, drawn with each equipped item (see figure.ts). */
 function figure() {
   const gear = gearOf();
-  const item = (d: DollSlot) => (gear[d] ? byId.get(gear[d]!) : undefined);
-  const part = (d: DollSlot, path: string, extra = "") => {
-    const it = item(d);
-    return `<path class="part ${it ? "eq" : ""}" data-part="${d}" d="${path}" ${it ? `style="--c:${QCOLOR[it.q] || "#fff"}"` : ""} ${extra}/>`;
-  };
-  const mirror = (p: string) => p.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_, x, y) => `${200 - +x} ${y}`);
-  const mh = item("mainhand"), oh = item("offhand"), rg = item("ranged");
-  const wcol = (it?: Item) => (it ? QCOLOR[it.q] || "#fff" : "");
-  const weapon = (it: Item | undefined, side: "l" | "r", d: DollSlot) => {
-    if (!it) return "";
-    const x = side === "l" ? 38 : 162, s = side === "l" ? -1 : 1;
-    const t = it.type || "";
-    const c = `style="--c:${wcol(it)}" data-part="${d}" class="part eq wpn"`;
-    if (it.slot === "shield" || t === "shield") return `<path ${c} d="M${x + 8 * s} 196 L${x + 30 * s} 202 L${x + 28 * s} 228 Q${x + 19 * s} 246 ${x + 8 * s} 250 Q${x - 3 * s} 246 ${x - 12 * s} 228 L${x - 12 * s} 202 Z"/>`;
-    if (it.slot === "holdable") return `<circle ${c} cx="${x + 4 * s}" cy="198" r="10"/>`;
-    if (/staff|polearm/.test(t)) return `<path ${c} d="M${x - 3} 120 L${x + 3} 120 L${x + 6 * s + 2} 322 L${x + 6 * s - 4} 322 Z"/><circle ${c} cx="${x}" cy="118" r="7"/>`;
-    if (/axe/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 16 * s + 2} 300 L${x + 16 * s - 2} 300 Z M${x + 9 * s} 262 Q${x + 30 * s} 258 ${x + 30 * s} 282 Q${x + 18 * s} 280 ${x + 14 * s} 288 Z"/>`;
-    if (/mace/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 12 * s + 2} 284 L${x + 12 * s - 2} 284 Z"/><circle ${c} cx="${x + 14 * s}" cy="292" r="10"/>`;
-    if (/dagger|fist/.test(t)) return `<path ${c} d="M${x - 8} 218 L${x + 8} 218 L${x + 2} 222 L${x + 6 * s} 262 L${x - 4 * s} 222 Z"/>`;
-    if (/wand/.test(t)) return `<path ${c} d="M${x - 2} 214 L${x + 2} 214 L${x + 6 * s + 1} 248 L${x + 6 * s - 2} 248 Z"/>`;
-    return `<path ${c} d="M${x - 11} 218 L${x + 11} 218 L${x + 11} 223 L${x + 3} 223 L${x + 18 * s + 3} 304 L${x + 18 * s - 2} 308 L${x - 3} 223 L${x - 11} 223 Z"/>`;
-  };
-  const bow = rg ? (/wand|thrown|relic|idol|totem|libram/.test(rg.type || "") || rg.slot === "relic"
-    ? `<path class="part eq wpn" data-part="ranged" style="--c:${wcol(rg)}" d="M126 170 L131 168 L146 214 L141 216 Z"/>`
-    : /gun|crossbow/.test(rg.type || "")
-    ? `<path class="part eq wpn" data-part="ranged" style="--c:${wcol(rg)}" d="M150 78 L160 84 L72 236 L62 230 Z"/>`
-    : `<path class="part eq wpn bowp" data-part="ranged" style="--c:${wcol(rg)}" d="M154 70 Q196 150 132 252"/><path class="string" d="M154 70 L132 252"/>`) : "";
-  const armL = "M58 92 L44 150 L56 153 L68 100 Z M44 150 L36 200 L48 202 L56 153 Z";
-  return `<svg viewBox="0 0 200 340" class="figure-svg" role="img" aria-label="Your character, coloured by the quality of each equipped item">
-    <defs><radialGradient id="aura" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="var(--cls)" stop-opacity=".45"/><stop offset="1" stop-color="var(--cls)" stop-opacity="0"/></radialGradient></defs>
-    <ellipse cx="100" cy="160" rx="100" ry="170" fill="url(#aura)"/>
-    <ellipse cx="100" cy="318" rx="62" ry="9" fill="#000" opacity=".4"/>
-    ${bow}
-    ${part("back", "M66 84 L134 84 L150 252 Q100 266 50 252 Z")}
-    <path class="body" d="${armL}"/><path class="body" d="${mirror(armL)}"/>
-    ${part("legs", "M71 176 L98 176 L96 292 L78 292 Z M102 176 L129 176 L122 292 L104 292 Z")}
-    ${part("feet", "M75 290 L97 290 L99 308 L64 308 Q64 297 75 290 Z M103 290 L125 290 Q136 297 136 308 L101 308 Z")}
-    ${part("chest", "M70 78 Q100 70 130 78 L140 94 L132 168 L68 168 L60 94 Z")}
-    ${part("waist", "M68 164 L132 164 L131 180 L69 180 Z")}
-    <rect class="buckle" x="94" y="166" width="12" height="12" rx="2"/>
-    ${part("wrist", "M35 184 L49 186 L47 202 L33 200 Z " + mirror("M35 184 L49 186 L47 202 L33 200 Z"))}
-    ${part("hands", "M38 203a9 9 0 1 0 0.1 0 Z M162 203a9 9 0 1 0 0.1 0 Z")}
-    <path class="body" d="M92 60 L108 60 L108 76 L92 76 Z"/>
-    <circle class="body head" cx="100" cy="44" r="20"/>
-    ${item("head") ? part("head", "M77 48 Q77 19 100 19 Q123 19 123 48 L123 55 L114 52 L114 42 Q100 35 86 42 L86 52 L77 55 Z") : ""}
-    ${part("shoulder", "M44 92 Q46 74 64 74 Q78 76 80 88 Q70 98 46 100 Z " + mirror("M44 92 Q46 74 64 74 Q78 76 80 88 Q70 98 46 100 Z"))}
-    ${item("neck") ? part("neck", "M100 80 a5 5 0 1 0 0.1 0 Z") : ""}
-    ${weapon(mh, "l", "mainhand")}${weapon(oh && oh.slot !== "twohand" ? oh : undefined, "r", "offhand")}
-  </svg>`;
+  const items: Partial<Record<DollSlot, FigItem>> = {};
+  for (const d of PAPERDOLL) {
+    const it = gear[d] ? byId.get(gear[d]!) : undefined;
+    if (it) items[d] = { q: Number(it.q), type: it.type, slot: it.slot };
+  }
+  return drawFigure({ race: has(RACES, st.race) ? st.race : "human", body: st.body === "F" ? "F" : "M", gear: items });
 }
 
 function portraitIcon() {

@@ -38,7 +38,7 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
         <a class="btn" href="/bis/">Plan your gear</a>
         <a class="btn discord" href={SITE.discord} rel="noopener">Join the Discord</a>
       </div>
-      <p class="launch-count" data-launch={SITE.launch}><b>WoW Forever launches November 4.</b> <span class="cd"></span></p>
+      <p class="launch-count" data-names={SITE.names} data-launch={SITE.launch}><b>WoW Forever launches November 4.</b> <span class="cd"></span></p>
     </div>
   </section>
 
@@ -92,17 +92,23 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
   </section>
 </Base>
 <script>
-  const el = document.querySelector<HTMLElement>("[data-launch]");
+  // Countdown to the next launch phase, in the reader's own time zone.
+  const el = document.querySelector<HTMLElement>(".launch-count");
   if (el) {
-    const at = new Date(`${el.dataset.launch}T15:00:00Z`).getTime();
-    const tick = () => {
-      const ms = at - Date.now();
-      const cd = el.querySelector(".cd")!;
-      if (ms <= 0) { el.innerHTML = "<b>WoW Forever is live.</b> See you in Azeroth."; return; }
-      const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5);
-      cd.textContent = `${d} day${d === 1 ? "" : "s"} and ${h} hour${h === 1 ? "" : "s"} to go. Character creation opens October 27.`;
+    const names = Date.parse(el.dataset.names || ""), launch = Date.parse(el.dataset.launch || "");
+    const b = (s: string) => { const x = document.createElement("b"); x.textContent = s; return x; };
+    const span = (ms: number) => {
+      const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4);
+      return d ? `${d} day${d === 1 ? "" : "s"} and ${h} hour${h === 1 ? "" : "s"}` : `${h} hour${h === 1 ? "" : "s"} and ${m} minute${m === 1 ? "" : "s"}`;
     };
-    tick(); setInterval(tick, 60000);
+    const tick = () => {
+      const now = Date.now();
+      if (!Number.isFinite(launch)) return;
+      if (now >= launch) { el.replaceChildren(b("WoW Forever is live."), " See you in Azeroth."); return; }
+      if (now >= names) el.replaceChildren(b("Name reservation is open."), ` WoW Forever launches in ${span(launch - now)}.`);
+      else el.replaceChildren(b(`Name reservation opens in ${span(names - now)}.`), ` Launch is ${new Date(launch).toLocaleString(undefined, { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" })}.`);
+    };
+    tick(); setInterval(tick, 30000);
   }
 </script>
 <style>

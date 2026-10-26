@@ -352,11 +352,9 @@ def build_game_data():
                                       "desc": desc, "est": bool(est), "need": need})
                 forever.append({"cls": cname, "tree": tname, "name": name, "ranks": ranks, "row": row, "col": col,
                                 "est": bool(est), "spell": spell, "first": decode_desc(desc, 1),
-                                "max": decode_desc(desc, ranks)})
+                                "max": decode_desc(desc, ranks), "ref": tr["talents"][-1]})
             cl["trees"].append(tr)
         classes.append(cl)
-    (OUT / "talents.json").write_text(json.dumps({"build": g["builds"]["forever"], "hotfixes": g.get("hotfixes", False),
-                                                  "classes": classes}, separators=(",", ":")))
 
     def nums(s):
         return sorted(float(n) for n in re.findall(r"\d+(?:\.\d+)?", s or "") if float(n) != 0)
@@ -376,6 +374,7 @@ def build_game_data():
         if c and id(c) in used:
             c = None
         if not c:
+            f["ref"]["new"] = True
             changes.append({"cls": f["cls"], "tree": f["tree"], "name": f["name"], "kinds": ["new"],
                             "forever": f["max"], "foreverRanks": f["ranks"], "est": f["est"] and f["first"] != f["max"],
                             "tier": f["row"] + 1})
@@ -402,6 +401,8 @@ def build_game_data():
                         "kinds": kinds, "classic": c["text"], "classicRanks": c["ranks"], "forever": f["max"],
                         "foreverRanks": f["ranks"], "est": f["est"] and f["first"] != f["max"],
                         "tier": f["row"] + 1, "classicTier": c["row"] + 1})
+    (OUT / "talents.json").write_text(json.dumps({"build": g["builds"]["forever"], "hotfixes": g.get("hotfixes", False),
+                                                  "classes": classes}, separators=(",", ":")))
     for c in classic:
         if id(c) not in used:
             changes.append({"cls": c["cls"], "tree": c["tree"], "name": c["name"], "kinds": ["removed"], "classic": c["text"]})

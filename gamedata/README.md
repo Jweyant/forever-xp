@@ -1,9 +1,29 @@
 # Game client data
 
+## talents.json
+
+The talent calculator and the datamined talent changes, built daily by `tools/build_talents.py`
+(the **Talent data** workflow) from [wago.tools](https://wago.tools):
+
+- **Forever talents** come from the client's trait tables (TraitTree, TraitNode, TraitNodeEntry,
+  TraitDefinition, TraitEdge for the arrows, TraitCond for points needed, and the curves that give
+  each rank's numbers), with Blizzard's server hotfixes for the build applied on top. WoW Forever
+  doesn't use the classic `Talent` table; that table in the client still holds Classic Era's talents.
+- **Classic Era talents** come from the Classic Era client's `Talent` table, for comparison.
+- `talents`: `[classId, class, [[tabId, tree, treeIcon, [[nodeId, row, col, name, ranks,
+  prereqNodeId, prereqRank, icon, text, estimated, pointsNeeded, spellId], ...]], ...]]`.
+  `text` is `[template, values-per-rank]`, `[text, 0]` when every rank reads the same, or `[[rank texts]]`.
+- `report`: what the build noticed (hotfixes applied, nodes outside the trees, tooltip values that
+  depend on your character's stats and show as "?").
+
+## client-<build>.json
+
 `client-<build>.json` is read from the WoW Forever and Classic Era game client tables
 (Talent, TalentTab, ChrClasses, Spell, SpellName, SpellEffect, SpellMisc, SpellDuration,
 SpellRadius, SpellAuraOptions, ItemSparse, QuestV2) via [wago.tools](https://wago.tools).
-`tools/site_data.py` turns it into the talent calculator and the Forever vs Classic changes page.
+Its `talents` and `classic` lists are the old talent-table reading and are no longer used (see
+talents.json); `tools/site_data.py` still takes the item, quest and spell counts (`stats`) and
+`epics` from it.
 
 - `talents`: per class, tree and talent: `[id, tier, column, name, ranks, prereqId, prereqRank, icon, text, estimated]`.
   `text` is `[template, values-per-rank]`, `[text, 0]` when every rank reads the same, or `[[rank texts]]`.
