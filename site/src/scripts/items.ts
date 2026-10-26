@@ -7,6 +7,8 @@ export const ICON = (n: string, size = 56) =>
   `https://render.worldofwarcraft.com/us/icons/${[18, 36, 56].includes(size) ? size : 56}/${String(n).toLowerCase().replace(/[^a-z0-9_-]/g, "")}.jpg`;
 // Set bonus and effect text from the client can hold unresolved spell variables ($s1, $/1000;s1).
 export const cleanFx = (s: string) => s.replace(/\$\/?\d*;?[a-zA-Z]+\d*/g, "?").replace(/ for \./g, ".").replace(/\s{2,}/g, " ");
+/** A finite number or 0, for numeric fields that come from data files. */
+export const num = (v: unknown) => (Number.isFinite(Number(v)) ? Number(v) : 0);
 export const esc = (s: string) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 export type ItemSet = { name: string; bonuses: { n: number; stats: Stats; text: string }[] };
 export interface GearDb { build: string; items: Item[]; sets: Record<string, ItemSet> }
@@ -40,32 +42,32 @@ const cap = (s: string) => s.replace(/[12]$/, "").replace(/^./, (c) => c.toUpper
 
 /** Tooltip body for an item, in the game's layout. `extra` lines go at the bottom. */
 export function tooltipHtml(it: Item, sets: Record<string, ItemSet> = {}, extra: string[] = []) {
-  const q = QUALITY[it.q] || "common";
+  const q = QUALITY[num(it.q)] || "common";
   const L: string[] = [];
   L.push(`<div class="tt-head"><span class="ico qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon))}" alt="">` : ""}</span>
-    <div><p class="tt-name q-${q}">${esc(it.name)}</p><p class="tt-muted">Item level ${it.ilvl}</p></div></div>`);
+    <div><p class="tt-name q-${q}">${esc(it.name)}</p><p class="tt-muted">Item level ${num(it.ilvl)}</p></div></div>`);
   if (it.bop) L.push(`<p>Binds when picked up</p>`);
   const slot = SLOT_NAME[it.slot] || cap(it.slot || "");
   const type = it.type && it.type !== "misc" ? cap(it.type) : "";
   if (slot || type) L.push(`<p class="tt-row"><span>${esc(slot)}</span><span>${esc(type)}</span></p>`);
-  if (it.weapon) L.push(`<p class="tt-row"><span>${it.weapon.min} – ${it.weapon.max} Damage</span><span>Speed ${it.weapon.speed.toFixed(2)}</span></p><p>(${it.weapon.dps} damage per second)</p>`);
-  if (it.stats.armor) L.push(`<p>${it.stats.armor} Armor</p>`);
+  if (it.weapon) L.push(`<p class="tt-row"><span>${num(it.weapon.min)} – ${num(it.weapon.max)} Damage</span><span>Speed ${num(it.weapon.speed).toFixed(2)}</span></p><p>(${num(it.weapon.dps)} damage per second)</p>`);
+  if (it.stats.armor) L.push(`<p>${num(it.stats.armor)} Armor</p>`);
   const primary = ["str", "agi", "sta", "int", "spi"];
-  for (const k of primary) if (it.stats[k]) L.push(`<p>+${it.stats[k]} ${STAT_LABEL[k]}</p>`);
+  for (const k of primary) if (it.stats[k]) L.push(`<p>+${num(it.stats[k])} ${STAT_LABEL[k]}</p>`);
   for (const [k, v] of Object.entries(it.stats)) {
     if (primary.includes(k) || k === "armor" || k === "dps") continue;
-    L.push(`<p class="tt-green">Equip: ${k.endsWith("_pct") ? `Improves ${STAT_LABEL[k]?.replace(" %", "") || k} by ${v}%` : `+${v} ${STAT_LABEL[k] || k}`}.</p>`);
+    L.push(`<p class="tt-green">Equip: ${k.endsWith("_pct") ? `Improves ${esc(STAT_LABEL[k]?.replace(" %", "") || k)} by ${num(v)}%` : `+${num(v)} ${esc(STAT_LABEL[k] || k)}`}.</p>`);
   }
   for (const f of it.fx || []) L.push(`<p class="tt-green">${f.on === "use" ? "Use" : f.on === "hit" ? "Chance on hit" : "Equip"}: ${esc(cleanFx(f.text))}</p>`);
   if (it.set && sets[it.set]) {
     const s = sets[it.set];
     L.push(`<p class="tt-gold">${esc(s.name)}</p>`);
     for (const b of s.bonuses) {
-      const txt = b.text || Object.entries(b.stats).map(([k, v]) => `+${v} ${STAT_LABEL[k] || k}`).join(", ");
-      if (txt) L.push(`<p class="tt-muted">(${b.n}) Set: ${esc(cleanFx(txt))}</p>`);
+      const txt = b.text || Object.entries(b.stats).map(([k, v]) => `+${num(v)} ${STAT_LABEL[k] || k}`).join(", ");
+      if (txt) L.push(`<p class="tt-muted">(${num(b.n)}) Set: ${esc(cleanFx(txt))}</p>`);
     }
   }
-  if (it.req) L.push(`<p>Requires Level ${it.req}</p>`);
+  if (it.req) L.push(`<p>Requires Level ${num(it.req)}</p>`);
   L.push(`<p class="tt-src">${esc(srcText(it))}</p>`);
   return L.concat(extra).join("");
 }
@@ -81,3 +83,6 @@ export function placeTip(tip: HTMLElement, anchor: Element) {
   y = Math.max(8, Math.min(y, vh - h - 8));
   tip.style.left = `${x}px`; tip.style.top = `${y}px`;
 }
+
+/** JSON for a <script type="application/json"> block: no "</script>" or HTML comment can break out. */
+export const jsonForHtml = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");

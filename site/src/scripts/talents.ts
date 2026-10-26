@@ -6,7 +6,7 @@ interface Tree { id: number; name: string; talents: T[] }
 interface Cls { id: number; name: string; slug: string; trees: Tree[] }
 
 const POINTS_PER_TIER = 5;
-const ICON = (n: string) => `https://render.worldofwarcraft.com/us/icons/56/${n}.jpg`;
+const ICON = (n: string) => `https://render.worldofwarcraft.com/us/icons/56/${String(n).toLowerCase().replace(/[^a-z0-9_-]/g, "")}.jpg`;
 
 function fmt(v: number) { v = Math.abs(v); return Number.isInteger(v) ? String(v) : String(+v.toFixed(2)); }
 function text(d: Desc, rank: number) {
@@ -103,10 +103,10 @@ function build() {
   grid.innerHTML = cls.trees.map((tr, i) => {
     const rows = Math.max(7, ...tr.talents.map((t) => t.row + 1));
     const cells = tr.talents.map((t, k) => {
-      const icon = t.icon ? `<img src="${ICON(t.icon)}" alt="" loading="lazy" width="40" height="40" onerror="this.remove()">` : "";
-      return `<button type="button" class="tal" data-k="${k}" style="grid-row:${t.row + 1};grid-column:${t.col + 1}" title="${esc(t.name)}">${icon}<span class="ini" aria-hidden="true">${esc(t.name.slice(0, 2))}</span><b>0/${t.ranks}</b></button>`;
+      const icon = t.icon ? `<img src="${esc(ICON(t.icon))}" alt="" loading="lazy" width="40" height="40">` : "";
+      return `<button type="button" class="tal" data-k="${k}" style="grid-row:${Number(t.row) + 1};grid-column:${Number(t.col) + 1}" title="${esc(t.name)}">${icon}<span class="ini" aria-hidden="true">${esc(t.name.slice(0, 2))}</span><b>0/${Number(t.ranks)}</b></button>`;
     }).join("");
-    return `<section class="tree" data-tree="${i}"><h2>${esc(tr.name)} <span data-spent>0</span></h2><div class="grid" style="grid-template-rows:repeat(${rows},48px)">${cells}</div></section>`;
+    return `<section class="tree" data-tree="${i}"><h2>${esc(tr.name)} <span data-spent>0</span></h2><div class="grid" style="grid-template-rows:repeat(${Number(rows)},48px)">${cells}</div></section>`;
   }).join("");
   grid.querySelectorAll<HTMLElement>(".tree").forEach((sec) => {
     const i = +sec.dataset.tree!;
