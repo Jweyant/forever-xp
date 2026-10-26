@@ -43,6 +43,10 @@ import { ICON } from "../config";
           <button type="button" class="btn" id="g-suggest">Suggest best in slot</button>
           <button type="button" class="btn secondary" id="g-keep">Reset plan to current</button>
           <button type="button" class="btn secondary" id="g-copy">Copy plan link</button>
+        <div class="save-plan" data-save-plan="bis" hidden>
+          <form><label class="sr" for="save-name">Name</label><input id="save-name" maxlength="60" placeholder="Name this plan" autocomplete="off" /><button type="submit" class="btn secondary">Save to my account</button></form>
+          <a class="small" data-save-signin hidden>Sign in with Discord to save this plan</a>
+        </div>
         </div>
         <details class="sources">
           <summary>Where items can come from</summary>
@@ -101,7 +105,7 @@ import { ICON } from "../config";
   </ul>
   <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs. Item and character portrait icons are Blizzard's; the character figure is drawn for this site.</p>
 </Base>
-<script>import "../scripts/gear/planner.ts";</script>
+<script>import "../scripts/gear/planner.ts"; import { mountSave } from "../scripts/saveplan"; mountSave();</script>
 
 <style is:global>
   #gear .classbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.2rem; }

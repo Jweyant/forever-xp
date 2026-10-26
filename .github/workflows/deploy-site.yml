@@ -76,5 +76,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Run from site/ so Pages picks up site/functions (the accounts API at /api/*).
+          workingDirectory: site
           preCommands: npx wrangler pages project create forever-xp --production-branch main || true
-          command: pages deploy site/dist --project-name forever-xp --branch ${{ github.head_ref || github.ref_name }}
+          command: pages deploy dist --project-name forever-xp --branch ${{ github.head_ref || github.ref_name }}

@@ -1,0 +1,41 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Your account" description="Your saved BIS plans and talent builds on Forever XP." noindex>
+  <h1>Your account</h1>
+  <div id="acct-page">
+    <p class="muted" data-state>Checking whether you're signed in…</p>
+
+    <section data-signed-in hidden>
+      <p>Signed in with Discord as <b data-name></b>. We keep your Discord user ID, this name and the plans you save. Nothing else.</p>
+      <h2>Saved plans</h2>
+      <p class="muted" data-empty hidden>Nothing saved yet. Use <b>Save to my account</b> in the <a href="/bis/">BIS planner</a> or a <a href="/talents/">talent calculator</a>.</p>
+      <div class="table-scroll">
+        <table data-table hidden>
+          <thead><tr><th>Name</th><th>Kind</th><th>Saved</th><th></th></tr></thead>
+          <tbody data-plans></tbody>
+        </table>
+      </div>
+      <h2>Account</h2>
+      <p class="actions">
+        <button type="button" class="btn secondary" data-signout>Sign out</button>
+        <button type="button" class="btn danger" data-delete>Delete my account</button>
+      </p>
+      <p class="small muted" data-delete-note hidden>This removes your account, your sessions and every saved plan, right away. Click <b>Delete everything</b> to confirm.</p>
+    </section>
+
+    <section data-signed-out hidden>
+      <p>Sign in with Discord to keep your BIS plans and talent builds on any device. We only ask Discord for your user ID and name.</p>
+      <p><a class="btn" data-signin href="/api/auth/login?return=/account/">Sign in with Discord</a></p>
+    </section>
+  </div>
+</Base>
+<script>import "../scripts/accountpage.ts";</script>
+
+<style>
+  #acct-page .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  #acct-page .btn.danger { background: var(--skip); color: #fff; border-color: var(--skip); }
+  #acct-page td.kind { color: var(--muted); }
+  #acct-page td.when { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #acct-page button.link { background: none; border: 0; color: var(--skip); cursor: pointer; font: inherit; padding: 0; text-decoration: underline; }
+</style>

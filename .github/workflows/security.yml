@@ -45,6 +45,9 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run test:security
+      - name: Accounts API tests
+        working-directory: site
+        run: npm run test:api
 
   uploader:
     name: Uploader security

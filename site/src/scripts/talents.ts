@@ -1,5 +1,7 @@
 // Talent calculator. Reads the class data embedded in #talent-data, renders three trees,
 // and keeps the build in the URL hash (one digit per talent, trees separated by "-").
+import { afterSignIn } from "./account";
+afterSignIn(); // put back a build the sign-in round trip dropped from the address
 type Desc = [string, 0 | number[][]] | [string[]];
 interface T { id: number; row: number; col: number; name: string; ranks: number; req: number | null; reqRank: number | null; icon: string | null; desc: Desc; est: boolean; need?: number; new?: boolean }
 interface Tree { id: number; name: string; icon?: string | null; talents: T[] }

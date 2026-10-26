@@ -8,7 +8,8 @@ and how it could be abused; before pushing, run the checks below.
 
 1. **Everything from outside is untrusted**: the address bar (path, query, hash), browser storage,
    form fields and pasted text (the gear import), uploaded player logs, and third-party data
-   (Questie, the game client, cmangos, AtlasLoot, Blizzard's forum posts, Discord's API).
+   (Questie, the game client, cmangos, AtlasLoot, Blizzard's forum posts, Discord's API), and
+   anything the accounts API stores or returns (plan names and data are shown with textContent).
 2. **Allow-list, don't block-list.** Check a value against the exact set it may be, using own-key
    checks (`Object.prototype.hasOwnProperty.call`, the planner's `has()`), never a plain
    `obj[key]` truthiness test, which lets `constructor` and `__proto__` through.
@@ -39,6 +40,7 @@ and how it could be abused; before pushing, run the checks below.
 cd site
 npm run data && npm run build          # also writes dist/_headers with the CSP
 npm run test:security                  # hostile-input browser test, must pass
+npm run test:api                       # accounts API tests (sessions, CSRF, validation)
 npm audit --audit-level=high           # must be clean
 ```
 
@@ -56,6 +58,7 @@ reviewed pull request with those checks green.
 ## Repo map
 
 - `site/` Astro site (Cloudflare Pages). `src/scripts/` client code, `tests/security.mjs` hostile-input test.
+  `site/api/app.js` the accounts API (Pages Function at `/api/*`, D1, Discord sign-in), `site/api/schema.sql`.
 - `server/` upload Worker (Cloudflare). `uploader/` desktop uploader (Go). `addon/` ForeverScout.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits.
   `tools/build_talents.py` reads Forever's talent trees (trait tables + hotfixes) from wago.tools.
