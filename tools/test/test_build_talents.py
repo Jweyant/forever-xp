@@ -126,6 +126,12 @@ def trait_tables():
         nxe.append({"ID": str(node), "TraitNodeID": str(node), "TraitNodeEntryID": str(node * 10), "_Index": "0"})
         groups.append({"ID": str(node), "TraitNodeGroupID": f"g{row}", "TraitNodeID": str(node)})
     gconds = [{"ID": "1", "TraitCondID": "c2", "TraitNodeGroupID": "g2"}, {"ID": "2", "TraitCondID": "c1", "TraitNodeGroupID": "g1"}]
+    tabs = []
+    # Only the Warrior tree has talents in this fixture; the other classes get tabs and one empty node.
+    for cid in bt.CLASS_NAME:
+        if cid != 1:
+            tabs += [{"ID": f"{cid}{k}", "Name_lang": f"T{k}", "ClassMask": str(1 << (cid - 1)), "OrderIndex": str(k)} for k in range(3)]
+            nodes.append({"ID": f"n{cid}", "TraitTreeID": f"t{cid}", "PosX": str(bt.LEFT), "PosY": "2130"})
     return {
         "TraitTree": [{"ID": "1117"}], "TraitNode": nodes, "TraitNodeEntry": entries, "TraitDefinition": defs,
         "TraitNodeXTraitNodeEntry": nxe, "TraitNodeGroupXTraitNode": groups, "TraitNodeGroupXTraitCond": gconds,
@@ -138,18 +144,13 @@ def trait_tables():
                                 for i, (s, c) in enumerate(bt.SKILL_CLASS.items())],
         "TalentTab": [{"ID": "161", "Name_lang": "Arms", "ClassMask": "1", "OrderIndex": "0"},
                       {"ID": "164", "Name_lang": "Fury", "ClassMask": "1", "OrderIndex": "1"},
-                      {"ID": "163", "Name_lang": "Protection", "ClassMask": "1", "OrderIndex": "2"}],
+                      {"ID": "163", "Name_lang": "Protection", "ClassMask": "1", "OrderIndex": "2"}] + tabs,
     }
 
 
 class ForeverTrees(unittest.TestCase):
     def test_warrior_tree(self):
         T = trait_tables()
-        # Only the Warrior tree has nodes in this fixture; give the other classes tabs and no nodes.
-        for cid in bt.CLASS_NAME:
-            if cid != 1:
-                T["TalentTab"] += [{"ID": f"{cid}{k}", "Name_lang": f"T{k}", "ClassMask": str(1 << (cid - 1)), "OrderIndex": str(k)} for k in range(3)]
-                T["TraitNode"].append({"ID": f"n{cid}", "TraitTreeID": f"t{cid}", "PosX": str(bt.LEFT), "PosY": "2130"})
         report = []
         out = bt.forever_talents(T, spells(), {78: "spell_nature_bloodlust"}, report)
         war = out[0]
@@ -173,9 +174,17 @@ class ForeverTrees(unittest.TestCase):
 
     def test_off_grid_node_fails_loudly(self):
         T = trait_tables()
-        T["TraitNode"][0]["PosX"] = "99999"
-        with self.assertRaises(SystemExit):
+        T["TraitNode"][0]["PosX"] = str(bt.LEFT + 2 * bt.SECTION + 5 * bt.GRID)
+        with self.assertRaises(SystemExit) as e:
             bt.forever_talents(T, spells(), {}, [])
+        self.assertIn("off the 3x4 grid", str(e.exception))
+
+    def test_parked_node_is_skipped(self):
+        T = trait_tables()
+        T["TraitNode"].append({"ID": "99", "TraitTreeID": "1117", "PosX": "102800", "PosY": "5740"})
+        report = []
+        bt.forever_talents(T, spells(), {}, report)
+        self.assertTrue(any("outside the three trees" in r for r in report))
 
 
 if __name__ == "__main__":

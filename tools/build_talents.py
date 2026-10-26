@@ -606,7 +606,11 @@ def forever_talents(T, S, icons, report):
             sec = (x - LEFT + GRID) // SECTION
             col = round((x - LEFT - sec * SECTION) / GRID)
             row = round((y - top) / GRID)
-            if not (0 <= sec < 3 and 0 <= col <= 3 and 0 <= row <= 10):
+            if not 0 <= sec < 3:
+                # Nodes parked far outside the three trees aren't shown in the game's talent frame.
+                report.append(f"{cname}: node {n['ID']} at ({x},{y}) is outside the three trees; skipped")
+                continue
+            if not (0 <= col <= 3 and 0 <= row <= 10):
                 raise SystemExit(f"{cname}: node {n['ID']} at ({x},{y}) is off the 3x4 grid")
             ents = [entries[e] for e in node_entries.get(n["ID"], []) if e in entries]
             if not ents:
