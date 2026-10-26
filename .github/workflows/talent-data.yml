@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data]
-    paths: ["tools/build_talents.py", ".github/workflows/talent-data.yml"]
+    paths: ["tools/build_talents.py", "tools/push_data.sh", ".github/workflows/talent-data.yml"]
   pull_request:
     paths: ["tools/build_talents.py", "tools/test/test_build_talents.py", "tools/site_data.py", ".github/workflows/talent-data.yml"]
 
