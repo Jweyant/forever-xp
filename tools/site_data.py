@@ -129,6 +129,20 @@ def parse_report(path):
     }
 
 
+SLOT_NAME = {"head": "Head", "neck": "Neck", "shoulder": "Shoulder", "back": "Back", "chest": "Chest", "wrist": "Wrist",
+             "hands": "Hands", "waist": "Waist", "legs": "Legs", "feet": "Feet", "finger": "Ring", "trinket": "Trinket",
+             "mainhand": "Main hand", "offhand": "Off hand", "onehand": "One-hand", "twohand": "Two-hand",
+             "ranged": "Ranged", "relic": "Relic", "shield": "Shield", "holdable": "Held in off hand"}
+
+
+def write_item_index(gear, pub):
+    """Compact search index: [id, name, quality, icon, slot, item level]."""
+    g = json.loads(gear.read_text())
+    idx = [[i["id"], i["name"], i.get("q", 1), i.get("icon", ""), SLOT_NAME.get(i.get("slot"), (i.get("slot") or "").title()),
+            i.get("ilvl", 0)] for i in g["items"]]
+    (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
+
+
 def write_questdb(gear):
     """Every Forever quest from Questie (gamedata/quests.json), with reward item quality and icons
     joined from the gear database, for quest pages and the client-side quest search."""
@@ -150,8 +164,8 @@ def write_questdb(gear):
                     r["icon"] = it["icon"]
     (OUT / "questdb.json").write_text(json.dumps(qdb, separators=(",", ":"), ensure_ascii=False))
     # Compact search index: [id, name, level, zone, side, start npc]
-    idx = [[q["id"], q["n"], q.get("lv") or 0, q.get("z", ""), q.get("side", ""), (q.get("start") or {}).get("n", "")]
-           for q in qdb]
+    idx = [[q["id"], q["n"], q.get("lv") or 0, q.get("z", ""), q.get("side", ""), (q.get("start") or {}).get("n", ""),
+            q.get("new", 0)] for q in qdb]
     pub = ROOT / "site" / "public" / "data"
     pub.mkdir(parents=True, exist_ok=True)
     (pub / "quest-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
@@ -276,6 +290,12 @@ def main():
         pub = ROOT / "site" / "public" / "data"
         pub.mkdir(parents=True, exist_ok=True)
         (pub / "items.json").write_bytes(gear.read_bytes())
+        (OUT / "items.json").write_bytes(gear.read_bytes())
+        write_item_index(gear, pub)
+    else:
+        (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
+    notes = ROOT / "gamedata" / "blizzard-notes.json"
+    (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[]}')
     write_questdb(gear)
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))

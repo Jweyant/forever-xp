@@ -11,10 +11,11 @@ const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.
 <Base title={`${z.name} quests`} description={`All ${z.count} WoW Forever quests in ${z.name}${z.max ? `, levels ${z.min} to ${z.max}` : ""}, with quest givers, coordinates and rewards.`}>
   <p class="crumbs"><a href="/quests/">Quests</a> / {z.name}</p>
   <h1>{z.name} quests</h1>
-  <p class="lede">{z.count} quests{z.max ? `, levels ${z.min} to ${z.max}` : ""}. Sort any column or filter by name.</p>
+  <p class="lede">{z.count} quests{z.max ? `, levels ${z.min} to ${z.max}` : ""}{list.some((q) => q.new) ? `, ${list.filter((q) => q.new).length} of them new in Forever` : ""}. Sort any column or filter by name.</p>
   <div class="filters">
     <label>Search<input type="search" data-filter="text" data-for="zt" placeholder="Quest or NPC name" /></label>
     <label>Faction<select data-filter="side" data-for="zt"><option value="">Either</option><option value="h">Horde</option><option value="a">Alliance</option><option value="both">Both factions</option></select></label>
+    <label>Show<select data-filter="new" data-for="zt"><option value="">All quests</option><option value="new">New in Forever</option></select></label>
     <span class="muted small" data-count-for="zt" aria-live="polite"></span>
   </div>
   <div class="table-scroll tall">
@@ -29,9 +30,9 @@ const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.
       </tr></thead>
       <tbody>
         {list.map((q) => { const s = questById.get(q.id); return (
-          <tr data-search={`${q.n} ${q.start?.n ?? ""} ${q.id}`.toLowerCase()} data-side={q.side ? q.side.toLowerCase() : "both"}>
+          <tr data-search={`${q.n} ${q.start?.n ?? ""} ${q.id}`.toLowerCase()} data-side={q.side ? q.side.toLowerCase() : "both"} data-new={q.new ? "new" : "old"}>
             <td class="num" data-v={q.lv}>{q.lv > 0 ? q.lv : "–"}</td>
-            <td data-v={q.n}><a href={`/quests/${q.id}/`}>{q.n}</a>{q.rew?.length ? <span class="rw" title="Has item rewards"> ◆</span> : null}</td>
+            <td data-v={q.n}><a href={`/quests/${q.id}/`}>{q.n}</a>{q.new && <span class="tag-new">NEW</span>}{q.rew?.length ? <span class="rw" title="Has item rewards"> ◆</span> : null}</td>
             <td class="opt">{q.start ? <>{q.start.n}{q.start.x != null ? <span class="muted small"> {q.start.x}, {q.start.y}</span> : null}</> : "–"}</td>
             <td class="opt">{q.side ? SIDE_LABEL[q.side] : "Both"}</td>
             <td class="num opt" data-v={q.xp ?? ""}>{q.xp ?? "–"}</td>
@@ -43,7 +44,6 @@ const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.
 </Base>
 <script>import "../../../scripts/table.ts";</script>
 <style>
-  .crumbs { color: var(--muted); font-size: var(--step--1); margin-bottom: 0.3rem; }
   .tall { max-height: 75vh; }
   .rw { color: var(--quest-bright); }
 </style>

@@ -193,14 +193,43 @@ def parse_post(cooked, base):
     return rows
 
 
+SECTION_NAMES = {"bugfixes": "Bug fixes", "bug fixes": "Bug fixes", "changes and updates": "Changes and updates",
+                 "user interface": "User interface", "player versus player": "PvP", "pvp": "PvP",
+                 "legacy system": "Legacy system", "cooldown manager": "Cooldown manager",
+                 "gamepad support": "Gamepad support", "resolved issues": "Resolved issues"}
+DATE_IN = re.compile(r"(January|February|March|April|May|June|July|August|September|October|November|December) (\d{1,2})(?:, (20\d\d))?")
+
+
+def normalize(r):
+    section, path = r["section"] or r["kind"], list(r["path"])
+    if section == r["kind"] and path:           # notes without top-level headings
+        section, path = path[0], path[1:]
+    if section in CLASSES:                       # class-only threads ("Warrior Updates")
+        section, path = "Classes", [section] + path
+    if r["kind"] == "Known issues":
+        m = DATE_IN.search(section)
+        if m:
+            year = m.group(3) or r["date"][:4]
+            r["date"] = time.strftime("%Y-%m-%d", time.strptime(f"{m.group(1)} {m.group(2)} {year}", "%B %d %Y"))
+        section = "Known issues"
+    r["section"] = SECTION_NAMES.get(section.lower(), section[:1].upper() + section[1:])
+    r["path"] = path
+    return r
+
+
 def finish(rows):
-    out, seen = [], set()
-    for r in rows:
+    out, seen = [], {}
+    # Oldest first, so a change repeated in a later post keeps its first date.
+    for r in sorted((normalize(r) for r in rows), key=lambda r: r["date"]):
         cls, race, spec = tag_for(r["path"], r["text"])
-        key = hashlib.sha1(f'{r["kind"]}|{r["date"]}|{"/".join(r["path"])}|{r["text"]}'.encode()).hexdigest()[:10]
-        if key in seen:
+        if race and r["section"] == "Changes and updates":
+            r["section"] = "Races"
+        norm = re.sub(r"[^a-z0-9]+", " ", r["text"].lower()).strip()
+        dup = f'{r["kind"]}|{cls}|{norm}'
+        if dup in seen:
             continue
-        seen.add(key)
+        key = hashlib.sha1(f'{r["kind"]}|{r["date"]}|{"/".join(r["path"])}|{r["text"]}'.encode()).hexdigest()[:10]
+        seen[dup] = key
         row = {"id": key, "date": r["date"], "kind": r["kind"], "section": r["section"], "path": r["path"],
                "text": r["text"], "url": r["url"]}
         for k, v in (("cls", cls), ("race", race), ("spec", spec)):

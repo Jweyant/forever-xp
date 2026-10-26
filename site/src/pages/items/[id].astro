@@ -1,0 +1,83 @@
+---
+import Base from "../../layouts/Base.astro";
+import Comments from "../../components/Comments.astro";
+import { gear, itemById, rewardedBy, setItems } from "../../lib/gear";
+import { qById } from "../../lib/questdb";
+import { tooltipHtml, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
+import type { Item } from "../../scripts/gear/model";
+
+export function getStaticPaths() {
+  return gear.items.map((it) => ({ params: { id: String(it.id) }, props: { it } }));
+}
+const { it } = Astro.props as { it: Item };
+const q = QUALITY[it.q] || "common";
+const slot = SLOT_NAME[it.slot] || it.slot;
+const quests = rewardedBy.get(it.id) || [];
+const srcs = (it.src || []).filter((s) => !(s.t === "quest" && s.qid && quests.some((x) => x.id === s.qid)));
+const set = it.set ? gear.sets[it.set] : null;
+const siblings = it.set ? (setItems.get(it.set) || []).filter((x) => x.id !== it.id) : [];
+const similar = gear.items
+  .filter((x) => x.id !== it.id && x.slot === it.slot && x.q >= 2 && Math.abs(x.ilvl - it.ilvl) <= 4 && (!it.type || x.type === it.type))
+  .sort((a, b) => b.ilvl - a.ilvl || b.q - a.q).slice(0, 8);
+const qualityName = ["Poor", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Artifact"][it.q] || "";
+const desc = `${it.name}: ${qualityName.toLowerCase()} ${slot.toLowerCase()} ${it.type && it.type !== "misc" ? it.type.replace(/[12]$/, "") : ""}, item level ${it.ilvl}${it.req ? `, requires level ${it.req}` : ""}, in WoW Forever. Stats and where to get it.`;
+const kindName = (t: string) => SRC_LABEL[t] || t;
+---
+<Base title={`${it.name}`} description={desc}>
+  <p class="crumbs"><a href="/items/">Items</a> / <a href={`/items/?slot=${it.slot}`}>{slot}</a></p>
+  <div class="ihead">
+    <span class={`ico lg qb-${q}`}>{it.icon && <img src={ICON(it.icon)} alt="" width="58" height="58" />}</span>
+    <div>
+      <h1 class={`q-${q}`}>{it.name}</h1>
+      <p class="muted">{qualityName} {slot.toLowerCase()}{it.type && it.type !== "misc" ? `, ${it.type.replace(/[12]$/, "")}` : ""}. Item level {it.ilvl}{it.req ? `, requires level ${it.req}` : ""}. Item ID {it.id}.</p>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="wowtip static" set:html={tooltipHtml(it, gear.sets)} />
+    <div>
+      <h2>Where to get it</h2>
+      {srcs.length === 0 && quests.length === 0 && <p class="muted">No known source yet. If you loot one with <a href="/scout/">ForeverScout</a> running, the source shows up here.</p>}
+      <ul class="srcs">
+        {quests.map((x) => (
+          <li><span class="k">Quest</span><a href={`/quests/${x.id}/`}>{x.n}</a> <span class="muted">level {x.lv > 0 ? x.lv : "?"}, {x.z}{x.side ? `, ${x.side === "H" ? "Horde" : "Alliance"}` : ""}</span></li>
+        ))}
+        {srcs.map((s) => (
+          <li><span class="k">{kindName(s.t)}</span>
+            {s.qid && qById.has(s.qid) ? <a href={`/quests/${s.qid}/`}>{s.n}</a> : <b>{s.n || kindName(s.t)}</b>}
+            <span class="muted">{[s.z, s.boss ? "boss" : "", s.ch ? `${s.ch}% drop chance` : ""].filter(Boolean).join(", ")}</span></li>
+        ))}
+      </ul>
+      <p><a class="btn secondary" href="/bis/">Plan your gear in the BIS planner</a></p>
+    </div>
+  </div>
+
+  {set && (<>
+    <h2>{set.name}</h2>
+    <ul class="ilist">
+      {siblings.map((x) => <li><a class="ilink" href={`/items/${x.id}/`} data-item={x.id}><span class={`ico sm qb-${QUALITY[x.q]}`}>{x.icon && <img src={ICON(x.icon, 36)} alt="" loading="lazy" />}</span><span class={`iname-t q-${QUALITY[x.q]}`}>{x.name}</span></a></li>)}
+    </ul>
+  </>)}
+
+  {similar.length > 0 && (<>
+    <h2>Similar {slot.toLowerCase()} items</h2>
+    <ul class="ilist">
+      {similar.map((x) => <li><a class="ilink" href={`/items/${x.id}/`} data-item={x.id}><span class={`ico sm qb-${QUALITY[x.q]}`}>{x.icon && <img src={ICON(x.icon, 36)} alt="" loading="lazy" />}</span><span class={`iname-t q-${QUALITY[x.q]}`}>{x.name}</span></a> <span class="muted small">item level {x.ilvl}</span></li>)}
+    </ul>
+  </>)}
+  <p class="small muted">Stats from the Forever game client (build {gear.build}). Sources from Questie's Forever database, AtlasLoot Classic, cmangos classic-db and ForeverScout loot logs.</p>
+  <Comments />
+</Base>
+<style>
+  .ihead { display: flex; gap: 1rem; align-items: center; margin-bottom: 1.2rem; }
+  .ihead h1 { margin: 0 0 0.2rem; font-size: var(--step-3); }
+  .ihead p { margin: 0; }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem 2.5rem; align-items: start; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; } }
+  .wowtip.static { position: static; width: auto; pointer-events: auto; }
+  .layout h2 { margin-top: 0; font-size: var(--step-2); }
+  .srcs { list-style: none; padding: 0; }
+  .srcs li { padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
+  .srcs .k { display: inline-block; min-width: 5.5rem; font: 600 0.8rem var(--font-body); color: var(--xp); }
+  .ilist { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.4rem 1rem; max-width: none; }
+</style>

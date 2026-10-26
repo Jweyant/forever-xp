@@ -1,19 +1,28 @@
 ---
 import "../styles/global.css";
-interface Props { title: string; description?: string; wide?: boolean }
-const { title, description = "Free WoW Forever leveling routes and quest data, built from real player logs.", wide = false } = Astro.props;
-const fullTitle = title === "Forever XP" ? title : `${title} | Forever XP`;
+import Logo from "../components/Logo.astro";
+import { SITE } from "../config";
+interface Props { title: string; description?: string; wide?: boolean; image?: string; type?: string }
+const { title, description = "Free WoW Forever leveling routes, every quest with coordinates, a BIS gear planner and talent calculator.", wide = false, image = "/og.png", type = "website" } = Astro.props;
+const fullTitle = title === SITE.name ? `${SITE.name}: ${SITE.tagline}` : `${title} | ${SITE.name}`;
 const path = Astro.url.pathname;
 const nav = [
   { href: "/guides/", label: "Guides" },
   { href: "/quests/", label: "Quests" },
-  { href: "/skip/", label: "Skip list" },
+  { href: "/items/", label: "Items" },
   { href: "/bis/", label: "BIS" },
   { href: "/talents/", label: "Talents" },
   { href: "/changes/", label: "Changes" },
-  { href: "/scout/", label: "ForeverScout" },
+  { href: "/scout/", label: "Addon" },
+  { href: "/community/", label: "Community" },
 ];
 const canonical = new URL(path, Astro.site);
+const ogImage = new URL(image, Astro.site);
+const ld = {
+  "@context": "https://schema.org", "@type": "WebSite", name: SITE.name, url: Astro.site?.toString(),
+  potentialAction: { "@type": "SearchAction", target: `${Astro.site}quests/?q={search_term_string}`, "query-input": "required name=search_term_string" },
+};
+const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.32 4.37A19.8 19.8 0 0 0 15.4 2.85a.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.25a18.3 18.3 0 0 0-5.49 0 12.6 12.6 0 0 0-.62-1.25.08.08 0 0 0-.08-.04 19.7 19.7 0 0 0-4.88 1.52.07.07 0 0 0-.03.03C.53 9.05-.32 13.58.1 18.06a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 5.99 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-1.99a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.89.08.08 0 0 1-.01-.13l.37-.29a.07.07 0 0 1 .08-.01c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08.01l.37.29a.08.08 0 0 1-.01.13c-.6.35-1.22.65-1.87.89a.08.08 0 0 0-.04.11c.36.7.77 1.36 1.23 1.99a.08.08 0 0 0 .08.03 19.8 19.8 0 0 0 6-3.03.08.08 0 0 0 .03-.06c.5-5.18-.84-9.67-3.55-13.66a.06.06 0 0 0-.03-.03ZM8.02 15.33c-1.18 0-2.16-1.09-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.33-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.16-1.09-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.33-.95 2.42-2.16 2.42Z"/></svg>`;
 ---
 <!doctype html>
 <html lang="en">
@@ -23,35 +32,60 @@ const canonical = new URL(path, Astro.site);
   <title>{fullTitle}</title>
   <meta name="description" content={description} />
   <link rel="canonical" href={canonical} />
-  <meta property="og:title" content={fullTitle} />
+  <meta property="og:site_name" content={SITE.name} />
+  <meta property="og:title" content={title === SITE.name ? fullTitle : title} />
   <meta property="og:description" content={description} />
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content={type} />
   <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#6b3fc4" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="sitemap" href="/sitemap.xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
-  <script is:inline>
-    try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
-  </script>
+  <link rel="preconnect" href="https://render.worldofwarcraft.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script is:inline>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t;if(localStorage.getItem("hide-launch")==="1")document.documentElement.dataset.nolaunch="1"}catch(e){}</script>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+  <div class="launch" id="launch">
+    <div class="wrap">
+      <p>WoW Forever launches <b>November 4</b>, and character creation opens October 27.{" "}
+        <a href={SITE.discord} rel="noopener">Join the Forever XP Discord</a> for route and BIS updates.</p>
+      <button type="button" class="x" data-hide-launch aria-label="Hide this message">×</button>
+    </div>
+  </div>
   <header class="site-header">
     <div class="wrap bar">
       <a class="brand" href="/" aria-label="Forever XP home">
-        <span class="brand-mark" aria-hidden="true"><i></i></span>
-        Forever XP
+        <Logo size={44} />
+        <span class="word">Forever <span>XP</span></span>
       </a>
-      <nav aria-label="Main">
+      <nav aria-label="Main" id="site-nav">
         <ul>
           {nav.map((n) => (
             <li><a href={n.href} aria-current={path.startsWith(n.href) ? "page" : undefined}>{n.label}</a></li>
           ))}
         </ul>
       </nav>
-      <button class="theme" type="button" aria-label="Switch light or dark theme" title="Switch theme"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
+      <div class="actions">
+        <button type="button" class="search-btn" data-open-search aria-label="Search quests, items and pages">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="lbl">Search</span><kbd>/</kbd>
+        </button>
+        <a class="icon-btn discord" href={SITE.discord} rel="noopener" aria-label="Forever XP on Discord" title="Join our Discord" set:html={discordIcon} />
+        <button class="icon-btn theme" type="button" aria-label="Switch light or dark theme" title="Switch theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
+        <button class="icon-btn menu" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
   </header>
   <main id="main" class={wide ? "wrap wide" : "wrap"}>
@@ -59,46 +93,117 @@ const canonical = new URL(path, Astro.site);
   </main>
   <footer class="site-footer">
     <div class="wrap">
-      <p>
-        Forever XP is a free community project.
-        <a href="https://github.com/Jweyant/forever-xp">Source and data on GitHub</a> (GPL-3.0).
-        <a href="/contribute/">Help with a log</a>.
-      </p>
-      <p class="small muted">Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Game icons are Blizzard's, loaded from their render service.</p>
-      <p class="small muted">Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc.</p>
+      <div class="cols">
+        <div class="about">
+          <a class="brand small-brand" href="/" aria-label="Forever XP home"><Logo size={36} /><span class="word">Forever <span>XP</span></span></a>
+          <p>A free, open community project for WoW Forever players. Data comes from the game client, open databases and players running ForeverScout.</p>
+          <p><a class="btn discord" href={SITE.discord} rel="noopener"><Fragment set:html={discordIcon} />Join the Discord</a></p>
+        </div>
+        <nav aria-label="Tools"><h2>Tools</h2><ul>
+          <li><a href="/guides/">Leveling guides</a></li><li><a href="/quests/">Quest database</a></li><li><a href="/items/">Item database</a></li>
+          <li><a href="/bis/">BIS planner</a></li><li><a href="/talents/">Talent calculator</a></li><li><a href="/changes/">All Forever changes</a></li>
+        </ul></nav>
+        <nav aria-label="Project"><h2>Project</h2><ul>
+          <li><a href="/scout/">ForeverScout addon</a></li><li><a href="/contribute/">Help with data</a></li><li><a href="/community/">Community</a></li>
+          <li><a href={SITE.repo}>Source on GitHub</a></li><li><a href={`${SITE.repo}/security/policy`}>Security</a></li>
+        </ul></nav>
+      </div>
+      <p class="small muted credits">Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Change notes are Blizzard's, linked to each original post. Game icons are Blizzard's, loaded from their render service.
+      Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc. Site code is GPL-3.0.</p>
     </div>
   </footer>
-  <script is:inline>
-    document.querySelector(".theme").addEventListener("click", () => {
-      const root = document.documentElement;
-      const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-      root.dataset.theme = dark ? "light" : "dark";
-      try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
-    });
-  </script>
+
+  <dialog id="search" class="search-dlg" aria-label="Search">
+    <form method="dialog" class="search-head" role="search">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="search-q" type="search" placeholder="Quest, item, NPC, zone or class" autocomplete="off" aria-label="Search" aria-controls="search-results" />
+      <button type="submit" class="esc" value="close" aria-label="Close search"><kbd>Esc</kbd></button>
+    </form>
+    <div id="search-results" class="search-results" role="listbox" aria-label="Results"></div>
+    <p class="search-foot small muted"><kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to open. Press <kbd>/</kbd> anywhere to search.</p>
+  </dialog>
+  <div id="tip-global" class="wowtip" hidden role="tooltip"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>import "../scripts/site.ts";</script>
 </body>
 </html>
 
 <style is:global>
-  .skip-link { position: absolute; left: -999px; top: 0; background: var(--surface); padding: 0.5rem 1rem; z-index: 10; }
+  .skip-link { position: absolute; left: -999px; top: 0; background: var(--surface); padding: 0.5rem 1rem; z-index: 100; }
   .skip-link:focus { left: 1rem; }
-  .site-header { border-bottom: 1px solid var(--line); background: var(--surface); position: relative; }
-  .site-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: linear-gradient(90deg, var(--xp) 0 62%, var(--rested) 62% 80%, var(--quest-bright) 80%); }
-  .site-header .bar { display: flex; align-items: center; gap: 1rem; min-height: 60px; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
-  .brand { display: inline-flex; align-items: center; gap: 0.55rem; font-family: var(--font-display); font-weight: 700; font-size: 1.55rem; color: var(--ink); text-decoration: none; }
-  .brand-mark { width: 34px; height: 10px; background: var(--bar-track); border-radius: 2px; overflow: hidden; display: inline-block; }
-  .brand-mark i { display: block; height: 100%; width: 62%; background: var(--xp); box-shadow: 6px 0 0 var(--rested); }
-  .site-header nav { flex: 1 1 auto; }
-  .site-header nav ul { display: flex; flex-wrap: wrap; gap: 0.15rem 1.1rem; list-style: none; margin: 0; padding: 0; max-width: none; }
-  .site-header nav a { color: var(--ink); text-decoration: none; font-weight: 600; padding: 0.2rem 0; border-bottom: 2px solid transparent; }
+
+  .launch { background: linear-gradient(90deg, #2a1d57, #1b2c57); color: #ece8ff; font-size: 0.95rem; }
+  .launch .wrap { display: flex; align-items: center; gap: 1rem; min-height: 40px; padding-top: 0.35rem; padding-bottom: 0.35rem; }
+  .launch p { margin: 0; flex: 1; max-width: none; }
+  .launch b { color: #ffd65a; }
+  .launch a { color: #fff; font-weight: 600; }
+  .launch .x { background: none; border: 0; color: inherit; font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 0.3rem; opacity: .8; }
+  :root[data-nolaunch] .launch { display: none; }
+
+  .site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px); }
+  .site-header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: linear-gradient(90deg, var(--xp) 0 62%, var(--rested) 62% 74%, var(--bar-track) 74%); }
+  .site-header .bar { display: flex; align-items: center; gap: 1.2rem; min-height: 64px; }
+  .brand { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--ink); text-decoration: none; flex: none; }
+  .brand .word { font: 700 1.6rem/1 var(--font-display); letter-spacing: 0.01em; white-space: nowrap; }
+  .brand .word span { color: var(--xp); }
+  .brand:hover .logo-mark .spark { filter: drop-shadow(0 0 4px #ffd34d); }
+  .site-header nav { flex: 1 1 auto; min-width: 0; }
+  .site-header nav ul { display: flex; gap: 0.1rem 0.95rem; list-style: none; margin: 0; padding: 0; max-width: none; }
+  .site-header nav a { display: block; color: var(--ink); text-decoration: none; font-weight: 600; padding: 0.35rem 0; border-bottom: 2px solid transparent; white-space: nowrap; }
   .site-header nav a:hover { border-bottom-color: var(--line); }
-  .site-header nav a[aria-current="page"] { border-bottom-color: var(--xp); }
-  .theme { font: inherit; font-size: 1.2rem; background: none; border: 1px solid var(--line); color: var(--ink); border-radius: var(--radius); width: 38px; height: 38px; cursor: pointer; display: grid; place-items: center; }
-  @media (max-width: 719px) {
-    .site-header nav { order: 3; flex-basis: 100%; }
-    .site-header .theme { margin-left: auto; }
+  .site-header nav a[aria-current="page"] { border-bottom-color: var(--xp); color: var(--xp); }
+  .actions { display: flex; align-items: center; gap: 0.4rem; flex: none; margin-left: auto; }
+  .icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .icon-btn svg { width: 19px; height: 19px; }
+  .icon-btn:hover { border-color: var(--ink); }
+  .icon-btn.discord:hover { color: #5865f2; border-color: #5865f2; }
+  .search-btn { display: inline-flex; align-items: center; gap: 0.5rem; height: 38px; padding: 0 0.5rem 0 0.7rem; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: inherit; cursor: pointer; min-width: 150px; }
+  .search-btn svg { width: 17px; height: 17px; }
+  .search-btn .lbl { flex: 1; text-align: left; }
+  .search-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .icon-btn.menu { display: none; }
+  @media (max-width: 1080px) {
+    .site-header nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--raise); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
+    .site-header nav.open { display: block; }
+    .site-header nav ul { flex-direction: column; padding: 0.5rem 16px 1rem; }
+    .site-header nav a { padding: 0.7rem 0; border-bottom: 1px solid var(--line); font-size: 1.1rem; }
+    .site-header nav li:last-child a { border-bottom: 0; }
+    .icon-btn.menu { display: grid; }
   }
+  @media (max-width: 560px) {
+    .brand .word { font-size: 1.35rem; }
+    .brand .logo-mark { width: 36px; height: 23px; }
+    .search-btn { min-width: 0; padding: 0 0.6rem; }
+    .search-btn .lbl, .search-btn kbd { display: none; }
+    .site-header .bar { gap: 0.6rem; }
+  }
+  @media (max-width: 380px) { .icon-btn.discord { display: none; } }
+
   main { padding-top: 2rem; padding-bottom: 3rem; min-height: 60vh; }
-  .site-footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2rem; background: var(--surface); }
-  .site-footer p { margin-bottom: 0.4rem; }
+  .site-footer { border-top: 1px solid var(--line); padding: 2rem 0 2rem; background: var(--surface); margin-top: 2rem; }
+  .site-footer .cols { display: grid; gap: 1.5rem 2.5rem; grid-template-columns: 2fr 1fr 1fr; }
+  @media (max-width: 719px) { .site-footer .cols { grid-template-columns: 1fr 1fr; } .site-footer .about { grid-column: 1 / -1; } }
+  .site-footer h2 { font-size: 1.15rem; margin: 0 0 0.5rem; color: var(--muted); }
+  .site-footer ul { list-style: none; padding: 0; margin: 0; }
+  .site-footer li { margin: 0.25rem 0; }
+  .site-footer .small-brand .word { font-size: 1.35rem; }
+  .site-footer .about p { margin: 0.7rem 0; color: var(--muted); }
+  .site-footer .credits { margin-top: 1.5rem; border-top: 1px solid var(--line); padding-top: 1rem; max-width: none; }
+
+  .search-dlg { width: min(680px, calc(100vw - 24px)); max-height: min(78vh, 720px); margin: 10vh auto auto; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.35); overflow: hidden; }
+  .search-dlg[open] { display: flex; flex-direction: column; }
+  .search-dlg::backdrop { background: rgba(10, 12, 24, 0.55); backdrop-filter: blur(2px); }
+  .search-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line); }
+  .search-head svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
+  .search-head input { flex: 1; border: 0; background: none; font-size: 1.15rem; padding: 0.3rem 0; outline: none; }
+  .search-head .esc { background: none; border: 0; cursor: pointer; color: var(--muted); }
+  .search-results { overflow-y: auto; padding: 0.4rem; }
+  .search-results h3 { font: 600 0.85rem var(--font-body); color: var(--muted); margin: 0.6rem 0.5rem 0.2rem; }
+  .search-results a { display: grid; grid-template-columns: 30px 1fr auto; gap: 0.2rem 0.7rem; align-items: center; padding: 0.45rem 0.5rem; border-radius: 6px; color: var(--ink); text-decoration: none; }
+  .search-results a[aria-selected="true"], .search-results a:hover { background: color-mix(in srgb, var(--xp) 12%, transparent); }
+  .search-results .sub { color: var(--muted); font-size: 0.85rem; }
+  .search-results .lv { font: 600 1rem var(--font-display); color: var(--xp); text-align: center; }
+  .search-results .empty { padding: 1rem 0.6rem; color: var(--muted); }
+  .search-foot { margin: 0; padding: 0.5rem 0.9rem; border-top: 1px solid var(--line); max-width: none; }
+  @media (max-width: 560px) { .search-dlg { margin-top: 8px; max-height: calc(100vh - 16px); } .search-foot { display: none; } }
 </style>
