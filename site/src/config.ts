@@ -4,7 +4,7 @@ export const SITE = {
   tagline: "Routes, quests, gear and talents for WoW Forever",
   discord: "https://discord.gg/z8DfMK7Uw",
   repo: "https://github.com/Jweyant/forever-xp",
-  curseforge: "", // fill in once the ForeverScout project is live on CurseForge
+  curseforge: "", // the ForeverScout CurseForge page, once docs/curseforge.md is done
   launch: "2026-11-04",
   // Comments on quest, item and guide pages use giscus (GitHub Discussions). Leave repoId empty
   // to keep comments off. Get the IDs from https://giscus.app after enabling Discussions.
