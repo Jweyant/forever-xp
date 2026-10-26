@@ -16,6 +16,9 @@ on:
     paths: ["server/**", ".github/workflows/deploy-server.yml"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +26,7 @@ jobs:
       run:
         working-directory: server
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Check configuration
         id: cfg
@@ -38,7 +41,7 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         if: steps.cfg.outputs.ready == 'true'
         with:
           node-version: "22"
@@ -55,7 +58,7 @@ jobs:
 
       - name: Deploy
         if: steps.cfg.outputs.ready == 'true'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         env:
           ADMIN_TOKEN: ${{ secrets.FSCOUT_ADMIN_TOKEN }}
         with:

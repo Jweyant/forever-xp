@@ -1,0 +1,20 @@
+# Weekly update PRs for pinned GitHub Actions and the site, server and uploader dependencies.
+# Every update arrives as a pull request and needs the maintainer's review like any other change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /site
+    schedule: { interval: weekly }
+    groups:
+      site: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /server
+    schedule: { interval: weekly }
+  - package-ecosystem: gomod
+    directory: /uploader
+    schedule: { interval: weekly }
