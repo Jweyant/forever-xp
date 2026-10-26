@@ -12,6 +12,7 @@
   --muted: #545d73;
   --xp: #6b3fc4;
   --xp-soft: #e6dff7;
+  --xp-fill: #6b3fc4;
   --rested: #2f6fd0;
   --quest: #a77b05;
   --quest-bright: #e8b92e;
@@ -51,6 +52,7 @@
     --muted: #9ba2b9;
     --xp: #a283f2;
     --xp-soft: #2c2750;
+    --xp-fill: #7449d6;
     --rested: #6ea3f2;
     --quest: #e8b92e;
     --skip: #e7808a;
@@ -74,6 +76,7 @@
   --muted: #9ba2b9;
   --xp: #a283f2;
   --xp-soft: #2c2750;
+  --xp-fill: #7449d6;
   --rested: #6ea3f2;
   --quest: #e8b92e;
   --skip: #e7808a;
@@ -103,7 +106,7 @@ img, svg { max-width: 100%; }
 a { color: var(--rested); text-underline-offset: 0.18em; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
-::selection { background: var(--xp); color: #fff; }
+::selection { background: var(--xp-fill); color: #fff; }
 
 h1, h2, h3 {
   font-family: var(--font-display);
@@ -144,7 +147,7 @@ pre code { border: 0; padding: 0; background: none; }
   display: inline-flex; align-items: center; gap: 0.5em;
   font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; letter-spacing: 0.01em;
   padding: 0.5em 1.1em; border-radius: var(--radius); cursor: pointer;
-  border: 2px solid var(--xp); background: var(--xp); color: #fff; text-decoration: none;
+  border: 2px solid var(--xp-fill); background: var(--xp-fill); color: #fff; text-decoration: none;
   transition: transform 0.12s ease, filter 0.12s ease, border-color 0.12s ease;
 }
 .btn:hover { filter: brightness(1.08); }
