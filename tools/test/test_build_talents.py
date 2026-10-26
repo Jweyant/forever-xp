@@ -182,9 +182,10 @@ class ForeverTrees(unittest.TestCase):
     def test_parked_node_is_skipped(self):
         T = trait_tables()
         T["TraitNode"].append({"ID": "99", "TraitTreeID": "1117", "PosX": "102800", "PosY": "5740"})
+        T["TraitNode"].append({"ID": "98", "TraitTreeID": "1117", "PosX": "6820", "PosY": "39300"})
         report = []
         bt.forever_talents(T, spells(), {}, report)
-        self.assertTrue(any("outside the three trees" in r for r in report))
+        self.assertEqual(sum("outside the three trees" in r for r in report), 2)
 
 
 if __name__ == "__main__":
