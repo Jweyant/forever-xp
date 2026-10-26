@@ -8,7 +8,12 @@ Settings that live outside the code. Last reviewed 2026-10-25.
 - [x] SSL/TLS mode Full (strict)
 - [x] HSTS: 6 months, include subdomains, nosniff (no preload yet)
 - [x] DNSSEC on (DS record added automatically by Cloudflare Registrar)
-- [x] Rate limit: more than 5 non-GET requests in 10 seconds per IP to `upload.forever-xp.com` is blocked for 10 seconds
+- [x] Upload server: more than 5 non-GET requests in 10 seconds per IP get a 429. Enforced by the
+  Worker itself (`BURST` rate-limit binding in `server/wrangler.toml`) since 2026-10-26; before that
+  it was the zone's dashboard rule.
+- [ ] Accounts API: the zone's one free rate-limiting rule, re-pointed to **URI Path starts with
+  `/api/`**, 10 requests per 10 seconds per IP, block for 10 seconds. Do this only after the Worker
+  version with `BURST` is live (Actions > Deploy upload server is green).
 - [x] Bot Fight Mode on, Cloudflare managed free ruleset on
 - [ ] **Two-factor sign-in on the Cloudflare account** (Profile > Authentication). Most important item on this list.
 - [ ] Replace the GitHub deploy token "Edit Cloudflare Workers" with a narrower one (below)

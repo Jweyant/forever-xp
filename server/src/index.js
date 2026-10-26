@@ -79,6 +79,19 @@ async function allowNewLog(request, env) {
   return true;
 }
 
+// At most 5 non-GET requests per 10 seconds from one address (the BURST binding in wrangler.toml).
+// Cloudflare keeps the count; the address is only the counter's key and is never stored here. If
+// the counter can't be reached, the per-slot and per-day limits below still apply.
+async function withinBurst(request, env) {
+  if (!env.BURST) return true; // unit tests and the local dev server
+  try {
+    const { success } = await env.BURST.limit({ key: request.headers.get("cf-connecting-ip") || "unknown" });
+    return success !== false;
+  } catch {
+    return true;
+  }
+}
+
 async function upload(request, env) {
   const install = request.headers.get("x-fscout-install") || "";
   const slot = request.headers.get("x-fscout-slot") || "";
@@ -154,6 +167,9 @@ export default {
     const url = new URL(request.url);
     try {
       if (request.method === "GET" && url.pathname === "/health") return json({ ok: true });
+      if (request.method !== "GET" && !(await withinBurst(request, env))) {
+        return json({ error: "slow down" }, 429, { "retry-after": "10" });
+      }
       if (request.method === "POST" && url.pathname === "/v1/upload") return await upload(request, env);
       if (url.pathname.startsWith("/v1/logs")) {
         if (!authorized(request, env)) return json({ error: "unauthorized" }, 401);

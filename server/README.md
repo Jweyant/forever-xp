@@ -41,7 +41,9 @@ python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
 
 - `POST /v1/upload`: gzip of a `ForeverScout.lua` SavedVariables file. It is rejected unless the
   file starts with `ForeverScoutDB = {` and has sharing turned on. Limits: 8 MB compressed and
-  20 MB uncompressed, at most one upload per minute per account folder.
+  20 MB uncompressed, at most one upload per minute per account folder, at most 12 new logs per
+  network address per day, and at most 5 writes per 10 seconds per address (the `BURST`
+  rate-limit binding; Cloudflare keeps that count and the address is never stored).
 - Each install/account-folder pair keeps only its latest copy. The file is cumulative, so
   storage stays small.
 - `GET /v1/logs` and `GET /v1/logs/<key>` need `Authorization: Bearer <ADMIN_TOKEN>`.
