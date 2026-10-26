@@ -77,3 +77,52 @@ test("caps new logs per network address per day, but not updates to existing one
   assert.equal(logs.length, 13);
   assert.ok([...e.LOGS.store.keys()].every((k) => !k.includes("203.0.113.7")));
 });
+
+// Stands in for Cloudflare's rate-limit binding: `limit` allowed per key, no time window.
+function mockBurst(limit) {
+  const counts = new Map();
+  return {
+    keys: counts,
+    async limit({ key }) {
+      counts.set(key, (counts.get(key) || 0) + 1);
+      return { success: counts.get(key) <= limit };
+    },
+  };
+}
+
+test("turns away bursts of writes from one address before reading the body", async () => {
+  const e = { ...env(), BURST: mockBurst(5) };
+  const from = (ip, i) => new Request("https://x/v1/upload", {
+    method: "POST", body: gzipSync(GOOD),
+    headers: { "x-fscout-install": INSTALL, "x-fscout-slot": i.toString(16).padStart(16, "0"), "cf-connecting-ip": ip },
+  });
+  for (let i = 1; i <= 5; i++) assert.equal((await worker.fetch(from("203.0.113.7", i), e)).status, 200);
+  const res = await worker.fetch(from("203.0.113.7", 6), e);
+  assert.equal(res.status, 429);
+  assert.equal(res.headers.get("retry-after"), "10");
+  assert.equal((await worker.fetch(from("198.51.100.2", 7), e)).status, 200);
+  // Reads aren't counted, and the address is never written to the bucket.
+  assert.equal((await worker.fetch(new Request("https://x/health"), e)).status, 200);
+  assert.equal(e.BURST.keys.size, 2);
+  assert.ok([...e.LOGS.store.keys()].every((k) => !k.includes("203.0.113.7") && !k.includes("198.51.100.2")));
+});
+
+test("non-GET requests to the admin paths count toward the burst limit too", async () => {
+  const e = { ...env(), BURST: mockBurst(0) };
+  const res = await worker.fetch(new Request("https://x/v1/logs", { method: "DELETE", headers: { "cf-connecting-ip": "203.0.113.7" } }), e);
+  assert.equal(res.status, 429);
+});
+
+test("a failing rate-limit binding doesn't take uploads down", async () => {
+  const e = { ...env(), BURST: { limit: async () => { throw new Error("unavailable"); } } };
+  assert.equal((await worker.fetch(post(gzipSync(GOOD)), e)).status, 200);
+});
+
+test("wrangler.toml declares the burst limit the code expects", async () => {
+  const { readFileSync } = await import("node:fs");
+  const toml = readFileSync(new URL("../wrangler.toml", import.meta.url), "utf8");
+  const block = toml.split("[[ratelimits]]")[1] || "";
+  assert.match(block, /^\s*name\s*=\s*"BURST"\s*$/m);
+  assert.match(block, /^\s*namespace_id\s*=\s*"\d+"\s*$/m);
+  assert.match(block, /^\s*simple\s*=\s*\{\s*limit\s*=\s*5\s*,\s*period\s*=\s*10\s*\}\s*$/m);
+});

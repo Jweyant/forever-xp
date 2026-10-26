@@ -49,9 +49,9 @@ once to read the user's ID and name, then revoked; it is never stored.
 4. **Sign-in settings.** On the same project, go to **Settings > Variables and Secrets** (Production):
    - `DISCORD_CLIENT_ID`: the client ID, as plain text.
    - `DISCORD_CLIENT_SECRET`: the client secret, as type **Secret**.
-5. **Rate limit.** On the forever-xp.com zone, go to **Security > WAF > Rate limiting rules > Create**:
-   - When **URI Path starts with** `/api/`, allow **60 requests per 1 minute** per IP, then **Block** for 1 minute.
-   - The free plan includes one rule.
+5. **Rate limit.** On the forever-xp.com zone, go to **Security > Security rules**, then edit the rate-limiting rule (or create one):
+   - When **URI Path starts with** `/api/`, allow **10 requests per 10 seconds** per IP, then **Block** for 10 seconds. The Free plan allows 10-second windows and path-only matching.
+   - The Free plan includes one rule. The upload server used to hold it; it now limits its own writes in code (`BURST` in `server/wrangler.toml`), so the rule can protect the API. Only re-point the rule after that Worker version has deployed.
 6. **Switch it on.** Set `accounts: true` in `site/src/config.ts` in a pull request. After it deploys:
    - a **Sign in** button appears in the header;
    - **Save to my account** appears on the BIS planner and the talent calculators;

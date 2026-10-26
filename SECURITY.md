@@ -20,7 +20,8 @@ Security tab, not in a public issue.
   and a locked-down Permissions-Policy.
 - Text from outside sources (Questie, Blizzard's forum posts, the game client) is escaped before
   it reaches the page; nothing from those sources is rendered as HTML.
-- TLS 1.2 or newer, Full (strict) to the origin, DNSSEC, and a rate limit on the upload server.
+- TLS 1.2 or newer, Full (strict) to the origin, DNSSEC, a rate limit on the accounts API (a
+  Cloudflare rule) and one on the upload server (in the Worker).
 
 ## Secure development
 
