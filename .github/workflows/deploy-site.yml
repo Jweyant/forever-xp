@@ -12,7 +12,7 @@ name: Deploy website
 on:
   push:
     branches: [main]
-    paths: ["site/**", "routes/**", "reports/**", "gamedata/**", "tools/site_data.py", "tools/csp.mjs", "tools/zone_sizes.json", ".github/workflows/deploy-site.yml"]
+    paths: ["site/**", "routes/**", "reports/**", "gamedata/**", "tools/site_data.py", "tools/csp.mjs", "tools/indexnow.py", "tools/zone_sizes.json", ".github/workflows/deploy-site.yml"]
   pull_request:
     paths: ["site/**", "routes/**", "reports/**", "gamedata/**", "tools/site_data.py", "tools/csp.mjs"]
   workflow_dispatch:
@@ -58,6 +58,22 @@ jobs:
           npm run data
           npm run build
 
+      # IndexNow (Bing and other engines): submit only the pages whose content changed since the
+      # last deploy. The last deploy's page fingerprints come from the Actions cache.
+      - name: Restore the last deploy's page fingerprints
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .indexnow/manifest.json
+          key: indexnow-${{ github.run_id }}
+          restore-keys: indexnow-
+
+      - name: List changed pages
+        id: indexnow
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: python3 tools/indexnow.py prepare --dist site/dist --previous .indexnow/manifest.json --manifest "$RUNNER_TEMP/indexnow-manifest.json" --out "$RUNNER_TEMP/indexnow.txt"
+
       - name: Check configuration
         id: cfg
         env:
@@ -81,3 +97,20 @@ jobs:
           workingDirectory: site
           preCommands: npx wrangler pages project create forever-xp --production-branch main || true
           command: pages deploy dist --project-name forever-xp --branch ${{ github.head_ref || github.ref_name }}
+
+      - name: Tell search engines about changed pages
+        id: indexnow_submit
+        if: steps.cfg.outputs.ready == 'true' && steps.indexnow.outcome == 'success'
+        continue-on-error: true
+        run: python3 tools/indexnow.py submit --list "$RUNNER_TEMP/indexnow.txt"
+
+      - name: Keep page fingerprints for the next deploy
+        if: steps.indexnow_submit.outcome == 'success'
+        run: mkdir -p .indexnow && cp "$RUNNER_TEMP/indexnow-manifest.json" .indexnow/manifest.json
+
+      - name: Save page fingerprints
+        if: steps.indexnow_submit.outcome == 'success'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .indexnow/manifest.json
+          key: indexnow-${{ github.run_id }}-${{ github.run_attempt }}
