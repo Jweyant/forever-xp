@@ -20,9 +20,15 @@ if (!csp) fail("no Content-Security-Policy in _headers");
 if (/'unsafe-inline'|'unsafe-eval'/.test(scriptSrc)) fail("script-src allows unsafe-inline or unsafe-eval");
 if (!/frame-ancestors 'none'/.test(csp)) fail("CSP is missing frame-ancestors 'none'");
 if (!/object-src 'none'/.test(csp)) fail("CSP is missing object-src 'none'");
-for (const h of ["X-Content-Type-Options: nosniff", "X-Frame-Options: DENY", "Referrer-Policy:", "Permissions-Policy:"]) {
+for (const h of ["X-Content-Type-Options: nosniff", "X-Frame-Options: DENY", "Referrer-Policy:", "Permissions-Policy:", "! Access-Control-Allow-Origin"]) {
   if (!headers.includes(h)) fail(`_headers is missing ${h}`);
 }
+// security.txt (RFC 9116) must exist, name a contact, and not be expired.
+const sectxt = existsSync(join(dist, ".well-known/security.txt")) ? readFileSync(join(dist, ".well-known/security.txt"), "utf8") : "";
+const expires = Date.parse((sectxt.match(/^Expires: (.+)$/m) || [])[1] || "");
+if (!/^Contact: https:\/\//m.test(sectxt)) fail("security.txt is missing or has no Contact");
+else if (!(expires > Date.now())) fail("security.txt has expired: set a new Expires date (under a year ahead)");
+else if (expires - Date.now() < 45 * 86400e3) console.warn("note: security.txt expires within 45 days; renew its Expires date");
 
 // ---- 2. Serve the build with the real CSP ----------------------------------------------------
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".xml": "application/xml" };

@@ -88,6 +88,10 @@ test("callback signs you in, stores only a session hash, and never keeps Discord
   assert.equal(done.status, 302);
   assert.equal(done.headers.get("Location"), "/talents/?signin=ok");
   assert.match(sid, /^[A-Za-z0-9_-]{43}$/);
+  const sc = setCookies(done).find((x) => x.startsWith("__Host-fxp_sid="));
+  for (const flag of [/; HttpOnly/, /; Secure/, /; SameSite=Lax/, /; Path=\/;/, /; Max-Age=2592000$/]) assert.match(sc, flag);
+  assert.doesNotMatch(sc, /Domain=/i, "__Host- cookies are host-only");
+  assert.ok(setCookies(done).some((x) => /^__Host-fxp_oauth=; .*Max-Age=0$/.test(x)), "sign-in state cookie cleared");
   const row = env.DB.db.prepare("SELECT id_hash FROM sessions").get();
   assert.notEqual(row.id_hash, sid);
   assert.match(row.id_hash, /^[0-9a-f]{64}$/);
