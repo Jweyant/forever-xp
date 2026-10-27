@@ -9,7 +9,7 @@ Suggested channels:
 | Channel | Type | Use |
 |---|---|---|
 | #announcements | Announcement | New guides, tools and data refreshes (follow it from other servers) |
-| #patch-notes | Announcement | Each new Blizzard post, linked to forever-xp.com/changes |
+| #forever-announcements | Announcement | Each new Blizzard change and news article, linked to forever-xp.com/changes |
 | #bis-and-gearing | Forum | One thread per class or spec |
 | #leveling-routes | Forum | Route feedback, faster paths, skip suggestions |
 | #quest-data | Forum | Wrong coordinates, missing quests (feeds Questie fixes) |
@@ -19,7 +19,7 @@ Suggested channels:
 Turn on **Server Settings > Widget** if you want a live member count; the community page
 already shows one from the invite.
 
-The channel layout, roles and the automatic #patch-notes feed are handled by the Forever XP bot:
+The channel layout, roles and the automatic #forever-announcements feed are handled by the Forever XP bot:
 see [`docs/discord.md`](discord.md).
 
 ## Comments on pages (giscus)

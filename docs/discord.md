@@ -2,8 +2,9 @@
 
 The server's layout lives in [`discord/server.json`](../discord/server.json). The **Discord**
 workflow applies it from `main`, so a channel, topic, forum tag or role change is a pull request
-like any other. The **Refresh Blizzard notes** workflow posts each new Blizzard change to
-`#patch-notes` and publishes it, so servers that follow the channel get it too.
+like any other. The **Refresh Blizzard notes** workflow posts each new Blizzard change (class and
+racial changes first) and each new Blizzard news article to `#forever-announcements`, and publishes
+them so servers that follow the channel get them too.
 
 The bot never deletes anything except roles listed in `retired_roles`, never pings anyone, and
 never needs Administrator.
@@ -27,7 +28,7 @@ never needs Administrator.
    change", and run it. The first run with the box ticked shows the plan without touching
    anything.
 
-After that, the patch-notes feed starts on its own with the next new Blizzard post.
+After that, the #forever-announcements feed starts on its own with the next new Blizzard post.
 
 ## Roles
 
