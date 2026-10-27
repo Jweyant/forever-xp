@@ -58,7 +58,7 @@ const cases = [
   ...(slug ? [["Zone page", `/quests/zone/${slug}/?text=${E}&side=${E}&new=${E}`]] : []),
   ["Quick search", "/", { search: P }],
   // The accounts API answering with hostile names and plan data (as if the database were tampered with).
-  ["Account page, hostile saved plans", "/account/", { api: {
+  ["Account page, hostile saved plans", "/account/", { expect: "[data-plans] tr", api: {
     "/api/me": { name: P },
     "/api/plans": { plans: [
       { id: "AAAAAAAAAAAAAAAA", kind: "bis", name: P, data: P, updated: P },
@@ -78,6 +78,11 @@ for (const [name, path, opts = {}] of cases) {
   page.on("pageerror", (e) => problems.push(`script error: ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error" && /Content Security Policy|Refused to/.test(m.text())) problems.push(`CSP violation: ${m.text().slice(0, 200)}`); });
   if (opts.api) {
+    // Test the account code whether or not accounts are switched on in config.ts: mark the page
+    // as accounts-on after parsing, before its module scripts run.
+    await page.addInitScript(() => document.addEventListener("readystatechange", () => {
+      if (document.readyState === "interactive") document.documentElement.dataset.accounts = "on";
+    }));
     await page.route("**/api/**", (route) => {
       const path = new URL(route.request().url()).pathname;
       const body = opts.api[path];
@@ -110,6 +115,7 @@ for (const [name, path, opts = {}] of cases) {
   if (found.probe) problems.push(`${found.probe} injected element(s) in the page`);
   if (found.ran) problems.push("injected script ran");
   if (found.scripts) problems.push("injected <script> element in the page");
+  if (opts.expect && !(await page.$(opts.expect))) problems.push(`nothing rendered for ${opts.expect}, so the case tested nothing`);
   if (problems.length) fail(`${name}: ${problems.join("; ")}`);
   else console.log(`ok   ${name}`);
   await ctx.close();
