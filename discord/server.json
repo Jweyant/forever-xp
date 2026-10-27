@@ -1,5 +1,5 @@
 {
-  "_comment": "Layout of the Forever XP Discord server. tools/discord_bot.py setup applies it (adds and updates, never deletes). Channel types: text, voice, announcement, forum. readonly = members can read but not post (the bot and moderators still can).",
+  "_comment": "Layout of the Forever XP Discord server. tools/discord_bot.py setup applies it (adds and updates; the only deletes are roles listed in retired_roles). Channel types: text, voice, announcement, forum. readonly = members can read but not post (the bot and moderators still can).",
   "categories": [
     {
       "name": "Start Here",
@@ -50,8 +50,14 @@
   ],
   "_roles": "Listed top to bottom in display order: a member's name takes the color of their highest colored role. hoist = shown in its own group in the member list. color is optional (no color). The bot creates roles with no permissions and never changes permissions on existing roles.",
   "roles": [
+    { "name": "Admin", "color": "#E74C3C", "hoist": true },
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
     { "name": "ForeverScout tester", "color": "#6B3FC4" }
+  ],
+  "_retired_roles": "Roles the bot removes from the server if they exist. Only names listed here are ever deleted.",
+  "retired_roles": [
+    "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",
+    "Horde", "Alliance", "PvP realm", "Normal realm", "RP realm"
   ]
 }

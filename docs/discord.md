@@ -5,7 +5,8 @@ workflow applies it from `main`, so a channel, topic, forum tag or role change i
 like any other. The **Refresh Blizzard notes** workflow posts each new Blizzard change to
 `#patch-notes` and publishes it, so servers that follow the channel get it too.
 
-The bot never deletes anything, never pings anyone, and never needs Administrator.
+The bot never deletes anything except roles listed in `retired_roles`, never pings anyone, and
+never needs Administrator.
 
 ## One-time setup (server owner, about three minutes)
 
@@ -30,13 +31,15 @@ After that, the patch-notes feed starts on its own with the next new Blizzard po
 
 ## Roles
 
-`roles` in `discord/server.json` is listed top to bottom in display order: Moderator, Contributor
-and ForeverScout tester. A member's name takes the color of their highest role.
+`roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,
+Contributor and ForeverScout tester. Admin is a name tag for the server owner, who already has every
+permission. A member's name takes the color of their highest role.
 
 - The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
   color and "show separately" (`hoist`) setting as listed, and puts them in the listed order.
-- It never changes an existing role's permissions, never deletes a role, and can only edit roles
-  below its own. Keep the bot's role at the top of Server Settings > Roles; if it isn't, the run
+- It never changes an existing role's permissions and can only edit roles below its own.
+- To remove a role, move its name to `retired_roles`; the bot deletes roles with those names and
+  nothing else. Keep the bot's role at the top of Server Settings > Roles; if it isn't, the run
   says which roles it had to leave alone.
 - Staff permissions (Moderator) are given by hand in Server Settings > Roles, since a bot can't
   grant permissions it doesn't have.
