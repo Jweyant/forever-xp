@@ -31,8 +31,9 @@ After that, the patch-notes feed starts on its own with the next new Blizzard po
 
 ## Roles
 
-`roles` in `discord/server.json` is listed top to bottom in display order: Moderator, Contributor
-and ForeverScout tester. A member's name takes the color of their highest role.
+`roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,
+Contributor and ForeverScout tester. Admin is a name tag for the server owner, who already has every
+permission. A member's name takes the color of their highest role.
 
 - The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
   color and "show separately" (`hoist`) setting as listed, and puts them in the listed order.
