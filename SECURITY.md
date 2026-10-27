@@ -20,8 +20,6 @@ Security tab, not in a public issue.
   and a locked-down Permissions-Policy.
 - Text from outside sources (Questie, Blizzard's forum posts, the game client) is escaped before
   it reaches the page; nothing from those sources is rendered as HTML.
-- TLS 1.2 or newer, Full (strict) to the origin, DNSSEC, a rate limit on the accounts API (a
-  Cloudflare rule) and one on the upload server (in the Worker).
 
 ## Secure development
 
@@ -46,6 +44,5 @@ every pull request.
 ## Changes to this repository
 
 Only maintainers can push. Everything else arrives as a pull request, which needs the
-maintainer's review (`.github/CODEOWNERS` plus the `protect-main` ruleset in
-`docs/security-settings.md`) before it can be merged. Workflows triggered by
+maintainer's review (`.github/CODEOWNERS`) before it can be merged. Workflows triggered by
 pull requests from forks get no secrets and can't deploy.

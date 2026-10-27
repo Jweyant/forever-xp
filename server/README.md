@@ -1,8 +1,6 @@
 # ForeverScout upload server
 
 A Cloudflare Worker that receives logs from the ForeverScout Uploader and stores them in R2.
-It runs on Cloudflare's free tier at this project's scale (free plan: 100k requests/day,
-10 GB of R2 storage).
 
 ## Deploy
 
@@ -40,10 +38,8 @@ python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
 ## What it accepts
 
 - `POST /v1/upload`: gzip of a `ForeverScout.lua` SavedVariables file. It is rejected unless the
-  file starts with `ForeverScoutDB = {` and has sharing turned on. Limits: 8 MB compressed and
-  20 MB uncompressed, at most one upload per minute per account folder, at most 12 new logs per
-  network address per day, and at most 5 writes per 10 seconds per address (the `BURST`
-  rate-limit binding; Cloudflare keeps that count and the address is never stored).
+  file starts with `ForeverScoutDB = {` and has sharing turned on. Uploads are size- and
+  rate-limited; IP addresses are never stored.
 - Each install/account-folder pair keeps only its latest copy. The file is cumulative, so
   storage stays small.
 - `GET /v1/logs` and `GET /v1/logs/<key>` need `Authorization: Bearer <ADMIN_TOKEN>`.
