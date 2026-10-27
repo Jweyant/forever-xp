@@ -28,6 +28,7 @@ PATH = re.compile(r"^/[A-Za-z0-9._~%/-]{0,300}$")
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
 LOC = re.compile(r"<loc>\s*([^<\s]+)\s*</loc>")
 ASSET = re.compile(r"/_astro/[A-Za-z0-9._-]+")
+# Only used to fingerprint our own build output, never to sanitize anything.
 SCRIPT = re.compile(r"<script\b[^>]*>.*?</script(?:\s+[^>]*)?\s*>", re.S | re.I)
 MAX_REMOVED = 500  # more than this looks like a broken build, not real removals
 

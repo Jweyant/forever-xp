@@ -29,6 +29,8 @@ class Fingerprints(unittest.TestCase):
     def test_renamed_bundles_and_inline_scripts_do_not_count_as_changes(self):
         a = PAGE.format("Changes")
         b = a.replace("site.AbC123.js", "site.ZzZ999.js").replace("</head>", "<script>console.log(1)</script></head>")
+        c = a.replace("</head>", "<SCRIPT type=x>console.log(2)</script >\n</head>")
+        self.assertEqual(indexnow.fingerprint(a), indexnow.fingerprint(c.replace("\n</head>", "</head>")))
         self.assertEqual(indexnow.fingerprint(a), indexnow.fingerprint(b))
 
     def test_content_changes_count(self):
