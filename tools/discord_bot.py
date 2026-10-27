@@ -3,7 +3,7 @@
   python3 tools/discord_bot.py validate                 # check discord/server.json (no token needed)
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
-  python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # post one day's changes (run by hand)
+  python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
 deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
@@ -314,12 +314,29 @@ def safe_url(u):
     return u if isinstance(u, str) and BLIZZARD_URL.match(u) else None
 
 
-def post(d, target, content):
+BRAND = 0xE8B92E  # the site's gold
+MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+SITE_CHANGES = "https://forever-xp.com/changes/"
+
+
+def label(s, n=100):
+    """Short text for embed titles and field names: one line, no markdown characters, no pings."""
+    s = re.sub(r"[\\*_~`|>#\[\]]", "", re.sub(r"\s+", " ", str(s))).replace("@", "@\u200b").strip()
+    return (s if len(s) <= n else s[: n - 1] + "…") or "Other"
+
+
+def nice_date(date):
+    y, m, d = (int(x) for x in date.split("-"))
+    return f"{MONTHS[m - 1]} {d}"
+
+
+def post(d, target, embed):
     msg = d.call("POST", f"/channels/{target['id']}/messages",
-                 {"content": content[:2000], "allowed_mentions": {"parse": []}, "flags": 4}, write=True)
+                 {"embeds": [embed], "allowed_mentions": {"parse": []}}, write=True)
     if target["type"] == 5 and msg.get("id"):
         d.call("POST", f"/channels/{target['id']}/messages/{msg['id']}/crosspost", write=True)
     time.sleep(1.5)
+    return msg
 
 
 def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3):
@@ -351,25 +368,103 @@ def post_date(cfg, paths, date, d, guild, max_messages=6):
                 rows[r["id"]] = r
     picked = [r for r in rows.values() if r.get("date") == date and r.get("kind") != "Known issues"]
     log(f"{len(picked)} changes dated {date}")
-    send_feed(cfg, d, guild, picked, [], max_messages, 0)
-
-
-def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles):
-    if not new_rows and not new_articles:
-        log("No new changes.")
+    if not picked:
         return
+    target = feed_target(cfg, d, guild)
+    # Replace the bot's own earlier posts for this day (found by their link to the day's changes),
+    # so re-running gives one clean post. Never touches anyone else's messages.
+    me = d.call("GET", "/users/@me")
+    marker = f"changes/?date={date}"
+    for m in d.call("GET", f"/channels/{target['id']}/messages?limit=50") or []:
+        if (m.get("author") or {}).get("id") == me.get("id") and marker in json.dumps([m.get("content", ""), m.get("embeds", [])]):
+            log(f"- replacing earlier post {m['id']}")
+            d.call("DELETE", f"/channels/{target['id']}/messages/{m['id']}", write=True)
+    send_feed(cfg, d, guild, picked, [], max_messages, 0, target=target)
+
+
+def feed_target(cfg, d, guild):
     name, aliases = feed_channel(cfg)
     if not name:
         sys.exit("No feed channel in discord/server.json.")
     channels = d.call("GET", f"/guilds/{guild}/channels")
-    target = None
     for n in (name, *aliases):
-        target = target or next((c for c in channels if c["name"] == n and c["type"] in (0, 5)), None)
-    if not target:
-        sys.exit(f"No #{name} channel; run setup first.")
+        hit = next((c for c in channels if c["name"] == n and c["type"] in (0, 5)), None)
+        if hit:
+            return hit
+    sys.exit(f"No #{name} channel; run setup first.")
+
+
+def group_rows(rows):
+    """[(kind, name, lines)]: class changes (by class), then racial (by race), then the rest (by
+    section), each in Blizzard's order. Lines are Discord-safe."""
+    groups = {}
+    for r in rows:
+        if r.get("cls"):
+            kind, name = 0, r["cls"]
+        elif r.get("race"):
+            kind, name = 1, r["race"]
+        else:
+            kind, name = 2, r.get("section") or "Other"
+        sub = [str(x) for x in r.get("path", []) if str(x) != name]
+        g = groups.setdefault((kind, name), [kind, len(groups), label(name, 60), []])
+        prefix = f"**{plain(' › '.join(sub), 60)}:** " if sub else ""
+        g[3].append(f"• {prefix}{plain(r.get('text', ''), 500)}")
+    return [(k, n, lines) for k, _, n, lines in sorted(groups.values(), key=lambda g: (g[0], g[1]))]
+
+
+def change_embeds(rows, url, date, limit=5500):
+    """One Blizzard post's changes as embeds: a title with the counts, a summary line per kind,
+    then a field per class, race or section. Long groups and long days split cleanly."""
+    groups = group_rows(rows)
+    n = len(rows)
+    kinds = {k: sum(len(lines) for kk, _, lines in groups if kk == k) for k in (0, 1, 2)}
+    what = "racial " if kinds[1] == n else "class " if kinds[0] == n else ""
+    title = f"{n} {what}change{'s' if n != 1 else ''} from Blizzard" + (f", {nice_date(date)}" if date else "")
+    site = SITE_CHANGES + (f"?date={date}" if date else "")
+    summary = []
+    for k, word in ((0, "Class"), (1, "Racial")):
+        names = sorted(((len(lines), name) for kk, name, lines in groups if kk == k), key=lambda x: -x[0])
+        if names:
+            summary.append(f"**{word}:** " + " · ".join(f"{name} {c}" for c, name in names[:12]))
+    if kinds[2] and (kinds[0] or kinds[1]):
+        summary.append(f"**Other:** {kinds[2]} change{'s' if kinds[2] != 1 else ''}")
+    links = ([f"[Blizzard's post]({url})"] if safe_url(url) else []) + [f"[All changes on forever-xp.com]({site})"]
+    fields = []
+    for _, name, lines in groups:
+        cur, first = [], True
+        for line in lines:
+            line = line if len(line) <= 1000 else line[:999] + "…"
+            if cur and len("\n".join(cur)) + 1 + len(line) > 1024:
+                fields.append({"name": name if first else "\u200b", "value": "\n".join(cur)})
+                cur, first = [], False
+            cur.append(line)
+        if cur:
+            fields.append({"name": name if first else "\u200b", "value": "\n".join(cur)})
+    embeds = []
+    cur = {"title": title, "url": site, "color": BRAND, "description": "\n".join(summary + [" · ".join(links)]), "fields": []}
+    size = len(title) + len(cur["description"])
+    for f in fields:
+        fs = len(f["name"]) + len(f["value"])
+        if len(cur["fields"]) == 25 or size + fs > limit:
+            embeds.append(cur)
+            cur = {"title": f"{title} (continued)", "url": site, "color": BRAND, "fields": []}
+            size = len(cur["title"])
+        cur["fields"].append(f)
+        size += fs
+    embeds.append(cur)
+    embeds[-1]["footer"] = {"text": "Forever XP · forever-xp.com"}
+    return embeds
+
+
+def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles, target=None):
+    if not new_rows and not new_articles:
+        log("No new changes.")
+        return
+    target = target or feed_target(cfg, d, guild)
 
     for x in new_articles[:max_articles]:
-        post(d, target, f"**New from Blizzard:** {plain(x.get('title', 'WoW Forever news'), 150)}\n<{x['url']}>")
+        post(d, target, {"title": label(x.get("title", "WoW Forever news"), 200), "url": x["url"], "color": BRAND,
+                         "description": "New WoW Forever news from Blizzard.", "footer": {"text": "Forever XP · forever-xp.com"}})
         log(f"posted article {x['url']}")
 
     groups = {}
@@ -377,50 +472,17 @@ def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles)
         groups.setdefault(r.get("url", ""), []).append(r)
     sent = 0
     for url, rows in groups.items():
-        if sent >= max_messages:
-            log(f"message limit reached; the rest is on the site.")
-            break
         date = rows[0].get("date", "")
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(date)):
             date = ""
-        cls = sum(1 for r in rows if r.get("cls"))
-        race = sum(1 for r in rows if r.get("race"))
-        parts = [f"{len(rows)} change{'s' if len(rows) != 1 else ''}"]
-        if cls:
-            parts.append(f"{cls} class")
-        if race:
-            parts.append(f"{race} racial")
-        head = f"**New WoW Forever changes from Blizzard** ({', '.join(parts)}{', ' + date if date else ''})"
-        tail = []
-        if safe_url(url):
-            tail.append(f"Blizzard's post: <{url}>")
-        tail.append("Search every change: <https://forever-xp.com/changes/" + (f"?date={date}" if date else "") + ">")
-        # Class and racial changes first, then everything else, each in Blizzard's order. A long post
-        # is split over several messages (within the per-run limit) instead of being cut short.
-        lines = []
-        for r in sorted(rows, key=lambda r: 0 if r.get("cls") or r.get("race") else 1):
-            where = " › ".join([r.get("section", "")] + list(r.get("path", [])))
-            lines.append(f"• {plain(where, 60)}: {plain(r.get('text', ''))}")
-        chunks, cur = [], []
-        for line in lines:
-            if cur and sum(len(x) + 1 for x in cur) + len(line) > 1600:
-                chunks.append(cur)
-                cur = []
-            cur.append(line)
-        if cur:
-            chunks.append(cur)
-        room = max_messages - sent
-        shown = sum(len(c) for c in chunks[:room])
-        for i, chunk in enumerate(chunks[:room]):
-            last = i == min(room, len(chunks)) - 1
-            body = [head if i == 0 else "**…continued**", *chunk]
-            if last:
-                if shown < len(rows):
-                    body.append(f"…and {len(rows) - shown} more.")
-                body += tail
-            post(d, target, "\n".join(body))
+        embeds = change_embeds(rows, url, date)
+        for e in embeds:
+            if sent >= max_messages:
+                log("message limit reached; the rest is on the site.")
+                return
+            post(d, target, e)
             sent += 1
-        log(f"posted {shown} of {len(rows)} changes from {url}")
+        log(f"posted {len(rows)} changes from {url} in {len(embeds)} message(s)")
 
 
 def main():

@@ -19,7 +19,7 @@ on:
         type: boolean
         default: true
       post_date:
-        description: "Also post Blizzard's changes from this day to #forever-announcements (YYYY-MM-DD, optional)"
+        description: "Also post Blizzard's changes from this day to #forever-announcements, replacing the bot's earlier post for that day (YYYY-MM-DD, optional)"
         type: string
         default: ""
 

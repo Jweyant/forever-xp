@@ -2,9 +2,10 @@
 
 The server's layout lives in [`discord/server.json`](../discord/server.json). The **Discord**
 workflow applies it from `main`, so a channel, topic, forum tag or role change is a pull request
-like any other. The **Refresh Blizzard notes** workflow posts each new Blizzard change (class and
-racial changes first) and each new Blizzard news article to `#forever-announcements`, and publishes
-them so servers that follow the channel get them too.
+like any other. The **Refresh Blizzard notes** workflow posts each new Blizzard change and each new
+Blizzard news article to `#forever-announcements` as an embed (changes grouped by class, then race,
+then section), and publishes them so servers that follow the channel get them too. To (re)post a
+day by hand, run **Actions > Discord** with a date; it replaces the bot's earlier post for that day.
 
 The bot never deletes anything except roles listed in `retired_roles`, never pings anyone, and
 never needs Administrator.

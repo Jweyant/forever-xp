@@ -13,13 +13,16 @@ CFG = json.loads((Path(__file__).resolve().parents[2] / "discord" / "server.json
 
 
 class FakeDiscord:
-    def __init__(self, channels, roles):
+    def __init__(self, channels, roles, messages=()):
         self.channels, self.roles, self.calls, self.n = channels, roles, [], 900
+        self.messages = list(messages)
 
     def call(self, method, path, body=None, *, write=False):
         self.calls.append((method, path, body))
         if path == "/users/@me":
             return {"id": "42", "username": "forever-xp"}
+        if method == "GET" and "/messages" in path:
+            return list(self.messages)
         if path.endswith("/roles") and method == "GET":
             return [dict(r) for r in self.roles]
         if path.endswith("/roles") and method == "POST":   # Discord adds new roles at the bottom
@@ -47,6 +50,15 @@ class FakeDiscord:
         if method == "POST" and path.endswith("/messages"):
             return {"id": "m1"}
         return {}
+
+
+def shown(body):
+    """All the text a posted message shows (embeds included)."""
+    return json.dumps(body, ensure_ascii=False)
+
+
+def posts(d):
+    return [b for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
 
 
 class Tests(unittest.TestCase):
@@ -163,12 +175,13 @@ class Tests(unittest.TestCase):
             ]}))
             d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
             bot.post_notes(CFG, old, new, d, "1")
-            msgs = [b for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
+            msgs = posts(d)
             self.assertEqual(len(msgs), 1)
             self.assertEqual(msgs[0]["allowed_mentions"], {"parse": []})
-            self.assertIn("new thing", msgs[0]["content"])
-            self.assertNotIn("@here", msgs[0]["content"])
-            self.assertNotIn("issue", msgs[0]["content"])
+            self.assertNotIn("content", msgs[0])
+            self.assertIn("new thing", shown(msgs[0]))
+            self.assertNotIn("@here", shown(msgs[0]))
+            self.assertNotIn("issue", shown(msgs[0]))
             self.assertTrue(any(p.endswith("/crosspost") for m, p, b in d.calls))
 
     def test_feed_puts_class_and_racial_first_and_posts_new_articles(self):
@@ -187,15 +200,19 @@ class Tests(unittest.TestCase):
             ]}))
             d = FakeDiscord([{"id": "5", "type": 0, "name": "patch-notes"}], [])   # found by its old name
             bot.post_notes(CFG, old, new, d, "1")
-            msgs = [b["content"] for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
+            msgs = posts(d)
             self.assertEqual(len(msgs), 2)
-            self.assertIn("news/2", msgs[0])
-            self.assertNotIn("@everyone", msgs[0])
-            self.assertFalse(any("evil.example" in m for m in msgs))
-            self.assertIn("1 class, 1 racial", msgs[1])
-            body = msgs[1]
-            self.assertLess(body.index("mage change"), body.index("quest fix"))
-            self.assertLess(body.index("human change"), body.index("quest fix"))
+            article = msgs[0]["embeds"][0]
+            self.assertTrue(article["url"].endswith("news/2"))
+            self.assertNotIn("@everyone", article["title"])
+            self.assertNotIn("*", article["title"])
+            self.assertFalse(any("evil.example" in shown(m) for m in msgs))
+            e = msgs[1]["embeds"][0]
+            self.assertEqual(e["title"], "3 changes from Blizzard, Oct 30")
+            self.assertIn("**Class:** Mage 1", e["description"])
+            self.assertIn("**Racial:** Human 1", e["description"])
+            self.assertEqual([f["name"] for f in e["fields"]], ["Mage", "Human", "Quests"])  # class, race, then the rest
+            self.assertEqual(e["url"], "https://forever-xp.com/changes/?date=2026-10-30")
 
     def test_articles_wait_for_a_previous_list(self):
         with tempfile.TemporaryDirectory() as t:
@@ -231,15 +248,37 @@ class Tests(unittest.TestCase):
             a.write_text(json.dumps({"rows": [{"id": "1", "date": "2026-10-26", "kind": "Development notes", "section": "Races", "path": ["Human"], "text": "today", "url": u, "race": "Human"},
                                               {"id": "2", "date": "2026-10-20", "kind": "Development notes", "section": "Quests", "path": [], "text": "older", "url": u}]}))
             b.write_text(json.dumps({"rows": [{"id": "3", "date": "2026-10-26", "kind": "Known issues", "section": "Known issues", "path": [], "text": "issue", "url": u}]}))
-            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
+            mine = {"id": "m1", "author": {"id": "42"}, "content": "old post <https://forever-xp.com/changes/?date=2026-10-26>"}
+            other_day = {"id": "m2", "author": {"id": "42"}, "embeds": [{"url": "https://forever-xp.com/changes/?date=2026-10-20"}]}
+            someone = {"id": "m3", "author": {"id": "7"}, "content": "https://forever-xp.com/changes/?date=2026-10-26"}
+            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [], [mine, other_day, someone])
             bot.post_date(CFG, [a, b], "2026-10-26", d, "1")
-            msgs = [b["content"] for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
+            msgs = posts(d)
             self.assertEqual(len(msgs), 1)
-            self.assertIn("today", msgs[0])
-            self.assertNotIn("older", msgs[0])
-            self.assertNotIn("issue", msgs[0])
+            self.assertIn("today", shown(msgs[0]))
+            self.assertNotIn("older", shown(msgs[0]))
+            self.assertNotIn("issue", shown(msgs[0]))
+            self.assertEqual(msgs[0]["embeds"][0]["title"], "1 racial change from Blizzard, Oct 26")
+            deleted = [p for m, p, _ in d.calls if m == "DELETE"]
+            self.assertEqual(deleted, ["/channels/5/messages/m1"])   # only the bot's own post for that day
             with self.assertRaises(SystemExit):
                 bot.post_date(CFG, [a], "2026-10-26; rm -rf /", d, "1")
+
+    def test_long_days_split_within_discord_limits(self):
+        u = "https://us.forums.blizzard.com/en/wow/t/notes/1"
+        rows = [{"id": str(i), "date": "2026-10-26", "kind": "Development notes", "section": "Classes", "path": ["Warrior", "Fury"] if i % 2 else ["Mage"],
+                 "text": "x" * 450, "url": u, "cls": "Warrior" if i % 2 else "Mage"} for i in range(60)]
+        embeds = bot.change_embeds(rows, u, "2026-10-26")
+        self.assertGreater(len(embeds), 1)
+        for e in embeds:
+            self.assertLessEqual(len(e["fields"]), 25)
+            self.assertLessEqual(len(e.get("title", "")) + len(e.get("description", "")) + sum(len(f["name"]) + len(f["value"]) for f in e["fields"]), 6000)
+            for f in e["fields"]:
+                self.assertLessEqual(len(f["value"]), 1024)
+                self.assertTrue(f["name"])
+        self.assertEqual(sum(f["value"].count("• ") for e in embeds for f in e["fields"]), 60)   # nothing dropped
+        self.assertIn("**Fury:**", shown(embeds))
+        self.assertTrue(embeds[0]["title"].startswith("60 class changes"))
 
     def test_first_run_posts_nothing(self):
         d = FakeDiscord([], [])
