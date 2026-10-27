@@ -37,7 +37,7 @@ const mined = rows.filter((r) => r.kind === "Datamined").length;
 const newQuests = qdb.filter((q) => q.new).length;
 const n = (v: number) => v.toLocaleString("en-US");
 ---
-<Base title="Every WoW Forever change" description={`All ${n(rows.length)} WoW Forever changes in one searchable table: Blizzard's beta development notes, class and race updates, known issues, and talent changes read from the game client.`}>
+<Base image="/og/changes.jpg" title="Every WoW Forever change" description={`All ${n(rows.length)} WoW Forever changes in one searchable table: Blizzard's beta development notes, class and race updates, known issues, and talent changes read from the game client.`}>
   <h1>Every Forever change</h1>
   <p class="lede">Blizzard's development notes from the beta, split into single changes you can search and filter, plus what we read out of the game client. Updated within a few hours of each new post.</p>
 

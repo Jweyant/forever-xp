@@ -126,6 +126,8 @@ for (const [name, path, opts = {}] of cases) {
   if (found.probe) problems.push(`${found.probe} injected element(s) in the page`);
   if (found.ran) problems.push("injected script ran");
   if (found.scripts) problems.push("injected <script> element in the page");
+  const og = await page.$eval('meta[property="og:image"]', (m) => m.content).catch(() => "");
+  if (!og || !existsSync(join(dist, new URL(og).pathname))) problems.push(`share image missing: ${og || "no og:image"}`);
   if (opts.expect && !(await page.$(opts.expect))) problems.push(`nothing rendered for ${opts.expect}, so the case tested nothing`);
   if (problems.length) fail(`${name}: ${problems.join("; ")}`);
   else console.log(`ok   ${name}`);

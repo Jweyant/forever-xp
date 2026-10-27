@@ -4,7 +4,7 @@ import { qdb, qzones } from "../../lib/questdb";
 import { quests } from "../../lib/data";
 const groups = ["Zone", "Class", "Profession"].map((k) => ({ k, zones: qzones.filter((z) => z.kind === k) }));
 ---
-<Base title="Quest database" description={`All ${qdb.length.toLocaleString("en-US")} WoW Forever quests: quest givers with map coordinates, objectives, chains and rewards, from Questie's Forever database.`}>
+<Base image="/og/quests.jpg" title="Quest database" description={`All ${qdb.length.toLocaleString("en-US")} WoW Forever quests: quest givers with map coordinates, objectives, chains and rewards, from Questie's Forever database.`}>
   <h1>Quest database</h1>
   <p class="lede">Every quest in WoW Forever, {qdb.length.toLocaleString("en-US")} in all, with who gives it, where they stand, what it asks and what it pays. <a href="/quests/?new=1">{qdb.filter((q) => q.new).length} are new in Forever</a>.</p>
   <p class="muted small">Want to level fast? The <a href="/quests/xp/">XP per minute ranking</a> scores {quests.length} quests with travel included.</p>
