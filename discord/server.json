@@ -50,6 +50,7 @@
   ],
   "_roles": "Listed top to bottom in display order: a member's name takes the color of their highest colored role. hoist = shown in its own group in the member list. color is optional (no color). The bot creates roles with no permissions and never changes permissions on existing roles.",
   "roles": [
+    { "name": "Admin", "color": "#E74C3C", "hoist": true },
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
     { "name": "ForeverScout tester", "color": "#6B3FC4" }
