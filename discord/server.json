@@ -48,7 +48,10 @@
       ]
     }
   ],
+  "_roles": "Listed top to bottom in display order: a member's name takes the color of their highest colored role. hoist = shown in its own group in the member list. color is optional (no color). The bot creates roles with no permissions and never changes permissions on existing roles.",
   "roles": [
+    { "name": "Moderator", "color": "#3BA55C", "hoist": true },
+    { "name": "Contributor", "color": "#E8B92E", "hoist": true },
     { "name": "Warrior", "color": "#C69B6D" },
     { "name": "Paladin", "color": "#F48CBA" },
     { "name": "Hunter", "color": "#AAD372" },
@@ -58,9 +61,11 @@
     { "name": "Mage", "color": "#3FC7EB" },
     { "name": "Warlock", "color": "#8788EE" },
     { "name": "Druid", "color": "#FF7C0A" },
+    { "name": "ForeverScout tester", "color": "#6B3FC4" },
     { "name": "Horde", "color": "#B3261E" },
     { "name": "Alliance", "color": "#2A62C4" },
-    { "name": "Contributor", "color": "#E8B92E" },
-    { "name": "ForeverScout tester", "color": "#6B3FC4" }
+    { "name": "PvP realm" },
+    { "name": "Normal realm" },
+    { "name": "RP realm" }
   ]
 }
