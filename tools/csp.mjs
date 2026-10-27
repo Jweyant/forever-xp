@@ -45,6 +45,7 @@ const headers = `/*
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
+  ! Access-Control-Allow-Origin
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
