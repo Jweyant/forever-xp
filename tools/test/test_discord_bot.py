@@ -75,7 +75,7 @@ class Tests(unittest.TestCase):
                     {"id": "12", "type": 5, "name": "announcements", "parent_id": None,
                      "permission_overwrites": [{"id": "77", "type": 0, "allow": "8192", "deny": "0"}]}]
         roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "50", "name": "forever-xp", "position": 2, "managed": True, "tags": {"bot_id": "42"}},
-                 {"id": "51", "name": "Mage", "position": 1, "color": 0x3FC7EB, "hoist": False}]
+                 {"id": "51", "name": "Contributor", "position": 1, "color": 0xE8B92E, "hoist": True}]
         d = FakeDiscord(channels, roles)
         bot.setup(CFG, d, guild)
         posts = [b["name"] for m, p, b in d.calls if m == "POST" and p.endswith("/channels")]
@@ -89,27 +89,38 @@ class Tests(unittest.TestCase):
         self.assertTrue(int(ow["1"]["deny"]) & bot.SEND)    # members can't post
         self.assertTrue(int(ow["50"]["allow"]) & bot.SEND)  # the bot can
         new_roles = [b["name"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")]
-        self.assertNotIn("Mage", new_roles)
-        self.assertIn("Warrior", new_roles)
+        self.assertNotIn("Contributor", new_roles)
+        self.assertIn("Moderator", new_roles)
         self.assertTrue(all(b["permissions"] == "0" and not b["mentionable"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")))
+
+    def test_roles_not_in_the_file_are_left_alone(self):
+        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "60", "name": "Horde", "position": 1, "color": 0xB3261E},
+                 {"id": "50", "name": "Forever XP", "position": 2, "managed": True, "tags": {"bot_id": "42"}}]
+        d = FakeDiscord([], roles)
+        bot.setup(CFG, d, "1")
+        horde = next(r for r in d.roles if r["id"] == "60")
+        self.assertEqual(horde["color"], 0xB3261E)
+        self.assertFalse(any("/roles/60" in p for m, p, _ in d.calls))
+        moves = [m for meth, p, b in d.calls if meth == "PATCH" and p.endswith("/roles") for m in b]
+        self.assertFalse(any(m["id"] == "60" for m in moves))
 
     def test_roles_end_up_in_listed_order_without_permissions(self):
         roles = [{"id": "1", "name": "@everyone", "position": 0},
-                 {"id": "51", "name": "Mage", "position": 1, "color": 0, "hoist": False, "permissions": "8192"},
-                 {"id": "52", "name": "horde", "position": 2, "color": 0xB3261E, "hoist": False},
+                 {"id": "51", "name": "Moderator", "position": 1, "color": 0, "hoist": False, "permissions": "8192"},
+                 {"id": "52", "name": "contributor", "position": 2, "color": 0xE8B92E, "hoist": True},
                  {"id": "50", "name": "Forever XP", "position": 3, "managed": True, "tags": {"bot_id": "42"}}]
         d = FakeDiscord([], roles)
         bot.setup(CFG, d, "1")
         by_pos = [r["name"].lower() for r in sorted(d.roles, key=lambda r: -r["position"]) if not r.get("managed") and r["id"] != "1"]
         self.assertEqual(by_pos, [r["name"].lower() for r in CFG["roles"]])
         self.assertEqual(max(d.roles, key=lambda r: r["position"])["id"], "50")   # bot role still on top
-        mage = next(r for r in d.roles if r["id"] == "51")
-        self.assertEqual((mage["color"], mage["permissions"]), (0x3FC7EB, "8192"))  # color fixed, hand-set permissions kept
+        mod = next(r for r in d.roles if r["id"] == "51")
+        self.assertEqual((mod["color"], mod["hoist"], mod["permissions"]), (0x3BA55C, True, "8192"))  # look fixed, hand-set permissions kept
         for m, p, b in d.calls:
             if m == "PATCH" and "/roles" in p and isinstance(b, dict):
                 self.assertFalse({"permissions", "mentionable", "name"} & set(b))
         self.assertTrue(all(b["permissions"] == "0" and not b["mentionable"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")))
-        self.assertEqual(sum(1 for r in d.roles if r["name"].lower() == "horde"), 1)  # matched case-insensitively
+        self.assertEqual(sum(1 for r in d.roles if r["name"].lower() == "contributor"), 1)  # matched case-insensitively
         self.assertFalse(any(m == "DELETE" for m, _, _ in d.calls))
 
     def test_roles_above_the_bot_are_left_alone(self):
