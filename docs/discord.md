@@ -30,9 +30,8 @@ After that, the patch-notes feed starts on its own with the next new Blizzard po
 
 ## Roles
 
-`roles` in `discord/server.json` is listed top to bottom in display order. A member's name takes
-the color of their highest colored role, so Moderator and Contributor come first, then the class
-colors, then factions and realm types.
+`roles` in `discord/server.json` is listed top to bottom in display order: Moderator, Contributor
+and ForeverScout tester. A member's name takes the color of their highest role.
 
 - The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
   color and "show separately" (`hoist`) setting as listed, and puts them in the listed order.
@@ -55,8 +54,8 @@ colors, then factions and realm types.
 
 ## Still done by hand in Discord
 
-- **Onboarding** (members pick their faction, classes and realm type when they join):
-  Server Settings > Onboarding. The roles already exist once the layout is applied.
+- **Rules screening** (new members accept the rules before they can post, react or DM):
+  Server Settings > Safety Setup > DM and Spam Protection.
 - **Moderator permissions:** Server Settings > Roles > Moderator.
 - **Welcome and rules text:** post them yourself, or ask Claude to draft them.
 - **Two-factor sign-in** on your Discord account, then **Server Settings > Safety Setup >

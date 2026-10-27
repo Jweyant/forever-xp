@@ -4,7 +4,7 @@
     {
       "name": "Start Here",
       "channels": [
-        { "name": "welcome", "type": "text", "readonly": true, "topic": "Start here: what Forever XP is, where the tools are, and how to get roles." },
+        { "name": "welcome", "type": "text", "readonly": true, "topic": "Start here: what Forever XP is and where the tools are. Accept the rules to start posting." },
         { "name": "rules", "type": "text", "readonly": true, "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
         { "name": "announcements", "type": "announcement", "readonly": true, "topic": "Forever XP news: new tools, guides and data updates from forever-xp.com. Follow this channel to get them in your own server." },
         { "name": "patch-notes", "type": "announcement", "readonly": true, "topic": "Every new Blizzard WoW Forever change, posted automatically. Search them all at https://forever-xp.com/changes/" }
@@ -52,20 +52,6 @@
   "roles": [
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
-    { "name": "Warrior", "color": "#C69B6D" },
-    { "name": "Paladin", "color": "#F48CBA" },
-    { "name": "Hunter", "color": "#AAD372" },
-    { "name": "Rogue", "color": "#FFF468" },
-    { "name": "Priest", "color": "#FFFFFF" },
-    { "name": "Shaman", "color": "#0070DD" },
-    { "name": "Mage", "color": "#3FC7EB" },
-    { "name": "Warlock", "color": "#8788EE" },
-    { "name": "Druid", "color": "#FF7C0A" },
-    { "name": "ForeverScout tester", "color": "#6B3FC4" },
-    { "name": "Horde", "color": "#B3261E" },
-    { "name": "Alliance", "color": "#2A62C4" },
-    { "name": "PvP realm" },
-    { "name": "Normal realm" },
-    { "name": "RP realm" }
+    { "name": "ForeverScout tester", "color": "#6B3FC4" }
   ]
 }
