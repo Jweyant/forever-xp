@@ -13,7 +13,7 @@ Discord; every tool still works without an account.
 | Session | `__Host-fxp_sid` cookie: random 256-bit ID, HttpOnly, Secure, SameSite=Lax, 30 days. Only its SHA-256 hash is stored |
 | Limits | 50 saved plans per player, 2 KB each, 8 KB request bodies |
 
-Endpoints: `GET /api/auth/login?return=/path/`, `GET /api/auth/callback`, `POST /api/auth/logout`,
+Endpoints: `POST /api/auth/login` (form field `return=/path/`), `GET /api/auth/callback`, `POST /api/auth/logout`,
 `GET|DELETE /api/me`, `GET|POST /api/plans`, `PUT|DELETE /api/plans/<id>`.
 
 What we store: a random user ID, the Discord user ID, the Discord display name, session hashes,

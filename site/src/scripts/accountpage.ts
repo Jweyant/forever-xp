@@ -1,6 +1,6 @@
 // The /account/ page: saved plans, sign out, delete account. All server text goes in with
 // textContent; plan links are rebuilt by planHref() from checked parts.
-import { accountsOn, me, listPlans, deletePlan, signOut, deleteAccount, planHref, signInHref, type Plan } from "./account";
+import { accountsOn, me, listPlans, deletePlan, signOut, deleteAccount, planHref, type Plan } from "./account";
 
 const root = document.getElementById("acct-page")!;
 const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -38,11 +38,7 @@ async function load() {
   const who = accountsOn() ? await me() : "off";
   if (who === "off") { state.textContent = "Accounts aren't switched on yet. Everything on the site still works without one."; return; }
   state.hidden = true;
-  if (!who) {
-    $<HTMLAnchorElement>("[data-signin]").href = signInHref();
-    $("[data-signed-out]").hidden = false;
-    return;
-  }
+  if (!who) { $("[data-signed-out]").hidden = false; return; }
   $("[data-signed-in]").hidden = false;
   $("[data-name]").textContent = who.name;
   try {

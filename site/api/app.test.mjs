@@ -54,8 +54,11 @@ const req = (path, { method = "GET", cookie = "", origin, body, type = "applicat
 const setCookies = (res) => res.headers.getSetCookie();
 const cookieValue = (res, name) => setCookies(res).map((c) => c.split(";")[0]).find((c) => c.startsWith(`${name}=`))?.split("=")[1];
 
+const startLogin = (returnPath = "/bis/", { origin = ORIGIN } = {}) =>
+  handle(req("/api/auth/login", { method: "POST", origin, type: "application/x-www-form-urlencoded", body: `return=${encodeURIComponent(returnPath)}` }), env, ctx);
+
 async function signIn(returnPath = "/bis/") {
-  const start = await handle(req(`/api/auth/login?return=${encodeURIComponent(returnPath)}`), env, ctx);
+  const start = await startLogin(returnPath);
   const state = new URL(start.headers.get("Location")).searchParams.get("state");
   const stateCookie = cookieValue(start, "__Host-fxp_oauth");
   const done = await handle(req(`/api/auth/callback?code=goodcode&state=${state}`, { cookie: `__Host-fxp_oauth=${stateCookie}` }), env, ctx);
@@ -69,7 +72,7 @@ test("accounts stay off until configured", async () => {
 
 test("login sends you to Discord with state, PKCE and identify only", async () => {
   const { start } = await signIn();
-  assert.equal(start.status, 302);
+  assert.equal(start.status, 303);
   const loc = new URL(start.headers.get("Location"));
   assert.equal(loc.origin, "https://discord.com");
   assert.equal(loc.searchParams.get("scope"), "identify");
@@ -97,7 +100,7 @@ test("callback signs you in, stores only a session hash, and never keeps Discord
 });
 
 test("callback refuses a missing, mismatched, expired or reused state", async () => {
-  const start = await handle(req("/api/auth/login"), env, ctx);
+  const start = await startLogin("/");
   const state = new URL(start.headers.get("Location")).searchParams.get("state");
   const other = "A".repeat(43);
   let r = await handle(req(`/api/auth/callback?code=goodcode&state=${state}`), env, ctx);
@@ -108,7 +111,7 @@ test("callback refuses a missing, mismatched, expired or reused state", async ()
   assert.match(r.headers.get("Location"), /signin=ok/);
   r = await handle(req(`/api/auth/callback?code=goodcode&state=${state}`, { cookie: `__Host-fxp_oauth=${state}` }), env, ctx);
   assert.equal(r.headers.get("Location"), "/?signin=failed", "state is single use");
-  const s2 = await handle(req("/api/auth/login"), env, ctx);
+  const s2 = await startLogin("/");
   const st2 = new URL(s2.headers.get("Location")).searchParams.get("state");
   env.DB.db.prepare("UPDATE oauth_states SET expires = 1").run();
   r = await handle(req(`/api/auth/callback?code=goodcode&state=${st2}`, { cookie: `__Host-fxp_oauth=${st2}` }), env, ctx);
@@ -117,11 +120,27 @@ test("callback refuses a missing, mismatched, expired or reused state", async ()
 });
 
 test("a bad code or a Discord error doesn't sign you in", async () => {
-  const start = await handle(req("/api/auth/login?return=/bis/"), env, ctx);
+  const start = await startLogin("/bis/");
   const state = new URL(start.headers.get("Location")).searchParams.get("state");
   const r = await handle(req(`/api/auth/callback?code=badcode&state=${state}`, { cookie: `__Host-fxp_oauth=${state}` }), env, ctx);
   assert.equal(r.headers.get("Location"), "/bis/?signin=failed");
   assert.equal(env.DB.count("sessions"), 0);
+});
+
+test("sign-in starts only from a form on the site; a plain visit goes to the account page", async () => {
+  for (const method of ["GET", "HEAD"]) {
+    const r = await handle(req("/api/auth/login?return=/bis/", { method }), env, ctx);
+    assert.equal(r.status, 303, method);
+    assert.equal(r.headers.get("Location"), "/account/", method);
+    assert.equal(r.headers.get("X-Robots-Tag"), "noindex, nofollow");
+  }
+  assert.equal((await startLogin("/bis/", { origin: "" })).status, 403, "no Origin");
+  assert.equal((await startLogin("/bis/", { origin: "https://evil.com" })).status, 403, "other Origin");
+  const json = await handle(req("/api/auth/login", { method: "POST", origin: ORIGIN, body: { return: "/bis/" } }), env, ctx);
+  assert.equal(json.status, 400, "form body only");
+  const big = await handle(req("/api/auth/login", { method: "POST", origin: ORIGIN, type: "application/x-www-form-urlencoded", body: `return=${"a".repeat(2000)}` }), env, ctx);
+  assert.equal(big.status, 400, "size limit");
+  assert.equal(env.DB.count("oauth_states"), 0, "nothing stored unless sign-in really started");
 });
 
 test("sign-in only returns to pages on this site", () => {

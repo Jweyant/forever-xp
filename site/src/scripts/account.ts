@@ -54,13 +54,26 @@ export function planHref(p: Plan): string | null {
   return null;
 }
 
-/** Link that starts Discord sign-in and comes back to this page. The server checks the path. */
-export function signInHref() {
-  return `/api/auth/login?return=${encodeURIComponent(location.pathname)}`;
+/** Start Discord sign-in and come back to this page (the server checks the path). It's a form POST,
+ * so the sign-in address is never a plain link. Use as a click handler on a link to /account/. */
+export function startSignIn(e?: Event) {
+  e?.preventDefault();
+  rememberHash();
+  const form = document.createElement("form");
+  form.method = "post";
+  form.action = "/api/auth/login";
+  form.hidden = true;
+  const back = document.createElement("input");
+  back.type = "hidden";
+  back.name = "return";
+  back.value = location.pathname;
+  form.append(back);
+  document.body.append(form);
+  form.submit();
 }
 
 /** The talent calculator keeps its build in the hash, which a sign-in round trip drops. */
-export function rememberHash() {
+function rememberHash() {
   try { sessionStorage.setItem("fxp-signin", JSON.stringify({ path: location.pathname, hash: location.hash })); } catch { /* storage blocked */ }
 }
 
