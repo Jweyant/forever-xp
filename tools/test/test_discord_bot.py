@@ -33,6 +33,9 @@ class FakeDiscord:
             for m in body:
                 next(r for r in self.roles if r["id"] == m["id"])["position"] = m["position"]
             return self.roles
+        if "/roles/" in path and method == "DELETE":
+            self.roles = [r for r in self.roles if r["id"] != path.rsplit("/", 1)[1]]
+            return {}
         if "/roles/" in path and method == "PATCH":
             next(r for r in self.roles if r["id"] == path.rsplit("/", 1)[1]).update(body)
             return {}
@@ -93,13 +96,29 @@ class Tests(unittest.TestCase):
         self.assertIn("Moderator", new_roles)
         self.assertTrue(all(b["permissions"] == "0" and not b["mentionable"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")))
 
+    def test_only_retired_roles_are_removed(self):
+        cfg = {"categories": [], "roles": [{"name": "Moderator"}], "retired_roles": ["Mage", "Horde", "Druid"]}
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "61", "name": "mage", "position": 1}, {"id": "62", "name": "Hunter", "position": 2},
+                 {"id": "63", "name": "Horde", "position": 3, "managed": True},
+                 {"id": "50", "name": "Forever XP", "position": 4, "managed": True, "tags": {"bot_id": "42"}},
+                 {"id": "64", "name": "Druid", "position": 5}]
+        d = FakeDiscord([], roles)
+        bot.setup(cfg, d, "1")
+        deleted = [p.rsplit("/", 1)[1] for m, p, _ in d.calls if m == "DELETE"]
+        self.assertEqual(deleted, ["61"])   # not Hunter (not retired), not a managed role, not one above the bot
+
+    def test_retired_roles_are_validated(self):
+        problems = bot.validate({"categories": [], "roles": [{"name": "Moderator"}], "retired_roles": ["moderator", "@everyone"]})
+        self.assertEqual(len(problems), 2, problems)
+
     def test_roles_not_in_the_file_are_left_alone(self):
-        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "60", "name": "Horde", "position": 1, "color": 0xB3261E},
+        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "60", "name": "Raid leader", "position": 1, "color": 0xB3261E},
                  {"id": "50", "name": "Forever XP", "position": 2, "managed": True, "tags": {"bot_id": "42"}}]
         d = FakeDiscord([], roles)
         bot.setup(CFG, d, "1")
-        horde = next(r for r in d.roles if r["id"] == "60")
-        self.assertEqual(horde["color"], 0xB3261E)
+        other = next(r for r in d.roles if r["id"] == "60")
+        self.assertEqual(other["color"], 0xB3261E)
         self.assertFalse(any("/roles/60" in p for m, p, _ in d.calls))
         moves = [m for meth, p, b in d.calls if meth == "PATCH" and p.endswith("/roles") for m in b]
         self.assertFalse(any(m["id"] == "60" for m in moves))
