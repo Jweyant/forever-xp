@@ -41,6 +41,9 @@ jobs:
         id: pkg
         run: |
           version="${TAG#v}"
+          if ! [[ "$version" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(-(alpha|beta)(\.?[0-9]{1,3})?)?$ ]]; then
+            echo "::error::The tag is not a version like v1.2.3 or v1.2.3-beta"; exit 1
+          fi
           sed -i "s/^## Version: .*/## Version: ${version}/" "addon/${ADDON}/${ADDON}.toc"
           sed -i "s/^ns.VERSION = .*/ns.VERSION = \"${version}\"/" "addon/${ADDON}/Core.lua"
           zip="${ADDON}-${version}.zip"
