@@ -28,7 +28,7 @@ const desc = `${q.n}${q.lv ? ` (level ${q.lv})` : ""}, a WoW Forever quest in ${
 const places = [q.start && { role: "Start", p: q.start }, q.end && { role: "Turn in", p: q.end }].filter(Boolean) as { role: string; p: Place }[];
 const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" : "NPC");
 ---
-<Base title={`${q.n} quest`} description={desc}>
+<Base image="/og/quests.jpg" title={`${q.n} quest`} description={desc}>
   <p class="crumbs"><a href="/quests/">Quests</a> / <a href={`/quests/zone/${zslug(q.z)}/`}>{q.z}</a></p>
   <h1>{q.n}{q.new && <span class="tag-new" title="Not in Classic Era: added for WoW Forever">NEW</span>}</h1>
   <p class="tags">

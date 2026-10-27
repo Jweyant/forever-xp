@@ -60,7 +60,8 @@ reviewed pull request with those checks green.
 
 ## Repo map
 
-- `site/` Astro site (Cloudflare Pages). `src/scripts/` client code, `tests/security.mjs` hostile-input test.
+- `site/` Astro site (Cloudflare Pages). `src/scripts/` client code, `tests/security.mjs` hostile-input test,
+  `tools/og-cards.mjs` draws the share images in `public/og/`.
   `site/api/app.js` the accounts API (Pages Function at `/api/*`, D1, Discord sign-in), `site/api/schema.sql`.
 - `server/` upload Worker (Cloudflare). `uploader/` desktop uploader (Go). `addon/` ForeverScout.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits,

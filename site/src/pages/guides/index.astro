@@ -11,7 +11,7 @@ const tracks = [...new Set(alliance.map((g) => g.for || ""))].map((f) => ({
   list: alliance.filter((g) => (g.for || "") === f).sort((a, b) => a.from - b.from),
 }));
 ---
-<Base title="Leveling guides" description="Free WoW Forever leveling guides for Horde and Alliance, with estimated time and XP for every step.">
+<Base image="/og/guides.jpg" title="Leveling guides" description="Free WoW Forever leveling guides for Horde and Alliance, with estimated time and XP for every step.">
   <h1>Leveling guides</h1>
   <p class="lede">Horde and Alliance routes, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step.</p>
   <XpBar guides={guides} />

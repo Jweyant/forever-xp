@@ -1,6 +1,7 @@
 ---
 import { jsonForHtml } from "../../scripts/items";
 import Base from "../../layouts/Base.astro";
+import { CLASS_COLOR } from "../../config";
 import talentsJson from "../../data/talents.json";
 
 const data = talentsJson as { build: string; hotfixes?: boolean; classes: { id: number; name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
@@ -9,8 +10,9 @@ export function getStaticPaths() {
 }
 const { c } = Astro.props as { c: (typeof data.classes)[number] };
 const treeNames = c.trees.map((t) => t.name).join(", ");
+const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og/talents-${c.slug}.jpg` : "/og/talents.jpg";
 ---
-<Base title={`${c.name} talent calculator`} description={`WoW Forever ${c.name} talent calculator: ${treeNames}. Built from the Forever game client, with shareable build links.`}>
+<Base image={ogImage} title={`${c.name} talent calculator`} description={`WoW Forever ${c.name} talent calculator: ${treeNames}. Built from the Forever game client, with shareable build links.`}>
   <p class="crumbs"><a href="/talents/">Talents</a> / {c.name}</p>
   <h1>{c.name} talents</h1>
   <nav class="classes" aria-label="Other classes">

@@ -18,7 +18,7 @@ const byRate = [...(guide.quests || [])].sort((a, b) => b.xp_per_min - a.xp_per_
 const maxRate = Math.max(1, ...byRate.map((q) => q.xp_per_min));
 const steps = (guide.steps || []).filter((s) => s.text);
 ---
-<Base title={`${guide.name} ${guide.faction} leveling guide`} description={`Free WoW Forever ${guide.faction} leveling route for ${guide.zone}, levels ${guide.from}–${guide.to}. Estimated ${fmtMinutes(guide.minutes)}, ${guide.quest_ids.length} quests.`}>
+<Base image="/og/guides.jpg" title={`${guide.name} ${guide.faction} leveling guide`} description={`Free WoW Forever ${guide.faction} leveling route for ${guide.zone}, levels ${guide.from}–${guide.to}. Estimated ${fmtMinutes(guide.minutes)}, ${guide.quest_ids.length} quests.`}>
   <p class="crumbs"><a href="/guides/">Guides</a> / {guide.faction}</p>
   <h1>{guide.zone} <span class="lv">{guide.from}–{guide.to}</span></h1>
   <dl class="sum">

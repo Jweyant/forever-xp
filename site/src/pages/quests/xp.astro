@@ -7,7 +7,7 @@ const rows = [...quests].sort((a, b) => score(b) - score(a));
 const located = rows.filter((q) => !q.unlocated && rateOf(q) != null);
 const maxRate = Math.max(...located.map((q) => rateOf(q) ?? 0));
 ---
-<Base title="Quest XP per minute" description="Every scored WoW Forever quest ranked by XP per minute with travel included. Filter by zone and see which to skip.">
+<Base image="/og/quests-xp.jpg" title="Quest XP per minute" description="Every scored WoW Forever quest ranked by XP per minute with travel included. Filter by zone and see which to skip.">
   <p class="crumbs"><a href="/quests/">Quests</a> / XP per minute</p>
   <h1>Quests by XP per minute</h1>
   <p class="lede">Each quest scored on its own, travel included. Sort any column, filter by zone, and share the link: filters stay in the address.</p>

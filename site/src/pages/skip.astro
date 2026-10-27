@@ -10,7 +10,7 @@ const byZone = zones
   .filter((z) => z.list.length);
 const total = byZone.reduce((s, z) => s + z.list.length, 0);
 ---
-<Base title="Quest skip list" description={`${total} WoW Forever quests to skip while leveling, by zone, with the reason for each.`}>
+<Base image="/og/quests.jpg" title="Quest skip list" description={`${total} WoW Forever quests to skip while leveling, by zone, with the reason for each.`}>
   <h1>Quests to skip</h1>
   <p class="lede">{total} quests that cost more time than they're worth, or send you somewhere dangerous or far away. Zone by zone, with the reason.</p>
   <p class="muted small">A quest lands here when a route skips it on purpose, or when it scores under {meta.skip_threshold} XP per minute with travel counted.</p>

@@ -4,7 +4,7 @@ import talentsJson from "../data/talents.json";
 const CC: Record<string, string> = { warrior: "#c79c6e", paladin: "#f58cba", hunter: "#abd473", rogue: "#d4c33a", priest: "#9aa3ad", shaman: "#0070de", mage: "#3fb3e0", warlock: "#9482c9", druid: "#ff7d0a" };
 const data = talentsJson as { build: string; classes: { name: string; slug: string; trees: { name: string; talents: unknown[] }[] }[] };
 ---
-<Base title="Talent calculator" description="WoW Forever talent calculator for all nine classes, built from the Forever game client, with shareable build links.">
+<Base image="/og/talents.jpg" title="Talent calculator" description="WoW Forever talent calculator for all nine classes, built from the Forever game client, with shareable build links.">
   <h1>Talent calculator</h1>
   <p class="lede">Plan a WoW Forever build and share it as a link. Every talent comes from the Forever game client, so the trees match what's in the game, including Forever's reworked talents.</p>
   <ul class="picker">
