@@ -33,6 +33,9 @@ and how it could be abused; before pushing, run the checks below.
    Player logs are parsed as data (`tools/luadata.py`), never executed.
 10. **Least privilege**: workflows declare only the `permissions` they need; the Cloudflare token
     is scoped to forever-xp.com.
+11. **This repository is public.** Commit messages, pull requests and docs say what changed, briefly.
+    Infrastructure and account details (plans, limits and rule settings, dashboard configuration,
+    open to-dos) stay out of git; the maintainer keeps those privately.
 
 ## Before every push
 
@@ -63,4 +66,4 @@ reviewed pull request with those checks green.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits.
   `tools/build_talents.py` reads Forever's talent trees (trait tables + hotfixes) from wago.tools.
 - `discord/server.json` Discord layout, `tools/discord_bot.py` bot jobs (setup, patch-notes feed), `docs/discord.md`.
-- `docs/security-settings.md` settings outside the code; `SECURITY.md` reporting and controls.
+- `SECURITY.md` reporting and controls.

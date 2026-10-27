@@ -1,8 +1,7 @@
 # Player accounts
 
 Optional accounts let players keep BIS plans and talent builds on any device. Signing in is with
-Discord; every tool still works without an account. The code is in place and switched off until
-the setup below is done.
+Discord; every tool still works without an account.
 
 ## How it works
 
@@ -12,7 +11,7 @@ the setup below is done.
 | API | A Cloudflare Pages Function at `forever-xp.com/api/*` (`site/functions/api/[[path]].js` → `site/api/app.js`), deployed with the site |
 | Storage | Cloudflare D1 (`site/api/schema.sql`) |
 | Session | `__Host-fxp_sid` cookie: random 256-bit ID, HttpOnly, Secure, SameSite=Lax, 30 days. Only its SHA-256 hash is stored |
-| Limits | 50 saved plans per player, 2 KB each, 8 KB request bodies, plus a Cloudflare rate-limiting rule |
+| Limits | 50 saved plans per player, 2 KB each, 8 KB request bodies |
 
 Endpoints: `GET /api/auth/login?return=/path/`, `GET /api/auth/callback`, `POST /api/auth/logout`,
 `GET|DELETE /api/me`, `GET|POST /api/plans`, `PUT|DELETE /api/plans/<id>`.
@@ -33,31 +32,13 @@ once to read the user's ID and name, then revoked; it is never stored.
 - **Deleting an account:** "Delete my account" removes the user, every session and every plan in one transaction.
 - **Tests:** `npm run test:api` runs the API against real SQLite with Discord faked. It covers state, PKCE, single use and expiry, session hashing, CSRF, validation, caps, owner isolation and deletion.
 
-## One-time setup (server owner, about 10 minutes)
+## Setup
 
-1. **Discord.** In the Developer Portal, open the **Forever XP** application (the same one as the bot) and go to **OAuth2**:
-   - Under **Redirects**, add `https://forever-xp.com/api/auth/callback`.
-   - Copy the **Client ID**.
-   - Click **Reset Secret** and copy the **client secret**. You'll paste it in step 4 only.
-2. **Database.** In Cloudflare, go to **Workers & Pages > D1 > Create**:
-   - Name it `forever-xp-accounts`.
-   - Open its **Console**, paste the contents of `site/api/schema.sql`, and run it.
-3. **Bind it to the site.** Go to **Workers & Pages > forever-xp > Settings > Bindings > Add > D1 database**:
-   - Variable name: `DB`.
-   - Database: `forever-xp-accounts`.
-   - Environment: **Production**.
-4. **Sign-in settings.** On the same project, go to **Settings > Variables and Secrets** (Production):
-   - `DISCORD_CLIENT_ID`: the client ID, as plain text.
-   - `DISCORD_CLIENT_SECRET`: the client secret, as type **Secret**.
-5. **Rate limit.** On the forever-xp.com zone, go to **Security > Security rules**, then edit the rate-limiting rule (or create one):
-   - When **URI Path starts with** `/api/`, allow **10 requests per 10 seconds** per IP, then **Block** for 10 seconds. The Free plan allows 10-second windows and path-only matching.
-   - The Free plan includes one rule. The upload server used to hold it; it now limits its own writes in code (`BURST` in `server/wrangler.toml`), so the rule can protect the API. Only re-point the rule after that Worker version has deployed.
-6. **Switch it on.** Set `accounts: true` in `site/src/config.ts` in a pull request. After it deploys:
-   - a **Sign in** button appears in the header;
-   - **Save to my account** appears on the BIS planner and the talent calculators;
-   - your plans are at `/account/`.
-
-Until steps 2 to 4 are done, `/api/*` answers `503 accounts-off` and the site shows no sign-in.
+The API needs a D1 database bound as `DB` (schema in `site/api/schema.sql`) and the Pages
+variables `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET` (as a secret), with
+`https://<site>/api/auth/callback` as a redirect on the Discord application. Without them,
+`/api/*` answers `503 accounts-off`. `accounts` in `site/src/config.ts` shows or hides the
+sign-in buttons.
 
 ## Later
 

@@ -6,10 +6,7 @@ compatibility_date = "2025-06-01"
 binding = "LOGS"
 bucket_name = "foreverscout-logs"
 
-# Burst limit on writes (withinBurst in src/index.js): 5 non-GET requests per 10 seconds per
-# address, counted by Cloudflare in each location. This replaced the dashboard rate-limiting rule
-# for upload.forever-xp.com, so the zone's one free rule can protect the accounts API instead.
-# namespace_id only has to be unique within the Cloudflare account.
+# Burst limit on writes (withinBurst in src/index.js).
 [[ratelimits]]
 name = "BURST"
 namespace_id = "1001"
