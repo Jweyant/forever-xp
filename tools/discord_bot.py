@@ -29,6 +29,8 @@ CREATE_PUBLIC_THREADS, CREATE_PRIVATE_THREADS, SEND_IN_THREADS = 1 << 35, 1 << 3
 READONLY_DENY = SEND | CREATE_PUBLIC_THREADS | CREATE_PRIVATE_THREADS | SEND_IN_THREADS
 BOT_ALLOW = VIEW | SEND | EMBED | HISTORY
 NAME_RE = re.compile(r"^[a-z0-9-]{1,90}$")
+ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 &'-]{0,58}[A-Za-z0-9])?$")
+ROLE_KEYS = {"name", "color", "hoist"}
 
 
 def log(msg):
@@ -57,9 +59,24 @@ def validate(cfg):
                 problems.append(f"{name}: only forum channels have tags")
             if len(tags) > 20 or any(len(t) > 20 for t in tags):
                 problems.append(f"{name}: at most 20 tags of up to 20 characters")
-    for r in cfg.get("roles", []):
-        if not re.match(r"^#[0-9A-Fa-f]{6}$", r.get("color", "")):
-            problems.append(f"role {r.get('name')}: color must look like #RRGGBB")
+    roles = cfg.get("roles", [])
+    if len(roles) > 50:
+        problems.append("at most 50 roles")
+    seen_roles = set()
+    for r in roles:
+        name = r.get("name") if isinstance(r, dict) else None
+        if not isinstance(name, str) or not ROLE_NAME_RE.match(name):
+            problems.append(f"role {name!r}: names are 1-60 letters, digits, spaces, & ' or -")
+            continue
+        if set(r) - ROLE_KEYS:
+            problems.append(f"role {name}: unknown keys {sorted(set(r) - ROLE_KEYS)}")
+        if "color" in r and not re.match(r"^#[0-9A-Fa-f]{6}$", str(r["color"])):
+            problems.append(f"role {name}: color must look like #RRGGBB")
+        if "hoist" in r and not isinstance(r["hoist"], bool):
+            problems.append(f"role {name}: hoist must be true or false")
+        if name.lower() in seen_roles:
+            problems.append(f"role {name}: listed twice")
+        seen_roles.add(name.lower())
     return problems
 
 
@@ -164,14 +181,66 @@ def setup(cfg, d, guild):
         log(f"~ order {len(positions)} channels as in discord/server.json")
         d.call("PATCH", f"/guilds/{guild}/channels", positions, write=True)
 
-    names = {r["name"].lower() for r in roles}
-    for r in cfg.get("roles", []):
-        if r["name"].lower() in names:
-            continue
-        log(f"+ role {r['name']}")
-        d.call("POST", f"/guilds/{guild}/roles", {"name": r["name"], "color": int(r["color"][1:], 16),
-                                                  "hoist": False, "mentionable": False, "permissions": "0"}, write=True)
+    sync_roles(cfg, d, guild, roles, me)
     log("Done.")
+
+
+def role_look(r):
+    """The parts of a role the bot manages: color and hoist. Never permissions or mentionable."""
+    return {"color": int(r["color"][1:], 16) if r.get("color") else 0, "hoist": bool(r.get("hoist", False))}
+
+
+def sync_roles(cfg, d, guild, roles, me):
+    """Create missing roles (no permissions, not mentionable), keep color and hoist as configured,
+    and order them as listed. Only roles below the bot's own role can be changed; anything above
+    it is reported and left alone. Never deletes a role or touches its permissions."""
+    wanted = cfg.get("roles", [])
+    if not wanted:
+        return
+
+    def index(rs):
+        return {r["name"].lower(): r for r in rs if r["id"] != guild and not r.get("managed")}
+
+    def top_of_bot(rs):
+        return max((r.get("position", 0) for r in rs if (r.get("tags") or {}).get("bot_id") == me["id"]), default=0)
+
+    bot_top = top_of_bot(roles)
+    have = index(roles)
+    for r in wanted:
+        look, x = role_look(r), have.get(r["name"].lower())
+        if not x:
+            log(f"+ role {r['name']}")
+            d.call("POST", f"/guilds/{guild}/roles", {"name": r["name"], **look, "mentionable": False, "permissions": "0"}, write=True)
+            continue
+        changed = sorted(k for k, v in look.items() if x.get(k) != v)
+        if not changed:
+            continue
+        if x.get("position", 0) >= bot_top:
+            log(f"! role {x['name']} is above the bot's role, so its {', '.join(changed)} wasn't updated")
+            continue
+        log(f"~ role {x['name']}: {', '.join(changed)}")
+        d.call("PATCH", f"/guilds/{guild}/roles/{x['id']}", {k: look[k] for k in changed}, write=True)
+
+    if not getattr(d, "dry", False):
+        roles = d.call("GET", f"/guilds/{guild}/roles")
+        bot_top = top_of_bot(roles)
+    have = index(roles)
+    present = [have[r["name"].lower()] for r in wanted if r["name"].lower() in have]
+    above = [x["name"] for x in present if x.get("position", 0) >= bot_top]
+    if above:
+        log(f"! not ordering roles: {', '.join(above)} sit above the bot's role. Drag the bot's role above them in Server Settings > Roles.")
+        return
+    slots = sorted({x.get("position", 0) for x in present}, reverse=True)
+    if len(slots) < len(present):  # tied positions: use a fresh block just above the lowest one
+        low = min(slots)
+        slots = list(range(low + len(present) - 1, low - 1, -1))
+        if slots[0] >= bot_top:
+            log("! not ordering roles: not enough room below the bot's role. Drag the bot's role to the top in Server Settings > Roles.")
+            return
+    moves = [{"id": x["id"], "position": p} for x, p in zip(present, slots) if x.get("position") != p]
+    if moves:
+        log(f"~ order {len(present)} roles as in discord/server.json")
+        d.call("PATCH", f"/guilds/{guild}/roles", moves, write=True)
 
 
 # ---- patch notes -------------------------------------------------------------------------------

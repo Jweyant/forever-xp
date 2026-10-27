@@ -28,12 +28,26 @@ The bot never deletes anything, never pings anyone, and never needs Administrato
 
 After that, the patch-notes feed starts on its own with the next new Blizzard post.
 
+## Roles
+
+`roles` in `discord/server.json` is listed top to bottom in display order. A member's name takes
+the color of their highest colored role, so Moderator and Contributor come first, then the class
+colors, then factions and realm types.
+
+- The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
+  color and "show separately" (`hoist`) setting as listed, and puts them in the listed order.
+- It never changes an existing role's permissions, never deletes a role, and can only edit roles
+  below its own. Keep the bot's role at the top of Server Settings > Roles; if it isn't, the run
+  says which roles it had to leave alone.
+- Staff permissions (Moderator) are given by hand in Server Settings > Roles, since a bot can't
+  grant permissions it doesn't have.
+
 ## Security
 
 - The token lives only in the `DISCORD_BOT_TOKEN` Actions secret. Only workflows on `main` use it;
   pull requests (including from forks) never see it.
 - Least privilege: the six permissions above. Manage Roles is needed to make channels read-only
-  for members and to create the class and faction roles; the bot can't touch roles above its own.
+  for members and to create and order the member roles; the bot can't touch roles above its own.
 - Messages are posted with mentions disabled, Blizzard's text has Discord formatting escaped,
   link previews are suppressed, and no more than six posts go out per run.
 - If the token ever leaks: **Bot > Reset Token** in the developer portal (the old one stops
@@ -41,8 +55,9 @@ After that, the patch-notes feed starts on its own with the next new Blizzard po
 
 ## Still done by hand in Discord
 
-- **Onboarding** (members pick their class and faction roles when they join):
+- **Onboarding** (members pick their faction, classes and realm type when they join):
   Server Settings > Onboarding. The roles already exist once the layout is applied.
+- **Moderator permissions:** Server Settings > Roles > Moderator.
 - **Welcome and rules text:** post them yourself, or ask Claude to draft them.
 - **Two-factor sign-in** on your Discord account, then **Server Settings > Safety Setup >
   Require 2FA for moderator actions**.

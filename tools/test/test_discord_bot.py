@@ -21,7 +21,21 @@ class FakeDiscord:
         if path == "/users/@me":
             return {"id": "42", "username": "forever-xp"}
         if path.endswith("/roles") and method == "GET":
+            return [dict(r) for r in self.roles]
+        if path.endswith("/roles") and method == "POST":   # Discord adds new roles at the bottom
+            for r in self.roles:
+                if r.get("position", 0) >= 1:
+                    r["position"] += 1
+            self.n += 1
+            self.roles.append({"id": str(self.n), "position": 1, **body})
+            return self.roles[-1]
+        if path.endswith("/roles") and method == "PATCH":
+            for m in body:
+                next(r for r in self.roles if r["id"] == m["id"])["position"] = m["position"]
             return self.roles
+        if "/roles/" in path and method == "PATCH":
+            next(r for r in self.roles if r["id"] == path.rsplit("/", 1)[1]).update(body)
+            return {}
         if path.endswith("/channels") and method == "GET":
             return self.channels
         if method == "POST" and path.endswith("/channels"):
@@ -41,6 +55,14 @@ class Tests(unittest.TestCase):
                "roles": [{"name": "r", "color": "red"}]}
         self.assertEqual(len(bot.validate(bad)), 3)
 
+    def test_validation_catches_bad_roles(self):
+        bad = {"categories": [], "roles": [
+            {"name": "@everyone"}, {"name": "Mage", "permissions": "8"}, {"name": "Rogue", "hoist": "yes"},
+            {"name": "mage"}, {"name": " Padded "}, {"name": "x" * 61}]}
+        problems = bot.validate(bad)
+        self.assertEqual(len(problems), 6, problems)
+        self.assertTrue(any("unknown keys" in p for p in problems))   # permissions can't be set from the file
+
     def test_plain_text_cannot_ping_or_format(self):
         s = bot.plain("@everyone **free gold** at discord.gg/scam [click](http://x)")
         self.assertNotIn("@everyone", s)
@@ -52,7 +74,8 @@ class Tests(unittest.TestCase):
         channels = [{"id": "10", "type": 4, "name": "Text Channels"}, {"id": "11", "type": 0, "name": "general", "parent_id": "10"},
                     {"id": "12", "type": 5, "name": "announcements", "parent_id": None,
                      "permission_overwrites": [{"id": "77", "type": 0, "allow": "8192", "deny": "0"}]}]
-        roles = [{"id": "1", "name": "@everyone"}, {"id": "50", "name": "forever-xp", "tags": {"bot_id": "42"}}, {"id": "51", "name": "Mage"}]
+        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "50", "name": "forever-xp", "position": 2, "managed": True, "tags": {"bot_id": "42"}},
+                 {"id": "51", "name": "Mage", "position": 1, "color": 0x3FC7EB, "hoist": False}]
         d = FakeDiscord(channels, roles)
         bot.setup(CFG, d, guild)
         posts = [b["name"] for m, p, b in d.calls if m == "POST" and p.endswith("/channels")]
@@ -69,6 +92,35 @@ class Tests(unittest.TestCase):
         self.assertNotIn("Mage", new_roles)
         self.assertIn("Warrior", new_roles)
         self.assertTrue(all(b["permissions"] == "0" and not b["mentionable"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")))
+
+    def test_roles_end_up_in_listed_order_without_permissions(self):
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "51", "name": "Mage", "position": 1, "color": 0, "hoist": False, "permissions": "8192"},
+                 {"id": "52", "name": "horde", "position": 2, "color": 0xB3261E, "hoist": False},
+                 {"id": "50", "name": "Forever XP", "position": 3, "managed": True, "tags": {"bot_id": "42"}}]
+        d = FakeDiscord([], roles)
+        bot.setup(CFG, d, "1")
+        by_pos = [r["name"].lower() for r in sorted(d.roles, key=lambda r: -r["position"]) if not r.get("managed") and r["id"] != "1"]
+        self.assertEqual(by_pos, [r["name"].lower() for r in CFG["roles"]])
+        self.assertEqual(max(d.roles, key=lambda r: r["position"])["id"], "50")   # bot role still on top
+        mage = next(r for r in d.roles if r["id"] == "51")
+        self.assertEqual((mage["color"], mage["permissions"]), (0x3FC7EB, "8192"))  # color fixed, hand-set permissions kept
+        for m, p, b in d.calls:
+            if m == "PATCH" and "/roles" in p and isinstance(b, dict):
+                self.assertFalse({"permissions", "mentionable", "name"} & set(b))
+        self.assertTrue(all(b["permissions"] == "0" and not b["mentionable"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")))
+        self.assertEqual(sum(1 for r in d.roles if r["name"].lower() == "horde"), 1)  # matched case-insensitively
+        self.assertFalse(any(m == "DELETE" for m, _, _ in d.calls))
+
+    def test_roles_above_the_bot_are_left_alone(self):
+        cfg = {"categories": [], "roles": [{"name": "Mage", "color": "#3FC7EB"}, {"name": "Hunter", "color": "#AAD372"}]}
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "50", "name": "Forever XP", "position": 1, "managed": True, "tags": {"bot_id": "42"}},
+                 {"id": "51", "name": "Mage", "position": 2, "color": 0, "hoist": True}]
+        d = FakeDiscord([], roles)
+        bot.setup(cfg, d, "1")
+        self.assertFalse(any(m == "PATCH" and "/roles" in p for m, p, _ in d.calls))
+        self.assertIn("Hunter", [b["name"] for m, p, b in d.calls if m == "POST" and p.endswith("/roles")])
 
     def test_post_notes_only_new_and_never_pings(self):
         with tempfile.TemporaryDirectory() as t:
