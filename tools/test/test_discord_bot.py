@@ -224,6 +224,23 @@ class Tests(unittest.TestCase):
         self.assertTrue(any("listed twice" in p for p in problems), problems)
         self.assertTrue(any("unknown keys" in p for p in problems), problems)
 
+    def test_post_date_posts_that_day_only(self):
+        with tempfile.TemporaryDirectory() as t:
+            a, b = Path(t, "a.json"), Path(t, "b.json")
+            u = "https://us.forums.blizzard.com/en/wow/t/notes/1"
+            a.write_text(json.dumps({"rows": [{"id": "1", "date": "2026-10-26", "kind": "Development notes", "section": "Races", "path": ["Human"], "text": "today", "url": u, "race": "Human"},
+                                              {"id": "2", "date": "2026-10-20", "kind": "Development notes", "section": "Quests", "path": [], "text": "older", "url": u}]}))
+            b.write_text(json.dumps({"rows": [{"id": "3", "date": "2026-10-26", "kind": "Known issues", "section": "Known issues", "path": [], "text": "issue", "url": u}]}))
+            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
+            bot.post_date(CFG, [a, b], "2026-10-26", d, "1")
+            msgs = [b["content"] for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
+            self.assertEqual(len(msgs), 1)
+            self.assertIn("today", msgs[0])
+            self.assertNotIn("older", msgs[0])
+            self.assertNotIn("issue", msgs[0])
+            with self.assertRaises(SystemExit):
+                bot.post_date(CFG, [a], "2026-10-26; rm -rf /", d, "1")
+
     def test_first_run_posts_nothing(self):
         d = FakeDiscord([], [])
         bot.post_notes(CFG, "/nonexistent/old.json", "/nonexistent/new.json", d, "1")

@@ -3,6 +3,7 @@
   python3 tools/discord_bot.py validate                 # check discord/server.json (no token needed)
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
+  python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # post one day's changes (run by hand)
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
 deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
@@ -335,6 +336,25 @@ def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3
     if isinstance(old_doc.get("articles"), list):
         seen = {x.get("url") for x in old_doc["articles"]}
         new_articles = [x for x in new_doc.get("articles", []) if safe_url(x.get("url")) and x["url"] not in seen]
+    send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles)
+
+
+def post_date(cfg, paths, date, d, guild, max_messages=6):
+    """Post every development note Blizzard dated `date` (YYYY-MM-DD), merged from the given notes
+    files. For catching the channel up by hand; the hourly feed only posts what's new."""
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date or ""):
+        sys.exit("The date must look like 2026-10-26.")
+    rows = {}
+    for p in paths:
+        if Path(p).exists():
+            for r in json.loads(Path(p).read_text()).get("rows", []):
+                rows[r["id"]] = r
+    picked = [r for r in rows.values() if r.get("date") == date and r.get("kind") != "Known issues"]
+    log(f"{len(picked)} changes dated {date}")
+    send_feed(cfg, d, guild, picked, [], max_messages, 0)
+
+
+def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles):
     if not new_rows and not new_articles:
         log("No new changes.")
         return
@@ -355,7 +375,11 @@ def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3
     groups = {}
     for r in new_rows:
         groups.setdefault(r.get("url", ""), []).append(r)
-    for url, rows in list(groups.items())[:max_messages]:
+    sent = 0
+    for url, rows in groups.items():
+        if sent >= max_messages:
+            log(f"message limit reached; the rest is on the site.")
+            break
         date = rows[0].get("date", "")
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(date)):
             date = ""
@@ -367,26 +391,36 @@ def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3
         if race:
             parts.append(f"{race} racial")
         head = f"**New WoW Forever changes from Blizzard** ({', '.join(parts)}{', ' + date if date else ''})"
-        lines, used = [], len(head) + 200
-        # Class and racial changes first, then everything else, each in Blizzard's order.
-        for r in sorted(rows, key=lambda r: 0 if r.get("cls") or r.get("race") else 1):
-            where = " › ".join([r.get("section", "")] + list(r.get("path", [])))
-            line = f"• {plain(where, 60)}: {plain(r.get('text', ''))}"
-            if used + len(line) > 1700:
-                break
-            lines.append(line)
-            used += len(line) + 1
-        more = len(rows) - len(lines)
         tail = []
-        if more:
-            tail.append(f"…and {more} more.")
         if safe_url(url):
             tail.append(f"Blizzard's post: <{url}>")
         tail.append("Search every change: <https://forever-xp.com/changes/" + (f"?date={date}" if date else "") + ">")
-        post(d, target, "\n".join([head, *lines, *tail]))
-        log(f"posted {len(lines)} of {len(rows)} changes from {url}")
-    if len(groups) > max_messages:
-        log(f"{len(groups) - max_messages} more posts' worth held back to avoid flooding the channel.")
+        # Class and racial changes first, then everything else, each in Blizzard's order. A long post
+        # is split over several messages (within the per-run limit) instead of being cut short.
+        lines = []
+        for r in sorted(rows, key=lambda r: 0 if r.get("cls") or r.get("race") else 1):
+            where = " › ".join([r.get("section", "")] + list(r.get("path", [])))
+            lines.append(f"• {plain(where, 60)}: {plain(r.get('text', ''))}")
+        chunks, cur = [], []
+        for line in lines:
+            if cur and sum(len(x) + 1 for x in cur) + len(line) > 1600:
+                chunks.append(cur)
+                cur = []
+            cur.append(line)
+        if cur:
+            chunks.append(cur)
+        room = max_messages - sent
+        shown = sum(len(c) for c in chunks[:room])
+        for i, chunk in enumerate(chunks[:room]):
+            last = i == min(room, len(chunks)) - 1
+            body = [head if i == 0 else "**…continued**", *chunk]
+            if last:
+                if shown < len(rows):
+                    body.append(f"…and {len(rows) - shown} more.")
+                body += tail
+            post(d, target, "\n".join(body))
+            sent += 1
+        log(f"posted {shown} of {len(rows)} changes from {url}")
 
 
 def main():
@@ -399,6 +433,10 @@ def main():
     p.add_argument("old")
     p.add_argument("new")
     p.add_argument("--dry-run", action="store_true")
+    q = sub.add_parser("post-date")
+    q.add_argument("date")
+    q.add_argument("notes", nargs="+")
+    q.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     cfg = json.loads((ROOT / "discord" / "server.json").read_text())
@@ -414,6 +452,8 @@ def main():
     d = Discord(os.environ.get("DISCORD_BOT_TOKEN"), dry=a.dry_run)
     if a.cmd == "setup":
         setup(cfg, d, guild)
+    elif a.cmd == "post-date":
+        post_date(cfg, a.notes, a.date, d, guild)
     else:
         post_notes(cfg, a.old, a.new, d, guild)
 
