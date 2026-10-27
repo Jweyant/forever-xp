@@ -5,7 +5,7 @@
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes to #patch-notes
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
-deletes anything, never pings anyone (allowed_mentions is empty on every message), and only
+deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
 needs: View Channels, Send Messages, Embed Links, Read Message History, Manage Channels and
 Manage Roles. It never needs Administrator.
 """
@@ -31,6 +31,7 @@ BOT_ALLOW = VIEW | SEND | EMBED | HISTORY
 NAME_RE = re.compile(r"^[a-z0-9-]{1,90}$")
 ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 &'-]{0,58}[A-Za-z0-9])?$")
 ROLE_KEYS = {"name", "color", "hoist"}
+MAX_ROLES = 50
 
 
 def log(msg):
@@ -60,8 +61,18 @@ def validate(cfg):
             if len(tags) > 20 or any(len(t) > 20 for t in tags):
                 problems.append(f"{name}: at most 20 tags of up to 20 characters")
     roles = cfg.get("roles", [])
-    if len(roles) > 50:
-        problems.append("at most 50 roles")
+    if len(roles) > MAX_ROLES:
+        problems.append(f"at most {MAX_ROLES} roles")
+    retired = cfg.get("retired_roles", [])
+    if not isinstance(retired, list) or len(retired) > MAX_ROLES:
+        problems.append(f"retired_roles must be a list of at most {MAX_ROLES} names")
+        retired = []
+    listed = {r.get("name", "").lower() for r in roles if isinstance(r, dict) and isinstance(r.get("name"), str)}
+    for name in retired:
+        if not isinstance(name, str) or not ROLE_NAME_RE.match(name):
+            problems.append(f"retired role {name!r}: names are 1-60 letters, digits, spaces, & ' or -")
+        elif name.lower() in listed:
+            problems.append(f"retired role {name}: also listed in roles")
     seen_roles = set()
     for r in roles:
         name = r.get("name") if isinstance(r, dict) else None
@@ -192,10 +203,12 @@ def role_look(r):
 
 def sync_roles(cfg, d, guild, roles, me):
     """Create missing roles (no permissions, not mentionable), keep color and hoist as configured,
-    and order them as listed. Only roles below the bot's own role can be changed; anything above
-    it is reported and left alone. Never deletes a role or touches its permissions."""
+    and order them as listed. Deletes a role only when its name is in retired_roles. Only roles
+    below the bot's own role can be changed; anything above it is reported and left alone. Never
+    touches a role's permissions."""
     wanted = cfg.get("roles", [])
-    if not wanted:
+    retired = {n.lower() for n in cfg.get("retired_roles", [])} - {r["name"].lower() for r in wanted}
+    if not wanted and not retired:
         return
 
     def index(rs):
@@ -205,6 +218,14 @@ def sync_roles(cfg, d, guild, roles, me):
         return max((r.get("position", 0) for r in rs if (r.get("tags") or {}).get("bot_id") == me["id"]), default=0)
 
     bot_top = top_of_bot(roles)
+    for x in roles:
+        if x["id"] == guild or x.get("managed") or x["name"].lower() not in retired:
+            continue
+        if x.get("position", 0) >= bot_top:
+            log(f"! role {x['name']} is above the bot's role, so it wasn't removed")
+            continue
+        log(f"- role {x['name']} (retired)")
+        d.call("DELETE", f"/guilds/{guild}/roles/{x['id']}", write=True)
     have = index(roles)
     for r in wanted:
         look, x = role_look(r), have.get(r["name"].lower())
