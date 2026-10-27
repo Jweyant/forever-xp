@@ -1,7 +1,8 @@
 # Forever XP Discord bot.
 #  - Pull requests: validate discord/server.json and run the bot's offline tests (no secrets).
 #  - main (or run by hand): apply discord/server.json to the server. Adds and updates channels,
-#    topics, forum tags, read-only settings and roles; never deletes anything.
+#    topics, forum tags, read-only settings and roles; deletes only roles listed in retired_roles.
+#  - Run by hand with a date: also post that day's Blizzard changes to the feed channel.
 # Needs the DISCORD_BOT_TOKEN secret and DISCORD_GUILD_ID variable (see docs/discord.md).
 name: Discord
 
@@ -17,6 +18,10 @@ on:
         description: "Only show what would change"
         type: boolean
         default: true
+      post_date:
+        description: "Also post Blizzard's changes from this day to #forever-announcements (YYYY-MM-DD, optional)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -55,3 +60,16 @@ jobs:
         run: |
           if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
           python3 tools/discord_bot.py setup $DRY
+      # The date is passed through the environment, never pasted into the script, and checked by the bot.
+      - name: Post one day's changes
+        if: github.event_name == 'workflow_dispatch' && inputs.post_date != ''
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          POST_DATE: ${{ inputs.post_date }}
+          DRY: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
+          files=(gamedata/blizzard-notes.json)
+          if git fetch -q --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:gamedata/blizzard-notes.json > "$RUNNER_TEMP/data-notes.json" 2>/dev/null; then files+=("$RUNNER_TEMP/data-notes.json"); fi
+          python3 tools/discord_bot.py post-date "$POST_DATE" "${files[@]}" $DRY
