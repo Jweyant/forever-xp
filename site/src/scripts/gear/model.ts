@@ -117,9 +117,12 @@ const DUAL = new Set(["WARRIOR", "ROGUE", "HUNTER"]);
 const RELIC: Record<string, string> = { PALADIN: "libram", DRUID: "idol", SHAMAN: "totem" };
 const CASTERS = new Set(["PRIEST", "MAGE", "WARLOCK", "DRUID", "SHAMAN", "PALADIN"]);
 
+// Own-key check: a plain obj[key] lookup lets "constructor" or "__proto__" through.
+const own = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k);
+
 export function canUse(it: Item, cls: string, level: number): boolean {
+  if (!own(CLASSES, cls) || !own(WEAPONS, cls) || !own(ARMOR, cls)) return false;
   const c = CLASSES[cls];
-  if (!c) return false;
   if (it.classes && !(it.classes & c.bit)) return false;
   // Tier pieces and class rewards: if every way to get the item is a quest for other classes, skip it.
   if (it.src?.length && it.src.every((s) => s.t === "quest" && s.qcls && !(s.qcls & c.bit))) return false;
@@ -128,7 +131,7 @@ export function canUse(it: Item, cls: string, level: number): boolean {
     return WEAPONS[cls].includes(it.type);
   }
   if (it.slot === "shield") return SHIELD.has(cls);
-  if (it.slot === "relic") return RELIC[cls] === it.type;
+  if (it.slot === "relic") return own(RELIC, cls) && RELIC[cls] === it.type;
   if (it.slot === "holdable") return CASTERS.has(cls);
   if (["cloth", "leather", "mail", "plate"].includes(it.type) && it.slot !== "back") return ARMOR[cls](level).includes(it.type);
   return true;

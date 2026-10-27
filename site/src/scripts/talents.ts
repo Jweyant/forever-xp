@@ -91,20 +91,28 @@ function render() {
   showDetail();
 }
 
+// Built from DOM nodes with textContent: talent names and tooltips come from the game client.
+function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, ...kids: (Node | string)[]) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  e.append(...kids);
+  return e;
+}
+
 function showDetail() {
   const box = root.querySelector<HTMLElement>("[data-detail]")!;
-  if (!selected) { box.innerHTML = `<p class="muted">Pick a talent to see what each rank does. Click or tap to add a point; right-click or long-press to remove one.</p>`; return; }
-  const { i, k } = selected; const t = cls.trees[i].talents[k]; const r = pts[i][k];
+  if (!selected) { box.replaceChildren(el("p", "muted", "Pick a talent to see what each rank does. Click or tap to add a point; right-click or long-press to remove one.")); return; }
+  const { i, k } = selected; const t = cls.trees[i].talents[k]; const r = Number(pts[i][k]) || 0;
+  const ranks = Number(t.ranks) || 0, reqRank = Number(t.reqRank) || 1;
   const reqT = t.req ? byId.get(t.req)?.t : null;
-  const lines: string[] = [];
-  lines.push(`<h3>${esc(t.name)} <span class="muted">${r}/${t.ranks}</span></h3>`);
-  if (t.new) lines.push(`<p class="small new-note">New in WoW Forever</p>`);
-  if (need(t)) lines.push(`<p class="small muted">Needs ${need(t)} points in ${esc(cls.trees[i].name)}.${reqT ? ` Needs ${t.reqRank || 1} in ${esc(reqT.name)}.` : ""}</p>`);
-  else if (reqT) lines.push(`<p class="small muted">Needs ${t.reqRank || 1} in ${esc(reqT.name)}.</p>`);
-  if (r > 0) lines.push(`<p><b>Rank ${r}:</b> ${esc(text(t.desc, r))}</p>`);
-  if (r < t.ranks) lines.push(`<p class="${r ? "muted" : ""}"><b>${r ? "Next rank" : "Rank 1"}:</b> ${esc(text(t.desc, r + 1))}</p>`);
-  if (t.est && t.ranks > 1) lines.push(`<p class="small est">The Forever client only lists the first rank's numbers for this talent. Later ranks are scaled from Classic Era and may be off.</p>`);
-  box.innerHTML = lines.join("");
+  const out: Node[] = [el("h3", "", `${t.name} `, el("span", "muted", `${r}/${ranks}`))];
+  if (t.new) out.push(el("p", "small new-note", "New in WoW Forever"));
+  if (need(t)) out.push(el("p", "small muted", `Needs ${need(t)} points in ${cls.trees[i].name}.${reqT ? ` Needs ${reqRank} in ${reqT.name}.` : ""}`));
+  else if (reqT) out.push(el("p", "small muted", `Needs ${reqRank} in ${reqT.name}.`));
+  if (r > 0) out.push(el("p", "", el("b", "", `Rank ${r}:`), ` ${text(t.desc, r)}`));
+  if (r < ranks) out.push(el("p", r ? "muted" : "", el("b", "", r ? "Next rank:" : "Rank 1:"), ` ${text(t.desc, r + 1)}`));
+  if (t.est && ranks > 1) out.push(el("p", "small est", "The Forever client only lists the first rank's numbers for this talent. Later ranks are scaled from Classic Era and may be off."));
+  box.replaceChildren(...out);
 }
 
 // Arrow from a prerequisite to the talent that needs it, placed on the same grid as the icons.
