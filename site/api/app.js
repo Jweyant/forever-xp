@@ -4,7 +4,8 @@
 //
 // Security:
 // - Sign-in is Discord OAuth2 (authorization code, scope `identify`) with a single-use `state`
-//   bound to the browser by a __Host- cookie, and PKCE. Discord's access token is used once to read
+//   bound to the browser by a __Host- cookie, and PKCE. It starts with a form POST from the site
+//   (Origin checked); a plain visit to the sign-in address goes to the account page instead. Discord's access token is used once to read
 //   the user's ID and name, then revoked; it is never stored.
 // - Sessions are random 256-bit IDs in a __Host- HttpOnly Secure SameSite=Lax cookie. Only a
 //   SHA-256 hash of the ID is stored, so a database leak doesn't hand out sessions.
@@ -63,6 +64,7 @@ const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "no-referrer",
   "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+  "X-Robots-Tag": "noindex, nofollow",
 };
 
 function json(body, status = 200, extra = {}) {
@@ -74,10 +76,10 @@ function json(body, status = 200, extra = {}) {
   return new Response(JSON.stringify(body), { status, headers: h });
 }
 
-function redirect(location, setCookies = []) {
+function redirect(location, setCookies = [], status = 302) {
   const h = new Headers({ Location: location, ...SECURITY_HEADERS });
   setCookies.forEach((c) => h.append("Set-Cookie", c));
-  return new Response(null, { status: 302, headers: h });
+  return new Response(null, { status, headers: h });
 }
 
 const fail = (status, error) => json({ error }, status);
@@ -102,6 +104,16 @@ export function validData(kind, data) {
     return !!m && CLASS_SLUGS.has(m[1]);
   }
   return false;
+}
+
+async function readForm(request) {
+  const type = (request.headers.get("Content-Type") || "").split(";")[0].trim().toLowerCase();
+  if (type !== "application/x-www-form-urlencoded") return { error: "form-required" };
+  const len = Number(request.headers.get("Content-Length") || 0);
+  if (len > 1024) return { error: "too-large" };
+  const text = await request.text();
+  if (text.length > 1024) return { error: "too-large" };
+  return { value: new URLSearchParams(text) };
 }
 
 async function readJson(request) {
@@ -134,18 +146,19 @@ async function currentUser(request, env) {
 // ---------------------------------------------------------------- routes
 
 async function login(request, env, origin) {
-  const url = new URL(request.url);
+  const form = await readForm(request);
+  if (form.error) return fail(400, form.error);
   const state = randomId();
   const verifier = randomId();
   const challenge = b64url(await sha256(verifier));
   await env.DB.prepare("INSERT INTO oauth_states (state, verifier, return_to, expires) VALUES (?, ?, ?, ?)")
-    .bind(state, verifier, safeReturn(url.searchParams.get("return")), now() + STATE_MINUTES * 60).run();
+    .bind(state, verifier, safeReturn(form.value.get("return")), now() + STATE_MINUTES * 60).run();
   const auth = new URL("/oauth2/authorize", DISCORD);
   auth.search = new URLSearchParams({
     client_id: env.DISCORD_CLIENT_ID, response_type: "code", redirect_uri: `${origin}/api/auth/callback`,
     scope: "identify", state, code_challenge: challenge, code_challenge_method: "S256", prompt: "none",
   }).toString();
-  return redirect(auth.toString(), [cookie(STATE_COOKIE, state, STATE_MINUTES * 60)]);
+  return redirect(auth.toString(), [cookie(STATE_COOKIE, state, STATE_MINUTES * 60)], 303);
 }
 
 async function callback(request, env, origin, ctx) {
@@ -254,7 +267,11 @@ export async function handle(request, env, ctx = { waitUntil() {} }) {
   const path = url.pathname.replace(/\/+$/, "") || "/";
   const method = request.method;
 
-  if (method === "GET" && path === "/api/auth/login") return login(request, env, origin);
+  if (path === "/api/auth/login") {
+    if (method !== "POST") return redirect("/account/", [], 303);
+    if (request.headers.get("Origin") !== origin) return fail(403, "bad-origin");
+    return login(request, env, origin);
+  }
   if (method === "GET" && path === "/api/auth/callback") return callback(request, env, origin, ctx);
 
   // Everything else is JSON for the signed-in user. Writes must come from the site itself.

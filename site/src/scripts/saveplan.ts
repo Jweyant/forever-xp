@@ -1,6 +1,6 @@
 // "Save to my account" on the BIS planner and talent calculator (only when accounts are on).
 // What gets saved is exactly the page's own shareable state from the address bar.
-import { accountsOn, me, savePlan, signInHref, rememberHash } from "./account";
+import { accountsOn, me, savePlan, startSignIn } from "./account";
 
 const BIS = /^[A-Za-z0-9=&._,:%-]{1,2048}$/;
 const POINTS = /^[0-9-]{0,200}$/;
@@ -26,8 +26,8 @@ export function mountSave() {
     box.hidden = false;
     if (!who) {
       form.hidden = true; signin.hidden = false;
-      signin.href = signInHref();
-      signin.addEventListener("click", rememberHash);
+      signin.href = "/account/";
+      signin.addEventListener("click", startSignIn);
     }
   });
 

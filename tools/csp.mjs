@@ -33,7 +33,7 @@ const csp = [
   "frame-src https://giscus.app",
   "frame-ancestors 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://discord.com", // the sign-in form's redirect to Discord
   "object-src 'none'",
   "upgrade-insecure-requests",
 ].join("; ");

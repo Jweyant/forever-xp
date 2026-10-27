@@ -1,7 +1,7 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
 import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
-import { accountsOn, me, signInHref, rememberHash, afterSignIn } from "./account";
+import { accountsOn, me, startSignIn, afterSignIn } from "./account";
 
 const root = document.documentElement;
 
@@ -200,9 +200,9 @@ if (acct && accountsOn()) {
     if (who) { acct.textContent = who.name; acct.href = "/account/"; acct.title = "Your saved plans"; }
     else {
       acct.textContent = "Sign in";
-      acct.href = signInHref();
+      acct.href = "/account/";
       acct.title = "Sign in with Discord to save plans";
-      acct.addEventListener("click", rememberHash);
+      acct.addEventListener("click", startSignIn);
     }
     acct.hidden = false;
   });

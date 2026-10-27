@@ -26,7 +26,10 @@ import Base from "../layouts/Base.astro";
 
     <section data-signed-out hidden>
       <p>Sign in with Discord to keep your BIS plans and talent builds on any device. We only ask Discord for your user ID and name.</p>
-      <p><a class="btn" data-signin href="/account/">Sign in with Discord</a></p>
+      <form method="post" action="/api/auth/login">
+        <input type="hidden" name="return" value="/account/" />
+        <button type="submit" class="btn">Sign in with Discord</button>
+      </form>
     </section>
   </div>
 </Base>

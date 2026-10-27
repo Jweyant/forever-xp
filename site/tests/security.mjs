@@ -58,6 +58,8 @@ const cases = [
   ...(slug ? [["Zone page", `/quests/zone/${slug}/?text=${E}&side=${E}&new=${E}`]] : []),
   ["Quick search", "/", { search: P }],
   // The accounts API answering with hostile names and plan data (as if the database were tampered with).
+  // Signed out: the sign-in buttons must not be plain links into /api/ (checked on every page below).
+  ["Signed-out sign-in buttons", "/bis/", { expect: "a[data-save-signin]:not([hidden])[href=\"/account/\"]", api: { "/api/me": { status: 401, body: { error: "signed-out" } } } }],
   ["Account page, hostile saved plans", "/account/", { expect: "[data-plans] tr", api: {
     "/api/me": { name: P },
     "/api/plans": { plans: [
@@ -86,7 +88,8 @@ for (const [name, path, opts = {}] of cases) {
     await page.route("**/api/**", (route) => {
       const path = new URL(route.request().url()).pathname;
       const body = opts.api[path];
-      route.fulfill(body ? { status: 200, contentType: "application/json", body: JSON.stringify(body) } : { status: 404, contentType: "application/json", body: "{}" });
+      const reply = body && typeof body.status === "number" ? body : body ? { status: 200, body } : { status: 404, body: {} };
+      route.fulfill({ status: reply.status, contentType: "application/json", body: JSON.stringify(reply.body) });
     });
   }
   if (opts.storage) {
@@ -110,8 +113,10 @@ for (const [name, path, opts = {}] of cases) {
     ran: !!window.__xss,
     scripts: [...document.querySelectorAll("script:not([src])")].filter((s) => s.textContent.includes("__xss")).length,
     jsLinks: [...document.querySelectorAll("a[href]")].filter((a) => /^\s*javascript:/i.test(a.getAttribute("href") || "")).length,
+    apiLinks: [...document.querySelectorAll("a[href]")].filter((a) => new URL(a.href, location.href).pathname.startsWith("/api/")).length,
   }));
   if (found.jsLinks) problems.push(`${found.jsLinks} javascript: link(s) in the page`);
+  if (found.apiLinks) problems.push(`${found.apiLinks} plain link(s) into /api/ (sign-in must be a form POST)`);
   if (found.probe) problems.push(`${found.probe} injected element(s) in the page`);
   if (found.ran) problems.push("injected script ran");
   if (found.scripts) problems.push("injected <script> element in the page");
