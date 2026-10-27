@@ -2,7 +2,7 @@
 
   python3 tools/discord_bot.py validate                 # check discord/server.json (no token needed)
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
-  python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes to #patch-notes
+  python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
 deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
@@ -32,6 +32,9 @@ NAME_RE = re.compile(r"^[a-z0-9-]{1,90}$")
 ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 &'-]{0,58}[A-Za-z0-9])?$")
 ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
+CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed"}
+# Links the feed may post: Blizzard's forum posts and news articles, nothing else.
+BLIZZARD_URL = re.compile(r"^https://(?:us\.forums\.blizzard\.com|worldofwarcraft\.blizzard\.com)/[A-Za-z0-9/_%.~-]{1,300}$")
 
 
 def log(msg):
@@ -40,7 +43,7 @@ def log(msg):
 
 # ---- validation (runs on every pull request, no token) ----------------------------------------
 def validate(cfg):
-    problems, seen = [], set()
+    problems, seen, feeds = [], set(), []
     for cat in cfg.get("categories", []):
         if not cat.get("name") or len(cat["name"]) > 90:
             problems.append(f"category name missing or too long: {cat.get('name')!r}")
@@ -50,9 +53,22 @@ def validate(cfg):
                 problems.append(f"{name}: unknown type {kind!r}")
             if kind != "voice" and not NAME_RE.match(name):
                 problems.append(f"{name}: text channel names must be lowercase letters, digits and dashes")
-            if name.lower() in seen:
-                problems.append(f"{name}: listed twice")
-            seen.add(name.lower())
+            if set(ch) - CHANNEL_KEYS:
+                problems.append(f"{name}: unknown keys {sorted(set(ch) - CHANNEL_KEYS)}")
+            aliases = ch.get("aliases", [])
+            if not isinstance(aliases, list) or any(not isinstance(a, str) or not NAME_RE.match(a) for a in aliases):
+                problems.append(f"{name}: aliases must be channel names")
+                aliases = []
+            for n in [name, *aliases]:
+                if n.lower() in seen:
+                    problems.append(f"{n}: listed twice")
+                seen.add(n.lower())
+            if ch.get("feed") is True:
+                feeds.append(name)
+                if kind not in ("text", "announcement"):
+                    problems.append(f"{name}: the feed must be a text or announcement channel")
+            elif "feed" in ch:
+                problems.append(f"{name}: feed must be true or left out")
             if len(ch.get("topic", "")) > 1024:
                 problems.append(f"{name}: topic over 1024 characters")
             tags = ch.get("tags", [])
@@ -60,6 +76,8 @@ def validate(cfg):
                 problems.append(f"{name}: only forum channels have tags")
             if len(tags) > 20 or any(len(t) > 20 for t in tags):
                 problems.append(f"{name}: at most 20 tags of up to 20 characters")
+    if len(feeds) > 1:
+        problems.append(f"only one feed channel, not {', '.join(feeds)}")
     roles = cfg.get("roles", [])
     if len(roles) > MAX_ROLES:
         problems.append(f"at most {MAX_ROLES} roles")
@@ -140,8 +158,12 @@ def setup(cfg, d, guild):
     log(f"Server has {len(channels)} channels and {len(roles)} roles. Bot: {me['username']}")
 
     def find(name, types, aliases=()):
-        names = {name.lower(), *[a.lower() for a in aliases]}
-        return next((c for c in channels if c["type"] in types and c["name"].lower() in names), None)
+        """The channel with this name, or failing that one with an old name (so renames don't duplicate)."""
+        for n in (name, *aliases):
+            hit = next((c for c in channels if c["type"] in types and c["name"].lower() == n.lower()), None)
+            if hit:
+                return hit
+        return None
 
     order = []
     for cat in cfg["categories"]:
@@ -157,7 +179,7 @@ def setup(cfg, d, guild):
         for ch in cat["channels"]:
             kind = TYPES[ch["type"]]
             family = (0, 5) if kind in (0, 5) else (kind,)
-            x = find(ch["name"], family)
+            x = find(ch["name"], family, ch.get("aliases", ()))
             overwrites = []
             if ch.get("readonly"):
                 overwrites.append({"id": guild, "type": 0, "deny": READONLY_DENY})
@@ -177,6 +199,8 @@ def setup(cfg, d, guild):
                 x = d.call("POST", f"/guilds/{guild}/channels", body, write=True) or {"id": f"new-{ch['name']}"}
                 channels.append({**x, "name": ch["name"], "type": kind})
             else:
+                if x["name"] != ch["name"]:
+                    body["name"] = ch["name"]
                 if x["type"] != kind:
                     body["type"] = kind
                 if overwrites:
@@ -276,29 +300,78 @@ def plain(s, n=300):
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
-def post_notes(old_path, new_path, d, guild, max_messages=6):
+def feed_channel(cfg):
+    """(name, aliases) of the channel marked "feed": true in discord/server.json."""
+    for cat in cfg.get("categories", []):
+        for ch in cat.get("channels", []):
+            if ch.get("feed") is True:
+                return ch["name"], ch.get("aliases", [])
+    return None, []
+
+
+def safe_url(u):
+    return u if isinstance(u, str) and BLIZZARD_URL.match(u) else None
+
+
+def post(d, target, content):
+    msg = d.call("POST", f"/channels/{target['id']}/messages",
+                 {"content": content[:2000], "allowed_mentions": {"parse": []}, "flags": 4}, write=True)
+    if target["type"] == 5 and msg.get("id"):
+        d.call("POST", f"/channels/{target['id']}/messages/{msg['id']}/crosspost", write=True)
+    time.sleep(1.5)
+
+
+def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3):
+    """Post Blizzard's new WoW Forever changes (class, racial and every other development note) and
+    new news articles to the feed channel. Known issues are left to the site."""
     if not Path(old_path).exists():
         log("No previous notes file, so this is the first run: nothing posted.")
         return
-    old = {r["id"] for r in json.loads(Path(old_path).read_text()).get("rows", [])}
-    new_rows = [r for r in json.loads(Path(new_path).read_text()).get("rows", []) if r["id"] not in old and r.get("kind") != "Known issues"]
-    if not new_rows:
+    old_doc, new_doc = json.loads(Path(old_path).read_text()), json.loads(Path(new_path).read_text())
+    old = {r["id"] for r in old_doc.get("rows", [])}
+    new_rows = [r for r in new_doc.get("rows", []) if r["id"] not in old and r.get("kind") != "Known issues"]
+    # Articles: only once the previous file has an article list, so the first run doesn't repost them all.
+    new_articles = []
+    if isinstance(old_doc.get("articles"), list):
+        seen = {x.get("url") for x in old_doc["articles"]}
+        new_articles = [x for x in new_doc.get("articles", []) if safe_url(x.get("url")) and x["url"] not in seen]
+    if not new_rows and not new_articles:
         log("No new changes.")
         return
+    name, aliases = feed_channel(cfg)
+    if not name:
+        sys.exit("No feed channel in discord/server.json.")
     channels = d.call("GET", f"/guilds/{guild}/channels")
-    target = next((c for c in channels if c["name"] == "patch-notes" and c["type"] in (0, 5)), None)
+    target = None
+    for n in (name, *aliases):
+        target = target or next((c for c in channels if c["name"] == n and c["type"] in (0, 5)), None)
     if not target:
-        sys.exit("No #patch-notes channel; run setup first.")
+        sys.exit(f"No #{name} channel; run setup first.")
+
+    for x in new_articles[:max_articles]:
+        post(d, target, f"**New from Blizzard:** {plain(x.get('title', 'WoW Forever news'), 150)}\n<{x['url']}>")
+        log(f"posted article {x['url']}")
+
     groups = {}
     for r in new_rows:
-        groups.setdefault(r["url"], []).append(r)
+        groups.setdefault(r.get("url", ""), []).append(r)
     for url, rows in list(groups.items())[:max_messages]:
-        date = rows[0]["date"]
-        head = f"**New WoW Forever changes from Blizzard** ({date}, {len(rows)} change{'s' if len(rows) != 1 else ''})"
+        date = rows[0].get("date", "")
+        if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(date)):
+            date = ""
+        cls = sum(1 for r in rows if r.get("cls"))
+        race = sum(1 for r in rows if r.get("race"))
+        parts = [f"{len(rows)} change{'s' if len(rows) != 1 else ''}"]
+        if cls:
+            parts.append(f"{cls} class")
+        if race:
+            parts.append(f"{race} racial")
+        head = f"**New WoW Forever changes from Blizzard** ({', '.join(parts)}{', ' + date if date else ''})"
         lines, used = [], len(head) + 200
-        for r in rows:
-            where = " › ".join([r.get("section", "")] + r.get("path", []))
-            line = f"• {plain(where, 60)}: {plain(r['text'])}"
+        # Class and racial changes first, then everything else, each in Blizzard's order.
+        for r in sorted(rows, key=lambda r: 0 if r.get("cls") or r.get("race") else 1):
+            where = " › ".join([r.get("section", "")] + list(r.get("path", [])))
+            line = f"• {plain(where, 60)}: {plain(r.get('text', ''))}"
             if used + len(line) > 1700:
                 break
             lines.append(line)
@@ -307,16 +380,11 @@ def post_notes(old_path, new_path, d, guild, max_messages=6):
         tail = []
         if more:
             tail.append(f"…and {more} more.")
-        if url.startswith("https://us.forums.blizzard.com/"):
+        if safe_url(url):
             tail.append(f"Blizzard's post: <{url}>")
-        tail.append(f"Search every change: <https://forever-xp.com/changes/?date={date}>")
-        content = "\n".join([head, *lines, *tail])
-        msg = d.call("POST", f"/channels/{target['id']}/messages",
-                     {"content": content[:2000], "allowed_mentions": {"parse": []}, "flags": 4}, write=True)
+        tail.append("Search every change: <https://forever-xp.com/changes/" + (f"?date={date}" if date else "") + ">")
+        post(d, target, "\n".join([head, *lines, *tail]))
         log(f"posted {len(lines)} of {len(rows)} changes from {url}")
-        if target["type"] == 5 and msg.get("id"):
-            d.call("POST", f"/channels/{target['id']}/messages/{msg['id']}/crosspost", write=True)
-        time.sleep(1.5)
     if len(groups) > max_messages:
         log(f"{len(groups) - max_messages} more posts' worth held back to avoid flooding the channel.")
 
@@ -347,7 +415,7 @@ def main():
     if a.cmd == "setup":
         setup(cfg, d, guild)
     else:
-        post_notes(a.old, a.new, d, guild)
+        post_notes(cfg, a.old, a.new, d, guild)
 
 
 if __name__ == "__main__":

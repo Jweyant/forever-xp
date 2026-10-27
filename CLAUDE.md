@@ -67,5 +67,5 @@ reviewed pull request with those checks green.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits,
   `tools/indexnow.py` tells search engines which pages a deploy changed.
   `tools/build_talents.py` reads Forever's talent trees (trait tables + hotfixes) from wago.tools.
-- `discord/server.json` Discord layout, `tools/discord_bot.py` bot jobs (setup, patch-notes feed), `docs/discord.md`.
+- `discord/server.json` Discord layout, `tools/discord_bot.py` bot jobs (setup, #forever-announcements feed), `docs/discord.md`.
 - `SECURITY.md` reporting and controls.

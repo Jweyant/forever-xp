@@ -39,14 +39,17 @@ jobs:
           if git fetch -q origin data 2>/dev/null; then git show FETCH_HEAD:gamedata/blizzard-notes.json > "$RUNNER_TEMP/prev/data.json" 2>/dev/null || true; fi
           python3 - "$RUNNER_TEMP/prev" <<'PY'
           import json, sys, pathlib
-          d = pathlib.Path(sys.argv[1]); rows = {}
+          d = pathlib.Path(sys.argv[1]); rows = {}; articles = {}
           for f in ("main.json", "data.json"):
               p = d / f
               if p.exists() and p.stat().st_size:
-                  for r in json.loads(p.read_text()).get("rows", []):
+                  doc = json.loads(p.read_text())
+                  for r in doc.get("rows", []):
                       rows[r["id"]] = r
-          (d / "old.json").write_text(json.dumps({"rows": list(rows.values())}))
-          print(f"{len(rows)} changes already known")
+                  for a in doc.get("articles", []):
+                      articles[a.get("url")] = a
+          (d / "old.json").write_text(json.dumps({"rows": list(rows.values()), "articles": list(articles.values())}))
+          print(f"{len(rows)} changes and {len(articles)} articles already known")
           PY
           cp tools/discord_bot.py "$RUNNER_TEMP/bot/tools/" && cp discord/server.json "$RUNNER_TEMP/bot/discord/"
 
@@ -58,7 +61,7 @@ jobs:
         id: commit
         run: bash tools/push_data.sh "Refresh Blizzard's WoW Forever notes" gamedata/blizzard-notes.json
 
-      - name: Post new changes to Discord
+      - name: Post new changes and news to Discord
         if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
