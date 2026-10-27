@@ -4,7 +4,7 @@ export const SITE = {
   tagline: "Routes, quests, gear and talents for WoW Forever",
   discord: "https://discord.gg/z8DfMK7Uw",
   repo: "https://github.com/Jweyant/forever-xp",
-  curseforge: "", // the ForeverScout CurseForge page, once docs/curseforge.md is done
+  curseforge: "https://www.curseforge.com/wow/addons/foreverscout", // the ForeverScout CurseForge page
   // Optional accounts (Discord sign-in, saved plans). Turn on after the setup in docs/accounts.md.
   accounts: true,
   // Blizzard's times: name reservation opens Oct 27 at 4 PM Eastern, launch is Nov 4 at 3 PM Pacific.
