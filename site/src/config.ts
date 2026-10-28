@@ -6,7 +6,7 @@ export const SITE = {
   repo: "https://github.com/Jweyant/forever-xp",
   curseforge: "https://www.curseforge.com/wow/addons/foreverscout", // the ForeverScout CurseForge page
   // Optional accounts (Discord sign-in, saved plans). Turn on after the setup in docs/accounts.md.
-  accounts: false,
+  accounts: true,
   // Blizzard's times: name reservation opens Oct 27 at 4 PM Eastern, launch is Nov 4 at 3 PM Pacific.
   names: "2026-10-27T20:00:00Z",
   launch: "2026-11-04T23:00:00Z",
