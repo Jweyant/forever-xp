@@ -1,13 +1,13 @@
 {
- "updated": "2026-10-27",
+ "updated": "2026-10-28",
  "sources": [
   {
    "id": 2360696,
    "title": "WoW Forever Beta Development Notes – Updated October 26",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696",
    "kind": "Development notes",
-   "updated": "2026-10-26",
-   "rows": 660
+   "updated": "2026-10-27",
+   "rows": 668
   },
   {
    "id": 2369360,
@@ -57,6 +57,30 @@
   }
  ],
  "rows": [
+  {
+   "id": "336f1a7698",
+   "date": "2026-10-27",
+   "kind": "Development notes",
+   "section": "Races",
+   "path": [
+    "Skyborne"
+   ],
+   "text": "Charged persists through death, and is removed upon entering a raid.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8",
+   "race": "Skyborne"
+  },
+  {
+   "id": "0bca14aeed",
+   "date": "2026-10-27",
+   "kind": "Development notes",
+   "section": "Races",
+   "path": [
+    "Skyborne"
+   ],
+   "text": "Attuned persists through death, and is removed upon entering a raid.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8",
+   "race": "Skyborne"
+  },
   {
    "id": "588c411a45",
    "date": "2026-10-26",
@@ -166,6 +190,42 @@
    "race": "Orc"
   },
   {
+   "id": "4ad1df3fa6",
+   "date": "2026-10-26",
+   "kind": "Development notes",
+   "section": "Racial Abilities and Traits",
+   "path": [
+    "Orc"
+   ],
+   "text": "Blood Fury’s cooldown reduced to 2 minutes (was 3 minutes).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/7",
+   "race": "Orc"
+  },
+  {
+   "id": "f79c9f0042",
+   "date": "2026-10-26",
+   "kind": "Development notes",
+   "section": "Racial Abilities and Traits",
+   "path": [
+    "Troll"
+   ],
+   "text": "Berserking duration increased to 15 seconds (was 10 seconds).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/7",
+   "race": "Troll"
+  },
+  {
+   "id": "82e5574cfd",
+   "date": "2026-10-26",
+   "kind": "Development notes",
+   "section": "Racial Abilities and Traits",
+   "path": [
+    "Undead"
+   ],
+   "text": "Touch of the Grave internal cooldown reduced to 15 seconds (was 25 seconds).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/7",
+   "race": "Undead"
+  },
+  {
    "id": "9d7d4398bb",
    "date": "2026-10-26",
    "kind": "Development notes",
@@ -190,14 +250,14 @@
    "race": "Skyborne"
   },
   {
-   "id": "2298aac45a",
+   "id": "22c8e0f414",
    "date": "2026-10-26",
    "kind": "Development notes",
    "section": "Racial Abilities and Traits",
    "path": [
     "Skyborne"
    ],
-   "text": "Using Read Leyline at a Ley Line now also grants “Attuned” for 1 hour. While Attuned, the benefit of Read Leyline is increased to 100% regeneration increase. Attuned persists through death.",
+   "text": "Using Read Leyline at a Ley Line now also grants “Attuned” for 1 hour. While Attuned, the benefit of Read Leyline is increased to 100% regeneration increase. Attuned persists through death, and is removed upon entering a raid.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/7",
    "race": "Skyborne"
   },
@@ -214,14 +274,14 @@
    "race": "Skyborne"
   },
   {
-   "id": "0870800f7c",
+   "id": "c764235b51",
    "date": "2026-10-26",
    "kind": "Development notes",
    "section": "Racial Abilities and Traits",
    "path": [
     "Skyborne"
    ],
-   "text": "Using Skysight at an elemental convergence now also grants “Charged” for 1 hour. While Charged, the benefit of Skysight is a 30% movement speed increase. Charged persists through death.",
+   "text": "Using Skysight at an elemental convergence now also grants “Charged” for 1 hour. While Charged, the benefit of Skysight is a 30% movement speed increase. Charged persists through death, and is removed upon entering a raid.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/7",
    "race": "Skyborne"
   },
