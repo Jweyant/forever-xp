@@ -173,6 +173,15 @@ def walk_list(lst, path, rows, base):
                 row.setdefault("detail", []).append(t)
 
 
+PLURAL = {"Night Elf": "Night Elves", "Dwarf": "Dwarves"}
+
+
+def named_in(label):
+    """The races and classes a sentence names, e.g. "for Skyborne:" -> ["Skyborne"]."""
+    return [x for x in RACES + CLASSES
+            if re.search(rf"\b(?:{re.escape(x)}s?|{re.escape(PLURAL.get(x, x))})\b", label)]
+
+
 def parse_post(cooked, base):
     t = Tree()
     t.feed(cooked)
@@ -194,6 +203,13 @@ def parse_post(cooked, base):
             txt = clean(n.text())
             if txt and len(txt) > 12:
                 rows.append(dict(base, section=section, path=[], text=txt))
+        elif n.tag == "p":
+            # A plain lead-in such as "We'd also like to clarify that for Skyborne:" starts a new group
+            # when it names one race or class; otherwise its list would land under the previous heading.
+            label = clean(n.text())
+            named = named_in(label) if label.endswith(":") and len(label) <= 120 else []
+            if len(named) == 1:
+                section, path = named[0], []
     return rows
 
 
@@ -210,6 +226,8 @@ def normalize(r):
         section, path = path[0], path[1:]
     if section in CLASSES:                       # class-only threads ("Warrior Updates")
         section, path = "Classes", [section] + path
+    elif section in RACES:                       # a race heading on its own ("Orc", "for Skyborne:")
+        section, path = "Races", [section] + path
     if re.search(r"known issues?", section, re.I):
         r["kind"] = "Known issues"
     if section == r["kind"]:
