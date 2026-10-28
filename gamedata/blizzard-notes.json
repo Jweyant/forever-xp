@@ -58,22 +58,28 @@
  ],
  "rows": [
   {
-   "id": "0893175555",
+   "id": "336f1a7698",
    "date": "2026-10-27",
    "kind": "Development notes",
-   "section": "Undead",
-   "path": [],
+   "section": "Races",
+   "path": [
+    "Skyborne"
+   ],
    "text": "Charged persists through death, and is removed upon entering a raid.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8",
+   "race": "Skyborne"
   },
   {
-   "id": "113addff30",
+   "id": "0bca14aeed",
    "date": "2026-10-27",
    "kind": "Development notes",
-   "section": "Undead",
-   "path": [],
+   "section": "Races",
+   "path": [
+    "Skyborne"
+   ],
    "text": "Attuned persists through death, and is removed upon entering a raid.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-october-26/2360696/8",
+   "race": "Skyborne"
   },
   {
    "id": "588c411a45",
