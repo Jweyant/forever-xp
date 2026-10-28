@@ -1,0 +1,74 @@
+---
+// One shareable page per class, and one for every race's racials: the same rows as /changes/,
+// already filtered, with their own title and share image.
+import Base from "../../layouts/Base.astro";
+import ChangeList from "../../components/ChangeList.astro";
+import { ICON } from "../../config";
+import { rows, build, races, CLASSES, slug, fmt, type Row } from "../../lib/changes";
+
+export function getStaticPaths() {
+  return [
+    ...CLASSES.map((c) => ({ params: { who: slug(c) }, props: { cls: c } })),
+    { params: { who: "racials" }, props: { cls: null } },
+  ];
+}
+const { cls } = Astro.props as { cls: string | null };
+const n = (v: number) => v.toLocaleString("en-US");
+const latestOf = (list: Row[]) => list.map((r) => r.date).filter(Boolean).sort().at(-1) || "";
+
+const mine = cls ? rows.filter((r) => r.cls === cls) : rows.filter((r) => r.race);
+const notesCount = mine.filter((r) => r.kind === "Blizzard").length;
+const clientCount = mine.filter((r) => r.kind === "Datamined").length;
+const latest = latestOf(mine);
+const byRace = cls ? [] : races.map((race) => ({ race, list: mine.filter((r) => r.race === race) })).filter((g) => g.list.length);
+
+const title = cls ? `Every ${cls} change in WoW Forever` : "Every WoW Forever racial change";
+const description = cls
+  ? `All ${n(mine.length)} WoW Forever ${cls} changes in one list: Blizzard's beta development notes and the ${cls} talent changes read from the game client, each linked to its source.`
+  : `All ${n(mine.length)} WoW Forever racial changes, race by race: Dwarf, Gnome, Human, Night Elf, Orc, Skyborne, Tauren, Troll and Undead, each linked to Blizzard's post.`;
+const image = cls ? `/og/changes-${slug(cls)}.jpg` : "/og/changes-racials.jpg";
+---
+<Base image={image} title={title} description={description}>
+  <p class="crumbs"><a href="/changes/">Changes</a> / {cls || "Racials"}</p>
+  <h1>{cls && <img class="cicon" src={ICON(`classicon_${cls.toLowerCase()}`, 56)} alt="" width="44" height="44" />}{title}</h1>
+  {cls ? (
+    <p class="lede">{n(mine.length)} changes for {cls}s: {n(notesCount)} from Blizzard's development notes, each linked to the post it came from, and {n(clientCount)} talent changes read from the Forever client.{latest && ` Latest note ${fmt(latest)}.`}</p>
+  ) : (
+    <p class="lede">{n(mine.length)} racial changes from Blizzard's development notes, race by race, newest first. Each links to the post it came from.{latest && ` Latest ${fmt(latest)}.`}</p>
+  )}
+  <p class="links">
+    {cls && <a class="btn" href={`/talents/${slug(cls)}/`}>{cls} talent calculator</a>}
+    <a class={cls ? "btn secondary" : "btn"} href={cls ? `/changes/?cls=${encodeURIComponent(cls)}` : "/changes/"}>Search and filter every change</a>
+  </p>
+  <nav class="others" aria-label="Other pages">
+    {CLASSES.map((c) => <a href={`/changes/${slug(c)}/`} aria-current={c === cls ? "page" : undefined}>{c}</a>)}
+    <a href="/changes/racials/" aria-current={cls ? undefined : "page"}>Racials</a>
+  </nav>
+
+  {cls ? (
+    <ChangeList rows={mine} build={build} />
+  ) : (
+    <>
+      <nav class="jump" aria-label="Races">
+        {byRace.map((g) => <a href={`#${slug(g.race)}`}>{g.race} <span class="muted">{g.list.length}</span></a>)}
+      </nav>
+      {byRace.map((g) => (
+        <section id={slug(g.race)}>
+          <h2>{g.race}</h2>
+          <ChangeList rows={g.list} build={build} />
+        </section>
+      ))}
+    </>
+  )}
+  <p class="small muted foot">Notes are Blizzard's own words from their staff posts on the official forums.{cls && ` Talent changes are read from Forever client build ${build}; talents where the client only stores rank 1's numbers are left out until they can be confirmed.`}</p>
+</Base>
+<style>
+  h1 { display: flex; align-items: center; gap: 0.6rem; }
+  .cicon { border-radius: 50%; flex: none; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1rem 0; }
+  .others { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0 0 1.2rem; font-size: 0.95rem; }
+  .others a[aria-current="page"] { font-weight: 700; color: var(--ink); text-decoration: none; }
+  .jump { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 0 0 1rem; }
+  section { scroll-margin-top: 1rem; margin-top: 1.4rem; }
+  .foot { margin-top: 1.4rem; }
+</style>

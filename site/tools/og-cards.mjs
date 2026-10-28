@@ -39,6 +39,11 @@ const cards = [
     file: `talents-${c.slug}`, eyebrow: "WoW Forever talents", title: `${c.name} talents`, accent: CLASS_COLOR[c.slug],
     text: `${list(c.trees.map((t) => t.name))}. Built from the Forever game client, with builds you can share.`,
   })),
+  ...talents.classes.map((c) => ({
+    file: `changes-${c.slug}`, eyebrow: "WoW Forever changes", title: `Every ${c.name} change`, accent: CLASS_COLOR[c.slug],
+    text: "Blizzard's beta notes and the talent changes read from the Forever client, in one list.",
+  })),
+  { file: "changes-racials", eyebrow: "WoW Forever changes", title: "Every racial change", text: "Every race's racial changes from Blizzard's beta notes, newest first, each linked to its post." },
 ];
 
 const fontDir = process.env.FONT_DIR;

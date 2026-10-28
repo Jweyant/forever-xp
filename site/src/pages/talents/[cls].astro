@@ -18,6 +18,7 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
   <nav class="classes" aria-label="Other classes">
     {data.classes.map((o) => <a href={`/talents/${o.slug}/`} aria-current={o.slug === c.slug ? "page" : undefined}>{o.name}</a>)}
   </nav>
+  <p class="small"><a href={`/changes/${c.slug}/`}>Every {c.name} change in Forever</a></p>
 
   <div id="calc">
     <div class="bar">
