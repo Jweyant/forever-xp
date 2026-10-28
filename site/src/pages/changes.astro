@@ -1,36 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
-import changesJson from "../data/changes.json";
-import notesJson from "../data/notes.json";
+import ChangeList from "../components/ChangeList.astro";
 import { qdb } from "../lib/questdb";
 import { ICON } from "../config";
-
-interface Note { id: string; date: string; kind: string; section: string; path: string[]; text: string; url: string; cls?: string; race?: string; spec?: string; detail?: string[]; note?: string[]; dev?: 1 }
-interface Talent { cls: string | null; tree: string; name: string; was?: string | null; kinds: string[]; forever?: string; est?: boolean }
-const notes = notesJson as { updated: string; sources: { id: number; title: string; url: string; kind: string; updated: string; rows: number }[]; articles: { title: string; url: string }[]; rows: Note[] };
-const data = changesJson as unknown as { builds: { forever: string }; talents: Talent[]; stats: { items: number[]; spells: number[] } };
-
-const KIND_LABEL: Record<string, string> = { new: "New talent", reworked: "Reworked", renamed: "Renamed", numbers: "New numbers", moved: "Moved", "moved tree": "New tree", ranks: "Ranks changed", removed: "Removed" };
-const sure = (c: Talent) => c.kinds.includes("reworked") || c.kinds.includes("renamed") || !c.est;
-const build = data.builds.forever;
-type Row = { id: string; date: string; kind: "Blizzard" | "Known issue" | "Datamined"; area: string; path: string[]; text: string; url?: string; cls?: string; race?: string; detail?: string[]; note?: string[]; dev?: boolean; chips?: string[] };
-const rows: Row[] = [
-  ...notes.rows.map((r) => ({
-    id: r.id, date: r.date, kind: (r.kind === "Known issues" ? "Known issue" : "Blizzard") as Row["kind"], area: r.section,
-    path: r.path, text: r.text, url: r.url, cls: r.cls, race: r.race, detail: r.detail, note: r.note, dev: !!r.dev,
-  })),
-  ...data.talents.filter(sure).map((t, i) => ({
-    id: `t${i}`, date: "", kind: "Datamined" as const, area: "Talents", path: [t.cls || "", t.tree].filter(Boolean),
-    text: `${t.name}${t.was ? ` (was ${t.was})` : ""}: ${t.forever || "Removed."}`, cls: t.cls || undefined,
-    chips: t.kinds.map((k) => KIND_LABEL[k] || k),
-  })),
-].sort((a, b) => (b.date || "0").localeCompare(a.date || "0"));
+import { rows, notes, build, races, CLASSES as classes, slug, fmt } from "../lib/changes";
 
 const areas = [...new Set(rows.map((r) => r.area))].sort((a, b) => a.localeCompare(b));
 const dates = [...new Set(rows.map((r) => r.date).filter(Boolean))].sort().reverse();
-const races = [...new Set(rows.map((r) => r.race).filter(Boolean))].sort() as string[];
-const classes = ["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid"];
-const fmt = (d: string) => (d ? new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
 const blizz = rows.filter((r) => r.kind === "Blizzard").length;
 const issues = rows.filter((r) => r.kind === "Known issue").length;
 const mined = rows.filter((r) => r.kind === "Datamined").length;
@@ -64,29 +40,9 @@ const n = (v: number) => v.toLocaleString("en-US");
     </div>
     <p class="muted small" id="c-count" aria-live="polite">{n(rows.length)} changes</p>
     <p class="muted small hint">Pick a class and a race to see everything for that character: the class's changes plus the race's racial changes.</p>
+    <p class="small pages">One page each, easy to share: {classes.map((c, i) => <>{i > 0 && " · "}<a href={`/changes/${slug(c)}/`}>{c}</a></>)} · <a href="/changes/racials/">Racials</a></p>
 
-    <ol class="rows" id="c-rows">
-      {rows.map((r) => (
-        <li data-src={r.kind} data-area={r.area} data-cls={r.cls || ""} data-race={r.race || ""} data-date={r.date} data-dev={r.note?.length || r.dev ? "1" : ""}
-            data-search={`${r.text} ${(r.detail || []).join(" ")} ${(r.note || []).join(" ")} ${r.path.join(" ")} ${r.area}`.toLowerCase()}>
-          <div class="meta">
-            <span class={`src ${r.kind === "Datamined" ? "mined" : r.kind === "Known issue" ? "issue" : "blz"}`}>{r.kind === "Blizzard" ? "Blizzard" : r.kind === "Datamined" ? "Client" : "Known issue"}</span>
-            {r.date && <time datetime={r.date}>{fmt(r.date)}</time>}
-          </div>
-          <div class="body">
-            <p class="where">
-              {r.cls && <img src={ICON(`classicon_${r.cls.toLowerCase()}`, 18)} alt="" width="16" height="16" loading="lazy" />}
-              {[r.area, ...r.path].filter(Boolean).join(" › ")}
-              {r.chips?.map((c) => <span class="chip">{c}</span>)}
-            </p>
-            <p class={r.dev ? "txt devtxt" : "txt"}>{r.dev && <b>Developers' notes: </b>}{r.text}</p>
-            {r.detail && <ul class="detail">{r.detail.map((d) => <li>{d}</li>)}</ul>}
-            {r.note && r.note.map((d) => <p class="dev"><b>Developers' notes:</b> {d}</p>)}
-          </div>
-          {r.url ? <a class="post" href={r.url} rel="noopener" title="Read Blizzard's original post">Source</a> : <span class="post muted" title={`Forever client build ${build}`}>Build {build.split(".").pop()}</span>}
-        </li>
-      ))}
-    </ol>
+    <ChangeList rows={rows} build={build} id="c-rows" />
     <p class="empty muted" id="c-empty" hidden>No changes match. Clear a filter or two.</p>
   </section>
 
@@ -159,25 +115,6 @@ const n = (v: number) => v.toLocaleString("en-US");
   .hint { margin: -0.4rem 0 0.8rem; }
   .clsbar button[aria-pressed="true"] { border-color: var(--xp); background: var(--xp-soft); }
   @media (max-width: 560px) { .clsbar span { display: none; } .clsbar button { padding: 0.15rem; } }
-  .rows { list-style: none; padding: 0; margin: 0; max-width: none; border-top: 1px solid var(--line); }
-  .rows > li { display: grid; grid-template-columns: 6.5rem 1fr auto; gap: 0.3rem 1rem; padding: 0.7rem 0.2rem; border-bottom: 1px solid var(--line); }
-  .rows > li[hidden] { display: none; }
-  .meta { display: grid; align-content: start; gap: 0.2rem; font-size: 0.85rem; color: var(--muted); }
-  .src { justify-self: start; font: 600 0.72rem/1 var(--font-body); padding: 0.25em 0.5em; border-radius: 3px; }
-  .src.blz { background: #0f4c9c; color: #fff; } .src.mined { background: var(--xp-soft); color: var(--xp); } .src.issue { background: var(--skip-soft); color: var(--skip); }
-  .body p { margin: 0; max-width: 80ch; }
-  .where { font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
-  .where img { border-radius: 50%; }
-  .chip { font-size: 0.72rem; font-weight: 600; padding: 0.05em 0.45em; border: 1px solid var(--line); border-radius: 3px; color: var(--ink); }
-  .txt { margin-top: 0.1rem !important; }
-  .devtxt, .dev { font-style: italic; color: var(--muted); }
-  .dev { margin-top: 0.3rem !important; border-left: 3px solid var(--quest-bright); padding-left: 0.6rem; font-size: 0.95rem; }
-  .detail { margin: 0.3rem 0 0; padding-left: 1.1rem; font-size: 0.95rem; }
-  .post { font-size: 0.85rem; white-space: nowrap; align-self: start; }
-  @media (max-width: 640px) {
-    .rows > li { grid-template-columns: 1fr auto; }
-    .meta { grid-column: 1 / -1; display: flex; gap: 0.6rem; align-items: center; }
-    .body { grid-column: 1; }
-  }
+  .pages { margin: -0.4rem 0 0.9rem; }
   .sources { padding-left: 1.1rem; }
 </style>
