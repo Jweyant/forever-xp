@@ -353,7 +353,24 @@ def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3
     if isinstance(old_doc.get("articles"), list):
         seen = {x.get("url") for x in old_doc["articles"]}
         new_articles = [x for x in new_doc.get("articles", []) if safe_url(x.get("url")) and x["url"] not in seen]
+    new_articles += new_announcements(old_doc, new_doc)
     send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles)
+
+
+def new_announcements(old_doc, new_doc, days=3, today=None):
+    """Blizzard announcements (News page entries) that weren't in the previous file, oldest first.
+    Nothing until the previous file has the list, so the first run doesn't repost old news; topics
+    whose changes are posted anyway, and anything older than a few days, are left out."""
+    if not isinstance(old_doc.get("announcements"), list):
+        return []
+    seen = {x.get("id") for x in old_doc["announcements"] if isinstance(x, dict)}
+    since = time.strftime("%Y-%m-%d", time.gmtime((today or time.time()) - days * 86400))
+    out = []
+    for x in new_doc.get("announcements", []) or []:
+        if (isinstance(x, dict) and x.get("id") not in seen and not x.get("notes") and safe_url(x.get("url"))
+                and re.match(r"^\d{4}-\d{2}-\d{2}$", str(x.get("date"))) and x["date"] >= since):
+            out.append({"title": x.get("title"), "url": x["url"], "description": x.get("excerpt")})
+    return out[::-1]
 
 
 def post_date(cfg, paths, date, d, guild, max_messages=6):
@@ -463,8 +480,9 @@ def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles,
     target = target or feed_target(cfg, d, guild)
 
     for x in new_articles[:max_articles]:
+        about = label(x["description"], 300) if x.get("description") else "New WoW Forever news from Blizzard."
         post(d, target, {"title": label(x.get("title", "WoW Forever news"), 200), "url": x["url"], "color": BRAND,
-                         "description": "New WoW Forever news from Blizzard.", "footer": {"text": "Forever XP · forever-xp.com"}})
+                         "description": about, "footer": {"text": "Forever XP · forever-xp.com/news/"}})
         log(f"posted article {x['url']}")
 
     groups = {}

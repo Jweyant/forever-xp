@@ -1,6 +1,7 @@
 """Offline tests for tools/discord_bot.py: config validation, safe message text, and a setup
 run against a fake Discord API (no token, no network)."""
 import json
+import time
 import sys
 import tempfile
 import unittest
@@ -222,6 +223,37 @@ class Tests(unittest.TestCase):
             d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
             bot.post_notes(CFG, old, new, d, "1")
             self.assertEqual(d.calls, [])
+
+    def test_new_blizzard_announcements_are_posted_once_and_safely(self):
+        today = time.strftime("%Y-%m-%d")
+        base = "https://us.forums.blizzard.com/en/wow/t/"
+        with tempfile.TemporaryDirectory() as t:
+            old, new = Path(t, "old.json"), Path(t, "new.json")
+            old.write_text(json.dumps({"rows": [], "announcements": [{"id": 1, "date": today, "title": "Seen", "url": base + "seen/1"}]}))
+            new.write_text(json.dumps({"rows": [], "announcements": [
+                {"id": 4, "date": today, "title": "Realms are up @everyone", "url": base + "realms/4", "excerpt": "Queues **now** [x](https://evil.example)"},
+                {"id": 3, "date": today, "title": "Hotfixes", "url": base + "hotfixes/3", "notes": 1},
+                {"id": 2, "date": "2026-01-01", "title": "Too old", "url": base + "old/2"},
+                {"id": 5, "date": today, "title": "Elsewhere", "url": "https://evil.example/t/x/5"},
+                {"id": 1, "date": today, "title": "Seen", "url": base + "seen/1"},
+            ]}))
+            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
+            bot.post_notes(CFG, old, new, d, "1")
+            msgs = posts(d)
+            self.assertEqual(len(msgs), 1)
+            e = msgs[0]["embeds"][0]
+            self.assertEqual(e["url"], base + "realms/4")
+            self.assertNotIn("@everyone", e["title"])
+            self.assertNotIn("*", e["description"])
+            self.assertNotIn("[", e["description"])
+            self.assertEqual(msgs[0]["allowed_mentions"], {"parse": []})
+
+    def test_announcements_wait_for_a_previous_list(self):
+        today = time.strftime("%Y-%m-%d")
+        old_doc = {"rows": []}
+        new_doc = {"announcements": [{"id": 9, "date": today, "title": "A", "url": "https://us.forums.blizzard.com/en/wow/t/a/9"}]}
+        self.assertEqual(bot.new_announcements(old_doc, new_doc), [])
+        self.assertEqual(len(bot.new_announcements({"announcements": []}, new_doc)), 1)
 
     def test_renamed_channel_is_renamed_not_duplicated(self):
         cfg = {"categories": [{"name": "Start Here", "channels": [

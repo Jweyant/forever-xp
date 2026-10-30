@@ -295,7 +295,7 @@ def main():
     else:
         (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
-    (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[]}')
+    (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
     write_questdb(gear)
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
