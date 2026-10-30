@@ -53,6 +53,7 @@ jobs:
           python3 tools/test/test_wago.py
           python3 tools/test/test_blizzard_notes.py
           python3 tools/test/test_build_talents.py
+          python3 tools/test/test_build_items.py
           python3 tools/test/test_indexnow.py
 
   uploader:
