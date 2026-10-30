@@ -1,5 +1,6 @@
 """Offline tests for tools/blizzard_notes.py: finding the Forever forum categories and staff note
 topics without touching the network."""
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -147,10 +148,59 @@ class Announcements(unittest.TestCase):
         news = bn.announcements({1: first, 2: dict(first, id=2390466, category_id=347)})
         self.assertEqual([a["id"] for a in news], [2390465])
 
+    def test_newest_staff_post_counts_only_forever_sections(self):
+        posts = [{"category_id": 347, "created_at": "2026-10-29T16:17:05.123Z"},
+                 {"category_id": 171, "created_at": "2026-10-30T20:00:00.000Z"},     # another game's forum
+                 {"category_id": 349, "created_at": "not a time"}]
+        self.assertEqual(bn.latest_blue(posts, [346, 347, 349]), "2026-10-29T16:17:05Z")
+        self.assertEqual(bn.latest_blue(None, [347]), "")
+
     def test_category_names_are_shortened(self):
         self.assertEqual(bn.short_category("World of Warcraft: Forever General Discussion"), "General Discussion")
         self.assertEqual(bn.short_category("WoW: Forever Beta Discussion"), "Beta Discussion")
         self.assertEqual(bn.short_category("WoW: Forever"), "WoW Forever")
+
+
+class QuickCheck(unittest.TestCase):
+    """--quick (every 15 minutes) collects only when there's a staff post newer than the last seen."""
+    TRACKER = [{"topic_id": 1, "post_number": 3, "category_id": 347, "created_at": "2026-11-04T23:05:00.000Z"}]
+
+    def setUp(self):
+        self.saved = bn.get, bn.discover, sys.argv
+        bn.get = lambda url: self.TRACKER if "blizzard-tracker" in url else {"category_list": {"categories": []}}
+        self.collected = False
+
+        def discover(found=None):
+            self.collected = True
+            raise SystemExit("collecting")
+        bn.discover = discover
+
+    def tearDown(self):
+        bn.get, bn.discover, sys.argv = self.saved
+
+    def run_quick(self, seen):
+        import tempfile
+        with tempfile.TemporaryDirectory() as t:
+            prev, out = Path(t, "prev.json"), Path(t, "out.json")
+            prev.write_text(json.dumps({"blue_seen": seen, "announcements": []}))
+            sys.argv = ["blizzard_notes.py", "--quick", "--previous", str(prev), "--out", str(out)]
+            try:
+                bn.main()
+            except SystemExit:
+                pass
+            return out.exists()
+
+    def test_nothing_new_means_no_collection_and_no_file(self):
+        self.assertFalse(self.run_quick("2026-11-04T23:05:00Z"))
+        self.assertFalse(self.collected)
+
+    def test_a_newer_staff_post_starts_a_full_collection(self):
+        self.run_quick("2026-11-04T22:00:00Z")
+        self.assertTrue(self.collected)
+
+    def test_no_marker_yet_collects(self):
+        self.run_quick("")
+        self.assertTrue(self.collected)
 
 
 if __name__ == "__main__":

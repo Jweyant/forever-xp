@@ -162,7 +162,39 @@ async function getLog(key, env) {
   return new Response(obj.body, { headers: { "content-type": "application/gzip", etag: obj.etag } });
 }
 
+// Every 15 minutes (the cron in wrangler.toml) start the "Refresh Blizzard notes" workflow, since
+// GitHub's own schedule often runs it only every few hours. Most runs are a quick check that does a
+// full collection only when Blizzard has posted; the run at the top of each hour always does one.
+// The repository, workflow and branch are fixed here; nothing comes from a request. The token is
+// a GitHub token limited to this repository's Actions, kept in the GH_DISPATCH_TOKEN Worker secret.
+const NOTES_WORKFLOW = "https://api.github.com/repos/Jweyant/forever-xp/actions/workflows/blizzard-notes.yml/dispatches";
+
+export async function startNotesRun(env, scheduledTime, fetchImpl = fetch) {
+  if (!env.GH_DISPATCH_TOKEN) {
+    console.log("notes schedule: no GH_DISPATCH_TOKEN, skipping");
+    return { skipped: true };
+  }
+  const full = new Date(scheduledTime || Date.now()).getUTCMinutes() < 15;
+  const res = await fetchImpl(NOTES_WORKFLOW, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`,
+      accept: "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28",
+      "user-agent": "forever-xp notes schedule",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ ref: "main", inputs: { quick: full ? "false" : "true" } }),
+  });
+  console.log(`notes schedule: ${full ? "full" : "quick"} run requested, GitHub answered ${res.status}`);
+  return { status: res.status, full };
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(startNotesRun(env, event.scheduledTime).catch((e) => console.log(`notes schedule: ${e.name}`)));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
     try {
