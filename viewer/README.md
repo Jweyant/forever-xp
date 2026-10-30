@@ -26,6 +26,9 @@ The page also reads gear from its URL hash, for testing:
 
 ## Notes
 
+- The viewer script is pinned to a Wowhead deployment build (the `deployment/viewer/<hash>/`
+  path in `public/index.html`). If models stop loading after a Wowhead update, read the current
+  build path off wowhead.com/classic/dressing-room (network tab, `viewer.min.js`) and update it.
 - Wowhead's viewer and model files are theirs, fetched live and never stored here; the proxy
   caches a day at Cloudflare to keep requests down. This use is the community dressing-room
   pattern, fine for a free fan site, but Wowhead can change or close it at any time — the site
