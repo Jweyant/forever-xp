@@ -105,9 +105,33 @@ def icon_names(cache, download):
     return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower() for k, v in raw.items() if v.startswith("interface/icons/")}
 
 
+def display_ids(cache, download):
+    """ItemID -> ItemDisplayInfoID (the 3D model an item uses), via ItemModifiedAppearance ->
+    ItemAppearance. Loaded tolerantly outside TABLES: if the Forever build doesn't ship these
+    tables, items simply carry no display id (cmangos fills what it can, the site skips the rest).
+    """
+    try:
+        ima = load_csv(cache, "ItemModifiedAppearance", download)
+        app = load_csv(cache, "ItemAppearance", download)
+    except (SystemExit, OSError) as e:
+        print(f"display ids: tables unavailable ({e}); relying on cmangos displayid", file=sys.stderr)
+        return {}
+    info = {r.get("ID"): num(r.get("ItemDisplayInfoID"), int) for r in app}
+    best = {}
+    for r in ima:
+        iid = num(r.get("ItemID"), int)
+        order = num(r.get("OrderIndex"), int)
+        did = info.get(r.get("ItemAppearanceID"), 0)
+        # The default appearance is the lowest OrderIndex.
+        if iid and did and (iid not in best or order < best[iid][0]):
+            best[iid] = (order, did)
+    return {iid: v[1] for iid, v in best.items()}
+
+
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
     icons = icon_names(cache, download)
+    dids = display_ids(cache, download)
     item = {r["ID"]: r for r in T["Item"]}
     rpp = {num(r["ID"], int): r for r in T["RandPropPoints"]}
     aq = {num(r["ID"], int): r for r in T["ItemArmorQuality"]}
@@ -229,6 +253,9 @@ def client_items(cache, download):
         icon = icons.get(num(it.get("IconFileDataID"), int))
         if icon:
             rec["icon"] = icon
+        did = dids.get(int(iid))
+        if did:
+            rec["did"] = did
         if weapon:
             rec["weapon"] = weapon
         if effects:
@@ -304,7 +331,11 @@ def atlasloot(path):
 def cmangos_sources(sql, keep):
     d = mysqldump.read(sql, ["creature_loot_template", "reference_loot_template", "creature_template",
                              "creature", "npc_vendor", "npc_vendor_template", "quest_template",
-                             "gameobject_loot_template", "spell_template", "instance_template"])
+                             "gameobject_loot_template", "spell_template", "instance_template",
+                             "item_template"])
+    # Fallback display ids for items the client's appearance tables miss (classic-era art).
+    display = {r["entry"]: r["displayid"] for r in d["item_template"]
+               if r.get("entry") in keep and isinstance(r.get("displayid"), int) and r["displayid"] > 0}
     ctpl = {c["Entry"]: c for c in d["creature_template"]}
     cmap = {}
     for c in d["creature"]:
@@ -382,7 +413,7 @@ def cmangos_sources(sql, keep):
         for i in (1, 2, 3):
             if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep:
                 src[sp[f"EffectItemType{i}"]].append({"t": "craft", "n": sp["SpellName"]})
-    return src
+    return src, display
 
 
 def questie_sources(qdir, keep):
@@ -500,7 +531,7 @@ def main():
     items, sets = client_items(a.cache, a.download)
     keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
-    cm = cmangos_sources(a.cmangos, keep) if a.cmangos else {}
+    cm, cm_did = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
     logged = defaultdict(list)
     loot_csv = Path("out/loot.csv")
@@ -520,6 +551,8 @@ def main():
         else:
             no_src += 1
         rec["lvl"] = effective_level(rec, s)
+        if "did" not in rec and cm_did.get(iid):
+            rec["did"] = cm_did[iid]
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
@@ -530,7 +563,8 @@ def main():
         f"# Gear database\n\nForever client build {FOREVER_BUILD}.\n\n"
         f"- Equippable items: {len(items)} (by quality: {dict(sorted(by_q.items()))})\n"
         f"- Item sets: {len(sets)}\n- Items with a known source: {len(items) - no_src}\n"
-        f"- Items with no known source yet: {no_src}\n")
+        f"- Items with no known source yet: {no_src}\n"
+        f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n")
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 
