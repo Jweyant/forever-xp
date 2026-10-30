@@ -53,7 +53,7 @@
     { "name": "Admin", "color": "#E74C3C", "hoist": true },
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
-    { "name": "ForeverScout tester", "color": "#6B3FC4" }
+    { "name": "ForeverScout tester", "color": "#6B3FC4", "hoist": true }
   ],
   "_retired_roles": "Roles the bot removes from the server if they exist. Only names listed here are ever deleted.",
   "retired_roles": [
