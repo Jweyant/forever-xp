@@ -28,6 +28,8 @@ import { ICON } from "../config";
           <p class="small hint">Click a slot to change it. Right-click, long-press or press Delete to remove it.</p>
         </div>
         <div id="g-doll" class="paperdoll"><p class="loading">Loading Forever's gear database…</p></div>
+        <iframe id="g-3d-frame" title="3D character model" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer" hidden></iframe>
+        <p class="small muted" id="g-3d-note" hidden></p>
         <dl id="g-summary" class="summary"></dl>
       </div>
 
@@ -83,15 +85,6 @@ import { ICON } from "../config";
     </details>
 
     <div id="g-tip" class="wowtip" hidden role="tooltip"></div>
-    <dialog id="g-3d" aria-label="3D character view">
-      <form method="dialog" class="picker-head">
-        <h2>3D view</h2>
-        <button class="btn secondary" value="close">Close</button>
-      </form>
-      <p class="small muted" id="g-3d-note" hidden></p>
-      <div class="view3d"><iframe id="g-3d-frame" title="3D character model" sandbox="allow-scripts allow-same-origin" referrerpolicy="no-referrer"></iframe></div>
-      <p class="small muted">Drag to turn the character. Models come from Wowhead's model viewer; rings, trinkets and necks don't display.</p>
-    </dialog>
     <dialog id="g-picker">
       <form method="dialog" class="picker-head">
         <h2 id="g-picker-title">Choose an item</h2>
@@ -247,13 +240,16 @@ import { ICON } from "../config";
   #gear .weights input { width: 5.2rem; }
   #gear .weights input:disabled { opacity: 0.7; }
 
-  #g-picker, #g-3d { width: min(760px, calc(100vw - 24px)); max-height: 86vh; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); color: var(--ink); padding: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
-  #g-picker::backdrop, #g-3d::backdrop { background: rgba(10, 12, 24, 0.6); }
-  #g-picker .picker-head, #g-3d .picker-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-  #g-picker .picker-head h2, #g-3d .picker-head h2 { margin: 0; font-size: var(--step-2); }
-  #g-3d { width: min(560px, calc(100vw - 24px)); }
-  #g-3d .view3d { aspect-ratio: 4 / 5; max-height: 62vh; margin: 0.6rem 0; }
-  #g-3d .view3d iframe { width: 100%; height: 100%; border: 0; border-radius: 8px; background: #0d0f16; }
+  #g-picker { width: min(760px, calc(100vw - 24px)); max-height: 86vh; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); color: var(--ink); padding: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  #g-picker::backdrop { background: rgba(10, 12, 24, 0.6); }
+  #g-picker .picker-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  #g-picker .picker-head h2 { margin: 0; font-size: var(--step-2); }
+  /* The 3D view sits over the drawn figure in the character sheet (scripts/gear/viewer3d.ts
+     keeps it aligned); it lives outside #g-doll so re-renders don't reload the iframe. */
+  #gear .doll-wrap { position: relative; }
+  #g-3d-frame { position: absolute; border: 0; border-radius: 8px; background: #0d0f16; }
+  .mode3d .paperdoll .figure { visibility: hidden; }
+  #g-3d-open[aria-pressed="true"] { border-color: var(--rested, #8fb8ff); color: var(--rested, #8fb8ff); }
   #g-picker .picker-tools { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; align-items: center; margin: 0.8rem 0; }
   #g-picker .picker-tools input[type="search"] { flex: 1 1 220px; }
   #g-picker .picker-list { list-style: none; padding: 0; margin: 0; max-width: none; }
