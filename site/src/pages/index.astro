@@ -50,8 +50,26 @@ for (const r of fresh) {
 const newGroups = [...groupMap.values()].sort((a, b) => b.count - a.count).slice(0, 8);
 const newAreas = [...new Set(fresh.map((r) => r.section))];
 const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate}${g ? `&${g.key}=${encodeURIComponent(g.name)}` : ""}`;
+
+// "News from Blizzard" strip at the top: up to three announcements from the last week (name
+// reservation, realms, launch news), newest first. The site rebuilds whenever new ones arrive.
+const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T12:00:00Z`)) / 864e5 <= 7).slice(0, 3);
 ---
 <Base title={SITE.name} description="Free WoW Forever tools: a BIS gear planner, every quest with coordinates, the item database, talent calculator, all of Blizzard's changes and fast leveling routes.">
+  {recentNews.length > 0 && (
+    <section class="newsbar" aria-labelledby="nb-title">
+      <div class="wn-head">
+        <span class="wn-pill nb-pill">News</span>
+        <h2 id="nb-title">From Blizzard</h2>
+        <a class="nb-all" href="/news/">All Blizzard news</a>
+      </div>
+      <ul class="nb-items">
+        {recentNews.map((a) => (
+          <li><time datetime={a.date}>{fmt(a.date)}</time><a href={a.url} rel="noopener">{a.title}</a></li>
+        ))}
+      </ul>
+    </section>
+  )}
   {showNew && (
     <section class="whatsnew" aria-labelledby="wn-title">
       <div class="wn-head">
@@ -182,6 +200,12 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
   .wn-items { margin: 0 0 0.4rem; padding-left: 1.1rem; max-width: 90ch; }
   .wn-items li { margin: 0.15rem 0; }
   .wn-all { font-weight: 600; }
+  .newsbar { margin: 0.6rem 0 0.4rem; padding: 0.8rem 1.1rem; border: 1px solid var(--line); border-left: 4px solid #0f4c9c; border-radius: var(--radius); background: color-mix(in srgb, #0f4c9c 6%, var(--surface)); }
+  .nb-pill { background: #0f4c9c; color: #fff; }
+  .nb-all { margin-left: auto; font-weight: 600; font-size: var(--step--1); }
+  .nb-items { list-style: none; padding: 0; margin: 0.5rem 0 0; max-width: none; }
+  .nb-items li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 0.6rem; padding: 0.2rem 0; overflow-wrap: anywhere; }
+  .nb-items time { color: var(--muted); font-size: var(--step--1); padding-top: 0.1rem; }
   .hero { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2.5rem; align-items: center; padding: 1.5rem 0 1rem; }
   .hero .mark { padding: 1rem; }
   .hero h1 { max-width: 18ch; margin-bottom: 0.4em; font-size: clamp(2.4rem, 5vw, 3.7rem); }

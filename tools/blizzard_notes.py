@@ -19,6 +19,7 @@ import argparse
 import hashlib
 import html
 import json
+import os
 import re
 import sys
 import time
@@ -348,15 +349,33 @@ def discover(announce=None):
     return found
 
 
-def tracker(cats):
-    """Topics started in the Forever categories by any Blizzard employee, from the forum's blue
-    tracker (the last week or so). Catches staff who aren't in STAFF."""
+def tracker_posts():
+    """The forum's blue tracker: Blizzard employees' latest posts anywhere on the WoW forums (about
+    a week's worth), or None if it can't be read."""
     try:
         res = get(f"{FORUM}/groups/blizzard-tracker/posts.json")
     except Exception as e:  # noqa: BLE001 - best effort
         print(f"blue tracker: {e}", file=sys.stderr)
-        return {}
+        return None
     posts = res if isinstance(res, list) else (res.get("posts") if isinstance(res, dict) else None)
+    return [p for p in posts or [] if isinstance(p, dict)]
+
+
+STAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+
+
+def latest_blue(posts, cats):
+    """When the newest staff post in the Forever categories was made (any post, including a reply
+    like "we've updated the notes"), as YYYY-MM-DDTHH:MM:SSZ, or "" if there's none."""
+    stamps = [p["created_at"][:19] + "Z" for p in posts or []
+              if p.get("category_id") in cats and isinstance(p.get("created_at"), str) and STAMP.match(p["created_at"])]
+    return max(stamps, default="")
+
+
+def tracker(cats, posts=None):
+    """Topics started in the Forever categories by any Blizzard employee, from the forum's blue
+    tracker (the last week or so). Catches staff who aren't in STAFF."""
+    posts = tracker_posts() if posts is None else posts
     out = {}
     for p in posts or []:
         if not isinstance(p, dict) or p.get("post_number") != 1 or p.get("category_id") not in cats:
@@ -493,25 +512,44 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "gamedata" / "blizzard-notes.json"))
     ap.add_argument("--no-discover", action="store_true")
     ap.add_argument("--previous", help="an earlier notes file whose announcements are kept")
+    ap.add_argument("--quick", action="store_true",
+                    help="collect only if Blizzard staff posted in the Forever forums since the previous file")
     a = ap.parse_args()
 
-    previous = []
+    previous, seen_before = [], ""
     if a.previous:
         try:
-            previous = json.loads(Path(a.previous).read_text()).get("announcements", [])
+            prev_doc = json.loads(Path(a.previous).read_text())
+            previous = prev_doc.get("announcements", [])
+            if isinstance(prev_doc.get("blue_seen"), str) and STAMP.match(prev_doc["blue_seen"]):
+                seen_before = prev_doc["blue_seen"][:19] + "Z"
         except (OSError, ValueError, AttributeError) as e:
-            print(f"previous announcements: {e}", file=sys.stderr)
+            print(f"previous notes: {e}", file=sys.stderr)
 
     topics = dict(TOPICS)
     found = {}
+    latest = ""
     if a.from_dir:
         snap = Path(a.from_dir)
         load = lambda tid: json.loads((snap / f"{tid}.json").read_text())  # noqa: E731
         topics = {tid: k for tid, k in topics.items() if (snap / f"{tid}.json").exists()}
     else:
+        cats = forever_categories()
+        posts = tracker_posts()
+        latest = latest_blue(posts, cats)
+        # The quick check (every 15 minutes) costs two requests. It collects only when there's a
+        # staff post newer than the last one seen; the hourly full run also catches edited posts.
+        if a.quick and (posts is None or not latest or latest <= seen_before):
+            print(f"quick check: nothing new from Blizzard (newest staff post {latest or 'unknown'})")
+            if os.environ.get("GITHUB_OUTPUT"):  # tells the workflow to skip committing and posting
+                with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+                    f.write("skipped=true\n")
+            return
+        if a.quick:
+            print(f"quick check: new staff post at {latest}, collecting")
         if not a.no_discover:
             topics.update(discover(found))
-            found.update(tracker(forever_categories()))
+            found.update(tracker(cats, posts))
 
         def load(tid):
             return get(f"{FORUM}/t/{tid}.json")
@@ -530,7 +568,7 @@ def main():
     if not rows:
         sys.exit("No notes parsed; keeping the existing file.")
     news = announcements(found, previous)
-    out = {"updated": time.strftime("%Y-%m-%d"), "sources": sources,
+    out = {"updated": time.strftime("%Y-%m-%d"), "blue_seen": max(seen_before, latest), "sources": sources,
            "articles": [{"title": t, "url": u} for t, u in ARTICLES], "announcements": news, "rows": rows}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, indent=1, ensure_ascii=False))
