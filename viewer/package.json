@@ -1,0 +1,14 @@
+{
+  "name": "forever-xp-viewer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "vendor": "node copy-vendor.mjs",
+    "test": "node --test test/*.test.js",
+    "deploy": "npm run vendor && wrangler deploy"
+  },
+  "dependencies": {
+    "jquery": "3.7.1",
+    "wow-model-viewer": "1.5.3"
+  }
+}

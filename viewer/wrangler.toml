@@ -1,0 +1,16 @@
+name = "forever-xp-viewer"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# The page's own files (index.html, app.js, the pinned vendor copies). The worker runs first
+# so every response gets the security headers in src/index.js.
+[assets]
+directory = "public"
+binding = "ASSETS"
+run_worker_first = true
+
+# Burst limit on the model-file proxy, per IP (the viewer loads a model in well under this).
+[[ratelimits]]
+name = "BURST"
+namespace_id = "1002"
+simple = { limit = 400, period = 10 }

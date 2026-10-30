@@ -7,6 +7,7 @@ import {
 } from "./model";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 import { drawFigure, type FigItem } from "./figure";
+import { open3d, send3d } from "./viewer3d";
 import { afterSignIn } from "../account";
 afterSignIn(); // put back a plan the sign-in round trip dropped from the address
 
@@ -318,6 +319,7 @@ function renderControls() {
 
 function render() {
   renderControls(); renderDoll(); renderStats(); renderRows(); save();
+  send3d(st.race, st.body, gearOf(), byId); // no-op unless the 3D dialog is open
 }
 
 // ---------- editing ----------
@@ -420,6 +422,7 @@ function bind() {
     st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.view as "plan" | "cur"; render(); }));
+  $("#g-3d-open").addEventListener("click", () => open3d(() => send3d(st.race, st.body, gearOf(), byId)));
 
   // Character sheet: hover for the tooltip, click to change, right-click or long-press to remove.
   const doll = $("#g-doll"), tip = $("#g-tip");

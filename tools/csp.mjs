@@ -30,7 +30,7 @@ const csp = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https://render.worldofwarcraft.com https://avatars.githubusercontent.com",
   "connect-src 'self' https://cloudflareinsights.com https://discord.com https://giscus.app",
-  "frame-src https://giscus.app",
+  "frame-src https://giscus.app https://viewer.forever-xp.com", // comments; the BIS 3D view (viewer/)
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self' https://discord.com", // the sign-in form's redirect to Discord
