@@ -8,7 +8,11 @@ Questie's zone constants.
 Quests whose IDs aren't in Classic Era (cmangos classic-db, --cmangos) are marked "new"; quests
 that exist in both but changed level, required level or name get "chg".
 
-Usage: python3 tools/build_quests.py [--cache .cache/wago] [--cmangos cmangos.sql] [--out gamedata/quests.json]
+Gaps Questie leaves (mostly Forever's new quests) are filled from opendata (CC BY 4.0, --opendata)
+and, for XP, an estimate marked "xpe" (see tools/questxp.py). Questie's own values always win.
+
+Usage: python3 tools/build_quests.py [--cache .cache/wago] [--cmangos cmangos.sql] [--opendata ext/opendata]
+       [--out gamedata/quests.json]
 """
 import argparse
 import csv
@@ -18,6 +22,9 @@ import sqlite3
 import sys
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import questxp  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 QSORT = {-1: "Epic", -24: "Herbalism", -61: "Warlock", -81: "Warrior", -82: "Shaman", -101: "Fishing",
@@ -77,6 +84,7 @@ def main():
     ap.add_argument("--sqlite", default=str(ROOT / "data" / "forever_questdb.sqlite"))
     ap.add_argument("--out", default=str(ROOT / "gamedata" / "quests.json"))
     ap.add_argument("--cmangos", help="cmangos classic-db SQL dump, to mark quests new to Forever")
+    ap.add_argument("--opendata", help="checkout of wowlayerup-forever/opendata (CC BY 4.0), to fill gaps")
     a = ap.parse_args()
 
     classic = {}
@@ -108,6 +116,7 @@ def main():
         return p
 
     out = []
+    talk = {}
     for r in db.execute("SELECT * FROM quests ORDER BY id"):
         raw = json.loads(r["json"])
         zs = r["zone_or_sort"] or 0
@@ -131,7 +140,9 @@ def main():
             q["end"] = e
         text = raw.get("objectivesText") or []
         if text:
-            q["obj"] = " ".join(t for t in text if t)[:600]
+            q["obj"] = " ".join(t for t in text if isinstance(t, str) and t)[:600]
+        objs = raw.get("objectives") or []
+        talk[r["id"]] = not any(o for o in objs if o) if isinstance(objs, list) else not objs
         pre = (json.loads(r["pre_quest_single"] or "[]") or []) + (json.loads(r["pre_quest_group"] or "[]") or [])
         if pre:
             q["pre"] = pre[:6]
@@ -160,11 +171,73 @@ def main():
                 if chg:
                     q["chg"] = chg
         out.append(q)
+    fill_gaps(out, talk, a.opendata, zones, items, a.questie)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     new = sum(1 for q in out if q.get("new"))
+    print(f"XP: {sum(1 for q in out if q.get('xps'))} from opendata, {sum(1 for q in out if q.get('xpe'))} estimated; "
+          f"{sum(1 for q in out if (q.get('start') or {}).get('src'))} quest givers from opendata")
     print(f"{len(out)} quests ({new} new to Forever, {sum(1 for q in out if q.get('chg'))} changed), "
           f"{len({q['z'] for q in out})} zones -> {a.out}")
+
+
+# Zone or category names whose quests get no XP estimate (professions, events, PvP, raids):
+# their XP doesn't follow the levelling-quest tiers.
+NO_ESTIMATE = {"Crafting", "Other"} | set(QSORT.values()) - {"Warlock", "Warrior", "Shaman", "Paladin", "Mage", "Rogue", "Hunter",
+                                       "Priest", "Druid"}
+
+
+def fill_gaps(out, talk, opendata, zones, items, questie_dir):
+    """Fill what Questie lacks: opendata first (exact or observed), then an XP estimate."""
+    od_quests, givers, names = {}, {}, {}
+    if opendata:
+        od_quests = questxp.opendata_quests(opendata)
+        givers = questxp.opendata_givers(opendata)
+        names = questxp.opendata_names(opendata)
+        npcs = Path(questie_dir) / "npcs.json"
+        objects = Path(questie_dir) / "objects.json"
+        for kind, path in (("npc", npcs), ("object", objects)):
+            if path.exists():
+                for e in json.loads(path.read_text()):
+                    if isinstance(e, dict) and isinstance(e.get("id"), int) and isinstance(e.get("name"), str):
+                        names[(kind, e["id"])] = e["name"]
+        for i in items.values():
+            if isinstance(i.get("name"), str):
+                names[("item", i["id"])] = i["name"]
+    for q in out:
+        od = od_quests.get(q["id"]) or {}
+        if not q.get("xp") and od.get("xp"):
+            q["xp"], q["xps"] = od["xp"], "opendata"
+        if not q.get("obj") and od.get("obj"):
+            q["obj"] = od["obj"]
+            talk[q["id"]] = questxp.is_talk(od["obj"])
+        if q["lv"] <= 0 and od.get("lv"):
+            q["lv"] = od["lv"]
+        if not q["req"] and od.get("req"):
+            q["req"] = od["req"]
+        for role in ("start", "end"):
+            g = givers.get((q["id"], role))
+            if not g or q.get(role) or (role == "end" and q.get("start", {}).get("id") == g["id"]):
+                continue
+            name = names.get((g["t"], g["id"]))
+            if not name:
+                continue
+            p = {"n": name, "t": g["t"], "id": g["id"], "src": "opendata"}
+            if g.get("zone"):
+                p["z"] = cap(zones.get(g["zone"]) or f"Zone {g['zone']}")
+            if "x" in g:
+                p["x"], p["y"] = g["x"], g["y"]
+            q[role] = p
+    est = questxp.Estimator((q["lv"], q["xp"], talk.get(q["id"])) for q in out
+                            if q.get("xp") and not q.get("rep") and not q.get("new") and not q.get("xps"))
+    for q in out:
+        if q.get("xp") or q.get("rep") or q["z"] in NO_ESTIMATE:
+            continue
+        # Questie often has no objective list for Forever's new quests yet, so judge those by their text.
+        is_talk = questxp.is_talk(q.get("obj")) if q.get("new") else talk.get(q["id"])
+        xp = est(q["lv"], is_talk)
+        if xp:
+            q["xp"], q["xpe"] = xp, 1
 
 
 if __name__ == "__main__":
