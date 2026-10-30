@@ -121,7 +121,7 @@ class Announcements(unittest.TestCase):
         old = dict(bn.announcement(dict(self.RAW)), title="Old title")
         news = bn.announcements({self.RAW["id"]: dict(self.RAW)}, previous=[old])
         self.assertEqual(news[0]["title"], self.RAW["title"])
-        many = [bn.announcement(dict(self.RAW, id=i)) for i in range(1, bn.MAX_ANNOUNCEMENTS + 20)]
+        many = [bn.announcement(dict(self.RAW, id=i, title=f"Post {i}")) for i in range(1, bn.MAX_ANNOUNCEMENTS + 20)]
         self.assertEqual(len(bn.announcements({}, previous=many)), bn.MAX_ANNOUNCEMENTS)
 
     def test_blue_tracker_keeps_only_topic_starts_in_forever_categories(self):
@@ -136,6 +136,16 @@ class Announcements(unittest.TestCase):
             self.assertEqual(list(bn.tracker([346, 347])), [1])
         finally:
             bn.get = real
+
+    def test_link_previews_and_invisible_characters_are_left_out(self):
+        a = bn.announcement(dict(self.RAW, title="Podcast ft. ‪@Shobek‬", excerpt="[Your Next Adventure | Episode 6] Whether you’re new"))
+        self.assertEqual(a["title"], "Podcast ft. @Shobek")
+        self.assertEqual(a["excerpt"], "Whether you’re new")
+
+    def test_a_post_in_two_sections_on_one_day_is_listed_once(self):
+        first = dict(self.RAW, id=2390465, category_id=349, title="Thank You For Testing the WoW Forever Beta")
+        news = bn.announcements({1: first, 2: dict(first, id=2390466, category_id=347)})
+        self.assertEqual([a["id"] for a in news], [2390465])
 
     def test_category_names_are_shortened(self):
         self.assertEqual(bn.short_category("World of Warcraft: Forever General Discussion"), "General Discussion")

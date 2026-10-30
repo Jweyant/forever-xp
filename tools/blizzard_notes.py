@@ -373,19 +373,24 @@ DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ANNOUNCEMENT_URL = re.compile(rf"^{re.escape(FORUM)}/t/[a-z0-9-]{{1,120}}/\d{{1,12}}$")
 
 
+# Invisible direction and zero-width characters, which can make text display other than it reads.
+INVISIBLE = re.compile(r"[​-‏‪-‮⁠-⁩﻿]")
+
+
 def plain(s, n):
     """One line of plain text (a title or category), entities decoded, at most n characters."""
-    text = clean(s) if isinstance(s, str) else ""
+    text = clean(INVISIBLE.sub("", s)) if isinstance(s, str) else ""
     return text if len(text) <= n else text[: n - 1].rstrip() + "…"
 
 
 def excerpt_text(s, n=280):
-    """Plain text from a post excerpt, which may be HTML: tags dropped, entities decoded."""
+    """Plain text from a post excerpt, which may be HTML: tags dropped, entities decoded, and a
+    leading "[link title]" (Discourse's preview of a linked page) left out."""
     if not isinstance(s, str):
         return ""
     t = Tree()
     t.feed(s)
-    text = clean(t.root.text())
+    text = re.sub(r"^\[[^\]]{1,200}\]\s*", "", clean(INVISIBLE.sub("", t.root.text())))
     cut = bool(re.search(r"(…|\.\.\.)$", text))
     text = re.sub(r"\s*(…|\.\.\.)$", "", text)
     if len(text) > n - 1:
@@ -426,8 +431,9 @@ def kept(previous):
         entry = {"id": a["id"], "date": a["date"], "title": plain(a["title"], 200), "url": a["url"],
                  "category": plain(a.get("category"), 60) or "WoW Forever",
                  "kind": "Article" if a.get("kind") == "Article" else "Forum post"}
-        if isinstance(a.get("excerpt"), str) and a["excerpt"]:
-            entry["excerpt"] = excerpt_text(a["excerpt"])
+        excerpt = excerpt_text(a.get("excerpt"))
+        if excerpt and excerpt.lower() != entry["title"].lower():
+            entry["excerpt"] = excerpt
         if a.get("notes") == 1:
             entry["notes"] = 1
         if entry["title"]:
@@ -442,7 +448,14 @@ def announcements(found, previous=None):
         a = announcement(raw)
         if a:
             out[a["id"]] = a
-    return sorted(out.values(), key=lambda a: (a["date"], a["id"]), reverse=True)[:MAX_ANNOUNCEMENTS]
+    # The same post in two forum sections on the same day is shown once (the first one posted).
+    seen, unique = set(), []
+    for a in sorted(out.values(), key=lambda a: (a["date"], a["id"])):
+        key = (a["date"], a["title"].lower())
+        if key not in seen:
+            seen.add(key)
+            unique.append(a)
+    return sorted(unique, key=lambda a: (a["date"], a["id"]), reverse=True)[:MAX_ANNOUNCEMENTS]
 
 
 def collect(topics, load):

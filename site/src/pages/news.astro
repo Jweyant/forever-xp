@@ -9,7 +9,6 @@ const months = [...new Set(news.map((a) => a.date.slice(0, 7)))];
 const monthName = (m: string) => new Date(`${m}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 ---
 <Base image="/og/news.jpg" title="News from Blizzard" description={`Every WoW Forever announcement from Blizzard in one place: name reservation, realms, launch news, articles and podcasts, newest first, each linked to Blizzard's post.`}>
-  <p class="crumbs"><a href="/changes/">Changes</a> / News</p>
   <h1>News from Blizzard</h1>
   <p class="lede">Every WoW Forever announcement Blizzard has posted on the official forums, newest first: name reservation, realms, launch news, articles and podcasts. Each links to Blizzard's post. Checked every hour.</p>
   <p class="small">Looking for class, race and talent changes? They're on <a href="/changes/">Every Forever change</a>.</p>
@@ -46,7 +45,8 @@ const monthName = (m: string) => new Date(`${m}-15T12:00:00Z`).toLocaleDateStrin
 </Base>
 <style>
   .news { list-style: none; padding: 0; margin: 0 0 1rem; max-width: none; border-top: 2px solid var(--ink); }
-  .news > li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 0.3rem 1rem; padding: 0.8rem 0.2rem; border-bottom: 1px solid var(--line); }
+  .news > li { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.3rem 1rem; padding: 0.8rem 0.2rem; border-bottom: 1px solid var(--line); }
+  .body { min-width: 0; overflow-wrap: anywhere; }
   .meta { display: grid; align-content: start; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
   .tag { justify-self: start; font: 600 0.72rem/1 var(--font-body); padding: 0.25em 0.5em; border-radius: 3px; }
   .tag.post { background: #0f4c9c; color: #fff; } .tag.art { background: var(--quest-bright); color: #1a1405; } .tag.notes { background: var(--xp-soft); color: var(--xp); }
@@ -56,7 +56,7 @@ const monthName = (m: string) => new Date(`${m}-15T12:00:00Z`).toLocaleDateStrin
   .ex { color: var(--muted); }
   .foot { margin-top: 1.4rem; }
   @media (max-width: 640px) {
-    .news > li { grid-template-columns: 1fr; }
+    .news > li { grid-template-columns: minmax(0, 1fr); }
     .meta { display: flex; gap: 0.6rem; align-items: center; }
   }
 </style>
