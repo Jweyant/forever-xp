@@ -69,8 +69,11 @@ jobs:
         id: commit
         run: bash tools/push_data.sh "Refresh Blizzard's WoW Forever notes" gamedata/blizzard-notes.json
 
+      # Every run on main, not only when the data changed: new changes come from comparing files,
+      # and a recent announcement goes out if the channel doesn't have it yet (so a missed one is
+      # retried on the next run).
       - name: Post new changes and news to Discord
-        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}

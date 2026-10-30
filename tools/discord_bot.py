@@ -339,9 +339,10 @@ def post(d, target, embed):
     return msg
 
 
-def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3):
-    """Post Blizzard's new WoW Forever changes (class, racial and every other development note) and
-    new news articles to the feed channel. Known issues are left to the site."""
+def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=6):
+    """Post Blizzard's new WoW Forever changes (class, racial and every other development note),
+    new news articles and recent announcements to the feed channel. Known issues are left to the
+    site."""
     if not Path(old_path).exists():
         log("No previous notes file, so this is the first run: nothing posted.")
         return
@@ -353,24 +354,40 @@ def post_notes(cfg, old_path, new_path, d, guild, max_messages=6, max_articles=3
     if isinstance(old_doc.get("articles"), list):
         seen = {x.get("url") for x in old_doc["articles"]}
         new_articles = [x for x in new_doc.get("articles", []) if safe_url(x.get("url")) and x["url"] not in seen]
-    new_articles += new_announcements(old_doc, new_doc)
-    send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles)
+    # Announcements: the channel itself is the record of what's been posted, so one that failed to
+    # post, or arrived while the feed was off, goes out on the next run, and none goes out twice.
+    recent = recent_announcements(new_doc)
+    target = None
+    if recent:
+        target = feed_target(cfg, d, guild)
+        done = posted_links(d, target)
+        new_articles += [x for x in recent if x["url"] not in done]
+    send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles, target=target)
 
 
-def new_announcements(old_doc, new_doc, days=3, today=None):
-    """Blizzard announcements (News page entries) that weren't in the previous file, oldest first.
-    Nothing until the previous file has the list, so the first run doesn't repost old news; topics
-    whose changes are posted anyway, and anything older than a few days, are left out."""
-    if not isinstance(old_doc.get("announcements"), list):
-        return []
-    seen = {x.get("id") for x in old_doc["announcements"] if isinstance(x, dict)}
+def recent_announcements(new_doc, days=7, today=None):
+    """Blizzard announcements (News page entries) from the last week, oldest first. Topics whose
+    changes are posted anyway are left out."""
     since = time.strftime("%Y-%m-%d", time.gmtime((today or time.time()) - days * 86400))
     out = []
     for x in new_doc.get("announcements", []) or []:
-        if (isinstance(x, dict) and x.get("id") not in seen and not x.get("notes") and safe_url(x.get("url"))
+        if (isinstance(x, dict) and not x.get("notes") and safe_url(x.get("url"))
                 and re.match(r"^\d{4}-\d{2}-\d{2}$", str(x.get("date"))) and x["date"] >= since):
             out.append({"title": x.get("title"), "url": x["url"], "description": x.get("excerpt")})
     return out[::-1]
+
+
+def posted_links(d, target, limit=100):
+    """Links the bot has already posted in the feed channel's last `limit` messages."""
+    me = d.call("GET", "/users/@me") or {}
+    links = set()
+    for m in d.call("GET", f"/channels/{target['id']}/messages?limit={limit}") or []:
+        if not isinstance(m, dict) or (m.get("author") or {}).get("id") != me.get("id"):
+            continue
+        for e in m.get("embeds") or []:
+            if isinstance(e, dict) and isinstance(e.get("url"), str):
+                links.add(e["url"])
+    return links
 
 
 def post_date(cfg, paths, date, d, guild, max_messages=6):

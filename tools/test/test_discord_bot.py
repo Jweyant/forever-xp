@@ -224,36 +224,40 @@ class Tests(unittest.TestCase):
             bot.post_notes(CFG, old, new, d, "1")
             self.assertEqual(d.calls, [])
 
-    def test_new_blizzard_announcements_are_posted_once_and_safely(self):
+    def test_recent_announcements_not_yet_in_the_channel_are_posted_safely(self):
         today = time.strftime("%Y-%m-%d")
         base = "https://us.forums.blizzard.com/en/wow/t/"
         with tempfile.TemporaryDirectory() as t:
             old, new = Path(t, "old.json"), Path(t, "new.json")
-            old.write_text(json.dumps({"rows": [], "announcements": [{"id": 1, "date": today, "title": "Seen", "url": base + "seen/1"}]}))
+            old.write_text(json.dumps({"rows": []}))   # no announcements list yet: recent ones still go out
             new.write_text(json.dumps({"rows": [], "announcements": [
                 {"id": 4, "date": today, "title": "Realms are up @everyone", "url": base + "realms/4", "excerpt": "Queues **now** [x](https://evil.example)"},
                 {"id": 3, "date": today, "title": "Hotfixes", "url": base + "hotfixes/3", "notes": 1},
                 {"id": 2, "date": "2026-01-01", "title": "Too old", "url": base + "old/2"},
                 {"id": 5, "date": today, "title": "Elsewhere", "url": "https://evil.example/t/x/5"},
-                {"id": 1, "date": today, "title": "Seen", "url": base + "seen/1"},
+                {"id": 1, "date": today, "title": "Already posted", "url": base + "seen/1"},
+                {"id": 6, "date": today, "title": "Someone else posted it", "url": base + "other/6"},
             ]}))
-            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [])
+            channel = [
+                {"author": {"id": "42"}, "embeds": [{"url": base + "seen/1"}]},          # the bot's own post
+                {"author": {"id": "77"}, "embeds": [{"url": base + "other/6"}]},         # not the bot's: doesn't count
+            ]
+            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [], messages=channel)
             bot.post_notes(CFG, old, new, d, "1")
             msgs = posts(d)
-            self.assertEqual(len(msgs), 1)
-            e = msgs[0]["embeds"][0]
-            self.assertEqual(e["url"], base + "realms/4")
+            self.assertEqual([m["embeds"][0]["url"] for m in msgs], [base + "other/6", base + "realms/4"])
+            e = msgs[1]["embeds"][0]
             self.assertNotIn("@everyone", e["title"])
             self.assertNotIn("*", e["description"])
             self.assertNotIn("[", e["description"])
-            self.assertEqual(msgs[0]["allowed_mentions"], {"parse": []})
+            self.assertTrue(all(m["allowed_mentions"] == {"parse": []} for m in msgs))
 
-    def test_announcements_wait_for_a_previous_list(self):
-        today = time.strftime("%Y-%m-%d")
-        old_doc = {"rows": []}
-        new_doc = {"announcements": [{"id": 9, "date": today, "title": "A", "url": "https://us.forums.blizzard.com/en/wow/t/a/9"}]}
-        self.assertEqual(bot.new_announcements(old_doc, new_doc), [])
-        self.assertEqual(len(bot.new_announcements({"announcements": []}, new_doc)), 1)
+    def test_recent_means_the_last_week_oldest_first(self):
+        now = time.time()
+        day = lambda n: time.strftime("%Y-%m-%d", time.gmtime(now - n * 86400))  # noqa: E731
+        doc = {"announcements": [{"id": i, "date": day(n), "title": str(n), "url": f"https://us.forums.blizzard.com/en/wow/t/a/{i}"}
+                                 for i, n in ((1, 0), (2, 6), (3, 9))]}
+        self.assertEqual([x["title"] for x in bot.recent_announcements(doc, today=now)], ["6", "0"])
 
     def test_renamed_channel_is_renamed_not_duplicated(self):
         cfg = {"categories": [{"name": "Start Here", "channels": [
