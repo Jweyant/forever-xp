@@ -84,5 +84,64 @@ class Sections(unittest.TestCase):
         self.assertEqual(bn.named_in("For Hunters:"), ["Hunter"])
 
 
+class Announcements(unittest.TestCase):
+    RAW = {"id": 2394467, "title": "Overly Restrictive Name Check and Fix Incoming - October 27",
+           "slug": "overly-restrictive-name-check-and-fix-incoming-october-27", "created_at": "2026-10-28T01:28:00.000Z",
+           "category_id": 347, "excerpt": "In WoW Forever, we’ve been working on the restricted name list&hellip;", "user": "Kaivax"}
+
+    def test_a_staff_topic_becomes_a_news_entry(self):
+        a = bn.announcement(dict(self.RAW))
+        self.assertEqual(a["url"], "https://us.forums.blizzard.com/en/wow/t/overly-restrictive-name-check-and-fix-incoming-october-27/2394467")
+        self.assertEqual((a["date"], a["category"], a["kind"]), ("2026-10-28", "General Discussion", "Forum post"))
+        self.assertEqual(a["excerpt"], "In WoW Forever, we’ve been working on the restricted name list…")
+        self.assertNotIn("notes", a)
+
+    def test_articles_and_note_topics_are_marked(self):
+        art = bn.announcement(dict(self.RAW, user="BlizzardEntertainment", title="Your Next Adventure Starts in the Portal Room"))
+        self.assertEqual(art["kind"], "Article")
+        notes = bn.announcement(dict(self.RAW, title="WoW Forever Hotfixes - November 4"))
+        self.assertEqual(notes["notes"], 1)
+
+    def test_hostile_fields_are_cleaned_or_rejected(self):
+        a = bn.announcement(dict(self.RAW, slug='x"><script>alert(1)</script>/../../evil', excerpt='<img src=x onerror=alert(1)><b>Hi</b> there'))
+        self.assertTrue(bn.ANNOUNCEMENT_URL.match(a["url"]), a["url"])
+        self.assertNotIn("<", a["excerpt"])
+        self.assertEqual(a["excerpt"], "Hi there")
+        for bad in ({"id": "1"}, {"id": -4}, {"title": ""}, {"title": None}, {"created_at": "yesterday"}):
+            self.assertIsNone(bn.announcement(dict(self.RAW, **bad)), bad)
+        self.assertIsNone(bn.announcement("not a dict"))
+
+    def test_earlier_finds_are_kept_but_checked(self):
+        old = bn.announcement(dict(self.RAW, id=2393431, title="Name Reservation Issue for Oceanic Players", slug="name-reservation-issue"))
+        forged = dict(old, id=5, url="https://evil.example/t/x/5")
+        news = bn.announcements({self.RAW["id"]: dict(self.RAW)}, previous=[old, forged, "junk", {"id": 6}])
+        self.assertEqual([a["id"] for a in news], [2394467, 2393431])
+
+    def test_this_runs_copy_wins_and_the_list_is_capped(self):
+        old = dict(bn.announcement(dict(self.RAW)), title="Old title")
+        news = bn.announcements({self.RAW["id"]: dict(self.RAW)}, previous=[old])
+        self.assertEqual(news[0]["title"], self.RAW["title"])
+        many = [bn.announcement(dict(self.RAW, id=i)) for i in range(1, bn.MAX_ANNOUNCEMENTS + 20)]
+        self.assertEqual(len(bn.announcements({}, previous=many)), bn.MAX_ANNOUNCEMENTS)
+
+    def test_blue_tracker_keeps_only_topic_starts_in_forever_categories(self):
+        real = bn.get
+        try:
+            bn.get = lambda url: [
+                {"topic_id": 1, "post_number": 1, "category_id": 347, "topic_title": "Realm list", "topic_slug": "realm-list",
+                 "created_at": "2026-11-03T18:00:00Z", "excerpt": "Here are the realms", "username": "NewCM"},
+                {"topic_id": 2, "post_number": 3, "category_id": 347, "topic_title": "A reply", "created_at": "2026-11-03T18:00:00Z"},
+                {"topic_id": 3, "post_number": 1, "category_id": 171, "topic_title": "Midnight news", "created_at": "2026-11-03T18:00:00Z"},
+            ]
+            self.assertEqual(list(bn.tracker([346, 347])), [1])
+        finally:
+            bn.get = real
+
+    def test_category_names_are_shortened(self):
+        self.assertEqual(bn.short_category("World of Warcraft: Forever General Discussion"), "General Discussion")
+        self.assertEqual(bn.short_category("WoW: Forever Beta Discussion"), "Beta Discussion")
+        self.assertEqual(bn.short_category("WoW: Forever"), "WoW Forever")
+
+
 if __name__ == "__main__":
     unittest.main()

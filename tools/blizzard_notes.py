@@ -6,6 +6,11 @@ with its date, section, class or race, any developer note, and a link back to th
 site can show every change in one filterable table. Text stays Blizzard's; every row links to
 the original post.
 
+It also lists Blizzard's announcements: every topic a Blizzard employee started in a WoW Forever
+forum category (name reservation, realm news, articles, podcasts), as a title, date, short plain
+text excerpt and a link, for the site's News page. Announcements found before are kept
+(--previous), since the forum's blue tracker only reaches back about a week.
+
 Usage:
   python3 tools/blizzard_notes.py                      # fetch from the forums (GitHub Actions)
   python3 tools/blizzard_notes.py --from-dir snapshots  # parse saved <topic>.json files instead
@@ -37,7 +42,10 @@ TOPICS = {
 # are used if that lookup fails: 346 WoW: Forever, 347 General Discussion, 348 Community
 # Connections, 349 Beta Discussion.
 CATEGORIES = [346, 347, 348, 349]
-STAFF = ["Kaivax", "Linxy", "Aggrend", "Blizzard"]
+CATEGORY_NAMES = {346: "WoW Forever", 347: "General Discussion", 348: "Community Connections", 349: "Beta Discussion"}
+# BlizzardEntertainment posts the news site's articles to the forums.
+STAFF = ["Kaivax", "Linxy", "Aggrend", "Blizzard", "BlizzardEntertainment"]
+MAX_ANNOUNCEMENTS = 300
 NOTE_TITLE = re.compile(r"(development notes|patch notes|release notes|launch notes|update notes|hotfix|known issues|"
                         r"bug fixes|class (changes|updates|tuning)|"
                         r"\b(warrior|paladin|hunter|rogue|priest|shaman|mage|warlock|druid) updates)", re.I)
@@ -293,13 +301,27 @@ def forever_categories():
             text = f"{c.get('slug', '')} {c.get('name', '')} {parent}".lower()
             if "forever" in text:
                 found.append(c["id"])
+                name = short_category(c.get("name"))
+                if name:
+                    CATEGORY_NAMES[c["id"]] = name
             walk(c.get("subcategory_list"), str(c.get("slug", "")))
 
     walk((res.get("category_list") or {}).get("categories"))
     return sorted(set(found)) or list(CATEGORIES)
 
 
-def discover():
+def short_category(name):
+    """"World of Warcraft: Forever General Discussion" -> "General Discussion"."""
+    if not isinstance(name, str):
+        return ""
+    name = clean(name)[:60]
+    short = re.sub(r"^(World of Warcraft|WoW):?\s*Forever[:\s-]*", "", name, flags=re.I).strip()
+    return short or "WoW Forever"
+
+
+def discover(announce=None):
+    """New staff note topics ({topic id: kind}). With a dict for `announce`, also fills it with
+    every staff-started topic seen ({topic id: raw search result}) for the News page."""
     found = {}
     cats = forever_categories()
     print(f"watching forum categories {cats}", file=sys.stderr)
@@ -311,11 +333,116 @@ def discover():
             except Exception as e:  # noqa: BLE001 - discovery is best effort
                 print(f"search {user}/{cat}: {e}", file=sys.stderr)
                 continue
-            for t in res.get("topics", []):
+            blurbs = {p.get("topic_id"): p.get("blurb") for p in res.get("posts", []) or []
+                      if isinstance(p, dict) and p.get("post_number") == 1}
+            for t in res.get("topics", []) or []:
+                if not isinstance(t, dict) or not isinstance(t.get("id"), int):
+                    continue
                 if NOTE_TITLE.search(t.get("title", "")) and t["id"] not in TOPICS:
                     found[t["id"]] = "Known issues" if "known issues" in t["title"].lower() else "Development notes"
+                if announce is not None:
+                    announce[t["id"]] = {"id": t["id"], "title": t.get("title"), "slug": t.get("slug"),
+                                         "created_at": t.get("created_at"), "category_id": t.get("category_id", cat),
+                                         "excerpt": blurbs.get(t["id"]) or t.get("excerpt"), "user": user}
             time.sleep(1)
     return found
+
+
+def tracker(cats):
+    """Topics started in the Forever categories by any Blizzard employee, from the forum's blue
+    tracker (the last week or so). Catches staff who aren't in STAFF."""
+    try:
+        res = get(f"{FORUM}/groups/blizzard-tracker/posts.json")
+    except Exception as e:  # noqa: BLE001 - best effort
+        print(f"blue tracker: {e}", file=sys.stderr)
+        return {}
+    posts = res if isinstance(res, list) else (res.get("posts") if isinstance(res, dict) else None)
+    out = {}
+    for p in posts or []:
+        if not isinstance(p, dict) or p.get("post_number") != 1 or p.get("category_id") not in cats:
+            continue
+        tid = p.get("topic_id")
+        if isinstance(tid, int):
+            out[tid] = {"id": tid, "title": p.get("topic_title"), "slug": p.get("topic_slug"),
+                        "created_at": p.get("created_at"), "category_id": p.get("category_id"),
+                        "excerpt": p.get("excerpt"), "user": p.get("username")}
+    return out
+
+
+DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+ANNOUNCEMENT_URL = re.compile(rf"^{re.escape(FORUM)}/t/[a-z0-9-]{{1,120}}/\d{{1,12}}$")
+
+
+def plain(s, n):
+    """One line of plain text (a title or category), entities decoded, at most n characters."""
+    text = clean(s) if isinstance(s, str) else ""
+    return text if len(text) <= n else text[: n - 1].rstrip() + "…"
+
+
+def excerpt_text(s, n=280):
+    """Plain text from a post excerpt, which may be HTML: tags dropped, entities decoded."""
+    if not isinstance(s, str):
+        return ""
+    t = Tree()
+    t.feed(s)
+    text = clean(t.root.text())
+    cut = bool(re.search(r"(…|\.\.\.)$", text))
+    text = re.sub(r"\s*(…|\.\.\.)$", "", text)
+    if len(text) > n - 1:
+        text, cut = text[: n - 1].rstrip(), True
+    return text + "…" if cut and text else text
+
+
+def announcement(raw):
+    """A News page entry from a search or tracker result, or None if anything's off. Links are
+    built here from the topic id and a cleaned slug, never taken from the forum's data."""
+    if not isinstance(raw, dict):
+        return None
+    tid, cat = raw.get("id"), raw.get("category_id")
+    title = plain(raw.get("title"), 200)
+    date = str(raw.get("created_at") or "")[:10]
+    if not isinstance(tid, int) or tid <= 0 or not title or not DAY.match(date):
+        return None
+    slug = re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "", str(raw.get("slug") or "").lower())).strip("-")[:120] or "topic"
+    out = {"id": tid, "date": date, "title": title, "url": f"{FORUM}/t/{slug}/{tid}",
+           "category": CATEGORY_NAMES.get(cat, "WoW Forever") if isinstance(cat, int) else "WoW Forever",
+           "kind": "Article" if raw.get("user") == "BlizzardEntertainment" else "Forum post"}
+    excerpt = excerpt_text(raw.get("excerpt"))
+    if excerpt and excerpt.lower() != title.lower():
+        out["excerpt"] = excerpt
+    if NOTE_TITLE.search(title):
+        out["notes"] = 1  # its changes are on the Changes page
+    return out
+
+
+def kept(previous):
+    """Announcements from an earlier run, re-checked before they're trusted again."""
+    out = {}
+    for a in previous if isinstance(previous, list) else []:
+        if not isinstance(a, dict) or not isinstance(a.get("id"), int) or not isinstance(a.get("title"), str):
+            continue
+        if not isinstance(a.get("url"), str) or not ANNOUNCEMENT_URL.match(a["url"]) or not DAY.match(str(a.get("date"))):
+            continue
+        entry = {"id": a["id"], "date": a["date"], "title": plain(a["title"], 200), "url": a["url"],
+                 "category": plain(a.get("category"), 60) or "WoW Forever",
+                 "kind": "Article" if a.get("kind") == "Article" else "Forum post"}
+        if isinstance(a.get("excerpt"), str) and a["excerpt"]:
+            entry["excerpt"] = excerpt_text(a["excerpt"])
+        if a.get("notes") == 1:
+            entry["notes"] = 1
+        if entry["title"]:
+            out[a["id"]] = entry
+    return out
+
+
+def announcements(found, previous=None):
+    """Newest first: this run's finds, plus earlier ones this run didn't see again."""
+    out = kept(previous)
+    for raw in found.values():
+        a = announcement(raw)
+        if a:
+            out[a["id"]] = a
+    return sorted(out.values(), key=lambda a: (a["date"], a["id"]), reverse=True)[:MAX_ANNOUNCEMENTS]
 
 
 def collect(topics, load):
@@ -352,16 +479,26 @@ def main():
     ap.add_argument("--from-dir", help="read <topic id>.json snapshots instead of fetching")
     ap.add_argument("--out", default=str(ROOT / "gamedata" / "blizzard-notes.json"))
     ap.add_argument("--no-discover", action="store_true")
+    ap.add_argument("--previous", help="an earlier notes file whose announcements are kept")
     a = ap.parse_args()
 
+    previous = []
+    if a.previous:
+        try:
+            previous = json.loads(Path(a.previous).read_text()).get("announcements", [])
+        except (OSError, ValueError, AttributeError) as e:
+            print(f"previous announcements: {e}", file=sys.stderr)
+
     topics = dict(TOPICS)
+    found = {}
     if a.from_dir:
         snap = Path(a.from_dir)
         load = lambda tid: json.loads((snap / f"{tid}.json").read_text())  # noqa: E731
         topics = {tid: k for tid, k in topics.items() if (snap / f"{tid}.json").exists()}
     else:
         if not a.no_discover:
-            topics.update(discover())
+            topics.update(discover(found))
+            found.update(tracker(forever_categories()))
 
         def load(tid):
             return get(f"{FORUM}/t/{tid}.json")
@@ -379,14 +516,15 @@ def main():
     rows = finish(rows)
     if not rows:
         sys.exit("No notes parsed; keeping the existing file.")
+    news = announcements(found, previous)
     out = {"updated": time.strftime("%Y-%m-%d"), "sources": sources,
-           "articles": [{"title": t, "url": u} for t, u in ARTICLES], "rows": rows}
+           "articles": [{"title": t, "url": u} for t, u in ARTICLES], "announcements": news, "rows": rows}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, indent=1, ensure_ascii=False))
     kinds = {}
     for r in rows:
         kinds[r["kind"]] = kinds.get(r["kind"], 0) + 1
-    print(f"{len(rows)} rows from {len(sources)} topics {kinds} -> {a.out}")
+    print(f"{len(rows)} rows from {len(sources)} topics {kinds}, {len(news)} announcements -> {a.out}")
 
 
 if __name__ == "__main__":
