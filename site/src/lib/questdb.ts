@@ -1,12 +1,15 @@
 import qdbJson from "../data/questdb.json";
 
-export interface Place { n: string; t: string; id?: number; z?: string; x?: number; y?: number }
+export interface Place { n: string; t: string; id?: number; z?: string; x?: number; y?: number; src?: string }
 export interface QQuest {
-  id: number; n: string; lv: number; req: number; z: string; side?: "A" | "H"; cls?: string[]; xp?: number;
+  id: number; n: string; lv: number; req: number; z: string; side?: "A" | "H"; cls?: string[]; xp?: number; xpe?: 1; xps?: string;
   start?: Place; end?: Place; obj?: string; pre?: number[]; next?: number; rep?: 1;
   rew?: { id: number; n: string; q?: number; icon?: string }[]; repu?: number; new?: 1; chg?: string[];
 }
 export const qdb = qdbJson as QQuest[];
+/** Quest XP for display: estimates (no source has the real number yet) get a "~". */
+export const xpText = (q: QQuest) => (q.xp ? `${q.xpe ? "~" : ""}${q.xp}` : "–");
+export const OPENDATA = "https://github.com/wowlayerup-forever/opendata";
 export const qById = new Map(qdb.map((q) => [q.id, q]));
 export const zslug = (z: string) => z.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 export const QUALITY = ["poor", "common", "uncommon", "rare", "epic", "legendary", "artifact"];

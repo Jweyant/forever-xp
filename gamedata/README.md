@@ -41,4 +41,12 @@ its data under GPLv3, the same license as this repo, though they note they can't
 every past contributor. Fields: `id`, `n` name, `lv` quest level, `req` required level, `z` zone
 or category, `side` (A or H), `cls` class restriction, `xp`, `start` and `end` ({n, t, id, z, x, y}),
 `obj` objective text, `pre` prerequisites, `next` next in chain, `rep` repeatable, `rew` reward items,
-`repu` number of reputation rewards. Refreshed weekly by the "Refresh gear data" workflow.
+`repu` number of reputation rewards. Refreshed daily by the "Refresh gear data" workflow.
+
+Where Questie has no value yet (mostly Forever's new quests), `tools/questxp.py` fills the gap:
+XP and objective text from [opendata](https://github.com/wowlayerup-forever/opendata)'s client-cache
+quest templates (data © its contributors, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/);
+marked `xps: "opendata"`), quest givers from its player observations (`src: "opendata"` on the
+place), and otherwise an estimate from Classic quests of the same level and kind (`xpe: 1`). An
+estimate is often off by 20% for a single quest but close over a zone. ForeverScout logs replace
+all of these with measured values.

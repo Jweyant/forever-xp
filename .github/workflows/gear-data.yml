@@ -3,6 +3,7 @@
 #   - cmangos classic-db (GPL-3.0) for boss drops, vendors, quest rewards and crafting
 #   - AtlasLoot Classic (GPL-2.0) for instance, boss, PvP and faction reward lists
 #   - Questie's Forever database (GPLv3) for Forever quest rewards, vendors, chests and drops
+#   - wowlayerup-forever/opendata (data CC BY 4.0) for quest XP and givers Questie doesn't have yet
 # It also rebuilds gamedata/quests.json (every Forever quest) from Questie, and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
 #
@@ -17,7 +18,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/build_items.py", "tools/build_quests.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
+    paths: ["tools/build_items.py", "tools/build_quests.py", "tools/questxp.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
 
 permissions:
   contents: write
@@ -41,8 +42,9 @@ jobs:
         run: |
           git clone -q --depth 1 https://github.com/cmangos/classic-db ext/classic-db
           git clone -q --depth 1 https://github.com/Hoizame/AtlasLootClassic ext/AtlasLootClassic
+          git clone -q --depth 1 https://github.com/wowlayerup-forever/opendata ext/opendata
           zcat ext/classic-db/Full_DB/*.sql.gz > ext/cmangos.sql
-          echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD)" > ext/versions.txt
+          echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD), opendata $(git -C ext/opendata rev-parse --short HEAD)" > ext/versions.txt
 
       - name: Export Questie's Forever database
         run: |
@@ -57,7 +59,7 @@ jobs:
           printf '\nSources: %s\n' "$(paste -sd ';' ext/versions.txt | sed 's/;/, /g')" >> gamedata/items-report.md
 
       - name: Build quest database
-        run: python3 tools/build_quests.py --cache .cache/wago --cmangos ext/cmangos.sql --out gamedata/quests.json
+        run: python3 tools/build_quests.py --cache .cache/wago --cmangos ext/cmangos.sql --opendata ext/opendata --out gamedata/quests.json
 
       - name: Commit if changed
         id: commit

@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
 import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
-import { qdb, qById, zslug, QUALITY, ICON, SIDE_LABEL, type QQuest, type Place } from "../../lib/questdb";
+import { qdb, qById, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
 import { itemById } from "../../lib/gear";
 
 export function getStaticPaths() {
@@ -24,7 +24,8 @@ const why = !s ? null :
   s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` : `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
   s.verdict === "unknown" ? "Some objectives have no known location yet, so it can't be scored." :
   "Worth doing if you're nearby, but it isn't in a route.";
-const desc = `${q.n}${q.lv ? ` (level ${q.lv})` : ""}, a WoW Forever quest in ${q.z}${q.start ? `. Starts with ${q.start.n}` : ""}${q.xp ? `, ${q.xp} XP` : ""}.`;
+const desc = `${q.n}${q.lv ? ` (level ${q.lv})` : ""}, a WoW Forever quest in ${q.z}${q.start ? `. Starts with ${q.start.n}` : ""}${q.xp && !q.xpe ? `, ${q.xp} XP` : ""}.`;
+const fromOpendata = q.xps === "opendata" || q.start?.src === "opendata" || q.end?.src === "opendata";
 const places = [q.start && { role: "Start", p: q.start }, q.end && { role: "Turn in", p: q.end }].filter(Boolean) as { role: string; p: Place }[];
 const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" : "NPC");
 ---
@@ -44,7 +45,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   <dl class="facts">
     <div><dt>Quest level</dt><dd>{q.lv > 0 ? q.lv : "–"}</dd></div>
     <div><dt>Required level</dt><dd>{q.req || "–"}</dd></div>
-    <div><dt>Quest XP</dt><dd>{s?.xp ?? q.xp ?? "–"}</dd></div>
+    <div><dt>Quest XP</dt><dd>{s?.xp && !q.xpe ? s.xp : xpText(q)}{q.xpe && <span class="muted small" title="No source has this quest's XP yet. This is the usual XP for a quest of its level and kind; ForeverScout logs will replace it."> estimate</span>}</dd></div>
     {s && <div><dt>Estimated minutes</dt><dd>{s.minutes ?? "–"}</dd></div>}
     {s && <div><dt>XP per minute</dt><dd>{s.unlocated || rate == null ? "–" : rate}</dd></div>}
     {q.repu ? <div><dt>Reputation rewards</dt><dd>{q.repu}</dd></div> : null}
@@ -108,7 +109,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
       ? <p>Measured from {s.measured.players} player logs: median {s.measured.minutes} minutes.</p>
       : <p>No player has logged this quest yet. If you do it with <a href="/scout/">ForeverScout</a> running, your time helps score it. <a href={SUBMIT_LOG}>Send a log</a></p>}
   </div>
-  <p class="small muted">Quest ID {q.id}. Quest data from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3).</p>
+  <p class="small muted">Quest ID {q.id}. Quest data from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3){fromOpendata && <>, with gaps filled from <a href={OPENDATA}>opendata</a> (CC BY 4.0)</>}.</p>
   <Comments />
 </Base>
 <style>
