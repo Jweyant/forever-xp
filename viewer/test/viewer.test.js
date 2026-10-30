@@ -7,12 +7,13 @@ import { parseGear, parseHash, parentAllowed } from "../public/gear_params.js";
 const zam = (path) => zamPath(new URL(`https://viewer.example${path}`));
 
 test("the proxy serves only the model viewer's files", () => {
-  assert.equal(zam("/zam/modelviewer/classic/viewer/viewer.min.js?3ee7ec5121"),
-    "/modelviewer/classic/viewer/viewer.min.js?3ee7ec5121");
+  assert.equal(zam("/zam/modelviewer/classic/deployment/viewer/35ee72d/viewer.min.js?3ee7ec5121"),
+    "/modelviewer/classic/deployment/viewer/35ee72d/viewer.min.js?3ee7ec5121");
   assert.equal(zam("/zam/modelviewer/classic/meta/charactercustomization/15.json"),
     "/modelviewer/classic/meta/charactercustomization/15.json");
-  assert.equal(zam("/zam/modelviewer/classic/mo3/character/troll/male.mo3"),
-    "/modelviewer/classic/mo3/character/troll/male.mo3");
+  assert.equal(zam("/zam/modelviewer/classic/m2/121287.m2"), "/modelviewer/classic/m2/121287.m2");
+  assert.equal(zam("/zam/modelviewer/classic/skin/470634.skin"), "/modelviewer/classic/skin/470634.skin");
+  assert.equal(zam("/zam/modelviewer/viewer/viewer.css"), "/modelviewer/viewer/viewer.css");
 });
 
 test("everything else on the host is refused", () => {
@@ -21,6 +22,7 @@ test("everything else on the host is refused", () => {
     "/zam/modelviewer/classic/../../js/x.js",     // traversal
     "/zam/modelviewer/classic//etc/passwd",       // double slash
     "/zam/modelviewer/classic/viewer/viewer.php", // extension not on the list
+    "/zam/modelviewer/classic/mo3/121287.mo3",    // the old model format, gone upstream
     "/zam/modelviewer/classic/meta/a.json?q=<script>", // hostile query
     "/zam/modelviewer/future/viewer/viewer.min.js",    // env not on the list
     "/zam/modelviewer/classic/a%2F..%2Fb.js",          // encoded traversal (no % allowed)

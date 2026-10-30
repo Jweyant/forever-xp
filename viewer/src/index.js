@@ -10,12 +10,14 @@
 const ZAM = "https://wow.zamimg.com";
 
 // Only the model viewer's files: path shape, then extension, both allow-lists.
-const PATH = /^\/modelviewer\/(classic|live)\/[a-z0-9_./-]+$/i;
-const EXT = new Set(["js", "json", "png", "jpg", "jpeg", "webp", "dds", "mo3", "bone", "skin",
+// "viewer" is the env-less path of the viewer's own stylesheet (modelviewer/viewer/viewer.css);
+// m2 + skin are the current model format (the old viewer build's mo3 files are gone upstream).
+const PATH = /^\/modelviewer\/(classic|live|viewer)\/[a-z0-9_./-]+$/i;
+const EXT = new Set(["js", "css", "json", "png", "jpg", "jpeg", "webp", "dds", "m2", "bone", "skin",
   "anim", "db", "wasm", "bin", "skel"]);
 const QUERY = /^[a-zA-Z0-9=&._-]*$/;
 // Upstream Content-Type is third-party data: anything not on this list serves as octet-stream.
-const TYPES = new Set(["application/javascript", "text/javascript", "application/json",
+const TYPES = new Set(["application/javascript", "text/javascript", "text/css", "application/json",
   "image/png", "image/jpeg", "image/webp", "application/octet-stream", "text/plain"]);
 
 /** /zam/<path> -> the wow.zamimg.com path to fetch, or null if it isn't allowed. */
