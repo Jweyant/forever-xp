@@ -1,11 +1,13 @@
-# Rebuilds gamedata/simweights.json, the BIS planner's stat weights, from the presets that
-# wowsims/forever (https://github.com/wowsims/forever, MIT) publishes for each spec. See
-# tools/build_simweights.py.
+# Rebuilds gamedata/simweights.json, the BIS planner's stat weights, by running OUR OWN simulations
+# (tools/simrunner, configured by gamedata/simconfigs/) on the wowsims/forever combat engine
+# (https://github.com/wowsims/forever, MIT). Every published number comes from these runs; nothing
+# published by wowsims ships.
 #
-# wowsims is pinned to one commit (WOWSIMS_COMMIT below), so the data only changes when a reviewed pull
-# request moves the pin. Its files are read as text; nothing from that repository is executed. Runs on
-# demand and on pushes to work branches that change the builder or the pin. On main the data goes to
-# the `data` branch (tools/push_data.sh) and the site redeploys; on a work branch it's committed to that
+# The engine is pinned to one commit (WOWSIMS_COMMIT below, and the pseudo-version in
+# tools/simrunner/go.mod — the offline test checks they agree), so the weights only change when a
+# reviewed pull request moves the pin or edits a setup. Runs on demand and on pushes to work
+# branches that change the runner, the setups or this file. On main the data goes to the `data`
+# branch (tools/push_data.sh) and the site redeploys; on a work branch it's committed to that
 # branch so the pull request shows the real output. Pull requests only run the offline tests.
 
 name: Sim weights
@@ -14,9 +16,9 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/build_simweights.py", "tools/push_data.sh", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", ".github/workflows/sim-weights.yml"]
   pull_request:
-    paths: ["tools/build_simweights.py", "tools/test/test_build_simweights.py", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", ".github/workflows/sim-weights.yml"]
 
 permissions:
   contents: read
@@ -30,17 +32,17 @@ concurrency:
 
 jobs:
   test:
-    name: Sim weights builder tests
+    name: Sim setup tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - run: python3 -I tools/test/test_build_simweights.py
+      - run: python3 -I tools/test/test_simconfigs.py
 
   build:
-    name: Build sim weights
+    name: Run the sims
     needs: test
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -49,30 +51,35 @@ jobs:
       actions: write   # start the site deploy after a data commit on main
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+
+      # The engine, at exactly the pinned commit, in its own directory. The runner stages each
+      # setup inside it so SIML `use` lines resolve against the engine's files at that commit.
+      - name: Check out the engine at the pinned commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          python-version: "3.12"
+          repository: wowsims/forever
+          ref: ${{ env.WOWSIMS_COMMIT }}
+          path: ext/wowsims
+          persist-credentials: false
 
-      # Fetch exactly the pinned commit into its own directory, outside the repository, with no
-      # credentials. Only its text files are read.
-      - name: Fetch wowsims/forever at the pinned commit
-        run: |
-          git init -q "$RUNNER_TEMP/wowsims"
-          git -C "$RUNNER_TEMP/wowsims" -c protocol.version=2 fetch -q --depth 1 https://github.com/wowsims/forever "$WOWSIMS_COMMIT"
-          git -C "$RUNNER_TEMP/wowsims" -c advice.detachedHead=false checkout -q FETCH_HEAD
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.25"
+          cache-dependency-path: tools/simrunner/go.mod
 
-      # The report is printed between stop-commands: it includes preset labels from third-party
-      # files, which must not be able to issue workflow commands.
-      - name: Build sim weights
+      # go mod tidy resolves the pinned pseudo-version and verifies it against the Go checksum
+      # database; the sums are not committed, so the build never drifts from the pin silently.
+      - name: Run our stat-weight sims
+        working-directory: tools/simrunner
         run: |
-          token=$(python3 -c "import secrets; print(secrets.token_hex(16))")
-          echo "::stop-commands::$token"
-          python3 -I tools/build_simweights.py --wowsims "$RUNNER_TEMP/wowsims" --commit "$WOWSIMS_COMMIT" --out gamedata/simweights.json
-          echo "::$token::"
+          go mod tidy
+          go run -tags=with_db . -checkout "$GITHUB_WORKSPACE/ext/wowsims" \
+            -configs "$GITHUB_WORKSPACE/gamedata/simconfigs" \
+            -out "$GITHUB_WORKSPACE/gamedata/simweights.json" -iterations 5000
 
       - name: Commit if changed
         id: commit
-        run: bash tools/push_data.sh "Refresh sim weights from wowsims/forever" gamedata/simweights.json
+        run: bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       - name: Deploy the site with the new data

@@ -18,15 +18,15 @@ The talent calculator and the datamined talent changes, built daily by `tools/bu
 
 ## simweights.json
 
-The BIS planner's stat weights, built by `tools/build_simweights.py` (the **Sim weights** workflow)
-from the presets [wowsims/forever](https://github.com/wowsims/forever) publishes for each spec, read
-as text from the commit pinned in `.github/workflows/sim-weights.yml`.
+The BIS planner's stat weights, from Forever XP's own simulation runs: `tools/simrunner` (the
+**Sim weights** workflow) sims the setups in `gamedata/simconfigs/` on the
+[wowsims/forever](https://github.com/wowsims/forever) combat engine (MIT), pinned by commit.
+Every published number comes from these runs.
 
-- `specs`: `{"CLASS.spec": [{label, w: {stat: weight}, note}]}`, default preset first. Weights are per
-  point, on the sim's own scale; `dps` / `dps_oh` are main-hand and off-hand weapon DPS.
-- `report`: presets the builder skipped or couldn't find, and stats it dropped (ones Forever items in
-  `items.json` don't carry, or values that weren't plain numbers).
-- The weights are wowsims' work: Copyright (c) 2022 wowsims team, used under the MIT License.
+- `specs`: `{"CLASS.spec": [{label, w: {stat: weight}, note}]}`, default preset first. Weights are
+  per point, relative to the setup's reference stat; `dps` / `dps_oh` are weapon DPS.
+- `report`: stats a run dropped (out of bounds, or not carried by Forever items).
+- The engine is the wowsims team's work (MIT); the setups, runs and this data are forever-xp's.
 
 ## client-<build>.json
 

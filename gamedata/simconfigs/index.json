@@ -1,0 +1,17 @@
+[
+ {
+  "key": "HUNTER.sv",
+  "label": "Planner BIS · weave build",
+  "note": "Our own sim run: the planner's suggested gear on the default weave build, full raid buffs, a 180 s raid boss. Ranged weapon DPS stands in for all weapon DPS.",
+  "file": "hunter.siml",
+  "specDir": "hunter/dps"
+ },
+ {
+  "key": "WARRIOR.arms",
+  "label": "Planner BIS · Arms",
+  "note": "Our own sim run: the planner's suggested gear (a two-hander, so the Arms build) with full raid buffs on a 180 s raid boss.",
+  "file": "warrior_arms.siml",
+  "specDir": "warrior/dps",
+  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"
+ }
+]
