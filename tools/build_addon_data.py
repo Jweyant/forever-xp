@@ -128,6 +128,8 @@ def item_line(it):
         if k in STAT_KEYS and isinstance(v, (int, float)) and v:
             stats.append("%s=%s" % (k, lua_num(v)))
     f.append("st={" + ",".join(stats) + "}")
+    # Stat order as the site sees it (JSON key order), so sums round the same way on both sides.
+    f.append("so={" + ",".join(lua_str(x.split("=")[0]) for x in stats) + "}")
     srcs = [x for x in (source(s) for s in it.get("src") or []) if x]
     if srcs:
         f.append("src={" + ",".join(srcs[:4]) + "}")
@@ -186,6 +188,7 @@ def build():
         "-- (2 weapon, 4 armor), e level is an estimate, cm class mask, sd side, w {min,max,speed}, i icon, st stats, src sources, fx effects.",
         "-- Source fields: t kind, n name, z zone, lv level, ch drop %, boss, qid quest, rq quest level needed, pre earlier quests",
         "-- in the chain, sd faction, g quest giver, go giver is an object, gz giver zone, m uiMapID, x y map percent.",
+        "-- so: the stat keys in the site's order (sums must round the same way in both).",
         "-- Loaded on demand by ForeverScout when the BIS planner opens (see ForeverScout_Data.toc).",
         "ForeverScoutData = { BUILD = %s, ITEMS = {}, SETS = {} }" % lua_str(data.get("build", "")),
     ]
@@ -200,9 +203,12 @@ def build():
     for sid, s in sorted(sets.items(), key=lambda kv: int(kv[0])):
         bon = []
         for b in s.get("bonuses") or []:
-            txt = b.get("text") or ", ".join("+%s %s" % (lua_num(v), k) for k, v in (b.get("stats") or {}).items())
-            if txt:
-                bon.append("{%d,%s}" % (int(b.get("n", 0)), lua_str(txt)))
+            stats = {k: v for k, v in (b.get("stats") or {}).items()
+                     if isinstance(k, str) and re.fullmatch(r"[a-z][a-z0-9_]{0,24}", k) and isinstance(v, (int, float)) and v}
+            txt = b.get("text") or ", ".join("+%s %s" % (lua_num(v), k) for k, v in stats.items())
+            if txt or stats:
+                st = ",s={%s}" % ",".join("%s=%s" % (k, lua_num(v)) for k, v in stats.items()) if stats else ""
+                bon.append("{%d,%s%s}" % (int(b.get("n", 0)), lua_str(txt), st))
         lines.append("[%d]={n=%s,b={%s}}," % (int(sid), lua_str(s.get("name", "")), ",".join(bon)))
     lines.append("} for k, v in pairs(T) do S[k] = v end end)() end")
     lines.extend(sim_lines())

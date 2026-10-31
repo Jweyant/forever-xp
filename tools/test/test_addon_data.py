@@ -175,6 +175,15 @@ def check_sets(addon, sets):
         want = [b for b in (s.get("bonuses") or []) if b.get("text") or b.get("stats")]
         if len(want) != len(a.get("b") or []):
             bad_(f"set {sid} {s.get('name')!r}: {len(want)} bonuses on the site, {len(a.get('b') or [])} in the addon")
+            continue
+        for b, ab in zip(want, a.get("b") or []):
+            st_site = {k: v for k, v in (b.get("stats") or {}).items() if isinstance(v, (int, float)) and v}
+            st_addon = ab.get("s") or {} if isinstance(ab, dict) else {}
+            if int(b.get("n", 0)) != (ab.get(1) if isinstance(ab, dict) else ab[0]):
+                bad_(f"set {sid}: bonus piece count differs")
+            for k in set(st_site) | set(st_addon):
+                if not num_eq(st_site.get(k, 0), st_addon.get(k, 0), 0.006):
+                    bad_(f"set {sid} {s.get('name')!r}: bonus stat {k} site={st_site.get(k)} addon={st_addon.get(k)}")
 
 
 def check_sim(addon, simweights):

@@ -30,8 +30,8 @@ def lua_runtime():
       assert(loadstring(data, "Data.lua"))("ForeverScout_Data", {})
       assert(loadstring(planner, "Planner.lua"))("ForeverScout", ns)
       assert(ns.Planner.LoadData())
-      return function(cls, spec, goal, level, side)
-        local plan = ns.Planner.Suggest({ cls = cls, spec = spec, goal = goal, level = level, side = side })
+      return function(cls, spec, goal, level, side, race)
+        local plan = ns.Planner.Suggest({ cls = cls, spec = spec, goal = goal, level = level, side = side, race = race })
         local out = {}
         for k, v in pairs(plan) do out[#out + 1] = k .. "=" .. v end
         table.sort(out)
@@ -46,9 +46,9 @@ def main():
     run = lua_runtime()
     bad = 0
     for key, plan in ref.items():
-        cls, spec, goal, level, side = key.split("|")
+        cls, spec, goal, level, side, race = key.split("|")
         want = ",".join(sorted(f"{k}={v}" for k, v in plan.items()))
-        got = run(cls, spec, goal, int(level), side)
+        got = run(cls, spec, goal, int(level), side, race)
         if got != want:
             bad += 1
             if bad <= 10:

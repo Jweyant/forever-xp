@@ -240,9 +240,21 @@ function P.SourceKind(it)
   return s.t
 end
 
+-- Stats in the site's order (it.so), so floating-point sums round the same way as on the site.
+local function statPairs(it)
+  local so, st, i = it.so, it.st, 0
+  if not so then return pairs(st) end
+  return function()
+    i = i + 1
+    local k = so[i]
+    if k then return k, st[k] end
+  end
+end
+P.StatPairs = statPairs
+
 function P.Score(it, w)
   local v = 0
-  for k, n in pairs(it.st) do
+  for k, n in statPairs(it) do
     if k == "crit_pct" then v = v + n * CR * (w.crit or 0)
     elseif k == "hit_pct" then v = v + n * HR * (w.hit or 0)
     elseif k == "spellcrit_pct" then v = v + n * CR * (w.crit or 0)
@@ -257,7 +269,41 @@ end
 ------------------------------------------------------------------------------------------
 -- Suggestions. `opts` = { cls, spec, goal, level, side, sources (set of kinds or nil), weights (or nil) }
 ------------------------------------------------------------------------------------------
+-- Hit caps (site model.ts): 8% physical / 17% spell against raid bosses, 5% / 4% against level 60
+-- targets (PvP, roughly leveling). Dual wielding adds 19% to white swings only. Only Dwarves get
+-- racial hit (1%) in Forever.
+P.DW_MISS = 19
+P.RACE_HIT = { Dwarf = 1, dwarf = 1 }
+function P.HitCaps(goal)
+  if goal == "pvp" or goal == "level" then return { phys = 5, spell = 4 } end
+  return { phys = 8, spell = 17 }
+end
+function P.HitRating(t, kind)
+  local function n(k) return tonumber(t[k]) or 0 end
+  if kind == "phys" then return n("hit") + n("hit_pct") * HR end
+  return n("hit") + n("spellhit") + n("spellhit_pct") * HR
+end
+
+-- What hit this spec needs from gear: the cap for the goal, less hit from talents (opts.talentHit,
+-- percent) and race (opts.race). Healers have no cap.
+function P.HitCtx(opts)
+  local spec = P.Spec(opts.cls, opts.spec)
+  if not spec or spec.role == "healer" then return nil end
+  local kind = spec.role == "caster" and "spell" or "phys"
+  local cap = P.HitCaps(opts.goal)[kind]
+  local race = (opts.race and P.RACE_HIT[opts.race]) or 0
+  local tal = tonumber(opts.talentHit) or 0
+  return { kind = kind, cap = cap, race = race, talents = tal, need = max(0, cap - tal - race) }
+end
+
 local function slotWeights(opts, w, doll, it)
+  local scale = opts.hitScale or 1
+  if scale ~= 1 and w.hit then
+    local w2 = {}
+    for k, v in pairs(w) do w2[k] = v end
+    w2.hit = w.hit * scale
+    w = w2
+  end
   if not it.w then return w end
   local hunter = opts.cls == "HUNTER"
   local k = 1
@@ -331,9 +377,64 @@ local function bestOf(list, opts, w, doll)
   return top
 end
 
--- Returns { [dollSlot] = itemId } plus the weights used.
+local function dualWields(opts, plan)
+  if opts.cls == "HUNTER" or not plan.offhand then return false end
+  local it = ITEMS[plan.offhand]
+  return it ~= nil and it.w ~= nil
+end
+
+-- Score a set of gear loses for hit past the cap. Dual wielders' white swings miss 19% more, so hit
+-- past the cap still counts half until that's covered too.
+local function hitOverflow(opts, w, plan, t)
+  local h = P.HitCtx(opts)
+  local wh = w.hit or 0
+  if not h or wh <= 0 then return 0 end
+  local over = max(0, P.HitRating(t, h.kind) - h.need * HR)
+  local lost = over
+  if h.kind == "phys" and dualWields(opts, plan) then lost = over - 0.5 * math.min(over, P.DW_MISS * HR) end
+  return lost * wh
+end
+
+-- Stat totals of a plan (set bonuses included) and its score after the hit cap, like the site's totals().
+function P.Totals(opts, w, plan)
+  local t, v = {}, 0
+  local count = {}
+  for _, d in ipairs(P.PAPERDOLL) do
+    local it = plan[d] and ITEMS[plan[d]]
+    if it then
+      v = v + P.Value(opts, w, d, it)
+      for k, n in statPairs(it) do if k ~= "dps" then t[k] = (t[k] or 0) + n end end
+      if it.set then count[it.set] = (count[it.set] or 0) + 1 end
+    end
+  end
+  local sets = ForeverScoutData and ForeverScoutData.SETS or {}
+  for sid, n in pairs(count) do
+    local set = sets[sid]
+    for _, b in ipairs(set and set.b or {}) do
+      if n >= b[1] and b.s then for k, x in pairs(b.s) do t[k] = (t[k] or 0) + x end end
+    end
+  end
+  return t, floor(v - hitOverflow(opts, w, plan, t) + 0.5)
+end
+
+-- Returns { [dollSlot] = itemId } plus the weights used. With a hit cap in play, tries a few hit
+-- weightings and keeps the plan that scores best once hit past the cap stops counting.
 function P.Suggest(opts)
   local w = opts.weights or P.WeightsFor(opts.cls, opts.spec, opts.goal)
+  if not P.HitCtx(opts) or not w.hit or w.hit == 0 then return P.SuggestOnce(opts, w), w end
+  local best, bestV = {}, -math.huge
+  for _, m in ipairs({ 1, 0.8, 0.6, 0.45, 0.3, 0.15, 0 }) do
+    opts.hitScale = m
+    local p = P.SuggestOnce(opts, w)
+    opts.hitScale = 1
+    local _, v = P.Totals(opts, w, p)
+    if v > bestV then best, bestV = p, v end
+  end
+  opts.hitScale = nil
+  return best, w
+end
+
+function P.SuggestOnce(opts, w)
   local plan = {}
   for _, d in ipairs(P.PAPERDOLL) do
     if d ~= "finger2" and d ~= "trinket2" and d ~= "mainhand" and d ~= "offhand" then
@@ -360,7 +461,7 @@ function P.Suggest(opts)
     if oneH then plan.mainhand = oneH.id end
     if off then plan.offhand = off.id end
   end
-  return plan, w
+  return plan
 end
 
 -- The player's equipped item IDs by paper-doll slot (only IDs the planner knows).

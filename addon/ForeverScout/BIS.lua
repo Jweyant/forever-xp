@@ -712,13 +712,14 @@ function ns.BIS.Refresh()
   f.sources:SetActive(limited > 0)
   f.focusHead:SetText(state.focus and (P.STAT_LABEL[state.focus] or ""):gsub(" resistance", " res"):gsub(" rating", "") or "")
 
+  local _, raceToken = UnitRace("player")
   state.opts = { cls = state.cls, spec = state.spec, goal = state.goal, level = state.level, side = state.side,
-    sources = sources, focus = state.focus }
+    sources = sources, focus = state.focus, race = raceToken }
   local plan, w = P.Suggest(state.opts)
   state.plan, state.weights = plan, w
   state.cur = P.Equipped()
   -- Scores shown to the player are the plain ones (what the site shows); the focus stat has its own column.
-  state.plain = { cls = state.cls, spec = state.spec, goal = state.goal, level = state.level, side = state.side }
+  state.plain = { cls = state.cls, spec = state.spec, goal = state.goal, level = state.level, side = state.side, race = raceToken }
 
   local bestRow, upgrades, focusTotal = nil, 0, 0
   for _, d in ipairs(P.PAPERDOLL) do
