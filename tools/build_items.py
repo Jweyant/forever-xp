@@ -514,6 +514,85 @@ def effective_level(rec, sources):
     return best if best is not None else max(1, min(60, rec["ilvl"] - 5))
 
 
+# Item classes kept for the non-gear list (weapons and armor come from the client gear tables).
+OTHER_CLASSES = {0: "Consumable", 1: "Container", 3: "Gem", 5: "Reagent", 6: "Projectile", 7: "Trade goods",
+                 9: "Recipe", 11: "Quiver", 12: "Quest item", 13: "Key", 15: "Miscellaneous"}
+JUNK_NAME = re.compile(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|PH|QA ?test\w*)\b", re.I)
+
+
+def _ids(v):
+    """Questie ID lists arrive as lists, {"1": ..} maps, or Python-literal strings."""
+    if isinstance(v, str):
+        try:
+            import ast
+            v = ast.literal_eval(v)
+        except (ValueError, SyntaxError):
+            return []
+    if isinstance(v, dict):
+        v = [v[k] for k in sorted(v, key=lambda k: int(k) if str(k).isdigit() else 0)]
+    out = []
+    for x in v if isinstance(v, list) else []:
+        if isinstance(x, (list, dict)):
+            x = _ids(x)[:1]
+            x = x[0] if x else None
+        try:
+            out.append(int(x))
+        except (TypeError, ValueError):
+            pass
+    return out
+
+
+def other_items(sqlite_path, gear_ids, classic, max_names=3):
+    """Every non-gear Forever item Questie knows (consumables, trade goods, recipes, quest items...),
+    with where it comes from and which quests use it. Compact keys for the item list:
+    id, n name, q quality, c category, rl required level, d drops from [[npc, zone]], v sold by,
+    o found in (objects), qs starts quest, qr reward from quests, qu used by quests (quests as [id, name])."""
+    import sqlite3
+    if not sqlite_path or not Path(sqlite_path).exists():
+        return []
+    db = sqlite3.connect(sqlite_path)
+    zones = dict(db.execute("SELECT id, name FROM zones"))
+    npcs = {i: (n, z) for i, n, z in db.execute("SELECT id, name, zone_id FROM npcs")}
+    objects = {i: n for i, n in db.execute("SELECT id, name FROM objects")}
+    quests = {}
+    used_by = defaultdict(set)
+    for qid, name, raw in db.execute("SELECT id, name, json FROM quests"):
+        quests[qid] = name
+        q = json.loads(raw)
+        objs = q.get("objectives") or []
+        groups = [objs.get(k) for k in ("1", "2", "3")] if isinstance(objs, dict) else (objs if isinstance(objs, list) else [])
+        for iid in _ids(groups[2] if len(groups) > 2 and groups[2] else []):
+            used_by[iid].add(qid)
+        for iid in _ids([q.get("sourceItemId")]):
+            used_by[iid].add(qid)
+    zname = lambda z: (zones.get(z) or "").replace("_", " ").title() if z else ""  # noqa: E731
+    out = []
+    for iid, name, raw in db.execute("SELECT id, name, json FROM items ORDER BY id"):
+        it = json.loads(raw)
+        cls = it.get("class")
+        cls = int(cls) if str(cls).lstrip("-").isdigit() else -1
+        if iid in gear_ids or cls not in OTHER_CLASSES or not name or JUNK_NAME.search(name) or name.startswith(("zz", "QA")):
+            continue
+        c = classic.get(iid) or {}
+        rec = {"id": iid, "n": name, "q": c.get("Quality") if isinstance(c.get("Quality"), int) else 1, "c": OTHER_CLASSES[cls]}
+        rl = it.get("requiredLevel")
+        if str(rl).isdigit() and int(rl) > 1:
+            rec["rl"] = int(rl)
+        drops = [[npcs[n][0], zname(npcs[n][1])] for n in _ids(it.get("npcDrops")) if n in npcs][:max_names]
+        vend = sorted({npcs[n][0] for n in _ids(it.get("vendors")) if n in npcs})[:max_names]
+        objs = sorted({objects[o] for o in _ids(it.get("objectDrops")) if o in objects})[:max_names]
+        start = [[q, quests[q]] for q in _ids([it.get("startQuest")]) if q in quests]
+        rew = [[q, quests[q]] for q in _ids(it.get("questRewards")) if q in quests][:max_names]
+        used = [[q, quests[q]] for q in sorted(used_by.get(iid, set()) | set(_ids(it.get("relatedQuests")))) if q in quests][:max_names]
+        for key, val in (("d", drops), ("v", vend), ("o", objs), ("qr", rew), ("qu", used)):
+            if val:
+                rec[key] = val
+        if start:
+            rec["qs"] = start[0]
+        out.append(rec)
+    return out
+
+
 def forever_changes(items, classic):
     """Mark items that are new to Forever (no classic item with that ID) or changed from classic
     (item level, quality or required level). Returns (new, changed) counts. Without classic data,
@@ -546,6 +625,8 @@ def main():
     ap.add_argument("--atlasloot")
     ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
+    ap.add_argument("--questie-sqlite", default="data/forever_questdb.sqlite", help="from tools/refresh_questie_data.sh, for non-gear items")
+    ap.add_argument("--other-out", default="gamedata/other-items.json")
     ap.add_argument("--report", default="gamedata/items-report.md")
     ap.add_argument("--build", help="Forever client build to read (default: the newest on wago.tools)")
     a = ap.parse_args()
@@ -584,6 +665,9 @@ def main():
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+    other = other_items(a.questie_sqlite, set(items), classic)
+    if other:
+        Path(a.other_out).write_text(json.dumps(other, separators=(",", ":"), ensure_ascii=False))
     by_q = defaultdict(int)
     for r in items.values():
         by_q[r["q"]] += 1
@@ -593,7 +677,8 @@ def main():
         f"- Item sets: {len(sets)}\n- Items with a known source: {len(items) - no_src}\n"
         f"- Items with no known source yet: {no_src}\n"
         f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
-        f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n")
+        f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n"
+        f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}\n")
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 

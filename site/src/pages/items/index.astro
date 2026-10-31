@@ -7,11 +7,12 @@ const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","
 ---
 <Base image="/og/items.jpg" title="Item database" description={`All ${n} equippable WoW Forever items with stats from the game client, icons and where each one drops. Filter by slot, quality, level and source.`}>
   <h1>Item database</h1>
-  <p class="lede">Every piece of gear in WoW Forever, {n} items, with stats read from the game client and where each one comes from.</p>
+  <p class="lede">Every piece of gear in WoW Forever, {n} items, with stats read from the game client and where each one comes from, plus every consumable, trade good, recipe, bag and quest item, with where to get it and the quests that use it.</p>
 
   <section id="idb" class="idb" aria-busy="true">
     <div class="filters">
       <label class="grow">Search<input type="search" id="f-q" placeholder="Item name or ID" autocomplete="off" /></label>
+      <label>Category<select id="f-cat"><option value="">All items</option><option value="gear">Gear</option></select></label>
       <label>Slot<select id="f-slot"><option value="">Any slot</option>{slots.map(([k, v]) => <option value={k}>{v}</option>)}</select></label>
       <label>Type<select id="f-type"><option value="">Any type</option></select></label>
       <label>Quality<select id="f-q2"><option value="">Any</option><option value="2">Uncommon and up</option><option value="3">Rare and up</option><option value="4">Epic and up</option></select></label>
@@ -27,7 +28,7 @@ const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","
           <th data-sort="name"><button>Item</button></th>
           <th class="num" data-sort="ilvl" aria-sort="descending"><button>Item level</button></th>
           <th class="num opt" data-sort="req"><button>Requires</button></th>
-          <th class="opt" data-sort="slot"><button>Slot</button></th>
+          <th class="opt" data-sort="slot"><button>Slot or category</button></th>
           <th class="opt" data-sort="src"><button>Source</button></th>
         </tr></thead>
         <tbody id="irows"></tbody>

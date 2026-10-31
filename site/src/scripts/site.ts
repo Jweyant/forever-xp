@@ -96,7 +96,7 @@ window.addEventListener("scroll", () => { if (tipFor) hideTip(); }, { passive: t
 
 // ---------- Quick search ----------
 type QRow = [number, string, number, string, string, string, number?];
-type IRow = [number, string, number, string, string, number];
+type IRow = [number, string, number, string, string, number, number?];
 interface Hit { href: string; html: string }
 const dlg = document.getElementById("search") as HTMLDialogElement;
 const input = document.getElementById("search-q") as HTMLInputElement;
@@ -147,6 +147,7 @@ async function runSearch() {
     .sort((a, b) => a.r - b.r || b.i[5] - a.i[5]).slice(0, 7)
     .map(({ i }) => {
       const q = QUALITY[num(i[2])] || "common";
+      if (i[6] === 1) return { href: `/items/?q=${num(i[0])}`, html: `<span class="ico sm qb-${q}"></span><span><b class="q-${q}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}</span></span><span></span>` };
       return { href: `/items/${num(i[0])}/`, html: `<span class="ico sm qb-${q}">${i[3] ? `<img src="${esc(ICON(i[3], 36))}" alt="">` : ""}</span><span><b class="q-${q}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}, item level ${num(i[5])}</span></span><span></span>` };
     });
   hits = [...pageHits, ...qs, ...is];
