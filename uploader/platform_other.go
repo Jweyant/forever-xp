@@ -44,3 +44,8 @@ func (a *App) install() error {
 }
 
 func (a *App) uninstall() { a.requestStop() }
+
+func openURL(u string) error {
+	fmt.Printf("Open this link in your browser:\n%s\n", u)
+	return nil
+}
