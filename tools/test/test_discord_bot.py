@@ -397,5 +397,43 @@ class Tests(unittest.TestCase):
             cfg = {"categories": [{"name": "X", "channels": [{"name": "general", "type": "text"}]}], "private_channels": bad}
             self.assertTrue(bot.validate(cfg), bad)
 
+    def test_report_channel_validation(self):
+        two = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "report": True},
+                                                          {"name": "b", "type": "announcement", "report": True}]}]}
+        self.assertTrue(any("only one report channel" in x for x in bot.validate(two)))
+        forum = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "forum", "report": True}]}]}
+        self.assertTrue(bot.validate(forum))
+        bad = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "report": "yes"}]}]}
+        self.assertTrue(bot.validate(bad))
+
+    def test_scout_report_posts_only_safe_rows(self):
+        doc = {"totals": {"scouts": 3, "quests": 9, "drops": 4, "discoveries": 1}, "week": {"scouts": 2, "quests": 5, "drops": 4},
+               "board": [{"handle": "@everyone", "score": 99}, {"handle": "Scout 97800d", "score": "6", "quests": 2},
+                         {"handle": "Scout <b>x</b>", "score": 5}],
+               "week_board": [{"handle": "Scout 503897", "score": 2, "quests": 0, "drops": 2}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "scouts.json"
+            f.write_text(json.dumps(doc))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            bot.post_scouts(CFG, f, d, "1")
+        sent = posts(d)
+        self.assertEqual(len(sent), 1)
+        text = shown(sent[0])
+        self.assertIn("Scout 97800d", text)
+        self.assertNotIn("@everyone", text)
+        self.assertNotIn("<b>", text)
+        self.assertEqual(sent[0]["allowed_mentions"], {"parse": []})
+        self.assertTrue(any(m == "POST" and p == "/channels/7/messages/m1/crosspost" for m, p, b in d.calls))
+
+    def test_scout_report_waits_for_the_first_scout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "scouts.json"
+            f.write_text(json.dumps({"board": [], "totals": {}}))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            bot.post_scouts(CFG, f, d, "1")
+            bot.post_scouts(CFG, Path(tmp) / "missing.json", d, "1")
+        self.assertEqual(posts(d), [])
+
+
 if __name__ == "__main__":
     unittest.main()

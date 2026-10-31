@@ -29,6 +29,16 @@ const (
 
 var shareOn = regexp.MustCompile(`\["share"\]\s*=\s*true`)
 
+// scoutSalt must match SCOUT_SALT in tools/ingest_logs.py: the leaderboard on forever-xp.com/scouts/
+// shows this same name, made from a one-way hash so the install id itself is never shown.
+const scoutSalt = "forever-xp scout|"
+
+// scoutName is the player's public name on the Scout leaderboard, e.g. "Scout 97800d".
+func scoutName(installID string) string {
+	h := sha256.Sum256([]byte(scoutSalt + installID))
+	return "Scout " + hex.EncodeToString(h[:])[:6]
+}
+
 type fileState struct {
 	Hash       string    `json:"hash"`
 	ModTime    time.Time `json:"modTime"`
@@ -308,8 +318,8 @@ func (a *App) requestStop() {
 }
 
 func (a *App) printStatus() {
-	fmt.Printf("%s %s\ndata folder: %s\nupload URL: %q\ninstalled: %v, running: %v\n",
-		appName, version, a.dir, uploadURL, a.isInstalled(), a.otherInstanceRunning())
+	fmt.Printf("%s %s\ndata folder: %s\nupload URL: %q\ninstalled: %v, running: %v\nleaderboard name: %s\n",
+		appName, version, a.dir, uploadURL, a.isInstalled(), a.otherInstanceRunning(), scoutName(a.state.InstallID))
 	for _, p := range a.discover() {
 		data, _ := os.ReadFile(p)
 		st := a.state.Files[p]

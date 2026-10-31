@@ -326,6 +326,7 @@ def main():
     notes = ROOT / "gamedata" / "blizzard-notes.json"
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
     write_questdb(gear)
+    write_scouts()
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))
@@ -339,6 +340,47 @@ def main():
     }, indent=1))
     print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured, "
           f"{confirmed_items} items confirmed -> {OUT}")
+
+
+SCOUT_HANDLE = re.compile(r"^Scout [0-9a-f]{6}$")
+SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
+
+
+def write_scouts():
+    """The Scout leaderboard for /scouts/ (tools/ingest_logs.py write_scouts), allow-listed:
+    handles must look like "Scout 1a2b3c", every count is a whole number, lists are capped."""
+    src = ROOT / "out" / "scouts.json"
+    if not src.exists():  # published aggregate from the player-data workflow
+        src = ROOT / "gamedata" / "players" / "scouts.json"
+    try:
+        doc = json.loads(src.read_text()) if src.exists() else {}
+    except ValueError:
+        doc = {}
+    doc = doc if isinstance(doc, dict) else {}
+
+    def whole(v):
+        n = num(v, int)
+        return max(0, min(n, 10_000_000)) if isinstance(n, int) else 0
+
+    def rows(v, cap):
+        out = []
+        for r in v if isinstance(v, list) else []:
+            if isinstance(r, dict) and isinstance(r.get("handle"), str) and SCOUT_HANDLE.match(r["handle"]):
+                out.append({"handle": r["handle"], **{k: whole(r.get(k)) for k in SCOUT_COUNTS}})
+        out.sort(key=lambda r: (-r["score"], r["handle"]))
+        return out[:cap]
+
+    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
+    week = doc.get("week") if isinstance(doc.get("week"), dict) else {}
+    clean = {
+        "updated": whole(doc.get("updated")),
+        "totals": {k: whole(totals.get(k)) for k in ("scouts", "sessions", "quests", "drops", "discoveries")},
+        "week": {k: whole(week.get(k)) for k in ("scouts", "quests", "drops")},
+        "board": rows(doc.get("board"), 50),
+        "week_board": rows(doc.get("week_board"), 10),
+    }
+    (OUT / "scouts.json").write_text(json.dumps(clean, indent=1))
+    return clean
 
 
 def count_confirmed(gear):
