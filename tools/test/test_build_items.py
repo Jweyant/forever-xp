@@ -1,5 +1,6 @@
 """Offline tests for tools/build_items.py: item display ids (the 3D model an item uses)."""
 import sys
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -61,6 +62,25 @@ class DisplayIds(unittest.TestCase):
         self.assertEqual(items[2]["chg"], [["item level", 18, 20], ["required level", 13, 15]])
         self.assertNotIn("chg", items[3])
         self.assertEqual(build_items.forever_changes({4: {}}, {}), (0, 0))  # no classic data: mark nothing
+
+    def test_other_items(self):
+        import sqlite3
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "q.sqlite"
+            db = sqlite3.connect(path)
+            db.executescript("CREATE TABLE zones (id INTEGER, name TEXT); CREATE TABLE npcs (id INTEGER, name TEXT, zone_id INTEGER);"
+                             "CREATE TABLE objects (id INTEGER, name TEXT); CREATE TABLE quests (id INTEGER, name TEXT, json TEXT);"
+                             "CREATE TABLE items (id INTEGER, name TEXT, json TEXT);")
+            db.execute("INSERT INTO zones VALUES (12, 'Elwynn_Forest')")
+            db.execute("INSERT INTO npcs VALUES (299, 'Young Wolf', 12)")
+            db.execute("INSERT INTO quests VALUES (33, 'Wolves Across the Border', ?)", (json.dumps({"objectives": [None, None, [[750]]]}),))
+            rows = [(750, "Tough Wolf Meat", {"class": 12, "npcDrops": [299]}), (19019, "Thunderfury", {"class": 2}),
+                    (5, "Test Potion", {"class": 0}), (6, "Gear Item", {"class": 0})]
+            db.executemany("INSERT INTO items VALUES (?,?,?)", [(i, n, json.dumps(j)) for i, n, j in rows])
+            db.commit()
+            out = build_items.other_items(path, {6}, {750: {"Quality": 1}})
+        self.assertEqual(out, [{"id": 750, "n": "Tough Wolf Meat", "q": 1, "c": "Quest item",
+                                "d": [["Young Wolf", "Elwynn Forest"]], "qu": [[33, "Wolves Across the Border"]]}])
 
 
 if __name__ == "__main__":

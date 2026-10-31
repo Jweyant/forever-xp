@@ -140,6 +140,13 @@ def write_item_index(gear, pub):
     g = json.loads(gear.read_text())
     idx = [[i["id"], i["name"], i.get("q", 1), i.get("icon", ""), SLOT_NAME.get(i.get("slot"), (i.get("slot") or "").title()),
             i.get("ilvl", 0)] for i in g["items"]]
+    # Non-gear items (no pages of their own): [id, name, quality, "", category, 0, 1]; search links them to the item list.
+    other = ROOT / "gamedata" / "other-items.json"
+    if other.exists():
+        rows = json.loads(other.read_text())
+        idx += [[num(o.get("id"), int), str(o.get("n", "")), num(o.get("q"), int) or 1, "", str(o.get("c", "")), 0, 1]
+                for o in rows if isinstance(o, dict) and num(o.get("id"), int)]
+        (pub / "other-items.json").write_bytes(other.read_bytes())
     (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
 
 

@@ -63,7 +63,7 @@ jobs:
 
       - name: Commit if changed
         id: commit
-        run: bash tools/push_data.sh "Refresh gear and quest data from Forever client, Questie, cmangos and AtlasLoot" gamedata/items.json gamedata/items-report.md gamedata/quests.json
+        run: bash tools/push_data.sh "Refresh gear and quest data from Forever client, Questie, cmangos and AtlasLoot" gamedata/items.json gamedata/items-report.md gamedata/other-items.json gamedata/quests.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       - name: Deploy the site with the new data
