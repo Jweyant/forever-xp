@@ -413,7 +413,8 @@ def cmangos_sources(sql, keep):
         for i in (1, 2, 3):
             if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep:
                 src[sp[f"EffectItemType{i}"]].append({"t": "craft", "n": sp["SpellName"]})
-    return src, display
+    classic = {r["entry"]: r for r in d["item_template"] if isinstance(r.get("entry"), int)}
+    return src, display, classic
 
 
 def questie_sources(qdir, keep):
@@ -513,6 +514,30 @@ def effective_level(rec, sources):
     return best if best is not None else max(1, min(60, rec["ilvl"] - 5))
 
 
+def forever_changes(items, classic):
+    """Mark items that are new to Forever (no classic item with that ID) or changed from classic
+    (item level, quality or required level). Returns (new, changed) counts. Without classic data,
+    nothing is marked."""
+    if not classic:
+        return 0, 0
+    new = changed = 0
+    for iid, rec in items.items():
+        c = classic.get(iid)
+        if not c:
+            rec["new"] = 1
+            new += 1
+            continue
+        chg = []
+        for key, label in (("ItemLevel", "item level"), ("Quality", "quality"), ("RequiredLevel", "required level")):
+            old, now = c.get(key), rec.get({"ItemLevel": "ilvl", "Quality": "q", "RequiredLevel": "req"}[key])
+            if isinstance(old, int) and isinstance(now, int) and old != now and (key != "RequiredLevel" or old > 0):
+                chg.append([label, old, now])
+        if chg:
+            rec["chg"] = chg
+            changed += 1
+    return new, changed
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", default=".cache/wago")
@@ -531,10 +556,12 @@ def main():
     items, sets = client_items(a.cache, a.download)
     keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
-    cm, cm_did = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {})
+    cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
     logged = defaultdict(list)
     loot_csv = Path("out/loot.csv")
+    if not loot_csv.exists():  # published aggregate from the player-data workflow
+        loot_csv = Path("gamedata/players/loot.csv")
     if loot_csv.exists():
         with loot_csv.open() as f:
             for r in csv.DictReader(f):
@@ -553,6 +580,7 @@ def main():
         rec["lvl"] = effective_level(rec, s)
         if "did" not in rec and cm_did.get(iid):
             rec["did"] = cm_did[iid]
+    new, changed = forever_changes(items, classic)
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
@@ -564,7 +592,8 @@ def main():
         f"- Equippable items: {len(items)} (by quality: {dict(sorted(by_q.items()))})\n"
         f"- Item sets: {len(sets)}\n- Items with a known source: {len(items) - no_src}\n"
         f"- Items with no known source yet: {no_src}\n"
-        f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n")
+        f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
+        f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n")
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 

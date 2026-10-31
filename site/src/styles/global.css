@@ -181,6 +181,7 @@ td.num, th.num { text-align: right; white-space: nowrap; }
   font: 700 0.68rem/1 var(--font-body); letter-spacing: 0.06em; padding: 0.25em 0.45em; border-radius: 3px;
   background: var(--quest-bright); color: #2a1f00;
 }
+.tag-chg { background: var(--muted, #8a8f98); color: #111; }
 .tag-chg { display: inline-block; vertical-align: 0.12em; margin-left: 0.4em; font: 600 0.72rem/1 var(--font-body); padding: 0.22em 0.45em; border-radius: 3px; border: 1px solid var(--quest); color: var(--quest); }
 .side-H { color: var(--horde); } .side-A { color: var(--alliance); }
 

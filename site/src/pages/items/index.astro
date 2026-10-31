@@ -17,6 +17,7 @@ const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","
       <label>Quality<select id="f-q2"><option value="">Any</option><option value="2">Uncommon and up</option><option value="3">Rare and up</option><option value="4">Epic and up</option></select></label>
       <label>Required level<span class="lv"><input type="number" id="f-min" min="1" max="60" placeholder="1" aria-label="Lowest required level" /> to <input type="number" id="f-max" min="1" max="60" placeholder="60" aria-label="Highest required level" /></span></label>
       <label>Source<select id="f-src"><option value="">Any source</option>{SOURCE_KINDS.map((s) => <option value={s.key}>{s.name}</option>)}</select></label>
+      <label>Forever<select id="f-ver"><option value="">All items</option><option value="new">New in Forever</option><option value="chg">Changed in Forever</option><option value="any">New or changed</option></select></label>
       <label>Stat<select id="f-stat"><option value="">Any stat</option></select></label>
     </div>
     <p class="muted small" id="f-count" aria-live="polite">Loading the gear database…</p>
