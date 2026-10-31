@@ -53,6 +53,15 @@ class DisplayIds(unittest.TestCase):
                        if r.get("entry") in keep and isinstance(r.get("displayid"), int) and r["displayid"] > 0}
             self.assertEqual(display, {19019: 30606})  # 0 and not-kept display ids stay out
 
+    def test_forever_changes(self):
+        items = {1: {"ilvl": 30, "q": 3, "req": 25}, 2: {"ilvl": 20, "q": 2, "req": 15}, 3: {"ilvl": 10, "q": 2, "req": 5}}
+        classic = {2: {"ItemLevel": 18, "Quality": 2, "RequiredLevel": 13}, 3: {"ItemLevel": 10, "Quality": 2, "RequiredLevel": 5}}
+        self.assertEqual(build_items.forever_changes(items, classic), (1, 1))
+        self.assertEqual(items[1].get("new"), 1)
+        self.assertEqual(items[2]["chg"], [["item level", 18, 20], ["required level", 13, 15]])
+        self.assertNotIn("chg", items[3])
+        self.assertEqual(build_items.forever_changes({4: {}}, {}), (0, 0))  # no classic data: mark nothing
+
 
 if __name__ == "__main__":
     unittest.main()

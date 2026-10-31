@@ -19,7 +19,8 @@ const siblings = it.set ? (setItems.get(it.set) || []).filter((x) => x.id !== it
 const similar = gear.items
   .filter((x) => x.id !== it.id && x.slot === it.slot && x.q >= 2 && Math.abs(x.ilvl - it.ilvl) <= 4 && (!it.type || x.type === it.type))
   .sort((a, b) => b.ilvl - a.ilvl || b.q - a.q).slice(0, 8);
-const qualityName = ["Poor", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Artifact"][it.q] || "";
+const QNAME = ["Poor", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Artifact"];
+const qualityName = QNAME[it.q] || "";
 const desc = `${it.name}: ${qualityName.toLowerCase()} ${slot.toLowerCase()} ${it.type && it.type !== "misc" ? it.type.replace(/[12]$/, "") : ""}, item level ${it.ilvl}${it.req ? `, requires level ${it.req}` : ""}, in WoW Forever. Stats and where to get it.`;
 const kindName = (t: string) => SRC_LABEL[t] || t;
 ---
@@ -28,7 +29,9 @@ const kindName = (t: string) => SRC_LABEL[t] || t;
   <div class="ihead">
     <span class={`ico lg qb-${q}`}>{it.icon && <img src={ICON(it.icon)} alt="" width="58" height="58" />}</span>
     <div>
-      <h1 class={`q-${q}`}>{it.name}</h1>
+      <h1 class={`q-${q}`}>{it.name}{it.new === 1 && <span class="tag-new">NEW</span>}</h1>
+      {it.new === 1 && <p class="small">New in WoW Forever: classic didn't have this item. <a href="/items/?ver=new">All new items</a></p>}
+      {Array.isArray(it.chg) && it.chg.length > 0 && <p class="small">Changed in WoW Forever: {it.chg.map(([what, was, now], i) => <>{i ? "; " : ""}{what} {what === "quality" ? `${QNAME[Number(was)] ?? was} to ${QNAME[Number(now)] ?? now}` : `${Number(was)} to ${Number(now)}`}</>)}. <a href="/items/?ver=chg">All changed items</a></p>}
       <p class="muted">{qualityName} {slot.toLowerCase()}{it.type && it.type !== "misc" ? `, ${it.type.replace(/[12]$/, "")}` : ""}. Item level {it.ilvl}{it.req ? `, requires level ${it.req}` : ""}. Item ID {it.id}.</p>
     </div>
   </div>
