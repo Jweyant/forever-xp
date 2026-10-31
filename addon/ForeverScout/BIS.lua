@@ -450,6 +450,16 @@ local function build()
   tip(f.copy, "forever-xp.com/bis", "Copies your gear as text to paste on the site, where you can edit stat weights and share the plan.", "ANCHOR_TOP")
 
   f:SetScript("OnHide", function() if srcWin then srcWin:Hide() end if focusWin then focusWin:Hide() end end)
+
+  -- A click anywhere outside an open popup (and its button) closes it.
+  f.clickWatch = CreateFrame("Frame")
+  f.clickWatch:RegisterEvent("GLOBAL_MOUSE_DOWN")
+  f.clickWatch:SetScript("OnEvent", function()
+    for _, pair in ipairs({ { srcWin, f.sources }, { focusWin, f.focus } }) do
+      local popup, button = pair[1], pair[2]
+      if popup and popup:IsShown() and not popup:IsMouseOver() and not button:IsMouseOver() then popup:Hide() end
+    end
+  end)
   return f
 end
 
@@ -747,10 +757,9 @@ local function minimapButton()
   overlay:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
   overlay:SetPoint("TOPLEFT")
   local icon = b:CreateTexture(nil, "BACKGROUND")
-  icon:SetSize(20, 20)
-  icon:SetTexture("Interface\\Icons\\INV_Misc_Map_01")
-  icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-  icon:SetPoint("TOPLEFT", 7, -5)
+  icon:SetSize(21, 21)
+  icon:SetTexture("Interface\\AddOns\\ForeverScout\\logo")
+  icon:SetPoint("TOPLEFT", 6, -5)
   b.icon = icon
   local dot = b:CreateTexture(nil, "OVERLAY", nil, 1)
   dot:SetSize(8, 8)
