@@ -42,6 +42,7 @@ import { ICON } from "../config";
           <label>Body<select id="g-body"><option value="M">Body 1</option><option value="F">Body 2</option></select></label>
           <label class="lvl">Level <output id="g-level-out">60</output><input type="range" id="g-level" min="10" max="60" step="1" value="60" /></label>
         </div>
+        <p class="small muted wsrc" id="g-wsrc"></p>
         <div class="actions">
           <button type="button" class="btn" id="g-suggest">Suggest best in slot</button>
           <button type="button" class="btn secondary" id="g-keep">Reset plan to current</button>
@@ -82,6 +83,9 @@ import { ICON } from "../config";
       <summary><b>Stat weights</b> <span class="muted">how much each stat is worth to your spec</span></summary>
       <p id="g-weights-note" class="small muted"></p>
       <div id="g-weights" class="weights"></div>
+      <p class="pawn"><button type="button" class="btn secondary" id="g-pawn">Copy Pawn scale</button>
+        <span class="small muted">Use these weights in game with the <a href="https://www.curseforge.com/wow/addons/pawn">Pawn</a> addon.</span></p>
+      <textarea id="g-pawn-out" class="pawn-out" rows="2" readonly hidden aria-label="Pawn scale"></textarea>
     </details>
 
     <div id="g-tip" class="wowtip" hidden role="tooltip"></div>
@@ -102,11 +106,11 @@ import { ICON } from "../config";
   <h2>How suggestions work</h2>
   <ul>
     <li>Each item's score is its stats multiplied by your stat weights. Weapon DPS counts most in the slot it's built for, and two-handers are compared against your best main hand and off hand together.</li>
-    <li>Starting weights are a reasonable baseline for each spec and goal, not a simulation. Pick <b>Custom weights</b> to set your own, and share the link to show your reasoning.</li>
+    <li>For most specs the weights are measured by <a href="https://wowsims.com/forever">wowsims</a>, the WoW Forever combat simulator, on the gear and talents it names; the line under the settings says which. Specs it doesn't cover yet use starting estimates. Pick <b>Custom weights</b> to set your own, and share the link to show your reasoning.</li>
     <li>Set bonuses that give stats count toward your totals once you wear enough pieces. Hit caps aren't factored in yet.</li>
     <li>Quest rewards, vendors, chests and mob drops come from Questie's Forever database. Anything still unknown fills in as players running ForeverScout log loot.</li>
   </ul>
-  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs. Item and character portrait icons are Blizzard's; the character figure is drawn for this site, and the optional 3D view draws the character with <a href="https://www.wowhead.com/">Wowhead</a>'s model viewer.</p>
+  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs. Stat weights for most specs are measured by <a href="https://github.com/wowsims/forever">wowsims/forever</a> (MIT), the WoW Forever simulator. Item and character portrait icons are Blizzard's; the character figure is drawn for this site, and the optional 3D view draws the character with <a href="https://www.wowhead.com/">Wowhead</a>'s model viewer.</p>
 </Base>
 <script>import "../scripts/gear/planner.ts"; import { mountSave } from "../scripts/saveplan"; mountSave();</script>
 
@@ -239,6 +243,9 @@ import { ICON } from "../config";
   #gear .weights label { display: flex; justify-content: space-between; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
   #gear .weights input { width: 5.2rem; }
   #gear .weights input:disabled { opacity: 0.7; }
+  #gear .wsrc { margin: 0; }
+  #gear .pawn { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; margin: 0.8rem 0 0; }
+  #gear .pawn-out { width: 100%; margin-top: 0.5rem; font: 0.85rem var(--font-mono, monospace); }
 
   #g-picker { width: min(760px, calc(100vw - 24px)); max-height: 86vh; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); color: var(--ink); padding: 1rem; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
   #g-picker::backdrop { background: rgba(10, 12, 24, 0.6); }

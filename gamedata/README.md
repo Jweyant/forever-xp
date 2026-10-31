@@ -16,6 +16,18 @@ The talent calculator and the datamined talent changes, built daily by `tools/bu
 - `report`: what the build noticed (hotfixes applied, nodes outside the trees, tooltip values that
   depend on your character's stats and show as "?").
 
+## simweights.json
+
+The BIS planner's stat weights, built by `tools/build_simweights.py` (the **Sim weights** workflow)
+from the presets [wowsims/forever](https://github.com/wowsims/forever) publishes for each spec, read
+as text from the commit pinned in `.github/workflows/sim-weights.yml`.
+
+- `specs`: `{"CLASS.spec": [{label, w: {stat: weight}, note}]}`, default preset first. Weights are per
+  point, on the sim's own scale; `dps` / `dps_oh` are main-hand and off-hand weapon DPS.
+- `report`: presets the builder skipped or couldn't find, and stats it dropped (ones Forever items in
+  `items.json` don't carry, or values that weren't plain numbers).
+- The weights are wowsims' work: Copyright (c) 2022 wowsims team, used under the MIT License.
+
 ## client-<build>.json
 
 `client-<build>.json` is read from the WoW Forever and Classic Era game client tables

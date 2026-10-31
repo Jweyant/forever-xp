@@ -54,6 +54,7 @@ jobs:
           python3 tools/test/test_blizzard_notes.py
           python3 tools/test/test_build_talents.py
           python3 tools/test/test_build_items.py
+          python3 tools/test/test_build_simweights.py
           python3 tools/test/test_indexnow.py
           python3 tools/test/test_questxp.py
           python3 tools/test/test_objective_areas.py

@@ -2,7 +2,7 @@
 // State lives in the URL hash (shareable) and in localStorage (comes back next visit).
 import {
   CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
-  weightsFor, canUse, fits, score, sourceKind, canDualWield,
+  weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
@@ -72,7 +72,8 @@ function slotWeights(doll: DollSlot, it: Item): Stats {
   let k = 1;
   if (doll === "ranged") k = hunter ? 1 : 0.08;
   else if (hunter) k = 0.15;
-  else if (doll === "offhand") k = 0.5;
+  // The sim measures off-hand weapon DPS on its own; without it, an off-hand counts half.
+  else if (doll === "offhand") k = Number.isFinite(w.dps_oh) && w.dps ? w.dps_oh / w.dps : 0.5;
   if (it.slot === "twohand" && !hunter) k *= 1.9;
   return k === 1 ? w : { ...w, dps: (w.dps || 0) * k };
 }
@@ -339,7 +340,22 @@ function renderControls() {
   const w = weights();
   $("#g-weights").innerHTML = WEIGHT_KEYS.map((k) => `<label><span>${STAT_LABEL[k] || k}</span>
     <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"${st.goal === "custom" ? "" : " disabled"}></label>`).join("");
-  $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion." : "Starting weights for this spec and goal. Pick Custom weights to edit them.";
+  const sim = simPresets(st.cls, st.spec)[0];
+  $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion."
+    : sim ? `Measured by wowsims (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts at its value below the cap; the planner doesn't stop counting it past the cap yet. Pick Custom weights to edit them.`
+    : "Starting weights for this spec and goal: there are no sim weights for this spec yet. Pick Custom weights to edit them.";
+  renderWeightSource(sim?.label);
+}
+
+/** One line under the controls saying where the weights come from, with the link wowsims asks for. */
+function renderWeightSource(simLabel?: string) {
+  const el = $("#g-wsrc");
+  el.replaceChildren();
+  if (st.goal === "custom") { el.textContent = "Stat weights: your own (Custom)."; return; }
+  if (!simLabel) { el.textContent = "Stat weights: starting estimates (no sim weights for this spec yet)."; return; }
+  const a = document.createElement("a");
+  a.href = SIM_SITE; a.textContent = "wowsims"; a.rel = "noopener"; a.target = "_blank";
+  el.append("Stat weights: measured by ", a, ` (${simLabel})${st.goal === "pve" ? "" : ", adjusted for your goal"}.`);
 }
 
 function render() {
@@ -429,6 +445,16 @@ function bind() {
   });
   $("#g-keep").addEventListener("click", () => { const before = { ...st.plan }; st.plan = { ...st.cur }; render(); toast("Plan reset to your current gear.", { label: "Undo", run: () => { st.plan = before; render(); } }); });
   $("#g-import-go").addEventListener("click", () => { toast(importGear(($("#g-import") as HTMLTextAreaElement).value)); render(); });
+  $("#g-pawn").addEventListener("click", async () => {
+    const spec = SPECS[st.cls].find((s) => s.key === st.spec);
+    const goal = GOALS.find((g) => g.key === st.goal);
+    const tag = pawnScale(`Forever XP ${spec?.name || ""} ${CLASSES[st.cls].name} ${goal?.key === "pve" ? "" : goal?.name || ""}`.replace(/\s+/g, " ").trim(),
+      weights(), st.cls === "HUNTER");
+    const out = $("#g-pawn-out") as HTMLTextAreaElement;
+    out.value = tag;
+    try { await navigator.clipboard.writeText(tag); out.hidden = true; toast("Pawn scale copied. In game, open Pawn, choose Import, and paste it."); }
+    catch { out.hidden = false; out.select(); toast("Copy the Pawn scale from the box below the button."); }
+  });
   $("#g-copy").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(location.href); toast("Plan link copied. Share it anywhere."); } catch { toast("Copy the address bar to share this plan."); }
   });
