@@ -6,6 +6,8 @@ export type Stats = Record<string, number>;
 export interface Item {
   id: number; name: string; q: number; ilvl: number; req: number; lvl?: number; slot: string; inv: number; type: string; cls: number;
   stats: Stats; weapon?: { min: number; max: number; speed: number; dps: number }; fx?: { on: string; text: string }[];
+  /** New to Forever (not in the classic item list), or changed from classic: [what, classic value, Forever value]. */
+  new?: 1; chg?: [string, number, number][];
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
   src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
