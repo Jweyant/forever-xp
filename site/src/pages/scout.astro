@@ -13,18 +13,23 @@ const commands = [
   ["/fscout wipe confirm", "Erase everything recorded"],
 ];
 ---
-<Base image="/og/scout.jpg" title="ForeverScout" description="ForeverScout is a free WoW Forever addon that records how long quests really take, so leveling routes use measured numbers.">
+<Base image="/og/scout.jpg" title="ForeverScout" description="ForeverScout is a free WoW Forever addon that records how long quests really take and where Forever's new items drop, so other players can find new gear.">
   <h1>ForeverScout</h1>
   <p class="lede">
-    A small, read-only addon that records how you level: quests, XP, where things are and how
-    long each one took. Your logs replace our estimates with real numbers.
+    A small, read-only addon that records how you level and what you loot: quests, XP, where
+    things are, how long each one took, and which items drop from where. Your logs replace our
+    estimates with real numbers.
   </p>
+  <div class="itemrec">
+    <h2>It records items too</h2>
+    <p>Forever adds gear Classic never had, and most of it has no known source yet. Every time you loot something green or better, ForeverScout notes the item and the NPC or chest that dropped it. <b>Each recording helps other players find new gear and new items.</b> Drop sources appear in the <a href="/items/">item database</a> and the <a href="/bis/">BIS planner</a>.</p>
+  </div>
   <p class="dl">
     {SITE.curseforge && <a class="btn" href={SITE.curseforge} rel="noopener">Get it on CurseForge</a>}
     <a class={SITE.curseforge ? "btn secondary" : "btn"} href={RELEASES}>Download from GitHub</a>
     <a class="btn secondary" href={SITE.discord} rel="noopener">Get help on Discord</a>
   </p>
-  <p class="small muted">Free and open source. Works with or without Questie. The download is on GitHub; a CurseForge listing is coming.</p>
+  <p class="small muted">Free and open source. Works with or without Questie. Available on CurseForge and GitHub.</p>
 
   <h2>Install</h2>
   <ol class="steps">
@@ -113,6 +118,9 @@ const commands = [
 </Base>
 
 <style>
+  .itemrec { margin: 0.4rem 0 1.4rem; padding: 1rem 1.2rem; max-width: 80ch; border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: 10px; background: color-mix(in srgb, var(--xp) 8%, var(--surface)); }
+  .itemrec h2 { margin: 0 0 0.4rem; font-size: var(--step-1); }
+  .itemrec p { margin: 0; }
   .dl { display: flex; flex-wrap: wrap; gap: 0.6rem; }
   .steps { list-style: none; padding: 0; counter-reset: s; max-width: 70ch; }
   .steps li { counter-increment: s; position: relative; padding-left: 3rem; margin-bottom: 1.2rem; }
