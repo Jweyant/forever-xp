@@ -135,6 +135,21 @@ class LoggedSources(unittest.TestCase):
         self.assertEqual(out, [{"t": "logged", "n": "Skyborne Scavenger", "z": "Durotar", "seen": 2},
                                {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}])
 
+    def test_client_icons_and_quality(self):
+        with tempfile.TemporaryDirectory() as cache:
+            d = Path(cache) / build_items.FOREVER_BUILD
+            d.mkdir(parents=True)
+            (Path(cache) / "icons.json").write_text(json.dumps({"134830": "interface/icons/inv_potion_49.blp",
+                                                                "135274": "interface/icons/inv_misc_food_10.blp"}))
+            (d / "Item.csv").write_text("ID,ClassID,SubclassID,IconFileDataID\n118,0,0,134830\n724,0,0,0\n999,0,0,0\n")
+            (d / "ItemModifiedAppearance.csv").write_text("ID,ItemID,ItemAppearanceModifierID,ItemAppearanceID,OrderIndex\n1,724,0,50,0\n")
+            (d / "ItemAppearance.csv").write_text("ID,DisplayType,ItemDisplayInfoID,DefaultIconFileDataID,UiOrder\n50,0,0,135274,0\n")
+            (d / "ItemSparse.csv").write_text("ID,OverallQualityID\n118,1\n724,0\n999,9\n")
+            got = build_items.client_icons_and_quality(cache, False, {999: "inv_misc_gem_01"})
+        self.assertEqual(got[118], ("inv_potion_49", 1))
+        self.assertEqual(got[724], ("inv_misc_food_10", 0))  # icon from the appearance; poor quality kept
+        self.assertEqual(got[999], ("inv_misc_gem_01", None))  # wowsims fallback; out-of-range quality dropped
+
 
 if __name__ == "__main__":
     unittest.main()
