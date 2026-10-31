@@ -1,6 +1,6 @@
 # 27-29 Hillsbrad Foothills
 
-Estimated finish: level 26.85 after 118 minutes. Quests still in log: []
+Estimated finish: level 26.97 after 128 minutes. Quests still in log: []
 
 Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
@@ -12,18 +12,18 @@ _none_
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 499 Elixir of Suffering | 1750 | 0.0 | 3500 |
-| 502 Elixir of Pain | 1450 | 0.0 | 2900 |
-| 498 The Rescue | 2200 | 1.1 | 1916 |
-| 529 Battle of Hillsbrad | 2100 | 5.8 | 364 |
-| 539 Battle of Hillsbrad | 2300 | 6.8 | 337 |
-| 501 Elixir of Pain | 1950 | 6.1 | 318 |
-| 532 Battle of Hillsbrad | 2100 | 6.8 | 308 |
-| 528 Battle of Hillsbrad | 2000 | 7.5 | 268 |
-| 549 WANTED: Syndicate Personnel | 1750 | 7.6 | 230 |
-| 527 Battle of Hillsbrad | 1950 | 10.5 | 186 |
-| 546 Souvenirs of Death | 2550 | 18.3 | 140 |
-| 496 Elixir of Suffering | 175 | 7.1 | 25 |
+| 499 Elixir of Suffering | 1750 | 0.2 | 3500 |
+| 502 Elixir of Pain | 1450 | 0.2 | 2900 |
+| 498 The Rescue | 2200 | 1.3 | 1632 |
+| 529 Battle of Hillsbrad | 2100 | 6.5 | 325 |
+| 501 Elixir of Pain | 1950 | 6.3 | 308 |
+| 532 Battle of Hillsbrad | 2100 | 7.9 | 265 |
+| 528 Battle of Hillsbrad | 2000 | 7.7 | 261 |
+| 539 Battle of Hillsbrad | 2300 | 9.7 | 236 |
+| 549 WANTED: Syndicate Personnel | 1750 | 7.8 | 224 |
+| 527 Battle of Hillsbrad | 1950 | 10.7 | 183 |
+| 546 Souvenirs of Death | 2550 | 18.5 | 138 |
+| 496 Elixir of Suffering | 175 | 12.7 | 14 |
 
 ## Step by step
 
@@ -40,23 +40,23 @@ _none_
 | 9 | 25.43 | 12.3 | 0 | accept Elixir of Suffering |
 | 10 | 25.43 | 12.4 | 0 | accept Elixir of Pain |
 | 11 | 25.54 | 22.9 | 3698 | complete Battle of Hillsbrad |
-| 12 | 25.70 | 36.1 | 5468 | complete Elixir of Suffering, Elixir of Pain |
-| 13 | 25.77 | 38.7 | 2252 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
-| 14 | 25.77 | 38.9 | 0 | accept Souvenirs of Death |
-| 15 | 25.86 | 46.3 | 3003 | complete Battle of Hillsbrad |
-| 16 | 25.93 | 49.5 | 2453 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
-| 17 | 25.93 | 49.8 | 175 | accept Elixir of Suffering; turnin Elixir of Suffering |
-| 18 | 25.99 | 50.0 | 1950 | accept Elixir of Pain; turnin Elixir of Pain |
-| 19 | 26.04 | 55.8 | 1777 | complete Battle of Hillsbrad |
-| 20 | 26.10 | 59.0 | 2215 | turnin Elixir of Suffering |
-| 21 | 26.15 | 61.8 | 1760 | turnin Elixir of Pain |
-| 22 | 26.22 | 65.0 | 2565 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
-| 23 | 26.26 | 71.8 | 1550 | complete Battle of Hillsbrad |
-| 24 | 26.33 | 75.2 | 2565 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
-| 25 | 26.39 | 84.0 | 1895 | complete WANTED: Syndicate Personnel, The Rescue |
-| 26 | 26.50 | 86.2 | 4260 | turnin WANTED: Syndicate Personnel, The Rescue |
-| 27 | 26.57 | 93.0 | 2505 | complete Battle of Hillsbrad |
-| 28 | 26.65 | 96.6 | 2765 | turnin Battle of Hillsbrad |
-| 29 | 26.65 | 98.1 | 155 | Finish the skulls on the Syndicate humans around Durnholde Keep. |
-| 30 | 26.78 | 116.4 | 4620 | complete Souvenirs of Death |
-| 31 | 26.85 | 118.1 | 2705 | turnin Souvenirs of Death |
+| 12 | 25.75 | 41.5 | 7160 | complete Elixir of Suffering, Elixir of Pain |
+| 13 | 25.82 | 44.1 | 2252 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
+| 14 | 25.82 | 44.3 | 0 | accept Souvenirs of Death |
+| 15 | 25.91 | 51.7 | 3003 | complete Battle of Hillsbrad |
+| 16 | 25.98 | 54.9 | 2453 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
+| 17 | 25.98 | 55.2 | 175 | accept Elixir of Suffering; turnin Elixir of Suffering |
+| 18 | 26.04 | 55.4 | 1950 | accept Elixir of Pain; turnin Elixir of Pain |
+| 19 | 26.09 | 61.7 | 1785 | complete Battle of Hillsbrad |
+| 20 | 26.15 | 64.9 | 2215 | turnin Elixir of Suffering |
+| 21 | 26.20 | 67.7 | 1760 | turnin Elixir of Pain |
+| 22 | 26.27 | 70.9 | 2565 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
+| 23 | 26.33 | 78.6 | 2215 | complete Battle of Hillsbrad |
+| 24 | 26.40 | 82.0 | 2565 | accept Battle of Hillsbrad; turnin Battle of Hillsbrad |
+| 25 | 26.45 | 90.8 | 1895 | complete WANTED: Syndicate Personnel, The Rescue |
+| 26 | 26.57 | 93.0 | 4260 | turnin WANTED: Syndicate Personnel, The Rescue |
+| 27 | 26.69 | 102.5 | 4395 | complete Battle of Hillsbrad |
+| 28 | 26.77 | 106.1 | 2765 | turnin Battle of Hillsbrad |
+| 29 | 26.77 | 107.6 | 155 | Finish the skulls on the Syndicate humans around Durnholde Keep. |
+| 30 | 26.90 | 125.9 | 4620 | complete Souvenirs of Death |
+| 31 | 26.97 | 127.6 | 2705 | turnin Souvenirs of Death |
