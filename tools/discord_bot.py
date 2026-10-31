@@ -5,7 +5,8 @@
                                                          # (and post or update the welcome and rules text)
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
   python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
-  python3 tools/discord_bot.py post-scouts SCOUTS.json [--dry-run]  # weekly Scout leaderboard to the report channel
+  python3 tools/discord_bot.py post-scouts SCOUTS.json [--dry-run]    # weekly Scout report to the report channel
+  python3 tools/discord_bot.py update-scouts SCOUTS.json [--dry-run]  # edit the standings message there in place
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
 deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
@@ -615,7 +616,7 @@ def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles,
 
 
 # ---- weekly Scout report ---------------------------------------------------------------------
-SCOUTS_URL = "https://forever-xp.com/scouts/"
+SCOUTS_URL = "https://forever-xp.com/leaderboard/"
 SCOUT_HANDLE = re.compile(r"^Scout [0-9a-f]{6}$")
 
 
@@ -662,20 +663,74 @@ def scout_embed(doc, today=None):
     fields = []
     if week_board:
         fields.append({"name": "This week", "inline": False, "value": "\n".join(
-            f"**{i}.** `{r['handle']}`: {r['score']:,} pts ({plural(r['quests'], 'quest')}, {plural(r['drops'], 'drop')})"
+            f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')} ({plural(r['quests'], 'quest')}, {plural(r['drops'], 'drop')})"
             for i, r in enumerate(week_board, 1))})
     fields.append({"name": "All-time leaders", "inline": False, "value": "\n".join(
-        f"**{i}.** `{r['handle']}`: {r['score']:,} pts" for i, r in enumerate(board, 1))})
+        f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')}" for i, r in enumerate(board, 1))})
     return {"title": f"Scout report, week of {nice_date(today)}", "url": SCOUTS_URL, "color": BRAND,
             "description": desc, "fields": fields,
-            "footer": {"text": "Points: 1 per quest timed, 1 per drop logged, 3 per discovery. forever-xp.com/scouts"}}
+            "footer": {"text": "Points: 1 per quest timed, 1 per drop logged, 3 per discovery. forever-xp.com/leaderboard"}}
 
 
-def post_scouts(cfg, path, d, guild):
+STANDINGS_TITLE = "Scout standings"
+
+
+def standings_embed(doc, now=None):
+    """The always-current top 10 for #leaderboard, or None while nobody has sent a log."""
+    doc = doc if isinstance(doc, dict) else {}
+    board = scout_rows(doc.get("board"), 10)
+    if not board:
+        return None
+    week_board = scout_rows(doc.get("week_board"), 3)
+    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
+    updated = count(doc.get("updated"), cap=4_102_444_800) or int(now or time.time())
+    medal = {1: "\U0001F947", 2: "\U0001F948", 3: "\U0001F949"}
+    lines = [f"{medal.get(i, f'**{i}.**')} `{r['handle']}`: {plural(r['score'], 'pt')} ({plural(r['quests'], 'quest')}, "
+             f"{plural(r['drops'], 'drop')}, {plural(r['discoveries'], 'discovery').replace('discoverys', 'discoveries')})"
+             for i, r in enumerate(board, 1)]
+    fields = [{"name": "All time", "inline": False, "value": "\n".join(lines)}]
+    if week_board:
+        fields.append({"name": "Top this week", "inline": False, "value": "\n".join(
+            f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')}" for i, r in enumerate(week_board, 1))})
+    return {"title": STANDINGS_TITLE, "url": SCOUTS_URL, "color": BRAND,
+            "description": (f"{plural(count(totals.get('scouts')), 'scout')} have timed {plural(count(totals.get('quests')), 'quest')} "
+                            f"and logged {plural(count(totals.get('drops')), 'drop')}. Updated <t:{updated}:R>. "
+                            "Run ForeverScout with sharing on to get on the board."),
+            "fields": fields,
+            "footer": {"text": "1 point per quest timed, 1 per drop logged, 3 per discovery. Full board: forever-xp.com/leaderboard"}}
+
+
+def read_scouts(path):
     try:
         doc = json.loads(Path(path).read_text())
     except (OSError, ValueError):
         doc = {}
+    return doc if isinstance(doc, dict) else {}
+
+
+def update_scouts(cfg, path, d, guild):
+    """Keep one standings message in the report channel: edit the bot's own one, or post it once.
+    Not published to followers (the weekly report is), so it never spams other servers."""
+    embed = standings_embed(read_scouts(path))
+    if embed is None:
+        log("No scouts on the board yet; standings not posted.")
+        return
+    target = feed_target(cfg, d, guild, flag="report")
+    me = d.call("GET", "/users/@me") or {}
+    mine = [m for m in d.call("GET", f"/channels/{target['id']}/messages?limit=50") or []
+            if (m.get("author") or {}).get("id") == me.get("id")
+            and any((e or {}).get("title") == STANDINGS_TITLE for e in m.get("embeds") or [])]
+    body = {"embeds": [embed], "allowed_mentions": {"parse": []}}
+    if mine:
+        d.call("PATCH", f"/channels/{target['id']}/messages/{mine[0]['id']}", body, write=True)
+        log(f"Updated the standings in #{target['name']}.")
+    else:
+        d.call("POST", f"/channels/{target['id']}/messages", body, write=True)
+        log(f"Posted the standings in #{target['name']}.")
+
+
+def post_scouts(cfg, path, d, guild):
+    doc = read_scouts(path)
     embed = scout_embed(doc)
     if embed is None:
         log("No scouts on the board yet; nothing posted.")
@@ -702,6 +757,9 @@ def main():
     r = sub.add_parser("post-scouts")
     r.add_argument("scouts")
     r.add_argument("--dry-run", action="store_true")
+    u = sub.add_parser("update-scouts")
+    u.add_argument("scouts")
+    u.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     cfg = json.loads((ROOT / "discord" / "server.json").read_text())
@@ -721,6 +779,8 @@ def main():
         post_date(cfg, a.notes, a.date, d, guild)
     elif a.cmd == "post-scouts":
         post_scouts(cfg, a.scouts, d, guild)
+    elif a.cmd == "update-scouts":
+        update_scouts(cfg, a.scouts, d, guild)
     else:
         post_notes(cfg, a.old, a.new, d, guild)
 

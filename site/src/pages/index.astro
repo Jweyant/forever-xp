@@ -113,10 +113,10 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
       <ul>
         <li>Drop sources show up in the <a href="/items/">item database</a> and the <a href="/bis/">BIS planner</a></li>
         <li>Once two players loot the same drop, its item page says <b>Confirmed in Forever</b></li>
-        <li>Every quest you time and drop you log earns points on the <a href="/scouts/">Scout leaderboard</a></li>
+        <li>Every quest you time and drop you log earns points on the <a href="/leaderboard/">Scout leaderboard</a></li>
         <li>No names, realms, gold or chat</li>
       </ul>
-      <p class="ctas"><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/scouts/">See the leaderboard</a></p>
+      <p class="ctas"><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/leaderboard/">See the leaderboard</a></p>
     </div>
   </section>
 
@@ -178,7 +178,7 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
     <ol class="loop">
       <li><h3>You play</h3><p>ForeverScout records quests, XP, loot and how long each quest really took. No names, realms or chat.</p></li>
       <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
-      <li><h3>Everyone benefits</h3><p>Routes get measured times, drops get a "Confirmed in Forever" badge on their item page, missing quests go back to Questie, and you climb the <a href="/scouts/">Scout leaderboard</a>.</p></li>
+      <li><h3>Everyone benefits</h3><p>Routes get measured times, drops get a "Confirmed in Forever" badge on their item page, missing quests go back to Questie, and you climb the <a href="/leaderboard/">Scout leaderboard</a>.</p></li>
     </ol>
     <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">From player logs so far: {meta.measured_quests} quests measured, {meta.confirmed_items || 0} item drops confirmed in Forever{scouts.totals.scouts > 0 ? `, by ${Number(scouts.totals.scouts)} scouts` : ""}.</span></p>
   </section>

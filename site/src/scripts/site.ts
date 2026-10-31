@@ -202,17 +202,23 @@ const acct = document.querySelector<HTMLAnchorElement>("[data-acct]");
 if (acct && accountsOn()) {
   me().then((who) => {
     if (who === "off") return;
-    if (who) { acct.textContent = who.name; acct.href = "/account/"; acct.title = "Your saved plans"; }
-    else {
-      acct.textContent = "Sign in";
+    const label = acct.querySelector<HTMLElement>("[data-acct-name]") || acct;
+    if (who) {
+      label.textContent = who.name;
       acct.href = "/account/";
+      acct.setAttribute("aria-label", `${who.name}: your saved plans`);
+      acct.title = `${who.name}: your saved plans`;
+    } else {
+      label.textContent = "Sign in";
+      acct.href = "/account/";
+      acct.setAttribute("aria-label", "Sign in");
       acct.title = "Sign in with Discord to save plans";
       acct.addEventListener("click", startSignIn);
     }
     acct.hidden = false;
   });
 }
-if (signin === "ok") toast("Signed in. Your saved plans are under your name, top right.");
+if (signin === "ok") toast("Signed in. Your saved plans are under the account button, top right.");
 else if (signin === "failed") toast("Sign-in didn't work. Please try again.");
 
 // Item icons come from Blizzard's render service, which doesn't have every Forever icon.

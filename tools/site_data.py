@@ -352,7 +352,7 @@ SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
 
 
 def write_scouts():
-    """The Scout leaderboard for /scouts/ (tools/ingest_logs.py write_scouts), allow-listed:
+    """The Scout leaderboard for /leaderboard/ (tools/ingest_logs.py write_scouts), allow-listed:
     handles must look like "Scout 1a2b3c", every count is a whole number, lists are capped."""
     src = ROOT / "out" / "scouts.json"
     if not src.exists():  # published aggregate from the player-data workflow
