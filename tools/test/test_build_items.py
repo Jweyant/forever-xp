@@ -40,6 +40,16 @@ class DisplayIds(unittest.TestCase):
             (d / "ItemAppearance.csv").write_text(APP)
             self.assertEqual(build_items.display_ids(cache, False), {19019: 30606, 22632: 193838})
 
+    def test_appearance_icons_use_the_default_appearance(self):
+        with tempfile.TemporaryDirectory() as cache:
+            d = Path(cache) / build_items.FOREVER_BUILD
+            d.mkdir(parents=True)
+            (d / "ItemModifiedAppearance.csv").write_text(IMA)
+            (d / "ItemAppearance.csv").write_text(APP.replace("500,0,30606,1,0", "500,0,30606,135274,0"))
+            icons = build_items.appearance_icons(cache, False)
+            self.assertEqual(icons[19019], 135274)  # lowest OrderIndex wins
+            self.assertNotIn(55555, icons)          # no appearance row, no icon
+
     def test_missing_tables_mean_no_display_ids_not_a_crash(self):
         with tempfile.TemporaryDirectory() as cache:
             self.assertEqual(build_items.display_ids(cache, False), {})
@@ -81,6 +91,16 @@ class DisplayIds(unittest.TestCase):
             out = build_items.other_items(path, {6}, {750: {"Quality": 1}})
         self.assertEqual(out, [{"id": 750, "n": "Tough Wolf Meat", "q": 1, "c": "Quest item",
                                 "d": [["Young Wolf", "Elwynn Forest"]], "qu": [[33, "Wolves Across the Border"]]}])
+
+    def test_wowsims_icons(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "db.json"
+            f.write_text(json.dumps({"items": [{"id": "257255", "icon": "inv_shield_1h_skybornec60_b_01"},
+                                               {"id": "287620", "icon": "unknown_8392824"},
+                                               {"id": "1", "icon": "<img src=x>"}],
+                                     "itemIcons": [{"id": 272430, "icon": "trade_archaeology_insect in amber"}]}))
+            self.assertEqual(build_items.wowsims_icons(f), {257255: "inv_shield_1h_skybornec60_b_01",
+                                                            272430: "trade_archaeology_insect-in-amber"})
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import { STAT_LABEL, type Item, type Stats } from "./gear/model";
 
 export const QUALITY = ["poor", "common", "uncommon", "rare", "epic", "legendary", "artifact"];
 export const ICON = (n: string, size = 56) =>
-  `https://render.worldofwarcraft.com/us/icons/${[18, 36, 56].includes(size) ? size : 56}/${String(n).toLowerCase().replace(/[^a-z0-9_-]/g, "")}.jpg`;
+  `https://render.worldofwarcraft.com/us/icons/${[18, 36, 56].includes(size) ? size : 56}/${String(n).toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9_-]/g, "")}.jpg`;
 // Set bonus and effect text from the client can hold unresolved spell variables ($s1, $/1000;s1).
 export const cleanFx = (s: string) => s.replace(/\$\/?\d*;?[a-zA-Z]+\d*/g, "?").replace(/ for \./g, ".").replace(/\s{2,}/g, " ");
 /** A finite number or 0, for numeric fields that come from data files. */

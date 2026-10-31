@@ -102,7 +102,23 @@ def icon_names(cache, download):
                                      headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
         path.write_bytes(urllib.request.urlopen(req, timeout=180).read())
     raw = json.loads(path.read_text())
-    return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower() for k, v in raw.items() if v.startswith("interface/icons/")}
+    # The render service names icons with hyphens where the file name has spaces.
+    return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower().replace(" ", "-")
+            for k, v in raw.items() if v.startswith("interface/icons/")}
+
+
+def wowsims_icons(path):
+    """ItemID -> icon name from wowsims/forever's item database (MIT), for items the client
+    tables leave without a named icon. Names wowsims couldn't resolve ("unknown_...") are skipped."""
+    if not path or not Path(path).exists():
+        return {}
+    db = json.loads(Path(path).read_text())
+    out = {}
+    for e in (db.get("items") or []) + (db.get("itemIcons") or []):
+        icon = str(e.get("icon") or "").lower().replace(" ", "-")
+        if re.fullmatch(r"[a-z0-9_-]+", icon) and not icon.startswith("unknown_") and str(e.get("id", "")).isdigit():
+            out.setdefault(int(e["id"]), icon)
+    return out
 
 
 def display_ids(cache, download):
@@ -128,10 +144,29 @@ def display_ids(cache, download):
     return {iid: v[1] for iid, v in best.items()}
 
 
+def appearance_icons(cache, download):
+    """ItemID -> icon file ID from the item's default appearance (ItemAppearance.DefaultIconFileDataID).
+    Newer items often leave Item.IconFileDataID empty and only set the icon here."""
+    try:
+        ima = load_csv(cache, "ItemModifiedAppearance", download)
+        app = load_csv(cache, "ItemAppearance", download)
+    except (SystemExit, OSError):
+        return {}
+    icon = {r.get("ID"): num(r.get("DefaultIconFileDataID"), int) for r in app}
+    best = {}
+    for r in ima:
+        iid, order = num(r.get("ItemID"), int), num(r.get("OrderIndex"), int)
+        fid = icon.get(r.get("ItemAppearanceID"), 0)
+        if iid and fid and (iid not in best or order < best[iid][0]):
+            best[iid] = (order, fid)
+    return {iid: v[1] for iid, v in best.items()}
+
+
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
     icons = icon_names(cache, download)
     dids = display_ids(cache, download)
+    app_icons = appearance_icons(cache, download)
     item = {r["ID"]: r for r in T["Item"]}
     rpp = {num(r["ID"], int): r for r in T["RandPropPoints"]}
     aq = {num(r["ID"], int): r for r in T["ItemArmorQuality"]}
@@ -250,7 +285,7 @@ def client_items(cache, download):
         rec = {"id": int(iid), "name": name, "q": q, "ilvl": ilvl, "req": req, "slot": SLOTS[inv], "inv": inv,
                "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc", "cls": cls,
                "stats": stats}
-        icon = icons.get(num(it.get("IconFileDataID"), int))
+        icon = icons.get(num(it.get("IconFileDataID"), int)) or icons.get(app_icons.get(int(iid), 0))
         if icon:
             rec["icon"] = icon
         did = dids.get(int(iid))
@@ -623,6 +658,7 @@ def main():
     ap.add_argument("--download", action="store_true")
     ap.add_argument("--cmangos")
     ap.add_argument("--atlasloot")
+    ap.add_argument("--wowsims-db", help="wowsims/forever assets/database/db.json (MIT), a last fallback for item icons")
     ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
     ap.add_argument("--questie-sqlite", default="data/forever_questdb.sqlite", help="from tools/refresh_questie_data.sh, for non-gear items")
@@ -635,6 +671,10 @@ def main():
     print(f"Forever client build {FOREVER_BUILD} ({product})")
 
     items, sets = client_items(a.cache, a.download)
+    ws = wowsims_icons(a.wowsims_db)
+    for iid, rec in items.items():
+        if not rec.get("icon") and ws.get(iid):
+            rec["icon"] = ws[iid]
     keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
     cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
