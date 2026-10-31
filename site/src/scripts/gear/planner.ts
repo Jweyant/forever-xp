@@ -3,8 +3,10 @@
 import {
   CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
   weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE,
+  hitCaps, hitRating, RACE_HIT, DW_MISS,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
+import { parseBuild, calcLink, treeNames, talentHit, type Build, type HitFrom } from "./talentbuild";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 import { drawFigure, type FigItem } from "./figure";
 import { toggle3d, send3d } from "./viewer3d";
@@ -16,7 +18,7 @@ type Side = "H" | "A";
 interface State {
   cls: string; spec: string; goal: Goal; level: number; side: Side; race: string; body: "M" | "F";
   sources: Set<string>; cur: Partial<Record<DollSlot, number>>; plan: Partial<Record<DollSlot, number>>;
-  owned: Set<number>; custom: Stats | null;
+  owned: Set<number>; custom: Stats | null; build: Build | null;
 }
 const ALL_SOURCES = SOURCE_KINDS.map((s) => s.key);
 const RACES: Record<string, { name: string; side: Side | "both"; icon?: string }> = {
@@ -51,7 +53,7 @@ function canBe(race: string, cls: string, side: "H" | "A"): boolean {
 }
 const st: State = {
   cls: "WARRIOR", spec: "fury", goal: "pve", level: 60, side: "H", race: "orc", body: "M",
-  sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null,
+  sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null, build: null,
 };
 let view: "plan" | "cur" = "plan";
 let items: Item[] = [];
@@ -64,9 +66,12 @@ const toast = (msg: string, action?: { label: string; run: () => void }) =>
   (window as unknown as { fxpToast?: (m: string, a?: typeof action) => void }).fxpToast?.(msg, action);
 
 function weights(): Stats { return st.goal === "custom" && st.custom ? st.custom : weightsFor(st.cls, st.spec, st.goal); }
+// suggest() tries a few hit weights and keeps the plan that scores best with the cap applied.
+let hitScale = 1;
 // Melee weapon DPS matters little to hunters, ranged DPS little to melee, off-hand DPS counts half.
 function slotWeights(doll: DollSlot, it: Item): Stats {
-  const w = weights();
+  const base = weights();
+  const w = hitScale !== 1 && base.hit ? { ...base, hit: base.hit * hitScale } : base;
   if (!it.weapon) return w;
   const hunter = st.cls === "HUNTER";
   let k = 1;
@@ -92,6 +97,7 @@ function encode(): string {
   if (Object.keys(st.cur).length) p.set("cur", slots(st.cur));
   if (Object.keys(st.plan).length) p.set("plan", slots(st.plan));
   if (st.owned.size) p.set("own", [...st.owned].join("."));
+  if (st.build?.str) p.set("t", st.build.str);
   if (st.goal === "custom" && st.custom) p.set("w", Object.entries(st.custom).filter(([, v]) => v).map(([k, v]) => `${k}:${+v.toFixed(3)}`).join("."));
   return p.toString();
 }
@@ -115,9 +121,16 @@ function decode(h: string) {
   };
   st.cur = slots(p.get("cur")); st.plan = slots(p.get("plan"));
   st.owned = new Set((p.get("own") || "").split(".").map(Number).filter(Boolean));
+  // Only a build string for this class, checked like a pasted one (never a link from the address).
+  const t = p.get("t");
+  const b = t && /^[0-9-]{1,80}$/.test(t) ? parseBuild(t, st.cls) : null;
+  st.build = b && b.ok && b.cls === st.cls ? b.build : null;
   if (p.get("w")) {
     st.custom = {};
-    for (const kv of p.get("w")!.split(".")) { const [k, v] = kv.split(":"); if (k) st.custom[k] = +v; }
+    for (const kv of p.get("w")!.split(".")) {
+      const [k, v] = kv.split(":"), n = Number(v);
+      if (WEIGHT_KEYS.includes(k) && Number.isFinite(n) && Math.abs(n) <= 1000) st.custom[k] = n;
+    }
   }
 }
 function save() {
@@ -132,7 +145,7 @@ function importGear(text: string): string {
   if (!m) return "That doesn't look like a ForeverScout gear string. In game, type /fscout gear and copy the whole line.";
   const [, cls, lvl, raceTok, body, side, rest] = m;
   if (!has(CLASSES, cls)) return "Unknown class in that gear string.";
-  if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; }
+  if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; st.build = null; }
   st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as Side;
   const rk = RACE_TOKEN[raceTok.toLowerCase()] || raceTok.toLowerCase();
   // The game said so: imports skip canBe(), so a combo this file doesn't know yet still loads.
@@ -154,7 +167,21 @@ function candidates(doll: DollSlot): Item[] {
   return items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side)
     && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && st.sources.has(sourceKind(it)));
 }
+/** The best plan once the hit cap is applied: a plain greedy pick stacks hit past the cap, so try a few
+ *  lower hit weights too and keep whichever plan scores best with hit counted only up to the cap. */
 function suggest(): State["plan"] {
+  if (!hitCtx() || !weights().hit) return suggestOnce();
+  let best: State["plan"] = {}, bestV = -Infinity;
+  for (const m of [1, 0.8, 0.6, 0.45, 0.3, 0.15, 0]) {
+    hitScale = m;
+    const p = suggestOnce();
+    hitScale = 1;
+    const v = totals(p).v;
+    if (v > bestV) { best = p; bestV = v; }
+  }
+  return best;
+}
+function suggestOnce(): State["plan"] {
   const plan: State["plan"] = {};
   const best = (doll: DollSlot, exclude: number[] = []) => {
     let top: Item | undefined, topV = 0;
@@ -259,6 +286,31 @@ function slotTip(d: DollSlot) {
   ]);
 }
 
+// ---------- hit cap ----------
+interface HitCtx { kind: "phys" | "spell"; cap: number; talents: HitFrom[]; race: number; need: number }
+/** What hit this spec needs from gear: the cap for the goal, less hit from talents and race. Healers
+ *  have no cap to fill. */
+function hitCtx(): HitCtx | null {
+  const spec = SPECS[st.cls].find((s) => s.key === st.spec);
+  if (!spec || spec.role === "healer") return null;
+  const kind = spec.role === "caster" ? "spell" : "phys";
+  const cap = hitCaps(st.goal)[kind];
+  const talents = talentHit(st.cls, st.build, kind, spec.school?.[0]);
+  const race = has(RACE_HIT, st.race) ? RACE_HIT[st.race] : 0;
+  const fromBuild = talents.reduce((a, h) => a + h.pct, 0);
+  return { kind, cap, talents, race, need: Math.max(0, cap - fromBuild - race) };
+}
+const dualWields = (o: State["plan"]) => st.cls !== "HUNTER" && !!(o.offhand && byId.get(o.offhand)?.weapon);
+/** The score a set of gear loses for hit past the cap. Dual wielders' white swings miss 19% more, so
+ *  hit past the cap still counts half until that's covered too. */
+function hitOverflow(o: State["plan"], t: Stats): number {
+  const h = hitCtx(), w = weights().hit || 0;
+  if (!h || w <= 0) return 0;
+  const over = Math.max(0, hitRating(t, h.kind) - h.need * HIT_RATING);
+  const lost = h.kind === "phys" && dualWields(o) ? over - 0.5 * Math.min(over, DW_MISS * HIT_RATING) : over;
+  return lost * w;
+}
+
 // ---------- stats ----------
 function totals(o: State["plan"]) {
   const t: Stats = {}; let v = 0;
@@ -272,7 +324,7 @@ function totals(o: State["plan"]) {
   const count: Record<string, number> = {};
   for (const d of PAPERDOLL) { const it = o[d] ? byId.get(o[d]!) : undefined; if (it?.set) count[it.set] = (count[it.set] || 0) + 1; }
   for (const [sid, n] of Object.entries(count)) for (const b of sets[sid]?.bonuses || []) if (n >= b.n) for (const [k, x] of Object.entries(b.stats)) t[k] = (t[k] || 0) + x;
-  return { t, v: Math.round(v) };
+  return { t, v: Math.round(v - hitOverflow(o, t)) };
 }
 const GROUPS: [string, string[]][] = [
   ["Base", ["str", "agi", "sta", "int", "spi", "armor"]],
@@ -338,13 +390,42 @@ function renderControls() {
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => (c.checked = st.sources.has(c.dataset.src!)));
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.pickcls === st.cls)));
   const w = weights();
-  $("#g-weights").innerHTML = WEIGHT_KEYS.map((k) => `<label><span>${STAT_LABEL[k] || k}</span>
-    <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"${st.goal === "custom" ? "" : " disabled"}></label>`).join("");
+  const custom = st.goal === "custom";
+  const edit = $("#g-weights");
+  edit.hidden = !custom;
+  if (custom) edit.innerHTML = WEIGHT_KEYS.map((k) => `<label><span>${STAT_LABEL[k] || k}</span>
+    <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"></label>`).join("");
+  renderWeightBars(w);
   const sim = simPresets(st.cls, st.spec)[0];
-  $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion."
-    : sim ? `Measured by our own sim runs (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts at its value below the cap; the planner doesn't stop counting it past the cap yet. Pick Custom weights to edit them.`
-    : "Starting weights for this spec and goal: there are no sim weights for this spec yet. Pick Custom weights to edit them.";
+  $("#g-weights-note").textContent = custom ? "Your weights. Change any number below; it applies to the next suggestion."
+    : sim ? `Measured by our own sim runs (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts until you reach the cap, then stops. Pick Custom weights to edit them.`
+    : "Starting weights for this spec and goal: there are no sim weights for this spec yet. Hit counts until you reach the cap, then stops. Pick Custom weights to edit them.";
   renderWeightSource(sim?.label);
+}
+
+/** Every weighted stat as a bar, biggest first, scaled to the top one. Keys are checked against the
+ *  label list; numbers go into text and a CSS property. */
+function renderWeightBars(w: Stats) {
+  const rows = Object.keys(w).filter((k) => has(STAT_LABEL, k) && Number(w[k]) > 0)
+    .map((k) => ({ k, v: Number(w[k]) })).sort((a, b) => b.v - a.v);
+  const box = $("#g-wbars");
+  box.replaceChildren();
+  const top = rows[0]?.v || 1, capped = !!hitCtx();
+  for (const r of rows) {
+    const row = document.createElement("div");
+    row.className = "wbar";
+    const name = document.createElement("span");
+    name.className = "wname";
+    name.textContent = STAT_LABEL[r.k] + (r.k === "hit" && capped ? " (to the cap)" : "");
+    const bar = document.createElement("span");
+    bar.className = "wfill";
+    bar.style.setProperty("--w", String(Math.max(2, Math.round((r.v / top) * 100))));
+    const num = document.createElement("b");
+    num.textContent = String(+r.v.toFixed(2));
+    row.append(name, bar, num);
+    box.append(row);
+  }
+  if (!rows.length) box.textContent = "No weights set.";
 }
 
 /** One line under the controls saying where the weights come from, with the link wowsims asks for. */
@@ -358,8 +439,48 @@ function renderWeightSource(simLabel?: string) {
   el.append("Stat weights: our own sim runs on the ", a, ` engine (${simLabel})${st.goal === "pve" ? "" : ", adjusted for your goal"}.`);
 }
 
+/** The talent box: the build's split and a link back to the calculator, built from parsed data. */
+function renderTalents() {
+  const input = $("#g-talents") as HTMLInputElement;
+  if (document.activeElement !== input) input.value = st.build?.str || "";
+  const el = $("#g-tal-sum");
+  el.replaceChildren();
+  const a = document.createElement("a");
+  a.href = calcLink(st.cls, st.build || { str: "", pts: [], split: [], spent: 0 });
+  if (!st.build) {
+    a.textContent = `${CLASSES[st.cls].name} talent calculator`;
+    el.append("No talents yet. Make a build in the ", a, " and paste its link here.");
+    return;
+  }
+  const names = treeNames(st.cls);
+  a.textContent = "Open in the talent calculator";
+  el.append(`${st.build.split.join(" / ")} (${names.map((n, i) => `${st.build!.split[i]} ${n}`).filter((_, i) => st.build!.split[i]).join(", ") || "no points"}). `, a);
+}
+
+/** One line under the stats: where this spec's hit comes from and how it sits against the cap. */
+function renderHit() {
+  const el = $("#g-hit"), h = hitCtx();
+  el.hidden = !h;
+  if (!h) return;
+  const gear = hitRating(totals(gearOf()).t, h.kind) / HIT_RATING;
+  const tal = h.talents.reduce((a, x) => a + x.pct, 0);
+  const total = gear + tal + h.race;
+  const f = (n: number) => `${+n.toFixed(1)}%`;
+  const parts = [`${f(gear)} from gear`];
+  if (tal) parts.push(`${f(tal)} from talents (${h.talents.map((x) => x.name).join(", ")})`);
+  if (h.race) parts.push(`${f(h.race)} from being a Dwarf`);
+  const where = st.goal === "pvp" || st.goal === "level" ? "against level 60 targets" : "against raid bosses";
+  const diff = total - h.cap;
+  const state = Math.abs(diff) < 0.05 ? "right at the cap."
+    : diff < 0 ? `${f(-diff)} short of it.`
+    : h.kind === "phys" && dualWields(gearOf()) ? `${f(diff)} over. Past the cap, hit still helps your white swings while dual wielding, so it counts half.`
+    : `${f(diff)} over. Hit past the cap counts for nothing, so it isn't scored.`;
+  el.textContent = `Hit: ${parts.join(" + ")} = ${f(total)}, against a ${f(h.cap)} ${h.kind === "phys" ? "melee and ranged" : "spell"} cap ${where}: ${state}`
+    + (st.build ? "" : " Add your talents above to count the hit they give.");
+}
+
 function render() {
-  renderControls(); renderDoll(); renderStats(); renderRows(); save();
+  renderControls(); renderTalents(); renderDoll(); renderStats(); renderHit(); renderRows(); save();
   send3d(st.race, st.body, gearOf(), byId); // no-op unless the 3D dialog is open
 }
 
@@ -445,6 +566,19 @@ function bind() {
   });
   $("#g-keep").addEventListener("click", () => { const before = { ...st.plan }; st.plan = { ...st.cur }; render(); toast("Plan reset to your current gear.", { label: "Undo", run: () => { st.plan = before; render(); } }); });
   $("#g-import-go").addEventListener("click", () => { toast(importGear(($("#g-import") as HTMLTextAreaElement).value)); render(); });
+  $("#g-talents").addEventListener("change", (e) => {
+    const input = e.target as HTMLInputElement;
+    if (!input.value.trim()) { st.build = null; render(); return; }
+    const r = parseBuild(input.value, st.cls);
+    if (!r.ok) { toast(r.error); return; }
+    if (r.cls !== st.cls) {
+      st.cls = r.cls; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {};
+      if (!canBe(st.race, st.cls, st.side)) st.race = validRace();
+      toast(`Switched to ${CLASSES[st.cls].name} for that build.`);
+    }
+    st.build = r.build;
+    input.blur(); render();
+  });
   $("#g-pawn").addEventListener("click", async () => {
     const spec = SPECS[st.cls].find((s) => s.key === st.spec);
     const goal = GOALS.find((g) => g.key === st.goal);
@@ -470,7 +604,7 @@ function bind() {
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.addEventListener("click", () => {
     const c = b.dataset.pickcls;
     if (!has(CLASSES, c) || st.cls === c) return;
-    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {};
+    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; st.build = null;
     if (!canBe(st.race, st.cls, st.side)) st.race = validRace();
     render();
   }));
