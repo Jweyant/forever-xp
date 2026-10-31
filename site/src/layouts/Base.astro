@@ -165,11 +165,11 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
   .acct svg { width: 18px; height: 18px; flex: none; }
   .acct span { overflow: hidden; text-overflow: ellipsis; }
   /* Beside the full nav the account button is just its icon (the name is its label and tooltip). */
-  @media (min-width: 1241px), (max-width: 699px) {
+  @media (min-width: 1321px), (max-width: 699px) {
     .acct { width: 38px; padding: 0; justify-content: center; }
     .acct span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   }
-  @media (max-width: 1240px) and (min-width: 700px) { .acct { gap: 0.4rem; } }
+  @media (max-width: 1320px) and (min-width: 700px) { .acct { gap: 0.4rem; } }
   .acct[hidden] { display: none; }
   .icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
   .icon-btn svg { width: 19px; height: 19px; }
@@ -180,12 +180,12 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
   .search-btn .lbl { flex: 1; text-align: left; }
   .search-btn:hover { border-color: var(--ink); color: var(--ink); }
   .icon-btn.menu { display: none; }
-  /* Ten nav links: the search box shows only its icon (/ still opens it) so they fit the header's
-     width; below 1240px they fold into the menu. */
+  /* Eleven nav links: the search box shows only its icon (/ still opens it) so they fit the header's
+     width; below 1320px they fold into the menu. */
   .site-header nav ul { column-gap: 0.8rem; }
   .search-btn { min-width: 0; padding: 0 0.6rem; }
   .search-btn .lbl, .search-btn kbd { display: none; }
-  @media (max-width: 1240px) {
+  @media (max-width: 1320px) {
     .site-header nav { display: none; position: absolute; left: 0; right: 0; top: 100%; background: var(--raise); border-bottom: 1px solid var(--line); box-shadow: var(--shadow); }
     .site-header nav.open { display: block; }
     .site-header nav ul { flex-direction: column; padding: 0.5rem 16px 1rem; }
