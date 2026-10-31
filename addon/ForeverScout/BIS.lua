@@ -146,7 +146,7 @@ function ns.BIS.Waypoint(m, x, y, title)
     end)
     if ok then ns.Print(("Map pin set: %s (%.1f, %.1f). Open the map to see it."):format(title or "", x, y)) return end
   end
-  if pinged then ns.Print(("%s: %.1f, %.1f, marked on your map for 20 seconds."):format(title or "Target", x, y))
+  if pinged then ns.Print(("%s: %s %.1f, %.1f, marked on your map for 20 seconds."):format(title or "Target", ns.Pins.ZoneName(m), x, y))
   else ns.Print(("%s is at %.1f, %.1f. Install TomTom for an arrow."):format(title or "Target", x, y)) end
 end
 
@@ -303,10 +303,29 @@ local function buildRow(f, d)
   r.name:SetPoint("LEFT", 322, 0)
   r.name:SetWordWrap(false)
 
-  r.focus = fontString(r, "GameFontHighlightSmall", nil, nil, 48, "RIGHT")
-  r.focus:SetPoint("LEFT", 492, 0)
-  r.gain = fontString(r, "GameFontHighlightSmall", nil, nil, 52, "RIGHT")
-  r.gain:SetPoint("LEFT", 542, 0)
+  r.focus = fontString(r, "GameFontHighlightSmall", nil, nil, 44, "RIGHT")
+  r.focus:SetPoint("LEFT", 486, 0)
+  r.gain = fontString(r, "GameFontHighlightSmall", nil, nil, 46, "RIGHT")
+  r.gain:SetPoint("LEFT", 526, 0)
+
+  -- Map button: pings the item's source on the world map and minimap.
+  r.map = CreateFrame("Button", nil, r)
+  r.map:SetSize(20, 20)
+  r.map:SetPoint("LEFT", 578, 0)
+  r.map.tex = r.map:CreateTexture(nil, "ARTWORK")
+  r.map.tex:SetAllPoints()
+  r.map.tex:SetTexture("Interface\\Minimap\\Tracking\\None")
+  r.map.tex:SetVertexColor(0.31, 0.76, 0.97)
+  r.map:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+  r.map:SetScript("OnClick", function(self) if self.m then ns.BIS.Waypoint(self.m, self.x, self.y, self.title) end end)
+  r.map:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText("Show on map", 1, 1, 1)
+    if self.where then GameTooltip:AddLine(self.where, 0.8, 0.8, 0.8, true) end
+    GameTooltip:Show()
+  end)
+  r.map:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  r.map:Hide()
 
   r:SetScript("OnEnter", function(self) self.hl:Show() showItemTip(self, self.itemId) end)
   r:SetScript("OnLeave", function(self) self.hl:Hide() GameTooltip:Hide() end)
@@ -432,8 +451,9 @@ local function build()
   header("Slot", 20, 66)
   header("You have", 112, 176)
   header("Best for this plan", 334, 176)
-  f.focusHead = header("", 504, 48, "RIGHT")
-  header("Gain", 554, 52, "RIGHT")
+  f.focusHead = header("", 486, 44, "RIGHT")
+  header("Gain", 526, 46, "RIGHT")
+  header("Map", 576, 24)
   local hline = f:CreateTexture(nil, "BACKGROUND", nil, 2)
   hline:SetPoint("TOPLEFT", 12, ROWS_TOP + 2)
   hline:SetSize(ROWS_W, 1)
@@ -728,6 +748,18 @@ function ns.BIS.Refresh()
       r.focus:SetText(amt > 0 and ("|cff4fc3f7%d|r"):format(amt) or "|cff9d9d9d-|r")
     else
       r.focus:SetText("")
+    end
+    r.map:Hide()
+    if it and not r.owned then
+      for _, s in ipairs(it.src or {}) do
+        local m, x, y, title = P.SourcePin(s)
+        if m then
+          r.map.m, r.map.x, r.map.y, r.map.title = m, x, y, title
+          r.map.where = P.SourceText(it)
+          r.map:Show()
+          break
+        end
+      end
     end
     if r.owned then
       r.gain:SetText("|cff55ff55have|r")

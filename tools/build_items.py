@@ -445,6 +445,31 @@ def questie_sources(qdir, keep):
     return src
 
 
+def apply_quest_faction(items, quests_path=Path("gamedata/quests.json")):
+    """Items only obtainable from one faction's quests belong to that faction.
+
+    The client doesn't mark quest rewards by side, so a Horde planner would otherwise suggest
+    Stormwind quest rewards. Uses the quest list built from Questie (gamedata/quests.json).
+    """
+    if not quests_path.exists():
+        return 0
+    side = {q["id"]: q.get("side") for q in json.loads(quests_path.read_text())}
+    n = 0
+    for rec in items.values():
+        if rec.get("side") or not rec.get("src"):
+            continue
+        sides = set()
+        for s in rec["src"]:
+            if s["t"] != "quest":
+                sides = None
+                break
+            sides.add(side.get(s.get("qid")))
+        if sides and len(sides) == 1 and None not in sides:
+            rec["side"] = sides.pop()
+            n += 1
+    return n
+
+
 def rank_sources(lst):
     order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
              "drop": 8, "world": 9, "logged": -1}
@@ -520,6 +545,7 @@ def main():
         else:
             no_src += 1
         rec["lvl"] = effective_level(rec, s)
+    apply_quest_faction(items)
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))

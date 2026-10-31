@@ -14,7 +14,7 @@ local P = ns.Planner
 local QUALITY_RGB = { [0] = { 0.62, 0.62, 0.62 }, [1] = { 1, 1, 1 }, [2] = { 0.12, 1, 0 }, [3] = { 0, 0.44, 0.87 }, [4] = { 0.64, 0.21, 0.93 }, [5] = { 1, 0.5, 0 } }
 local WHITE = "Interface\\Buttons\\WHITE8x8"
 
-local pool, used = {}, {}
+local used = {}
 local REF = "ForeverScoutBIS"
 
 function Pins.Available() return HBD ~= nil and HBDPins ~= nil end
@@ -44,27 +44,56 @@ local function onClick(self, button)
   ns.BIS.Waypoint(self.m, self.x, self.y, e and e.it.n or "Item")
 end
 
-local function newPin()
+-- World map pins are big and labeled so they stand out from Questie's; minimap pins are compact.
+-- A frame can only live on one map, so each spot gets a world frame and a minimap frame.
+local function newPin(kind)
+  local size = kind == "world" and 30 or 20
   local f = CreateFrame("Button", nil, UIParent)
-  f:SetSize(16, 16)
+  f:SetSize(size, size)
+  f.kind = kind
   f:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+  f.glow = f:CreateTexture(nil, "BACKGROUND", nil, -1)
+  f.glow:SetPoint("CENTER")
+  f.glow:SetSize(size * 1.9, size * 1.9)
+  f.glow:SetTexture("Interface\\Cooldown\\star4")
+  f.glow:SetBlendMode("ADD")
+  f.glow:SetVertexColor(0.31, 0.76, 0.97, kind == "world" and 0.9 or 0.6)
   f.border = f:CreateTexture(nil, "BACKGROUND")
   f.border:SetAllPoints()
   f.border:SetTexture(WHITE)
+  f.border:SetVertexColor(0.31, 0.76, 0.97, 1)
+  f.inner = f:CreateTexture(nil, "BORDER")
+  f.inner:SetPoint("TOPLEFT", 2, -2)
+  f.inner:SetPoint("BOTTOMRIGHT", -2, 2)
+  f.inner:SetTexture(WHITE)
+  f.inner:SetVertexColor(0, 0, 0, 1)
   f.icon = f:CreateTexture(nil, "ARTWORK")
-  f.icon:SetPoint("TOPLEFT", 1, -1)
-  f.icon:SetPoint("BOTTOMRIGHT", -1, 1)
+  f.icon:SetPoint("TOPLEFT", 3, -3)
+  f.icon:SetPoint("BOTTOMRIGHT", -3, 3)
   f.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-  f.count = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-  f.count:SetPoint("BOTTOMRIGHT", 2, -2)
+  f.tag = f:CreateTexture(nil, "OVERLAY")
+  f.tag:SetSize(size * 0.45, size * 0.45)
+  f.tag:SetPoint("TOPLEFT", -size * 0.15, size * 0.15)
+  f.tag:SetTexture("Interface\\AddOns\\ForeverScout\\logo")
+  f.count = f:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+  f.count:SetPoint("BOTTOMRIGHT", 3, -3)
+  if kind == "world" then
+    f.label = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    f.label:SetPoint("TOP", f, "BOTTOM", 0, -1)
+    f.label:SetShadowOffset(1, -1)
+    f.label:SetShadowColor(0, 0, 0, 1)
+    f.label:SetWidth(140)
+    f.label:SetWordWrap(false)
+  end
   f:SetScript("OnEnter", onEnter)
   f:SetScript("OnLeave", function() GameTooltip:Hide() end)
   f:SetScript("OnClick", onClick)
   return f
 end
 
-local function getPin()
-  local f = table.remove(pool) or newPin()
+local pools = { world = {}, mini = {} }
+local function getPin(kind)
+  local f = table.remove(pools[kind]) or newPin(kind)
   used[#used + 1] = f
   return f
 end
@@ -73,8 +102,22 @@ function Pins.Clear()
   if not Pins.Available() then return end
   HBDPins:RemoveAllMinimapIcons(REF)
   HBDPins:RemoveAllWorldMapIcons(REF)
-  for _, f in ipairs(used) do f:Hide() f.entries = nil pool[#pool + 1] = f end
+  for _, f in ipairs(used) do f:Hide() f.entries = nil table.insert(pools[f.kind], f) end
   wipe(used)
+end
+
+local function fill(f, spot)
+  local first = spot.entries[1]
+  f.entries, f.m, f.x, f.y = spot.entries, spot.m, spot.x, spot.y
+  f.icon:SetTexture(iconOf(first.id, first.it))
+  local c = QUALITY_RGB[first.it.q] or QUALITY_RGB[1]
+  f.border:SetVertexColor(c[1], c[2], c[3], 1)
+  f.count:SetText(#spot.entries > 1 and tostring(#spot.entries) or "")
+  if f.label then
+    f.label:SetText(#spot.entries > 1 and ("%s +%d"):format(first.it.n, #spot.entries - 1) or first.it.n)
+    f.label:SetTextColor(c[1], c[2], c[3])
+  end
+  f:Show()
 end
 
 -- plan = { [slot] = itemId }, cur = { [slot] = itemId } (owned items get no pin).
@@ -100,16 +143,10 @@ function Pins.Show(plan, cur)
   local n = 0
   for _, key in ipairs(order) do
     local spot = spots[key]
-    local f = getPin()
-    local first = spot.entries[1]
-    f.entries, f.m, f.x, f.y = spot.entries, spot.m, spot.x, spot.y
-    f.icon:SetTexture(iconOf(first.id, first.it))
-    local c = QUALITY_RGB[first.it.q] or QUALITY_RGB[1]
-    f.border:SetVertexColor(c[1], c[2], c[3], 1)
-    f.count:SetText(#spot.entries > 1 and tostring(#spot.entries) or "")
-    f:Show()
-    HBDPins:AddMinimapIconMap(REF, f, spot.m, spot.x / 100, spot.y / 100, false, true)
-    HBDPins:AddWorldMapIconMap(REF, f, spot.m, spot.x / 100, spot.y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT)
+    local w, mm = getPin("world"), getPin("mini")
+    fill(w, spot) fill(mm, spot)
+    HBDPins:AddWorldMapIconMap(REF, w, spot.m, spot.x / 100, spot.y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT, 200)
+    HBDPins:AddMinimapIconMap(REF, mm, spot.m, spot.x / 100, spot.y / 100, false, true)
     n = n + 1
   end
   return n
@@ -151,6 +188,11 @@ local function makePing(size)
   return f
 end
 
+function Pins.ZoneName(m)
+  local info = C_Map and C_Map.GetMapInfo and m and C_Map.GetMapInfo(m)
+  return info and info.name or ("map " .. tostring(m))
+end
+
 function Pins.Ping(m, x, y, title, seconds)
   if not Pins.Available() or not (m and x and y) then return false end
   ping = ping or { world = makePing(48), mini = makePing(28) }
@@ -159,11 +201,16 @@ function Pins.Ping(m, x, y, title, seconds)
   for _, f in pairs(ping) do f.title = title f:Show() f.anim:Play() end
   HBDPins:AddWorldMapIconMap("ForeverScoutPing", ping.world, m, x / 100, y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT, 100)
   HBDPins:AddMinimapIconMap("ForeverScoutPing", ping.mini, m, x / 100, y / 100, true, true)
-  -- Open the map on that zone.
-  if not InCombatLockdown() then
-    if OpenWorldMap then pcall(OpenWorldMap, m)
-    elseif WorldMapFrame then pcall(ShowUIPanel, WorldMapFrame) end
+  -- Open the map on that zone (twice: some clients reset the zone as the frame opens).
+  local function showZone()
     if WorldMapFrame and WorldMapFrame.SetMapID then pcall(WorldMapFrame.SetMapID, WorldMapFrame, m) end
+  end
+  if not InCombatLockdown() then
+    if WorldMapFrame and not WorldMapFrame:IsShown() then
+      if OpenWorldMap then pcall(OpenWorldMap, m) else pcall(ShowUIPanel, WorldMapFrame) end
+    end
+    showZone()
+    C_Timer.After(0.1, showZone)
   end
   if ping.timer then ping.timer:Cancel() end
   ping.timer = C_Timer.NewTimer(seconds or 20, function()
