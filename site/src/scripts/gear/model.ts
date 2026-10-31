@@ -1,6 +1,9 @@
-// Classes, specs, goals and starting stat weights for the BIS planner.
-// Weights are "value per point". Ratings use Forever's level-60 conversions as seen on items
-// that Classic listed as percentages (about 14 crit rating and 10 hit rating per 1%).
+// Classes, specs, goals and stat weights for the BIS planner.
+// Weights are "value per point". Ratings use Forever's level-60 conversions from the client's combat
+// ratings table (14 crit rating and 10 hit rating per 1%, the values wowsims/forever reads).
+// Specs with weights measured by wowsims/forever (tools/build_simweights.py) use those; the others
+// keep the hand-set starting weights below.
+import simJson from "../../data/simweights.json";
 
 export type Stats = Record<string, number>;
 export interface Item {
@@ -55,7 +58,7 @@ export const STAT_LABEL: Record<string, string> = {
   nature_res: "Nature resistance", arcane_res: "Arcane resistance", crit_pct: "Crit %", hit_pct: "Hit %",
   spellcrit_pct: "Spell crit %", spellhit_pct: "Spell hit %",
 };
-export const WEIGHT_KEYS = ["str", "agi", "sta", "int", "spi", "ap", "rap", "crit", "hit", "haste", "sp", "heal", "mp5",
+export const WEIGHT_KEYS = ["str", "agi", "sta", "int", "spi", "ap", "rap", "crit", "hit", "haste", "expertise", "sp", "heal", "mp5",
   "dps", "armor", "def", "dodge", "parry", "block", "blockv", "spen", "hp5", "fire_res", "frost_res", "shadow_res", "nature_res", "arcane_res"];
 
 const BASE: Record<Role, Stats> = {
@@ -68,28 +71,96 @@ const BASE: Record<Role, Stats> = {
   bear: { sta: 1.4, agi: 1.0, armor: 0.14, def: 1.2, dodge: 1.2, str: 0.6, hit: 0.7, ap: 0.25, crit: 0.4 },
 };
 
-/** Starting weights for a spec and goal. Players can edit these; Custom starts from PvE. */
+// ---------- weights measured by wowsims/forever ----------
+// gamedata/simweights.json is built from a pinned wowsims commit, but it's still third-party data:
+// only known stat keys and finite numbers get through, labels and notes are short text (shown with
+// textContent).
+export const SIM_SITE = "https://wowsims.com/forever";
+export const SIM_REPO = "https://github.com/wowsims/forever";
+export interface SimPreset { label: string; w: Stats; note: string }
+const SIM_KEYS = new Set(["str", "agi", "sta", "int", "spi", "ap", "rap", "crit", "hit", "haste", "expertise", "sp", "heal",
+  "mp5", "spen", "sp_arcane", "sp_fire", "sp_frost", "sp_holy", "sp_nature", "sp_shadow", "def", "dodge", "parry", "block",
+  "blockv", "armor", "dps", "dps_oh", "dps_ranged"]);
+type RawPreset = { label?: unknown; w?: unknown; note?: unknown };
+const SIM = simJson as unknown as { source?: { commit?: unknown }; specs?: Record<string, unknown> };
+export const SIM_COMMIT = typeof SIM.source?.commit === "string" && /^[0-9a-f]{40}$/.test(SIM.source.commit) ? SIM.source.commit : "";
+
+/** The sim's stat-weight presets for a spec, default first, or [] when it has none. */
+export function simPresets(cls: string, specKey: string): SimPreset[] {
+  const specs = SIM.specs && typeof SIM.specs === "object" ? SIM.specs : {};
+  const key = `${cls}.${specKey}`;
+  const list = Object.prototype.hasOwnProperty.call(specs, key) ? specs[key] : null;
+  if (!Array.isArray(list)) return [];
+  return (list as RawPreset[]).flatMap((p) => {
+    if (!p || typeof p.label !== "string" || !p.w || typeof p.w !== "object") return [];
+    const w: Stats = {};
+    for (const [k, v] of Object.entries(p.w as Record<string, unknown>)) {
+      const n = Number(v);
+      if (SIM_KEYS.has(k) && Number.isFinite(n) && Math.abs(n) <= 100) w[k] = n;
+    }
+    if (!Object.keys(w).length) return [];
+    return [{ label: p.label.slice(0, 60), w, note: typeof p.note === "string" ? p.note.slice(0, 300) : "" }];
+  });
+}
+
+/** Weights for a spec and goal: the sim's where it has them, else the starting weights. Players can
+ *  edit these; Custom starts from PvE. */
 export function weightsFor(cls: string, specKey: string, goal: Goal): Stats {
   const spec = (SPECS[cls] || []).find((s) => s.key === specKey) || SPECS[cls]?.[0];
   if (!spec) return {};
-  const w: Stats = { ...BASE[spec.role] };
-  if (spec.role === "caster") for (const s of spec.school || []) w[`sp_${s}`] = 1;
-  if (spec.role === "healer") w.sp_holy = 0.3;
+  const base: Stats = { ...BASE[spec.role] };
+  if (spec.role === "caster") for (const s of spec.school || []) base[`sp_${s}`] = 1;
+  if (spec.role === "healer") base.sp_holy = 0.3;
+  // With sim weights, stats the sim didn't weigh keep their starting weight, rescaled to the sim's units
+  // through a stat both share (attack power, spell damage or healing). f also scales the fixed amounts
+  // the PvP and leveling adjustments add below, so they mean the same on either scale.
+  const sim = simPresets(cls, spec.key)[0];
+  let w: Stats = base, f = 1;
+  if (sim) {
+    const ref = ["ap", "sp", "heal"].find((k) => (sim.w[k] || 0) > 0 && (base[k] || 0) > 0);
+    f = ref ? sim.w[ref] / base[ref] : 1;
+    w = {};
+    for (const [k, v] of Object.entries(base)) w[k] = v * f;
+    Object.assign(w, sim.w);
+  }
   if (goal === "pvp") {
-    w.sta = Math.max(w.sta || 0, spec.role === "tank" || spec.role === "bear" ? 1.6 : 1.1);
-    w.armor = (w.armor || 0) + 0.02;
+    w.sta = Math.max(w.sta || 0, (spec.role === "tank" || spec.role === "bear" ? 1.6 : 1.1) * f);
+    w.armor = (w.armor || 0) + 0.02 * f;
     if (w.hit) w.hit *= 0.6;
     w.crit = (w.crit || 0) * 1.1;
     if (spec.role === "healer") { w.mp5 = (w.mp5 || 0) * 0.8; w.int = (w.int || 0) * 1.2; }
-    w.spen = (w.spen || 0) + (spec.role === "caster" ? 0.5 : 0);
+    w.spen = (w.spen || 0) + (spec.role === "caster" ? 0.5 * f : 0);
   } else if (goal === "level") {
-    w.sta = Math.max(w.sta || 0, 0.6);
+    w.sta = Math.max(w.sta || 0, 0.6 * f);
     if (w.hit) w.hit *= 0.5;
-    if (spec.role === "caster" || spec.role === "healer") { w.spi = Math.max(w.spi || 0, 0.6); w.int = (w.int || 0) + 0.2; }
+    if (spec.role === "caster" || spec.role === "healer") { w.spi = Math.max(w.spi || 0, 0.6 * f); w.int = (w.int || 0) + 0.2 * f; }
     if (spec.role === "str" || spec.role === "agi") w.dps = (w.dps || 0) * 1.25;
-    w.armor = (w.armor || 0) + 0.01;
+    w.armor = (w.armor || 0) + 0.01 * f;
   }
   return w;
+}
+
+// ---------- Pawn ----------
+// Pawn (github.com/VgerMods/Pawn) is the stat-weight addon most players already run. These are its
+// own stat names; the string is built from our numbers and constants only.
+const PAWN: Record<string, string> = {
+  str: "Strength", agi: "Agility", sta: "Stamina", int: "Intellect", spi: "Spirit", armor: "Armor", ap: "Ap",
+  rap: "Rap", crit: "CritRating", hit: "HitRating", haste: "HasteRating", expertise: "ExpertiseRating",
+  sp: "SpellDamage", heal: "Healing", mp5: "Mp5", hp5: "Hp5", spen: "SpellPenetration", def: "DefenseRating",
+  dodge: "DodgeRating", parry: "ParryRating", block: "BlockRating", blockv: "BlockValue",
+  sp_fire: "FireSpellDamage", sp_frost: "FrostSpellDamage", sp_shadow: "ShadowSpellDamage",
+  sp_nature: "NatureSpellDamage", sp_arcane: "ArcaneSpellDamage", sp_holy: "HolySpellDamage",
+};
+/** A Pawn scale tag, e.g. ( Pawn: v1: "Forever XP Fury Warrior": Strength=2.2, HitRating=2.29 ). */
+export function pawnScale(name: string, w: Stats, hunter: boolean): string {
+  const r = (n: number) => +n.toFixed(3);
+  const parts: string[] = [];
+  for (const [k, p] of Object.entries(PAWN)) if (Number(w[k])) parts.push(`${p}=${r(Number(w[k]))}`);
+  const dps = Number(w.dps) || 0, oh = Number(w.dps_oh);
+  if (hunter && dps) parts.push(`RangedDps=${r(dps)}`);
+  else if (Number.isFinite(oh) && dps) parts.push(`MainHandDps=${r(dps)}`, `OffHandDps=${r(oh)}`);
+  else if (dps) parts.push(`Dps=${r(dps)}`);
+  return `( Pawn: v1: "${name.replace(/[^A-Za-z0-9 ()-]/g, "")}": ${parts.join(", ")} )`;
 }
 
 // Who can use what (Classic rules; mail and plate from level 40).

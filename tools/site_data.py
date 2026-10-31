@@ -309,6 +309,10 @@ def main():
         write_item_index(gear, pub)
     else:
         (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
+    # Stat weights measured by wowsims/forever (tools/build_simweights.py); the planner falls back to
+    # its starting weights for specs not listed.
+    sim = ROOT / "gamedata" / "simweights.json"
+    (OUT / "simweights.json").write_text(sim.read_text() if sim.exists() else '{"source":{},"specs":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
     write_questdb(gear)
