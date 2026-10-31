@@ -11,4 +11,4 @@ Forever client build 1.60.1.70707.
 - Changed in Forever: 146
 - Other items (consumables, trade goods, recipes, quest items...): 9055
 
-Sources: cmangos 603ece1, AtlasLoot 8e99341, opendata 4f68475, Questie 3a2d1b5
+Sources: cmangos 603ece1, AtlasLoot 8e99341, opendata 4f68475, wowsims 376a6aa, Questie 3a2d1b5

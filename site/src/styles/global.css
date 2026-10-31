@@ -260,3 +260,5 @@ img[data-broken] { visibility: hidden; }
 
 /* Narrow screens: drop secondary table columns marked .opt */
 @media (max-width: 719px) { .opt { display: none; } }
+/* Items with no known icon show the game's question mark. */
+.ico:empty { background: #0b0b0d url("https://render.worldofwarcraft.com/us/icons/56/inv_misc_questionmark.jpg") center / cover no-repeat; }

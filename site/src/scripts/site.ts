@@ -210,3 +210,13 @@ if (acct && accountsOn()) {
 }
 if (signin === "ok") toast("Signed in. Your saved plans are under your name, top right.");
 else if (signin === "failed") toast("Sign-in didn't work. Please try again.");
+
+// Item icons come from Blizzard's render service, which doesn't have every Forever icon.
+// When one fails to load, show the game's question-mark icon instead of an empty box.
+const QMARK = "inv_misc_questionmark";
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || !img.src.startsWith("https://render.worldofwarcraft.com/us/icons/")) return;
+  if (img.src.includes(QMARK)) { img.style.visibility = "hidden"; return; }
+  img.src = img.src.replace(/\/[a-z0-9_-]+\.jpg$/, `/${QMARK}.jpg`);
+}, true);
