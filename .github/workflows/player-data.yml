@@ -62,8 +62,12 @@ jobs:
         run: bash tools/push_data.sh "Refresh player data from ForeverScout logs" gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
+      # The gear rebuild folds the new loot sightings into items.json (as confirmed drop
+      # sources) and starts its own deploy when that changes.
       - name: Deploy the site with the new data
         if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy-site.yml --ref main
+        run: |
+          gh workflow run deploy-site.yml --ref main
+          gh workflow run gear-data.yml --ref main

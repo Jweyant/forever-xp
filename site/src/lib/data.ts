@@ -24,7 +24,7 @@ export interface Guide {
 export const guides = guidesJson as Guide[];
 export const quests = questsJson as Quest[];
 export const zones = zonesJson as { name: string; slug: string; quests: number; do: number; skip: number; optional: number; unknown: number; median_xp_per_min: number | null }[];
-export const meta = metaJson as { built: string; skip_threshold: number; measured_quests: number; quests: number; guides: number };
+export const meta = metaJson as { built: string; skip_threshold: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
 export const questById = new Map(quests.map((q) => [q.id, q]));
 export const guideBySlug = new Map(guides.map((g) => [g.slug, g]));
 
