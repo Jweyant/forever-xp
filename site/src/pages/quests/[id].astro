@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
 import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
-import { qdb, qById, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
+import { qdb, qById, questChain, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
 import { itemById } from "../../lib/gear";
 
 export function getStaticPaths() {
@@ -13,12 +13,8 @@ const s: Quest | undefined = questById.get(q.id);
 const rate = s ? rateOf(s) : null;
 const name = (id: number) => qById.get(id)?.n ?? `Quest ${id}`;
 const pre = (q.pre || []).filter((id) => id > 0);
-// Walk the chain backwards and forwards so the page shows where this quest sits.
-const back: number[] = [];
-for (let cur = pre[0], guard = 0; cur && guard < 12; guard++) { back.unshift(cur); cur = (qById.get(cur)?.pre || [])[0]; }
-const fwd: number[] = [];
-for (let cur = q.next, guard = 0; cur && guard < 12; guard++) { fwd.push(cur); cur = qById.get(cur)?.next; }
-const chain = back.length || fwd.length ? [...back, q.id, ...fwd] : [];
+// Walk the chain backwards and forwards (links in either direction) so the page shows where this quest sits.
+const { chain, branches, from } = questChain(q);
 const why = !s ? null :
   s.verdict === "do" ? "Part of a Forever XP route." :
   s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` : `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
@@ -91,11 +87,13 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     {q.rew.length > 1 && <p class="small muted">Quest rewards are usually a choice of one. Check them against your plan in the <a href="/bis/">BIS planner</a>.</p>}
   </>)}
 
-  {chain.length > 1 && (<>
+  {chain.length > 0 && (<>
     <h2>Quest chain</h2>
-    <ol class="chain">
-      {chain.map((id) => <li class={id === q.id ? "here" : ""}>{id === q.id ? <b>{name(id)}</b> : qById.has(id) ? <a href={`/quests/${id}/`}>{name(id)}</a> : name(id)}</li>)}
-    </ol>
+    {from.length > 0 && <p>Follows: {from.map((id, i) => <>{i ? " or " : ""}<a href={`/quests/${id}/`}>{name(id)}</a></>)}.</p>}
+    {chain.length > 1 && <ol class="chain">
+      {chain.map((id) => <li class={id === q.id ? "here" : ""}>{id === q.id ? <b>{name(id)}</b> : <a href={`/quests/${id}/`}>{name(id)}</a>}</li>)}
+    </ol>}
+    {branches.length > 0 && <p>{chain.length > 1 ? "Then leads to" : "Leads to"}: {branches.map((id, i) => <>{i ? ", " : ""}<a href={`/quests/${id}/`}>{name(id)}</a></>)}.</p>}
   </>)}
   {pre.length > 1 && <p>Also needs: {pre.slice(1).map((id, i) => <>{i ? ", " : ""}{qById.has(id) ? <a href={`/quests/${id}/`}>{name(id)}</a> : name(id)}</>)}.</p>}
 
