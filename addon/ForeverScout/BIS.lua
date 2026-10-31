@@ -131,6 +131,23 @@ local function tip(frame, title, text, anchor)
   frame:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
+-- Put a pin on the map: TomTom when installed, else the game's own map pin, else print it.
+function ns.BIS.Waypoint(m, x, y, title)
+  if not (m and x and y) then return end
+  if TomTom and TomTom.AddWaypoint then
+    local ok = pcall(TomTom.AddWaypoint, TomTom, m, x / 100, y / 100, { title = title, persistent = false, minimap = true, world = true })
+    if ok then ns.Print(("Waypoint set: %s (%.1f, %.1f)"):format(title or "", x, y)) return end
+  end
+  if C_Map and C_Map.SetUserWaypoint and UiMapPoint and C_Map.CanSetUserWaypointOnMap and C_Map.CanSetUserWaypointOnMap(m) then
+    local ok = pcall(function()
+      C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(m, x / 100, y / 100))
+      if C_SuperTrack and C_SuperTrack.SetSuperTrackedUserWaypoint then C_SuperTrack.SetSuperTrackedUserWaypoint(true) end
+    end)
+    if ok then ns.Print(("Map pin set: %s (%.1f, %.1f). Open the map to see it."):format(title or "", x, y)) return end
+  end
+  ns.Print(("%s is at %.1f, %.1f. Install TomTom for an arrow."):format(title or "Target", x, y))
+end
+
 ------------------------------------------------------------------------------------------
 -- Skin pieces
 ------------------------------------------------------------------------------------------
@@ -390,7 +407,7 @@ local function build()
   nextBtn:SetPoint("TOPLEFT", 12, -98)
   nextBtn:SetSize(ROWS_W, 26)
   flat(nextBtn, { 0.13, 0.12, 0.09, 1 }, { 0.35, 0.3, 0.15, 1 })
-  nextBtn.text = fontString(nextBtn, "GameFontHighlight", nil, nil, ROWS_W - 16)
+  nextBtn.text = fontString(nextBtn, "GameFontHighlight", nil, nil, ROWS_W - 64)
   nextBtn.text:SetPoint("LEFT", 8, 0)
   nextBtn.text:SetWordWrap(false)
   nextBtn:SetScript("OnClick", function(self) if self.doll then state.selected = self.doll ns.BIS.RenderDetail() end end)
@@ -432,6 +449,7 @@ local function build()
   panel.sub = fontString(panel, "GameFontHighlightSmall", 56, -30, 230)
   panel.body = fontString(panel, "GameFontHighlightSmall", 12, -60)
   panel.body:SetPoint("RIGHT", -12, 0)
+  panel.body:SetPoint("BOTTOM", 0, 40)
   panel.body:SetJustifyV("TOP")
   panel.body:SetWordWrap(true)
   panel.body:SetSpacing(2)
@@ -444,6 +462,18 @@ local function build()
   f.foot:ClearAllPoints()
   f.foot:SetPoint("BOTTOMLEFT", 14, 16)
   f.foot:SetWordWrap(false)
+  panel.pin = makeButton(panel, "Show on map", 120)
+  panel.pin:SetPoint("BOTTOMLEFT", 10, 10)
+  panel.pin:SetScript("OnClick", function(self) if self.m then ns.BIS.Waypoint(self.m, self.x, self.y, self.title) end end)
+  tip(panel.pin, "Pin the quest giver or source on your map", "Uses TomTom if you have it, otherwise the game's map pin.", "ANCHOR_TOP")
+  panel.pin:Hide()
+
+  f.nextPin = makeButton(f, "Map", 44)
+  f.nextPin:SetPoint("RIGHT", nextBtn, "RIGHT", -3, 0)
+  f.nextPin:SetScript("OnClick", function(self) if self.m then ns.BIS.Waypoint(self.m, self.x, self.y, self.title) end end)
+  tip(f.nextPin, "Pin the next step on your map")
+  f.nextPin:Hide()
+
   f.copy = makeButton(f, "Copy gear for the site", 170)
   f.copy:SetPoint("BOTTOMRIGHT", -12, 12)
   f.copy:SetScript("OnClick", function() ns.ShowGear() end)
@@ -566,28 +596,31 @@ function ns.BIS.RenderDetail()
     L[#L + 1] = ("|cff4fc3f7%s: %d|r"):format(focusLabel(state.focus), P.FocusAmount(it, state.focus))
   end
   L[#L + 1] = ""
-  L[#L + 1] = "|cffffd100Where to get it|r"
+  L[#L + 1] = "|cff4fc3f7Where to get it|r"
+  p.pin:Hide()
   if it.src and #it.src > 0 then
-    for _, s in ipairs(it.src) do
-      local line = P.SourceText({ src = { s } })
-      if s.t == "quest" and s.lv then line = line .. (" (quest level %d)"):format(s.lv)
-      elseif s.lv then line = line .. (" (level %d)"):format(s.lv) end
-      L[#L + 1] = "- " .. line
+    for i, s in ipairs(it.src) do
+      if i > 1 then L[#L + 1] = "" end
+      for _, line in ipairs(P.SourceLines(s)) do L[#L + 1] = line end
+      if not p.pin:IsShown() then
+        local m, x, y, title = P.SourcePin(s)
+        if m then p.pin.m, p.pin.x, p.pin.y, p.pin.title = m, x, y, title p.pin:Show() end
+      end
     end
   else
-    L[#L + 1] = "- Not known yet. Players running ForeverScout fill this in as they loot."
+    L[#L + 1] = "Not known yet. Players running ForeverScout fill this in as they loot."
   end
   if it.set then
     local set = P.Set(it.set)
     if set then
       L[#L + 1] = ""
-      L[#L + 1] = "|cffffd100" .. set.n .. "|r"
+      L[#L + 1] = "|cff4fc3f7" .. set.n .. "|r"
       for _, b in ipairs(set.b or {}) do L[#L + 1] = ("(%d) %s"):format(b[1], b[2]) end
     end
   end
 
   L[#L + 1] = ""
-  L[#L + 1] = "|cffffd100Compared with what you have|r"
+  L[#L + 1] = "|cff4fc3f7Compared with what you have|r"
   local curId = state.cur[d]
   local cur = curId and P.Item(curId)
   if curId == id then
@@ -708,8 +741,14 @@ function ns.BIS.Refresh()
     f.next.doll, f.next.itemId = bestRow.slot, bestRow.id
     local why = state.focus and ("+%d %s"):format(P.FocusAmount(it, state.focus) - P.FocusAmount(state.cur[bestRow.slot] and P.Item(state.cur[bestRow.slot]), state.focus), focusLabel(state.focus):lower()) or fmtGain(bestRow.gain)
     f.next.text:SetText(("|cffffd100Next step:|r %s for your %s (%s). %s"):format(colored(it), P.DOLL_LABEL[bestRow.slot]:lower(), why, P.SourceText(it)))
+    f.nextPin:Hide()
+    for _, s in ipairs(it.src or {}) do
+      local m, x, y, title = P.SourcePin(s)
+      if m then f.nextPin.m, f.nextPin.x, f.nextPin.y, f.nextPin.title = m, x, y, title f.nextPin:Show() break end
+    end
   else
     f.next.doll, f.next.itemId = nil, nil
+    f.nextPin:Hide()
     f.next.text:SetText("|cffffd100Next step:|r nothing. You have the best item in every slot for this plan.")
   end
   local focusNote = state.focus and (", %d %s in the full set"):format(focusTotal, focusLabel(state.focus):lower()) or ""

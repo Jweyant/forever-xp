@@ -360,6 +360,55 @@ function P.Compare(opts, plan, cur, w)
   return rows
 end
 
+-- Detailed lines for one source, and the map point (uiMapID, x, y, title) to pin, if any.
+function P.SourceLines(s)
+  local L = {}
+  local kind = P.SRC_LABEL[s.t] or s.t
+  if s.t == "quest" then
+    local head = ("|cffffd100Quest:|r %s"):format(s.n or "?")
+    local bits = {}
+    if s.lv then bits[#bits + 1] = ("quest level %d"):format(s.lv) end
+    if s.rq then bits[#bits + 1] = ("needs level %d"):format(s.rq) end
+    if s.sd then bits[#bits + 1] = s.sd == "H" and "Horde" or "Alliance" end
+    if #bits > 0 then head = head .. " (" .. table.concat(bits, ", ") .. ")" end
+    L[#L + 1] = head
+    if s.g then
+      local where = s.gz and (" in " .. s.gz) or ""
+      local at = (s.x and s.y) and ((" at %.1f, %.1f"):format(s.x, s.y)) or ""
+      L[#L + 1] = ("   %s %s%s%s"):format(s.go and "Starts at" or "Starts with", s.g, where, at)
+    elseif s.z then
+      L[#L + 1] = "   In " .. s.z
+    end
+    if s.pre and s.pre > 0 then
+      L[#L + 1] = ("   %d earlier quest%s in the chain first"):format(s.pre, s.pre == 1 and "" or "s")
+    end
+  elseif s.t == "drop" then
+    local who = s.n or "a mob"
+    local what = s.boss and "|cffffd100Boss drop:|r " or "|cffffd100Drops from:|r "
+    local bits = {}
+    if s.lv then bits[#bits + 1] = ("level %d"):format(s.lv) end
+    if s.z then bits[#bits + 1] = s.z end
+    if s.ch then bits[#bits + 1] = ("%s%% chance"):format(tostring(s.ch)) end
+    L[#L + 1] = what .. who .. (#bits > 0 and (" (" .. table.concat(bits, ", ") .. ")") or "")
+  elseif s.t == "vendor" then
+    L[#L + 1] = ("|cffffd100Sold by:|r %s%s"):format(s.n or "a vendor", s.z and (" in " .. s.z) or "")
+  elseif s.t == "craft" then
+    L[#L + 1] = ("|cffffd100Crafted:|r %s"):format(s.n or "")
+  elseif s.t == "chest" then
+    L[#L + 1] = ("|cffffd100Chest or object:|r %s%s"):format(s.n or "", s.z and (" in " .. s.z) or "")
+  else
+    L[#L + 1] = ("|cffffd100%s:|r %s%s"):format(kind, s.n or "", s.z and (" in " .. s.z) or "")
+  end
+  return L
+end
+
+function P.SourcePin(s)
+  if s.m and s.x and s.y then
+    return s.m, s.x, s.y, s.t == "quest" and ((s.g or "Quest") .. ": " .. (s.n or "")) or (s.n or "")
+  end
+  return nil
+end
+
 -- One line on where an item comes from, in the site's wording.
 function P.SourceText(it)
   local s = it.src and it.src[1]
@@ -370,5 +419,6 @@ function P.SourceText(it)
   local txt = (P.SRC_LABEL[s.t] or s.t)
   if #where > 0 then txt = txt .. ": " .. table.concat(where, ", ") end
   if s.ch then txt = txt .. (" (%s%%)"):format(tostring(s.ch)) end
+  if s.t == "quest" and s.g then txt = txt .. (", starts at %s%s"):format(s.g, s.gz and (" in " .. s.gz) or "") end
   return txt
 end
