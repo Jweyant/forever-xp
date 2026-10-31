@@ -148,6 +148,7 @@ def write_item_index(gear, pub):
                  re.sub(r"[^a-z0-9_-]", "", str(o.get("icon") or "").lower()), str(o.get("c", "")), 0, 1]
                 for o in rows if isinstance(o, dict) and num(o.get("id"), int)]
         (pub / "other-items.json").write_bytes(other.read_bytes())
+        (OUT / "other-items.json").write_bytes(other.read_bytes())  # build time only: names for dungeon loot lists
     (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
 
 
@@ -325,6 +326,10 @@ def main():
     (OUT / "simweights.json").write_text(sim.read_text() if sim.exists() else '{"source":{},"specs":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
+    raids = ROOT / "gamedata" / "raids.json"
+    (OUT / "raids.json").write_text(raids.read_text() if raids.exists() else "[]")
+    if not (OUT / "other-items.json").exists():
+        (OUT / "other-items.json").write_text("[]")
     write_questdb(gear)
     write_scouts()
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
@@ -347,7 +352,7 @@ SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
 
 
 def write_scouts():
-    """The Scout leaderboard for /scouts/ (tools/ingest_logs.py write_scouts), allow-listed:
+    """The Scout leaderboard for /leaderboard/ (tools/ingest_logs.py write_scouts), allow-listed:
     handles must look like "Scout 1a2b3c", every count is a whole number, lists are capped."""
     src = ROOT / "out" / "scouts.json"
     if not src.exists():  # published aggregate from the player-data workflow
@@ -408,6 +413,50 @@ def decode_desc(d, rank):
 
 def slugify(s):
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+# Talents that raise hit chance, for the BIS planner's hit cap: spell id -> (what the hit applies to,
+# which value of the talent's text is the hit %). "phys" is melee and ranged, "spell:<schools>" spells
+# of those schools, "all" both. Taken from Forever's own talent text (tools/build_talents.py); where
+# the text just says "your chance to hit", it counts for everything. Left out on purpose: Furious
+# Precision (off-hand attacks only), Survival Tactics (traps and Feign Death), and talents that lower
+# the chance to be hit.
+HIT_TALENTS = {
+    20189: ("phys", 0),            # Paladin: Precision
+    13705: ("phys", 0),            # Rogue: Precision
+    19290: ("phys", 0),            # Hunter: Surefooted
+    18174: ("spell:all", 0),       # Warlock: Suppression
+    16179: ("all", 1),             # Shaman: Tidal Focus
+    16819: ("all", 1),             # Druid: Nature's Reach
+    15260: ("spell:shadow", 0),    # Priest: Shadow Focus
+    1309957: ("spell:holy", 0),    # Priest: Holy Precision
+    1310904: ("spell:holy", 0),    # Paladin: Divine Precision
+    29438: ("spell:fire,frost", 0),  # Mage: Elemental Precision
+    11222: ("spell:arcane", 0),    # Mage: Arcane Focus
+}
+
+
+def planner_talents(classes, raw):
+    """The BIS planner's talent data: per class, each tree's talents in build-string order as
+    [spell id, ranks], and the hit talents with their hit % per rank. Small enough to bundle."""
+    out = {}
+    for cl, (_, cname, trees) in zip(classes, raw):
+        hit = []
+        for ti, (_, _, _, tals) in enumerate(trees):
+            for ki, t in enumerate(tals):
+                spell, ranks, desc = t[11], t[4], t[8]
+                if spell not in HIT_TALENTS:
+                    continue
+                kind, idx = HIT_TALENTS[spell]
+                vals = desc[1] if len(desc) == 2 and desc[1] else None
+                if not vals or len(vals) < ranks or any(len(r) <= idx for r in vals):
+                    raise SystemExit(f"hit talent {spell} ({t[3]}): its text has no per-rank values at {idx}")
+                hit.append({"tree": ti, "i": ki, "name": t[3], "kind": kind,
+                            "pct": [float(r[idx]) for r in vals[:ranks]]})
+        out[cname.upper()] = {"slug": cl["slug"],
+                              "trees": [[tname, [[t[11], t[4]] for t in tals]] for _, tname, _, tals in trees],
+                              "hit": hit}
+    return out
 
 
 def build_game_data():
@@ -483,6 +532,9 @@ def build_game_data():
                         "tier": f["row"] + 1, "classicTier": c["row"] + 1})
     (OUT / "talents.json").write_text(json.dumps({"build": g["builds"]["forever"], "hotfixes": g.get("hotfixes", False),
                                                   "classes": classes}, separators=(",", ":")))
+    (OUT / "plannertalents.json").write_text(json.dumps({"build": g["builds"]["forever"],
+                                                         "classes": planner_talents(classes, g["talents"])},
+                                                        separators=(",", ":")))
     for c in classic:
         if id(c) not in used:
             changes.append({"cls": c["cls"], "tree": c["tree"], "name": c["name"], "kinds": ["removed"], "classic": c["text"]})

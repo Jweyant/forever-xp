@@ -1,0 +1,102 @@
+---
+import Base from "../../layouts/Base.astro";
+import { instances, levelText, sizeText, mins, type Instance } from "../../lib/raids";
+import { itemById } from "../../lib/gear";
+import { qById } from "../../lib/questdb";
+import { QUALITY, ICON } from "../../scripts/items";
+import otherJson from "../../data/other-items.json";
+
+export function getStaticPaths() {
+  return instances.map((r) => ({ params: { slug: r.slug }, props: { r } }));
+}
+const { r } = Astro.props as { r: Instance };
+const other = new Map((otherJson as { id: number; n: string; q: number; c: string; icon?: string }[]).map((o) => [o.id, o]));
+const item = (id: number) => {
+  const g = itemById.get(id);
+  if (g) return { href: `/items/${g.id}/`, name: g.name, q: QUALITY[g.q] || "common", icon: g.icon, sub: `Item level ${g.ilvl}` };
+  const o = other.get(id);
+  if (o) return { href: `/items/?q=${o.id}`, name: o.n, q: QUALITY[o.q] || "common", icon: o.icon, sub: o.c };
+  return null;
+};
+const RES: Record<string, string> = { fire: "Fire", frost: "Frost", nature: "Nature", shadow: "Shadow", arcane: "Arcane", holy: "Holy" };
+const total = r.bosses.reduce((n, b) => n + b.loot.length, 0);
+const confirmed = r.bosses.reduce((n, b) => n + b.loot.filter((l) => l[2]).length, 0);
+const classicOnly = r.bosses.reduce((n, b) => n + (b.classic_only || 0), 0);
+const quests = (r.quests || []).filter(([id]) => qById.has(id));
+const kind = r.kind === "raid" ? "raid" : "dungeon";
+const desc = `${r.name}, a WoW Forever ${kind}${r.lv ? ` for level ${levelText(r)}` : ""}: ${r.bosses.length} bosses with level, health and loot${r.entrance ? `, entrance in ${r.entrance[0]}` : ""}.`;
+---
+<Base image="/og/items.jpg" title={`${r.name} ${kind === "raid" ? "raid" : "dungeon"} guide`} description={desc}>
+  <p class="crumbs"><a href="/raids/">Dungeons and raids</a> / {kind === "raid" ? "Raids" : "Dungeons"}</p>
+  <h1>{r.name}</h1>
+  <dl class="facts">
+    <div><dt>Type</dt><dd>{kind === "raid" ? "Raid" : "Dungeon"}</dd></div>
+    <div><dt>Level</dt><dd>{levelText(r)}</dd></div>
+    <div><dt>Size</dt><dd>{sizeText(r)}</dd></div>
+    <div><dt>Bosses</dt><dd>{r.bosses.length}</dd></div>
+    {r.reset && <div><dt>Resets every</dt><dd>{r.reset} days</dd></div>}
+  </dl>
+  {r.entrance && (
+    <p>Entrance: <b>{r.entrance[0]}</b> at {r.entrance[1]}, {r.entrance[2]}.{" "}
+      <button type="button" class="way" data-copy={`/way ${r.entrance[1]} ${r.entrance[2]} ${r.name}`} title="Copy for TomTom"><code>/way {r.entrance[1]} {r.entrance[2]} {r.name}</code><span>Copy</span></button></p>
+  )}
+
+  <h2>Bosses</h2>
+  <p class="muted small">{total} drops listed{confirmed > 0 ? `, ${confirmed} confirmed by ForeverScout players` : ""}. Drop chances and boss stats are classic data and may differ in Forever.{classicOnly > 0 && ` ${classicOnly} classic drops aren't in Forever's item data, so Forever likely changed them; they're left out until players loot them.`}</p>
+  {r.bosses.map((b, i) => (
+    <section class="boss" id={`boss-${b.npc}`}>
+      <h3><span class="n">{i + 1}</span>{b.name}</h3>
+      <p class="stats muted small">
+        {b.lv ? `Level ${b.lv === 63 ? "?? (boss)" : b.lv}` : ""}{b.hp ? ` · ${b.hp.toLocaleString("en-US")} health` : ""}{b.armor ? ` · ${b.armor.toLocaleString("en-US")} armor` : ""}
+        {b.res && Object.keys(b.res).length > 0 && ` · Resists ${Object.entries(b.res).map(([k, v]) => `${RES[k] || k} ${v}`).join(", ")}`}
+      </p>
+      {b.seen?.kills ? (
+        <p class="seen">Killed {b.seen.kills} time{b.seen.kills === 1 ? "" : "s"} by ForeverScout players{b.seen.median_kill_seconds ? `, typical kill ${mins(b.seen.median_kill_seconds)}` : ""}{b.seen.wipes ? `, ${b.seen.wipes} wipe${b.seen.wipes === 1 ? "" : "s"} logged` : ""}.</p>
+      ) : null}
+      {b.loot.length > 0 ? (
+        <ul class="loot">
+          {b.loot.map(([id, ch, seen]) => { const it = item(id); return it && (
+            <li><a class="ilink" href={it.href} data-item={id}><span class={`ico sm qb-${it.q}`}>{it.icon && <img src={ICON(it.icon, 36)} alt="" loading="lazy" width="26" height="26" />}</span><span><span class={`iname-t q-${it.q}`}>{it.name}</span><span class="sub">{it.sub}{ch != null ? ` · ${ch}%` : ""}{seen ? ` · seen by ${seen} players` : ""}</span></span></a></li>
+          ); })}
+        </ul>
+      ) : <p class="muted small">No loot in Forever's data yet.</p>}
+    </section>
+  ))}
+
+  {r.other.length > 0 && (<>
+    <h2>Other loot</h2>
+    {r.other.map((o) => (
+      <section class="boss">
+        <h3>{o.name}</h3>
+        <ul class="loot">
+          {o.loot.map(([id]) => { const it = item(id); return it && (
+            <li><a class="ilink" href={it.href} data-item={id}><span class={`ico sm qb-${it.q}`}>{it.icon && <img src={ICON(it.icon, 36)} alt="" loading="lazy" width="26" height="26" />}</span><span><span class={`iname-t q-${it.q}`}>{it.name}</span><span class="sub">{it.sub}</span></span></a></li>
+          ); })}
+        </ul>
+      </section>
+    ))}
+  </>)}
+
+  {quests.length > 0 && (<>
+    <h2>Quests</h2>
+    <ul class="quests">
+      {quests.map(([id, n, lv]) => <li><a href={`/quests/${id}/`}>{n}</a> <span class="muted small">level {lv > 0 ? lv : "?"}</span></li>)}
+    </ul>
+  </>)}
+
+  <p class="small muted">Bosses and loot tables from <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0); boss stats, drop chances and resets from <a href="https://github.com/cmangos/classic-db">cmangos</a> (GPL-3.0); entrances and quests from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3); kills and confirmed drops from <a href="/scout/">ForeverScout</a> players.</p>
+</Base>
+<style>
+  .facts { display: flex; flex-wrap: wrap; gap: 0.6rem 2rem; margin: 0.8rem 0 1rem; }
+  .facts dt { font-size: var(--step--1); color: var(--muted); } .facts dd { margin: 0; font: 600 1.15rem var(--font-display); }
+  .boss { border-top: 1px solid var(--line); padding: 0.8rem 0; }
+  .boss h3 { display: flex; align-items: center; gap: 0.6rem; margin: 0 0 0.2rem; }
+  .boss h3 .n { display: inline-grid; place-items: center; width: 1.7rem; height: 1.7rem; border-radius: 50%; background: var(--surface); font: 600 0.85rem var(--font-body); color: var(--xp); }
+  .boss .stats { margin: 0 0 0.5rem; }
+  .boss .seen { margin: 0 0 0.5rem; color: var(--xp); font-size: var(--step--1); }
+  .loot { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.3rem 1rem; }
+  .loot .ilink { display: flex; gap: 0.5rem; align-items: center; text-decoration: none; padding: 0.2rem 0; }
+  .loot .sub { display: block; font-size: 0.78rem; color: var(--muted); }
+  .quests { columns: 2 260px; padding-left: 1.1rem; }
+  .way { margin-left: 0.3rem; }
+</style>

@@ -66,7 +66,7 @@ func (a *App) interactive() {
 	if a.isInstalled() {
 		a.writeClaimFile()
 		if ask(appName, "The ForeverScout Uploader is already set up and runs in the background.\n\n"+
-			"Your name on the Scout leaderboard (forever-xp.com/scouts/) is "+scoutName(a.state.InstallID)+".\n"+
+			"Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n"+
 			"To show your Discord name there instead, open the link in "+filepath.Join(a.dir, "claim.txt")+".\n\n"+
 			"Do you want to STOP it and remove it from startup?") {
 			a.uninstall()

@@ -2,6 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import { gear } from "../../lib/gear";
 import { SOURCE_KINDS } from "../../scripts/gear/model";
+import { instances } from "../../lib/raids";
 const n = gear.items.length.toLocaleString("en-US");
 const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","Back"],["chest","Chest"],["wrist","Wrist"],["hands","Hands"],["waist","Waist"],["legs","Legs"],["feet","Feet"],["finger","Ring"],["trinket","Trinket"],["mainhand","Main hand"],["onehand","One-hand"],["twohand","Two-hand"],["offhand","Off hand"],["shield","Shield"],["holdable","Held in off hand"],["ranged","Ranged"],["relic","Relic"]];
 ---
@@ -9,7 +10,7 @@ const slots = [["head","Head"],["neck","Neck"],["shoulder","Shoulder"],["back","
   <h1>Item database</h1>
   <p class="lede">Every piece of gear in WoW Forever, {n} items, with stats read from the game client and where each one comes from, plus every consumable, trade good, recipe, bag and quest item, with where to get it and the quests that use it.</p>
 
-  <section id="idb" class="idb" aria-busy="true">
+  <section id="idb" class="idb" aria-busy="true" data-instances={JSON.stringify(instances.map((r) => r.slug))}>
     <div class="filters">
       <label class="grow">Search<input type="search" id="f-q" placeholder="Item name or ID" autocomplete="off" /></label>
       <label>Category<select id="f-cat"><option value="">All items</option><option value="gear">Gear</option></select></label>

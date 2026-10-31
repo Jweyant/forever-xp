@@ -1,9 +1,11 @@
 // Item database page: filters, sorting and paging over the full gear database plus every non-gear
 // item (consumables, trade goods, recipes, quest items...), state in the URL.
-import { loadGear, loadOther, QUALITY, ICON, esc, num, srcText, SLOT_NAME, type OtherItem } from "./items";
+import { loadGear, loadOther, QUALITY, ICON, esc, num, srcText, srcHtml, SLOT_NAME, type OtherItem } from "./items";
 import { STAT_LABEL, sourceKind, type Item } from "./gear/model";
 
 type Other = OtherItem;
+// Dungeon and raid pages that exist, from the page (data-instances), so sources only link to real pages.
+const INSTANCES = new Set<string>((() => { try { const v = JSON.parse(document.getElementById("idb")?.dataset.instances || "[]"); return Array.isArray(v) ? v.filter((s) => typeof s === "string" && /^[a-z0-9-]+$/.test(s)) : []; } catch { return []; } })());
 type Row = { g: Item } | { o: Other };
 
 const $ = <T extends HTMLElement = HTMLInputElement>(id: string) => document.getElementById(id) as T;
@@ -58,7 +60,7 @@ function gearRow(it: Item) {
   const q = QUALITY[num(it.q)] || "common";
   const stats = Object.entries(it.stats).filter(([k]) => k !== "armor" && k !== "dps").slice(0, 4).map(([k, v]) => `+${num(v)} ${STAT_LABEL[k] || k}`).join(", ");
   return `<tr><td><a class="ilink" href="/items/${num(it.id)}/" data-item="${num(it.id)}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span>${it.new === 1 ? `<span class="tag-new">NEW</span>` : Array.isArray(it.chg) ? `<span class="tag-new tag-chg">CHANGED</span>` : ""}<span class="sub">${esc(stats || (it.weapon ? `${it.weapon.dps} DPS` : it.stats.armor ? `${it.stats.armor} armor` : ""))}</span></span></a></td>
-    <td class="num">${num(it.ilvl)}</td><td class="num opt">${num(it.req) || "–"}</td><td class="opt">${esc(SLOT_NAME[it.slot] || it.slot)}${it.type && it.type !== "misc" ? `<span class="sub">${esc(tname(it.type))}</span>` : ""}</td><td class="opt small">${esc(srcText(it))}</td></tr>`;
+    <td class="num">${num(it.ilvl)}</td><td class="num opt">${num(it.req) || "–"}</td><td class="opt">${esc(SLOT_NAME[it.slot] || it.slot)}${it.type && it.type !== "misc" ? `<span class="sub">${esc(tname(it.type))}</span>` : ""}</td><td class="opt small">${srcHtml(it, INSTANCES)}</td></tr>`;
 }
 function otherRow(o: Other) {
   const q = QUALITY[num(o.q)] || "common";

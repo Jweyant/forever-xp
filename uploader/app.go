@@ -29,7 +29,7 @@ const (
 
 var shareOn = regexp.MustCompile(`\["share"\]\s*=\s*true`)
 
-// scoutSalt must match SCOUT_SALT in tools/ingest_logs.py: the leaderboard on forever-xp.com/scouts/
+// scoutSalt must match SCOUT_SALT in tools/ingest_logs.py: the leaderboard on forever-xp.com/leaderboard/
 // shows this same name, made from a one-way hash so the install id itself is never shown.
 const scoutSalt = "forever-xp scout|"
 
@@ -66,7 +66,7 @@ func (a *App) offerClaim() {
 	}
 	a.state.ClaimOffered = true
 	a.saveState()
-	if ask(appName, "Your name on the Scout leaderboard (forever-xp.com/scouts/) is "+scoutName(a.state.InstallID)+".\n\n"+
+	if ask(appName, "Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n\n"+
 		"Want it to show your Discord name instead? This opens forever-xp.com in your browser, "+
 		"where you sign in with Discord and confirm.\n\nYou can do it later: the link is in "+
 		filepath.Join(a.dir, "claim.txt")+".") {

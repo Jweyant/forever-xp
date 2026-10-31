@@ -55,9 +55,11 @@ jobs:
           python3 tools/test/test_build_talents.py
           python3 tools/test/test_build_items.py
           python3 -I tools/test/test_simconfigs.py
+          python3 -I tools/test/test_talent_order.py
           python3 tools/test/test_indexnow.py
           python3 tools/test/test_questxp.py
           python3 tools/test/test_objective_areas.py
+          python3 tools/test/test_raids.py
           python3 tools/test/test_loot.py
           python3 tools/test/test_scouts.py
       - name: Addon data matches the site

@@ -3,6 +3,7 @@
 #   gamedata/players/loot.csv             which item dropped from which source, by zone
 #   gamedata/players/objective_areas.json where players progressed each quest objective
 #   gamedata/players/scouts.json          the contributor leaderboard (anonymous handles and counts)
+#   gamedata/players/encounters.csv       boss kills, wipes and kill times
 #
 # Raw logs only exist inside this run: they are downloaded, parsed as data (never executed),
 # aggregated, and discarded. Nothing per player is committed or uploaded as an artifact.
@@ -54,13 +55,13 @@ jobs:
           python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
             --maps data/questiedb/uiMapIdToAreaId.json --out out/ logs/*.lua
           mkdir -p gamedata/players
-          cp out/quest_timing.csv out/loot.csv out/objective_areas.json out/scouts.json gamedata/players/
+          cp out/quest_timing.csv out/loot.csv out/objective_areas.json out/scouts.json out/encounters.csv gamedata/players/
           rm -rf logs out
 
       - name: Commit if changed
         id: commit
         if: steps.pull.outputs.have == 'true'
-        run: bash tools/push_data.sh "Refresh player data from ForeverScout logs" gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json gamedata/players/scouts.json
+        run: bash tools/push_data.sh "Refresh player data from ForeverScout logs" gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json gamedata/players/scouts.json gamedata/players/encounters.csv
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       # The gear rebuild folds the new loot sightings into items.json (as confirmed drop
