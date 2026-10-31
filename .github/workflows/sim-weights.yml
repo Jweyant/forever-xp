@@ -16,9 +16,10 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", "tools/check_talent_order.py", ".github/workflows/sim-weights.yml"]
   pull_request:
-    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", "tools/check_talent_order.py",
+      "tools/test/test_talent_order.py", ".github/workflows/sim-weights.yml"]
 
 permissions:
   contents: read
@@ -61,6 +62,10 @@ jobs:
           ref: ${{ env.WOWSIMS_COMMIT }}
           path: ext/wowsims
           persist-credentials: false
+
+      # A build string means the same talents to the engine as to our data, or the run sims the wrong build.
+      - name: Check talent order against the engine
+        run: python3 -I tools/check_talent_order.py gamedata/talents.json ext/wowsims gamedata/simconfigs
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:

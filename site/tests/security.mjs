@@ -56,6 +56,10 @@ const cases = [
   ["BIS planner saved state", "/bis/", { storage: { "fxp-gear": `c=${E}&r=${E}&s=${E}` } }],
   ["BIS gear import", "/bis/", { import: `FXPG1:WARRIOR:60:${P}.F:H:head=${P},chest=1` }],
   ["BIS gear import, prototype class", "/bis/", { import: "FXPG1:CONSTRUCTOR:60:Orc.M:H:head=1" }],
+  ["BIS talent build in the link", `/bis/#c=WARRIOR&t=${E}`],
+  ["BIS talent build, prototype names", "/bis/#c=WARRIOR&t=__proto__&w=__proto__:5.constructor:3"],
+  ["BIS talent box", "/bis/", { talents: `/talents/${P}/#1` }],
+  ["BIS talent box, prototype class", "/bis/", { talents: "/talents/constructor/#5" }],
   ["Quest search", `/quests/?q=${E}&side=${E}&min=${E}&max=${E}&new=${E}`],
   ["Item database", `/items/?q=${E}&slot=${E}&type=${E}&quality=${E}&min=${E}&max=${E}&src=${E}&stat=${E}&sort=${E}`],
   ["Changes page", `/changes/?q=${E}&src=${E}&area=${E}&race=${E}&date=${E}&cls=${E}&dev=1`],
@@ -107,6 +111,11 @@ for (const [name, path, opts = {}] of cases) {
     await page.evaluate(() => { const d = document.querySelector(".import"); if (d) d.open = true; });
     await page.fill("#g-import", opts.import);
     await page.click("#g-import-go");
+    await page.waitForTimeout(400);
+  }
+  if (opts.talents) {
+    await page.fill("#g-talents", opts.talents);
+    await page.press("#g-talents", "Tab");
     await page.waitForTimeout(400);
   }
   if (opts.search) {

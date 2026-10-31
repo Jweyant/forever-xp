@@ -54,7 +54,7 @@ export const STAT_LABEL: Record<string, string> = {
   ap: "Attack power", rap: "Ranged attack power", crit: "Crit rating", hit: "Hit rating", haste: "Haste rating",
   sp: "Spell power", heal: "Healing", mp5: "Mana per 5 sec", hp5: "Health per 5 sec", def: "Defense",
   dodge: "Dodge rating", parry: "Parry rating", block: "Block rating", blockv: "Block value", spen: "Spell penetration",
-  expertise: "Expertise", dps: "Weapon DPS", spellcrit: "Spell crit rating", spellhit: "Spell hit rating",
+  expertise: "Expertise", dps: "Weapon DPS", dps_oh: "Off-hand weapon DPS", spellcrit: "Spell crit rating", spellhit: "Spell hit rating",
   sp_fire: "Fire spell power", sp_frost: "Frost spell power", sp_shadow: "Shadow spell power",
   sp_nature: "Nature spell power", sp_arcane: "Arcane spell power", sp_holy: "Holy spell power",
   fire_res: "Fire resistance", frost_res: "Frost resistance", shadow_res: "Shadow resistance",
@@ -247,6 +247,23 @@ export function sourceKind(it: Item): string {
   if (!s) return "unknown";
   if (s.t === "drop" && s.boss) return "dungeon";
   return s.t;
+}
+
+// ---------- hit caps ----------
+// From the wowsims/forever engine's attack table (sim/core/target.go) at level 60: against a raid boss
+// (level 63, 15 weapon skill short) melee and ranged miss 5% + 15 x 0.2% = 8% and spells miss 17%,
+// with no 1% floor in Forever. Against a level 60 target (PvP, and roughly leveling) it's 5% and 4%.
+// Dual wielding adds 19% to white swings only (special attacks keep the plain cap). Forever has no
+// racial weapon skill bonuses, so race only changes the cap through Dwarves' 1% hit.
+export const DW_MISS = 19;
+export function hitCaps(goal: Goal): { phys: number; spell: number } {
+  return goal === "pvp" || goal === "level" ? { phys: 5, spell: 4 } : { phys: 8, spell: 17 };
+}
+export const RACE_HIT: Record<string, number> = { dwarf: 1 };
+/** Hit rating in a set of stats that counts for physical attacks or for spells. */
+export function hitRating(t: Stats, kind: "phys" | "spell"): number {
+  const n = (k: string) => Number(t[k]) || 0;
+  return kind === "phys" ? n("hit") + n("hit_pct") * HIT_RATING : n("hit") + n("spellhit") + n("spellhit_pct") * HIT_RATING;
 }
 
 export function score(it: Item, w: Stats): number {
