@@ -1,0 +1,34 @@
+---
+import Base from "../../layouts/Base.astro";
+import { instances, levelText, sizeText } from "../../lib/raids";
+const raids = instances.filter((r) => r.kind === "raid");
+const dungeons = instances.filter((r) => r.kind === "dungeon").sort((a, b) => (a.lv?.[0] ?? 99) - (b.lv?.[0] ?? 99) || a.name.localeCompare(b.name));
+const killed = instances.reduce((n, r) => n + r.bosses.filter((b) => b.seen?.kills).length, 0);
+---
+<Base image="/og/items.jpg" title="Dungeons and raids" description={`Every WoW Forever dungeon and raid: ${instances.reduce((n, r) => n + r.bosses.length, 0)} bosses with levels, health, loot, entrances and quests.`}>
+  <h1>Dungeons and raids</h1>
+  <p class="lede">Every dungeon and raid in WoW Forever, with each boss's level, health and loot, where the entrance is, and the quests that go with it.</p>
+  <p class="muted small">{killed > 0 ? `${killed} bosses have kill times from ForeverScout players. ` : ""}Boss stats and drop chances are classic data until players confirm them in Forever. <a href="/scout/">ForeverScout</a> records boss kills and loot automatically.</p>
+
+  {[["Raids", raids], ["Dungeons", dungeons]].map(([title, list]) => (
+    <section>
+      <h2>{title as string}</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Name</th><th class="num">Level</th><th class="opt">Size</th><th class="num">Bosses</th><th class="opt">Entrance</th></tr></thead>
+          <tbody>
+            {(list as typeof instances).map((r) => (
+              <tr>
+                <td><a href={`/raids/${r.slug}/`}><b>{r.name}</b></a></td>
+                <td class="num">{levelText(r)}</td>
+                <td class="opt">{sizeText(r)}</td>
+                <td class="num">{r.bosses.length}</td>
+                <td class="opt small">{r.entrance?.[0] || "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  ))}
+</Base>

@@ -36,7 +36,7 @@ jobs:
         run: |
           git fetch -q origin data || { echo "No data branch yet."; exit 0; }
           for f in gamedata/items.json gamedata/items-report.md gamedata/quests.json gamedata/blizzard-notes.json gamedata/talents.json gamedata/other-items.json \
-                   gamedata/simweights.json gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json gamedata/players/scouts.json; do
+                   gamedata/simweights.json gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json gamedata/players/scouts.json gamedata/players/encounters.csv gamedata/raids.json; do
             d=$(git log -1 --format=%ct FETCH_HEAD -- "$f" 2>/dev/null); m=$(git log -1 --format=%ct HEAD -- "$f" 2>/dev/null)
             if [ "${d:-0}" -gt "${m:-0}" ]; then mkdir -p "$(dirname "$f")"; git show "FETCH_HEAD:$f" > "$f"; echo "Using $f from the data branch"; fi
           done

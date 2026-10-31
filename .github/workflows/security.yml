@@ -58,6 +58,7 @@ jobs:
           python3 tools/test/test_indexnow.py
           python3 tools/test/test_questxp.py
           python3 tools/test/test_objective_areas.py
+          python3 tools/test/test_raids.py
           python3 tools/test/test_loot.py
           python3 tools/test/test_scouts.py
 

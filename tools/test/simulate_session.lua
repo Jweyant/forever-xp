@@ -170,6 +170,14 @@ local function killBoar(n, of)
   P.target = nil
 end
 
+GetInstanceInfo = function() return "Ragefire Chasm", "party", 1, "Normal", 5, 0, false, 389 end
+
+local function bossFight(ok, seconds)
+  fire("ENCOUNTER_START", 1443, "Taragaman the Hungerer", 1, 5)
+  advance(seconds)
+  fire("ENCOUNTER_END", 1443, "Taragaman the Hungerer", 1, 5, ok and 1 or 0)
+end
+
 -- Session --------------------------------------------------------------------------
 fire("PLAYER_LOGIN")
 advance(5)
@@ -193,6 +201,8 @@ advance(5)
 fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-1", 8690)
 advance(10)
 SlashCmdList.FOREVERSCOUT("")
+bossFight(false, 40)
+bossFight(true, 95)
 fire("PLAYER_LOGOUT")
 
 -- Write SavedVariables ---------------------------------------------------------------

@@ -148,6 +148,7 @@ def write_item_index(gear, pub):
                  re.sub(r"[^a-z0-9_-]", "", str(o.get("icon") or "").lower()), str(o.get("c", "")), 0, 1]
                 for o in rows if isinstance(o, dict) and num(o.get("id"), int)]
         (pub / "other-items.json").write_bytes(other.read_bytes())
+        (OUT / "other-items.json").write_bytes(other.read_bytes())  # build time only: names for dungeon loot lists
     (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
 
 
@@ -325,6 +326,10 @@ def main():
     (OUT / "simweights.json").write_text(sim.read_text() if sim.exists() else '{"source":{},"specs":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
+    raids = ROOT / "gamedata" / "raids.json"
+    (OUT / "raids.json").write_text(raids.read_text() if raids.exists() else "[]")
+    if not (OUT / "other-items.json").exists():
+        (OUT / "other-items.json").write_text("[]")
     write_questdb(gear)
     write_scouts()
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))

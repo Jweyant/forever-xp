@@ -19,6 +19,7 @@ local Recorder = {}
 ns.Recorder = Recorder
 
 local GetTime = GetTime
+local floor = math.floor
 local HEARTHSTONE_SPELL = 8690
 local XP_WINDOW = 1.5 -- seconds to match an XP gain to a turn-in or kill
 
@@ -264,6 +265,36 @@ local function revived()
 end
 ns:On("PLAYER_UNGHOST", revived)
 ns:On("PLAYER_ALIVE", revived)
+
+------------------------------------------------------------------------------------------
+-- Boss fights in dungeons and raids: which boss, group size, kill or wipe, how long.
+-- Only the boss and the outcome are recorded, never who was in the group.
+------------------------------------------------------------------------------------------
+local encStart = {}
+-- GetInstanceInfo returns many values; "f and f()" would keep only the first, so unpack it here.
+local function instanceInfo()
+  if not GetInstanceInfo then return nil, nil end
+  local _, instanceType, _, _, _, _, _, instanceMapID = GetInstanceInfo()
+  return instanceType, instanceMapID
+end
+ns:On("ENCOUNTER_START", function(encounterID, name, difficultyID, groupSize)
+  if type(encounterID) ~= "number" then return end
+  encStart[encounterID] = GetTime()
+  local instanceType, instanceMapID = instanceInfo()
+  ns:Log("encstart", { eid = encounterID, name = type(name) == "string" and name:sub(1, 80) or nil,
+                       size = tonumber(groupSize), diff = tonumber(difficultyID),
+                       imap = tonumber(instanceMapID), itype = type(instanceType) == "string" and instanceType or nil })
+end)
+ns:On("ENCOUNTER_END", function(encounterID, name, difficultyID, groupSize, success)
+  if type(encounterID) ~= "number" then return end
+  local started = encStart[encounterID]
+  encStart[encounterID] = nil
+  local instanceType, instanceMapID = instanceInfo()
+  ns:Log("enc", { eid = encounterID, name = type(name) == "string" and name:sub(1, 80) or nil,
+                  size = tonumber(groupSize), diff = tonumber(difficultyID), ok = success == 1 or success == true,
+                  dur = started and floor(GetTime() - started + 0.5) or nil,
+                  imap = tonumber(instanceMapID), itype = type(instanceType) == "string" and instanceType or nil })
+end)
 
 ------------------------------------------------------------------------------------------
 -- NPCs unknown to Questie (any level, once per NPC per session)

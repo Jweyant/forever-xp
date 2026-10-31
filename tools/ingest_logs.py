@@ -469,6 +469,48 @@ def write_scouts(db, out_dir, now=None):
     }
     (out_dir / "scouts.json").write_text(json.dumps(out, separators=(",", ":"), sort_keys=True))
 
+def write_encounters(db, out_dir, window=180, min_players=2):
+    """Boss kills and wipes from ForeverScout "enc" events, as encounters.csv:
+    encounter,kills,wipes,median_kill_seconds,groups,players.
+
+    Everyone in a group logs the same pull, so pulls of the same boss and outcome that end within
+    `window` seconds of each other count once. A boss is only published once at least `min_players`
+    different characters logged it. Only these totals leave the run."""
+    pulls = []
+    for char, start, t, raw in db.execute("""SELECT s.char_id, s.start, e.t, e.json FROM events e
+                                             JOIN sessions s ON s.id = e.session_id WHERE e.k = 'enc'"""):
+        try:
+            e = json.loads(raw)
+            name = str(e.get("name") or "").strip()[:80]
+            end = int(start) + int(t)
+            dur = int(e["dur"]) if e.get("dur") is not None else None
+        except (TypeError, ValueError, KeyError):
+            continue
+        if not name or (dur is not None and not 0 < dur < 4 * 3600):
+            continue
+        pulls.append((name, bool(e.get("ok")), end, dur, char))
+    pulls.sort(key=lambda p: (p[0], p[1], p[2]))
+    stats = defaultdict(lambda: {"kills": [], "wipes": 0, "chars": set()})
+    last = {}
+    for name, ok, end, dur, char in pulls:
+        s = stats[name]
+        s["chars"].add(char)
+        key = (name, ok)
+        if key in last and end - last[key] <= window:
+            continue  # the same pull, logged by another member of the group
+        last[key] = end
+        if ok:
+            s["kills"].append(dur)
+        else:
+            s["wipes"] += 1
+    out = ["encounter,kills,wipes,median_kill_seconds,groups,players"]
+    for name, s in sorted(stats.items()):
+        if len(s["chars"]) < min_players:
+            continue
+        durs = [d for d in s["kills"] if d]
+        med = int(statistics.median(durs)) if durs else ""
+        out.append(f'"{name.replace(chr(34), chr(39))}",{len(s["kills"])},{s["wipes"]},{med},{len(s["kills"]) + s["wipes"]},{len(s["chars"])}')
+    (out_dir / "encounters.csv").write_text("\n".join(out) + "\n")
 
 def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
     """Where players actually progress each quest objective, as coarse grid cells.
@@ -515,7 +557,8 @@ def main():
     write_loot(db, out)
     write_objective_areas(db, out)
     write_scouts(db, out)
-    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json"):
+    write_encounters(db, out)
+    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv"):
         print("wrote", out / name)
 
 
