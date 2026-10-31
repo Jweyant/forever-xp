@@ -1,13 +1,9 @@
 // Item database page: filters, sorting and paging over the full gear database plus every non-gear
 // item (consumables, trade goods, recipes, quest items...), state in the URL.
-import { loadGear, QUALITY, ICON, esc, num, srcText, SLOT_NAME } from "./items";
+import { loadGear, loadOther, QUALITY, ICON, esc, num, srcText, SLOT_NAME, type OtherItem } from "./items";
 import { STAT_LABEL, sourceKind, type Item } from "./gear/model";
 
-/** A non-gear item from /data/other-items.json (built by tools/build_items.py). No page of its own. */
-interface Other {
-  id: number; n: string; q: number; c: string; rl?: number; icon?: string;
-  d?: [string, string][]; v?: string[]; o?: string[]; qs?: [number, string]; qr?: [number, string][]; qu?: [number, string][];
-}
+type Other = OtherItem;
 type Row = { g: Item } | { o: Other };
 
 const $ = <T extends HTMLElement = HTMLInputElement>(id: string) => document.getElementById(id) as T;
@@ -66,7 +62,7 @@ function gearRow(it: Item) {
 }
 function otherRow(o: Other) {
   const q = QUALITY[num(o.q)] || "common";
-  return `<tr><td><span class="ilink"><span class="ico sm qb-${q}">${typeof o.icon === "string" && o.icon ? `<img src="${esc(ICON(o.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(str(o.n))}</span><span class="sub">Item ID ${num(o.id)}</span></span></span></td>
+  return `<tr><td><span class="ilink" tabindex="0" data-item="${num(o.id)}"><span class="ico sm qb-${q}">${typeof o.icon === "string" && o.icon ? `<img src="${esc(ICON(o.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(str(o.n))}</span><span class="sub">Item ID ${num(o.id)}</span></span></span></td>
     <td class="num">–</td><td class="num opt">${num(o.rl) || "–"}</td><td class="opt">${esc(str(o.c))}</td><td class="opt small">${otherDetails(o)}</td></tr>`;
 }
 
@@ -82,13 +78,9 @@ function render() {
   history.replaceState(null, "", p.toString() ? `?${p}` : location.pathname);
 }
 
-const loadOther = () => fetch("/data/other-items.json").then((r) => (r.ok ? r.json() : [])).catch(() => [])
-  .then((l: unknown) => (Array.isArray(l) ? l : []).filter((o): o is Other =>
-    !!o && typeof o === "object" && num((o as Other).id) > 0 && typeof (o as Other).n === "string" && typeof (o as Other).c === "string"));
-
 Promise.all([loadGear(), loadOther()]).then(([db, oth]) => {
   all = db.items.filter((i) => i.q >= 0);
-  other = oth;
+  other = oth.list;
   const cats = [...new Set(other.map((o) => o.c))].sort();
   $("f-cat").insertAdjacentHTML("beforeend", cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join(""));
   const types = [...new Set(all.map((i) => i.type).filter((t) => t && t !== "misc"))].sort();
