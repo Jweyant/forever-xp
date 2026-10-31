@@ -10,6 +10,7 @@ Usage:
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -136,6 +137,45 @@ def item_line(it):
     return "[%d]={%s}," % (int(it["id"]), ",".join(f))
 
 
+SIMWEIGHTS = ROOT / "gamedata" / "simweights.json"
+SIM_KEYS = {"str", "agi", "sta", "int", "spi", "ap", "rap", "crit", "hit", "haste", "expertise", "sp", "heal",
+            "mp5", "spen", "sp_arcane", "sp_fire", "sp_frost", "sp_holy", "sp_nature", "sp_shadow", "def", "dodge",
+            "parry", "block", "blockv", "armor", "dps", "dps_oh", "dps_ranged"}
+
+
+def sim_lines():
+    """ForeverScoutData.SIM: the sim-measured stat weights the site uses, filtered the same way
+    (site/src/scripts/gear/model.ts simPresets): known keys, finite numbers no larger than 100."""
+    if not SIMWEIGHTS.exists():
+        return ["ForeverScoutData.SIM = { specs = {} }"]
+    d = json.loads(SIMWEIGHTS.read_text())
+    src = d.get("source") if isinstance(d.get("source"), dict) else {}
+    commit = src.get("commit") if isinstance(src.get("commit"), str) and re.fullmatch(r"[0-9a-f]{7,40}", src.get("commit")) else ""
+    out = ["ForeverScoutData.SIM = { commit = %s, specs = {" % lua_str(commit)]
+    specs = d.get("specs") if isinstance(d.get("specs"), dict) else {}
+    for key in sorted(specs):
+        if not re.fullmatch(r"[A-Z]+\.[a-z]+", key) or not isinstance(specs[key], list):
+            continue
+        presets = []
+        for pz in specs[key]:
+            if not isinstance(pz, dict) or not isinstance(pz.get("label"), str) or not isinstance(pz.get("w"), dict):
+                continue
+            w = []
+            for k, v in pz["w"].items():
+                try:
+                    n = float(v)
+                except (TypeError, ValueError):
+                    continue
+                if k in SIM_KEYS and n == n and abs(n) <= 100:
+                    w.append("%s=%s" % (k, repr(round(n, 6))))
+            if w:
+                presets.append("{label=%s,w={%s}}" % (lua_str(pz["label"][:60]), ",".join(w)))
+        if presets:
+            out.append("[%s]={%s}," % (lua_str(key), ",".join(presets)))
+    out.append("} }")
+    return out
+
+
 def build():
     data = json.loads(SRC.read_text())
     items = [it for it in data["items"] if it.get("slot") in SLOTS and int(it.get("q", 0)) >= 1]
@@ -165,6 +205,7 @@ def build():
                 bon.append("{%d,%s}" % (int(b.get("n", 0)), lua_str(txt)))
         lines.append("[%d]={n=%s,b={%s}}," % (int(sid), lua_str(s.get("name", "")), ",".join(bon)))
     lines.append("} for k, v in pairs(T) do S[k] = v end end)() end")
+    lines.extend(sim_lines())
     return "\n".join(lines) + "\n", len(items)
 
 

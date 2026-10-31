@@ -17,7 +17,7 @@ DATA = ROOT / "addon" / "ForeverScout_Data"
 
 
 def reference():
-    out = subprocess.run(["node", "--experimental-strip-types", "--no-warnings", str(ROOT / "tools/test/planner_ref.ts")],
+    out = subprocess.run(["node", "--experimental-strip-types", "--no-warnings", "--import", str(ROOT / "tools/test/node-json-hook.mjs"), str(ROOT / "tools/test/planner_ref.ts")],
                          check=True, capture_output=True, text=True, cwd=ROOT)
     return json.loads(out.stdout)
 

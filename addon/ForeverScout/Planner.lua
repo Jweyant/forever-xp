@@ -85,27 +85,53 @@ function P.Spec(cls, specKey)
   return list[1]
 end
 
--- Starting weights for a spec and goal (same numbers as the site).
+-- The sim's stat-weight presets for a spec (ForeverScoutData.SIM, from the site's simweights.json).
+function P.SimPresets(cls, specKey)
+  local sim = ForeverScoutData and ForeverScoutData.SIM
+  local list = sim and sim.specs and sim.specs[cls .. "." .. specKey]
+  return list or {}
+end
+function P.SimCommit()
+  local sim = ForeverScoutData and ForeverScoutData.SIM
+  return sim and sim.commit or ""
+end
+
+-- Weights for a spec and goal: the sim's where it has them, else the starting weights.
+-- Same arithmetic as the site's weightsFor (site/src/scripts/gear/model.ts).
 function P.WeightsFor(cls, specKey, goal)
   local spec = P.Spec(cls, specKey)
   if not spec then return {} end
-  local w = {}
-  for k, v in pairs(BASE[spec.role]) do w[k] = v end
-  if spec.role == "caster" then for _, s in ipairs(spec.school or {}) do w["sp_" .. s] = 1 end end
-  if spec.role == "healer" then w.sp_holy = 0.3 end
+  local base = {}
+  for k, v in pairs(BASE[spec.role]) do base[k] = v end
+  if spec.role == "caster" then for _, s in ipairs(spec.school or {}) do base["sp_" .. s] = 1 end end
+  if spec.role == "healer" then base.sp_holy = 0.3 end
+  -- With sim weights, stats the sim didn't weigh keep their starting weight, rescaled to the sim's
+  -- units through a stat both share; f also scales the fixed amounts the goal adjustments add.
+  local sim = P.SimPresets(cls, spec.key)[1]
+  local w, f = base, 1
+  if sim then
+    local ref
+    for _, k in ipairs({ "ap", "sp", "heal" }) do
+      if not ref and (sim.w[k] or 0) > 0 and (base[k] or 0) > 0 then ref = k end
+    end
+    f = ref and sim.w[ref] / base[ref] or 1
+    w = {}
+    for k, v in pairs(base) do w[k] = v * f end
+    for k, v in pairs(sim.w) do w[k] = v end
+  end
   if goal == "pvp" then
-    w.sta = max(w.sta or 0, (spec.role == "tank" or spec.role == "bear") and 1.6 or 1.1)
-    w.armor = (w.armor or 0) + 0.02
+    w.sta = max(w.sta or 0, ((spec.role == "tank" or spec.role == "bear") and 1.6 or 1.1) * f)
+    w.armor = (w.armor or 0) + 0.02 * f
     if w.hit then w.hit = w.hit * 0.6 end
     w.crit = (w.crit or 0) * 1.1
     if spec.role == "healer" then w.mp5 = (w.mp5 or 0) * 0.8; w.int = (w.int or 0) * 1.2 end
-    w.spen = (w.spen or 0) + (spec.role == "caster" and 0.5 or 0)
+    w.spen = (w.spen or 0) + (spec.role == "caster" and 0.5 * f or 0)
   elseif goal == "level" then
-    w.sta = max(w.sta or 0, 0.6)
+    w.sta = max(w.sta or 0, 0.6 * f)
     if w.hit then w.hit = w.hit * 0.5 end
-    if spec.role == "caster" or spec.role == "healer" then w.spi = max(w.spi or 0, 0.6); w.int = (w.int or 0) + 0.2 end
+    if spec.role == "caster" or spec.role == "healer" then w.spi = max(w.spi or 0, 0.6 * f); w.int = (w.int or 0) + 0.2 * f end
     if spec.role == "str" or spec.role == "agi" then w.dps = (w.dps or 0) * 1.25 end
-    w.armor = (w.armor or 0) + 0.01
+    w.armor = (w.armor or 0) + 0.01 * f
   end
   return w
 end
@@ -237,7 +263,10 @@ local function slotWeights(opts, w, doll, it)
   local k = 1
   if doll == "ranged" then k = hunter and 1 or 0.08
   elseif hunter then k = 0.15
-  elseif doll == "offhand" then k = 0.5 end
+  elseif doll == "offhand" then
+    -- The sim measures off-hand weapon DPS on its own; without it, an off-hand counts half.
+    k = (w.dps_oh and w.dps and w.dps ~= 0) and (w.dps_oh / w.dps) or 0.5
+  end
   if it.s == "twohand" and not hunter then k = k * 1.9 end
   if k == 1 then return w end
   local w2 = {}
