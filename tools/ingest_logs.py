@@ -348,7 +348,8 @@ def write_loot(db, out_dir):
         if item <= 0:
             continue
         src = e.get("src")
-        label = names.get(src) or (f"Object #{src}" if e.get("kind") == "GameObject" else f"NPC #{src}" if src else "")
+        # kind is "object"/"npc" from ForeverScout 0.4 on, "GameObject"/"Creature" before.
+        label = names.get(src) or (f"Object #{src}" if e.get("kind") in ("GameObject", "object") else f"NPC #{src}" if src else "")
         key = (item, str(label), zones.get(e.get("map")) or "")
         seen[key].add(player_key(char, source))
         looted[key] += 1

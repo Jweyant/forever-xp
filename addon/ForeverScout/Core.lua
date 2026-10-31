@@ -10,7 +10,7 @@
 --     } },
 --   },
 --   settings = { paused = false, crumbSeconds = 10, share = true|false|nil, shareAsked, minimapAngle, hideMinimap },
--- ForeverScoutCharDB = { charId }   -- per character, never uploaded
+-- ForeverScoutCharDB = { charId, bisSpots }   -- per character, never uploaded (bisSpots: planner map pins)
 -- }
 
 local ADDON, ns = ...
@@ -35,7 +35,10 @@ ns.frame:SetScript("OnEvent", function(_, event, ...)
   if not list then return end
   for i = 1, #list do
     local ok, err = pcall(list[i], ...)
-    if not ok and ns.debug then print("|cffff5555ForeverScout error|r", event, err) end
+    if not ok then
+      if ns.debug then print("|cffff5555ForeverScout error|r", event, err)
+      elseif geterrorhandler then geterrorhandler()(("ForeverScout %s: %s"):format(tostring(event), tostring(err))) end
+    end
   end
 end)
 
@@ -207,8 +210,8 @@ SlashCmdList.FOREVERSCOUT = function(input)
         .. ". Use /fscout share on or /fscout share off.")
     end
   elseif cmd == "note" or cmd == "mark" then
-    ns:Log("note", { text = rest:sub(1, 200) })
-    ns.Print("Note saved: " .. rest)
+    if ns:Log("note", { text = rest:sub(1, 200) }) then ns.Print("Note saved: " .. rest)
+    else ns.Print("Recording is paused, so the note wasn't saved. /fscout resume first.") end
   elseif cmd == "report" then
     ns.ShowReport()
   elseif cmd == "export" then
@@ -222,6 +225,7 @@ SlashCmdList.FOREVERSCOUT = function(input)
     ns.Print("Map pins " .. (ns.Pins.Enabled() and "on" or "off") .. ".")
   elseif cmd == "minimap" then
     ns.db.settings.hideMinimap = not ns.db.settings.hideMinimap
+    if not ns.db.settings.hideMinimap and not ns.BIS.button and ns.BIS.CreateMinimapButton then ns.BIS.CreateMinimapButton() end
     if ns.BIS.button then ns.BIS.button:SetShown(not ns.db.settings.hideMinimap) end
     ns.Print("Minimap button " .. (ns.db.settings.hideMinimap and "hidden" or "shown") .. ".")
   elseif cmd == "debug" then
@@ -229,7 +233,8 @@ SlashCmdList.FOREVERSCOUT = function(input)
     ns.Print("Debug " .. (ns.debug and "on" or "off"))
   elseif cmd == "wipe" then
     if rest == "confirm" then
-      ForeverScoutDB = nil
+      local settings = ns.db and ns.db.settings
+      ForeverScoutDB = { settings = settings }
       ns:InitDB()
       ns:StartSession()
       ns.Print("All recorded data erased.")
