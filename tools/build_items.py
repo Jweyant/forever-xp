@@ -162,6 +162,24 @@ def appearance_icons(cache, download):
     return {iid: v[1] for iid, v in best.items()}
 
 
+def client_icons_and_quality(cache, download, wowsims=None):
+    """ItemID -> (icon name or None, quality or None) for every item in the client, gear or not.
+    Icon: the item's own icon, else its default appearance's, else wowsims' name. Quality from
+    ItemSparse. The tables are cached, so this re-reads files client_items already fetched."""
+    names = icon_names(cache, download)
+    app = appearance_icons(cache, download)
+    out = {}
+    for r in load_csv(cache, "Item", download):
+        iid = num(r.get("ID"), int)
+        if iid:
+            out[iid] = [names.get(num(r.get("IconFileDataID"), int)) or names.get(app.get(iid, 0)) or (wowsims or {}).get(iid), None]
+    for s in load_csv(cache, "ItemSparse", download):
+        iid, q = num(s.get("ID"), int), num(s.get("OverallQualityID"), int)
+        if iid in out and q is not None and 0 <= q <= 7:
+            out[iid][1] = q
+    return {k: tuple(v) for k, v in out.items()}
+
+
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
     icons = icon_names(cache, download)
@@ -625,7 +643,8 @@ def other_items(sqlite_path, gear_ids, classic, max_names=3):
     """Every non-gear Forever item Questie knows (consumables, trade goods, recipes, quest items...),
     with where it comes from and which quests use it. Compact keys for the item list:
     id, n name, q quality, c category, rl required level, d drops from [[npc, zone]], v sold by,
-    o found in (objects), qs starts quest, qr reward from quests, qu used by quests (quests as [id, name])."""
+    o found in (objects), qs starts quest, qr reward from quests, qu used by quests (quests as [id, name]).
+    main() adds icon (and the client's quality) afterwards from client_icons_and_quality()."""
     import sqlite3
     if not sqlite_path or not Path(sqlite_path).exists():
         return []
@@ -744,6 +763,13 @@ def main():
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     other = other_items(a.questie_sqlite, set(items), classic)
+    client = client_icons_and_quality(a.cache, a.download, ws) if other else {}
+    for rec in other:
+        icon, q = client.get(rec["id"], (None, None))
+        if icon:
+            rec["icon"] = icon
+        if q is not None:
+            rec["q"] = q
     if other:
         Path(a.other_out).write_text(json.dumps(other, separators=(",", ":"), ensure_ascii=False))
     by_q = defaultdict(int)
@@ -756,7 +782,8 @@ def main():
         f"- Items with no known source yet: {no_src}\n"
         f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
         f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n"
-        f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}\n")
+        f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}"
+        f" ({sum(1 for r in other if r.get('icon'))} with an icon)\n")
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 

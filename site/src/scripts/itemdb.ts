@@ -5,7 +5,7 @@ import { STAT_LABEL, sourceKind, type Item } from "./gear/model";
 
 /** A non-gear item from /data/other-items.json (built by tools/build_items.py). No page of its own. */
 interface Other {
-  id: number; n: string; q: number; c: string; rl?: number;
+  id: number; n: string; q: number; c: string; rl?: number; icon?: string;
   d?: [string, string][]; v?: string[]; o?: string[]; qs?: [number, string]; qr?: [number, string][]; qu?: [number, string][];
 }
 type Row = { g: Item } | { o: Other };
@@ -66,7 +66,7 @@ function gearRow(it: Item) {
 }
 function otherRow(o: Other) {
   const q = QUALITY[num(o.q)] || "common";
-  return `<tr><td><span class="ilink"><span class="ico sm qb-${q}"></span><span><span class="iname-t q-${q}">${esc(str(o.n))}</span><span class="sub">Item ID ${num(o.id)}</span></span></span></td>
+  return `<tr><td><span class="ilink"><span class="ico sm qb-${q}">${typeof o.icon === "string" && o.icon ? `<img src="${esc(ICON(o.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(str(o.n))}</span><span class="sub">Item ID ${num(o.id)}</span></span></span></td>
     <td class="num">–</td><td class="num opt">${num(o.rl) || "–"}</td><td class="opt">${esc(str(o.c))}</td><td class="opt small">${otherDetails(o)}</td></tr>`;
 }
 

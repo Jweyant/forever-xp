@@ -144,7 +144,8 @@ def write_item_index(gear, pub):
     other = ROOT / "gamedata" / "other-items.json"
     if other.exists():
         rows = json.loads(other.read_text())
-        idx += [[num(o.get("id"), int), str(o.get("n", "")), num(o.get("q"), int) or 1, "", str(o.get("c", "")), 0, 1]
+        idx += [[num(o.get("id"), int), str(o.get("n", "")), (o["q"] if isinstance(o.get("q"), int) and 0 <= o["q"] <= 7 else 1),
+                 re.sub(r"[^a-z0-9_-]", "", str(o.get("icon") or "").lower()), str(o.get("c", "")), 0, 1]
                 for o in rows if isinstance(o, dict) and num(o.get("id"), int)]
         (pub / "other-items.json").write_bytes(other.read_bytes())
     (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
