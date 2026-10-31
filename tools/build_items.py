@@ -494,6 +494,7 @@ def pvp_rank_source(rec):
 
 
 JOURNAL_TABLES = ["JournalInstance", "JournalEncounter", "JournalEncounterItem", "Map"]
+JOURNAL_NOTE = []  # what the journal step found, for the report
 
 
 def _col(row, *names):
@@ -516,10 +517,14 @@ def journal_sources(cache, download, keep):
     """
     src = defaultdict(list)
     tables = {}
+    JOURNAL_NOTE.clear()
     for t in JOURNAL_TABLES:
         try:
             tables[t] = load_csv(cache, t, download)
+            cols = list(tables[t][0].keys())[:12] if tables[t] else []
+            JOURNAL_NOTE.append(f"{t}: {len(tables[t])} rows, columns {cols}")
         except (SystemExit, OSError, urllib.error.URLError) as e:  # table missing in this build or wago down
+            JOURNAL_NOTE.append(f"{t}: unavailable ({str(e)[:160]})")
             print(f"dungeon journal: {t} unavailable ({e}); skipping", file=sys.stderr)
             return {}
     # Map -> instance type (1 dungeon, 2 raid)
@@ -552,6 +557,7 @@ def journal_sources(cache, download, keep):
                 rec["z"] = i["name"]
             src[item].append(rec)
             n += 1
+    JOURNAL_NOTE.append(f"{n} boss drops for {len(src)} items ({len(inst)} instances, {len(enc)} encounters)")
     print(f"dungeon journal: {n} boss drops for {len(src)} items")
     return src
 
