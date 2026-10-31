@@ -13,7 +13,7 @@ local QUALITY_COLOR = { [0] = "9d9d9d", [1] = "ffffff", [2] = "1eff00", [3] = "0
 local GOAL_NAME = { pve = "PvE", pvp = "PvP", level = "Leveling" }
 local QMARK = "Interface\\Icons\\INV_Misc_QuestionMark"
 
-local win, state
+local win, state, srcWin
 
 ------------------------------------------------------------------------------------------
 -- Helpers
@@ -62,14 +62,51 @@ local function guessSpec(cls)
   return specs[1] and specs[1].key
 end
 
--- Game tooltip for an item, with the equipped-item comparison the game draws on Shift.
+local statLines -- defined below
+
+-- True when the game client can draw a tooltip for this item ID itself.
+local function clientKnows(id)
+  local info = (C_Item and C_Item.GetItemInfo or GetItemInfo)
+  if not info then return false end
+  local ok, name = pcall(info, id)
+  return ok and name ~= nil
+end
+
+-- Tooltip for an item: the game's own (with the equipped-item comparison on Shift) when the
+-- client knows the item, otherwise one drawn from the planner's data, so Forever-only items
+-- never show "Retrieving item information".
 local function showItemTip(owner, id, anchor)
   if not id then return end
   GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
-  local ok = pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. id)
-  if not ok then GameTooltip:SetText("Item " .. id) end
+  local it = P.Item(id)
+  if clientKnows(id) then
+    local ok = pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. id)
+    if ok then
+      if it then GameTooltip:AddLine(P.SourceText(it), 0.31, 0.76, 0.97, true) end
+      GameTooltip:Show()
+      if GameTooltip_ShowCompareItem then pcall(GameTooltip_ShowCompareItem, GameTooltip) end
+      return
+    end
+  end
+  if not it then GameTooltip:SetText("Item " .. id) GameTooltip:Show() return end
+  local q = QUALITY_COLOR[it.q] or "ffffff"
+  GameTooltip:SetText(it.n, tonumber(q:sub(1, 2), 16) / 255, tonumber(q:sub(3, 4), 16) / 255, tonumber(q:sub(5, 6), 16) / 255)
+  GameTooltip:AddLine(("Item level %d"):format(it.il), 1, 0.82, 0)
+  GameTooltip:AddDoubleLine(P.SLOT_NAME[it.s] or it.s, it.ty ~= "misc" and (it.ty:gsub("^%l", string.upper)) or "", 1, 1, 1, 1, 1, 1)
+  for _, line in ipairs(statLines(it)) do GameTooltip:AddLine(line, 1, 1, 1, true) end
+  GameTooltip:AddLine(("Requires %s"):format(levelText(it)), 1, 1, 1)
+  GameTooltip:AddLine(P.SourceText(it), 0.31, 0.76, 0.97, true)
+  GameTooltip:AddLine("From forever-xp.com data; this client has no tooltip for the item.", 0.5, 0.5, 0.5, true)
   GameTooltip:Show()
-  if GameTooltip_ShowCompareItem then pcall(GameTooltip_ShowCompareItem, GameTooltip) end
+end
+
+-- Name, quality and icon for an equipped item the planner's data doesn't have.
+local function clientItem(id)
+  local info = (C_Item and C_Item.GetItemInfo or GetItemInfo)
+  if not info then return nil end
+  local ok, name, _, quality, _, _, _, _, _, _, icon = pcall(info, id)
+  if not ok or not name then return nil end
+  return { n = name, q = quality or 1, i = nil, tex = icon }
 end
 
 local function makeButton(parent, text, width)
@@ -239,6 +276,18 @@ local function build()
   cb:SetScript("OnClick", function(self) state.upgradesOnly = self:GetChecked() and true or false ns.BIS.Layout() end)
   f.upgrades = cb
 
+  f.sources = makeButton(f, "Sources", 90)
+  f.sources:SetPoint("LEFT", cb, "RIGHT", 118, 0)
+  f.sources:SetScript("OnClick", function() ns.BIS.ToggleSources() end)
+  f:SetScript("OnHide", function() if srcWin then srcWin:Hide() end end)
+  f.sources:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+    GameTooltip:SetText("Where items may come from", 1, 1, 1)
+    GameTooltip:AddLine("Untick raids, PvP, crafting or anything you won't do, and the plan only uses the rest.", 0.8, 0.8, 0.8, true)
+    GameTooltip:Show()
+  end)
+  f.sources:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
   -- Next-step line (click to select that slot)
   local nextBtn = CreateFrame("Button", nil, f)
   nextBtn:SetPoint("TOPLEFT", 22, -74)
@@ -319,9 +368,70 @@ local function build()
 end
 
 ------------------------------------------------------------------------------------------
+-- Source filter popup
+------------------------------------------------------------------------------------------
+local function sourceSet()
+  local saved = ns.db.settings.bisSources
+  local set = {}
+  for _, k in ipairs(P.SOURCE_KINDS) do
+    set[k.key] = not (saved and saved[k.key] == false)
+  end
+  return set
+end
+
+local function buildSources()
+  local f = CreateFrame("Frame", "ForeverScoutBISSources", win, "BackdropTemplate")
+  f:SetSize(230, 24 * #P.SOURCE_KINDS + 60)
+  f:SetPoint("TOPLEFT", win.sources, "BOTTOMLEFT", 0, -4)
+  f:SetFrameStrata("DIALOG")
+  f:EnableMouse(true)
+  if f.SetBackdrop then
+    f:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      tile = true, tileSize = 16, edgeSize = 12, insets = { left = 3, right = 3, top = 3, bottom = 3 } })
+    f:SetBackdropColor(0, 0, 0, 0.92)
+    f:SetBackdropBorderColor(0.5, 0.45, 0.3, 1)
+  end
+  local title = fontString(f, "GameFontNormal", 12, -10, 200)
+  title:SetText("Where items may come from")
+  f.checks = {}
+  for i, k in ipairs(P.SOURCE_KINDS) do
+    local cb = CreateFrame("CheckButton", "ForeverScoutBISSource" .. i, f, "UICheckButtonTemplate")
+    cb:SetSize(22, 22)
+    cb:SetPoint("TOPLEFT", 10, -26 - (i - 1) * 24)
+    _G[cb:GetName() .. "Text"]:SetText(k.name)
+    cb.key = k.key
+    cb:SetScript("OnClick", function(self)
+      ns.db.settings.bisSources = ns.db.settings.bisSources or {}
+      ns.db.settings.bisSources[self.key] = self:GetChecked() and true or false
+      ns.BIS.Refresh()
+    end)
+    f.checks[k.key] = cb
+  end
+  local all = makeButton(f, "All", 60)
+  all:SetPoint("BOTTOMLEFT", 10, 8)
+  all:SetScript("OnClick", function() ns.db.settings.bisSources = nil ns.BIS.ToggleSources(true) ns.BIS.Refresh() end)
+  local none = makeButton(f, "None", 60)
+  none:SetPoint("LEFT", all, "RIGHT", 4, 0)
+  none:SetScript("OnClick", function()
+    ns.db.settings.bisSources = {}
+    for _, k in ipairs(P.SOURCE_KINDS) do ns.db.settings.bisSources[k.key] = false end
+    ns.BIS.ToggleSources(true) ns.BIS.Refresh()
+  end)
+  return f
+end
+
+function ns.BIS.ToggleSources(keepOpen)
+  if not srcWin then srcWin = buildSources() end
+  if srcWin:IsShown() and not keepOpen then srcWin:Hide() return end
+  local set = sourceSet()
+  for key, cb in pairs(srcWin.checks) do cb:SetChecked(set[key]) end
+  srcWin:Show()
+end
+
+------------------------------------------------------------------------------------------
 -- Rendering
 ------------------------------------------------------------------------------------------
-local function statLines(it)
+function statLines(it)
   local L = {}
   if it.w then L[#L + 1] = ("%d - %d damage, speed %.2f (%.1f DPS)"):format(it.w[1], it.w[2], it.w[3], it.st.dps or 0) end
   if it.st.armor then L[#L + 1] = ("%d Armor"):format(it.st.armor) end
@@ -397,7 +507,8 @@ function ns.BIS.RenderDetail()
     L[#L + 1] = ("%s score over %s."):format(fmtGain(gain), colored(cur))
     L[#L + 1] = ("|cff9d9d9dShift-hover any row to compare tooltips.|r")
   elseif curId then
-    L[#L + 1] = ("Your item %d isn't in the planner's data yet."):format(curId)
+    local ci = clientItem(curId)
+    L[#L + 1] = ("%s isn't in Forever's item data, so it can't be scored."):format(ci and colored(ci) or ("Item " .. curId))
   else
     L[#L + 1] = "Nothing equipped in this slot."
   end
@@ -440,7 +551,10 @@ function ns.BIS.Refresh()
   f.spec:SetText(spec and spec.name or "Spec")
   f.goal:SetText(GOAL_NAME[state.goal] or state.goal)
 
-  state.opts = { cls = state.cls, spec = state.spec, goal = state.goal, level = state.level, side = state.side }
+  local sources, limited = sourceSet(), 0
+  for _, k in ipairs(P.SOURCE_KINDS) do if not sources[k.key] then limited = limited + 1 end end
+  f.sources:SetText(limited > 0 and ("Sources (%d off)"):format(limited) or "Sources")
+  state.opts = { cls = state.cls, spec = state.spec, goal = state.goal, level = state.level, side = state.side, sources = sources }
   local plan, w = P.Suggest(state.opts)
   state.plan, state.weights = plan, w
   state.cur = P.Equipped()
@@ -454,13 +568,14 @@ function ns.BIS.Refresh()
     r.itemId, r.gainV = row.plan, row.gain
     r.owned = row.cur ~= nil and row.cur == row.plan
     r.icon:SetTexture(it and iconOf(row.plan, it) or nil)
-    r.name:SetText(colored(it, "no item fits"))
+    r.name:SetText(colored(it, "none at this level"))
     if cur then
       r.curIcon:SetTexture(iconOf(row.cur, cur))
       r.cur:SetText(colored(cur))
     elseif row.cur then
-      r.curIcon:SetTexture(iconOf(row.cur))
-      r.cur:SetText("|cffffffffItem " .. row.cur .. "|r")
+      local ci = clientItem(row.cur)
+      r.curIcon:SetTexture(ci and ci.tex or iconOf(row.cur))
+      r.cur:SetText(ci and colored(ci) or ("|cffffffffItem " .. row.cur .. "|r"))
     else
       r.curIcon:SetTexture(nil)
       r.cur:SetText("|cff9d9d9dempty|r")
@@ -495,7 +610,7 @@ function ns.BIS.Refresh()
 end
 
 function ns.BIS.Toggle()
-  if win and win:IsShown() then win:Hide() return end
+  if win and win:IsShown() then win:Hide() if srcWin then srcWin:Hide() end return end
   ns.BIS.Show()
 end
 

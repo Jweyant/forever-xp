@@ -191,6 +191,12 @@ P.SOURCE_KINDS = {
   { key = "vendor", name = "Vendors" }, { key = "chest", name = "Chests and objects" }, { key = "drop", name = "Mob drops" },
   { key = "world", name = "World drops" }, { key = "logged", name = "Seen by players" }, { key = "unknown", name = "Source not known yet" },
 }
+P.SLOT_NAME = {
+  head = "Head", neck = "Neck", shoulder = "Shoulder", back = "Back", chest = "Chest", wrist = "Wrist", hands = "Hands",
+  waist = "Waist", legs = "Legs", feet = "Feet", finger = "Finger", trinket = "Trinket", mainhand = "Main Hand",
+  offhand = "Off Hand", onehand = "One-Hand", twohand = "Two-Hand", ranged = "Ranged", relic = "Relic", shield = "Off Hand",
+  holdable = "Held In Off-hand",
+}
 P.SRC_LABEL = {
   chest = "Chest", raid = "Raid", dungeon = "Dungeon", pvp = "PvP", rep = "Reputation", quest = "Quest", craft = "Crafted",
   vendor = "Vendor", drop = "Drop", world = "World drop", logged = "Seen in Forever",
