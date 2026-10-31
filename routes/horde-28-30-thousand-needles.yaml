@@ -70,7 +70,7 @@ steps:
   - complete: 1151
   - turnin: 1151
   - goto: [1441, 78.0, 77.0]
-    text: Head east to the Shimmering Flats racetrack.
+    text: Head east to the Shimmering Flats racetrack. The racetrack quests need level 28; kill a few basilisks on the way if you're short.
   - accept: [1104, 1105]
   - accept: 1110
   - complete: [1104, 1105, 1110]

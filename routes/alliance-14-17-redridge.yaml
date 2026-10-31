@@ -1,0 +1,123 @@
+# ForeverXP — Alliance 14-17, Redridge Mountains (Lakeshire, the gnoll hills, Lake Everstill,
+# Alther's Mill). Shared by Humans (from 10-14 Westfall) and Dwarves/Gnomes (from 10-14 Loch Modan);
+# race-only steps are tagged. Order only; tools/guidegen.py fills coordinates, NPCs and checks from
+# Forever Questie data.
+# Forever-only quests on the way are included (Show of Force, Alther's Mill); their XP is an estimate
+# (~ in the report) until ForeverScout logs measure it, so treat the level numbers as approximate.
+# Skipped on purpose: 116 Dry Times (needs four drinks bought in four cities), 120/121/143/144/145/146
+# Messenger chain (Stormwind/Westfall/Darkshire runs), 1097 Elmore's Task and 2281/2282 (Stormwind
+# trips; 2281 is Rogue-only), 20/98387/115 Blackrock quests and 2358/91 (level 21-23 mobs east of the
+# lake), 94 A Watchful Eye (level 20+, starts in Elwynn), 150 Murloc Poachers (needs level 20),
+# 132/135/141/142/155 the rest of The Defias Brotherhood (Wiley's note back to Westfall and
+# Stormwind; 155 is an escort).
+guide:
+  name: 14-17 Redridge Mountains
+  display: ForeverXP 14-17 Redridge Mountains
+  next: 17-20 Loch Modan
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Human/Dwarf/Gnome
+  sim_race: Human
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Getting to Stormwind
+  - goto: [1429, 41.7, 65.5]
+    only: Human
+    text: Run north up the road from Sentinel Hill into Elwynn and on to Goldshire.
+  - fly: Ironforge
+    only: Dwarf/Gnome
+    fly_to: [1455, 55.5, 47.7]
+    fly_seconds: 150
+    text: Fly from Thelsamar to Ironforge.
+  - travel: Take the Deeprun Tram from Tinker Town in Ironforge to Stormwind.
+    only: Dwarf/Gnome
+    travel_to: [1453, 64.0, 37.0]
+    travel_seconds: 180
+  - turnin: 1338
+    only: Dwarf/Gnome
+    text: Furen Longbeard is in the Dwarven District, by the tram.
+  - fp: Stormwind
+    only: Dwarf/Gnome
+    text: Dungar Longdrink, the gryphon master, is in the Trade District. You'll fly back here from Lakeshire later.
+
+  # --- East through Elwynn to Redridge
+  - goto: [1429, 41.7, 65.5]
+    only: Dwarf/Gnome
+    text: Leave Stormwind by the main gate and follow the road to Goldshire.
+  - goto: [1433, 10.5, 70.5]
+    text: Follow the road east from Goldshire to Three Corners, then north-east into Redridge.
+  - accept: 244
+    text: Guard Parker patrols the road where it enters Redridge from Elwynn.
+  - fp: Lakeshire
+  - home: Lakeshire
+  - turnin: 65
+    only: Human
+    text: Wiley the Black is in the Lakeshire inn. Skip his note back to Westfall.
+  - accept: 129
+    text: Darcy is in the inn.
+  - accept: 3741
+    text: Shawn is at the house south of the bridge.
+  - turnin: 244
+    accept: [246, 98407]
+    text: Deputy Feldon is south of the bridge.
+
+  # --- South-west hills
+  - complete: 3741
+    text: Hilary's necklace is on the lake bed just off Lakeshire.
+  - complete: [246, 98407]
+    text: Redridge Mongrels and Thrashers are in the hills south-west of Lakeshire; Poachers are further south.
+  - turnin: 129
+    accept: 130
+    text: Guard Parker is on the road back to Elwynn.
+  - turnin: [246, 98407]
+  - turnin: 3741
+  - turnin: 130
+    accept: 131
+    text: Martie Jainrose is at her house on the west side of Lakeshire.
+  - turnin: 131
+  - accept: 118
+    text: Verner Osgood is at the house on the lake shore. Take his note to Goldshire.
+
+  # --- Goldshire for Verner's horseshoes, then hearth back
+  - goto: [1429, 41.7, 65.5]
+    text: Run west along the road to Goldshire.
+  - turnin: 118
+    accept: 119
+    text: Smith Argus is at the Goldshire forge.
+  - hs: Lakeshire
+    hs_to: [1433, 26.5, 45.0]
+  - xp: 15
+    text: The next quests need level 15. Kill gnolls south-west of Lakeshire if you're short.
+  - turnin: 119
+    accept: [122, 124]
+  - accept: 92
+    text: Chef Breanna is upstairs in the inn.
+  - accept: 125
+    text: Foreman Oslow is at the broken bridge.
+
+  # --- The lake, then the gnoll camps north
+  - complete: 125
+    text: Oslow's toolbox is at the bottom of the lake, east of the bridge.
+  - turnin: 125
+    accept: 89
+  - complete: [124, 89]
+    text: Redridge Brutes and Mystics are in the hills north of Lakeshire. They drop the iron pikes and rivets.
+  - turnin: 124
+  - turnin: 89
+    accept: 98386
+  - complete: 98386
+    text: Alther's Mill is north-east of the lake. Greater Tarantulas and their eggs are around the mill.
+  - turnin: 98386
+
+  # --- South shore and the middle of the zone
+  - xp: 16
+    text: Selling Fish needs level 16. Kill a few more gnolls on the way back if you're short.
+  - accept: 127
+    text: Dockmaster Baren is on the Lakeshire dock.
+  - complete: [127, 122, 92]
+    text: Murlocs along the south shore drop the sunfish. Black Dragon Whelps are in the hills south of the lake; Dire Condors circle the middle of the zone, Great Goretusks and Tarantulas are in the hills. Breanna's spider meat comes from Tarantulas.
+  - turnin: 127
+  - turnin: 92
+  - turnin: 122

@@ -1,8 +1,8 @@
 # 6-10 Elwynn Forest
 
-Estimated finish: level 10.12 after 84 minutes. Quests still in log: []
+Estimated finish: level 10.80 after 84 minutes. Quests still in log: []
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
@@ -15,20 +15,27 @@ _none_
 | 39 Deliver Thomas' Report | 1050 | 0.0 | 2100 |
 | 76 The Jasperlode Mine | 840 | 0.0 | 1680 |
 | 114 The Escape | 790 | 0.0 | 1580 |
+| 99127 A Net Disaster | ~630 | 0.3 | 1260 |
 | 62 The Fargodeep Mine | 475 | 0.0 | 950 |
+| 91732 Good Steel | ~840 | 0.9 | 948 |
+| 99143 Bottles and Baubles | ~630 | 0.7 | 922 |
 | 87 Goldtooth | 880 | 1.0 | 846 |
 | 35 Further Concerns | 420 | 0.0 | 840 |
 | 45 Discover Rolf's Fate | 420 | 0.0 | 840 |
+| 99128 Slimy Menace | ~630 | 1.1 | 585 |
 | 5545 A Bundle of Trouble | 780 | 1.6 | 498 |
 | 54 Report to Goldshire | 225 | 0.0 | 450 |
 | 37 Find the Lost Guards | 210 | 0.0 | 420 |
 | 71 Report to Thomas | 210 | 0.0 | 420 |
 | 239 Westbrook Garrison Needs Help! | 210 | 0.0 | 420 |
+| 91725 Stolen Enchanting Supplies | ~840 | 2.1 | 396 |
+| 91733 Downstream | ~840 | 2.8 | 296 |
 | 85 Lost Necklace | 135 | 0.0 | 270 |
 | 106 Young Lovers | 135 | 0.0 | 270 |
 | 111 Speak with Gramma | 135 | 0.0 | 270 |
 | 84 Back to Billy | 135 | 0.0 | 270 |
 | 107 Note to William | 135 | 0.0 | 270 |
+| 91723 Delicate Instruments | ~840 | 3.1 | 269 |
 | 88 Princess Must Die! | 780 | 3.2 | 242 |
 | 2158 Rest and Relaxation | 110 | 0.0 | 220 |
 | 83 Red Linen Goods | 780 | 4.3 | 182 |
@@ -39,13 +46,6 @@ _none_
 | 112 Collecting Kelp | 315 | 2.7 | 116 |
 | 60 Kobold Candles | 475 | 4.8 | 99 |
 | 47 Gold Dust Exchange | 630 | 6.7 | 94 |
-| 99127 A Net Disaster | 0 | 0.3 | 0 |
-| 99143 Bottles and Baubles | 0 | 0.7 | 0 |
-| 99128 Slimy Menace | 0 | 1.1 | 0 |
-| 91733 Downstream | 0 | 2.8 | 0 |
-| 91725 Stolen Enchanting Supplies | 0 | 2.1 | 0 |
-| 91723 Delicate Instruments | 0 | 3.1 | 0 |
-| 91732 Good Steel | 0 | 0.9 | 0 |
 
 ## Step by step
 
@@ -76,30 +76,30 @@ _none_
 | 23 | 7.54 | 25.9 | 85 | accept Further Concerns; turnin A Fishy Peril |
 | 24 | 7.54 | 26.6 | 0 | accept A Net Disaster, Bottles and Baubles |
 | 25 | 7.69 | 30.3 | 640 | complete Collecting Kelp, A Net Disaster, Bottles and Baubles |
-| 26 | 7.69 | 31.2 | 0 | accept Slimy Menace; turnin A Net Disaster |
-| 27 | 7.69 | 31.3 | 0 | turnin Bottles and Baubles |
-| 28 | 7.72 | 32.4 | 160 | complete Slimy Menace |
-| 29 | 7.72 | 32.8 | 0 | turnin Slimy Menace |
-| 30 | 7.79 | 33.4 | 315 | accept The Escape; turnin Collecting Kelp |
-| 31 | 7.98 | 35.0 | 854 | turnin The Escape |
-| 32 | 8.04 | 38.2 | 306 | complete Princess Must Die! |
-| 33 | 8.04 | 39.1 | 0 | accept Delicate Instruments, Stolen Enchanting Supplies |
-| 34 | 8.12 | 40.1 | 420 | accept Find the Lost Guards, Protect the Frontier; turnin Further Concerns |
-| 35 | 8.12 | 40.4 | 0 | accept Downstream |
-| 36 | 8.12 | 41.3 | 0 | accept A Bundle of Trouble, Red Linen Goods, Good Steel |
-| 37 | 8.59 | 55.4 | 2546 | complete A Bundle of Trouble, Red Linen Goods, Protect the Frontier, Downstream |
-| 38 | 8.89 | 57.0 | 1630 | turnin A Bundle of Trouble, Red Linen Goods, Downstream |
-| 39 | 8.93 | 58.0 | 210 | accept Discover Rolf's Fate; turnin Find the Lost Guards |
-| 40 | 9.01 | 58.9 | 420 | accept Report to Thomas; turnin Discover Rolf's Fate |
-| 41 | 9.02 | 61.0 | 75 | complete Stolen Enchanting Supplies |
-| 42 | 9.11 | 65.0 | 600 | complete The Jasperlode Mine, Delicate Instruments, Good Steel |
-| 43 | 9.13 | 67.3 | 150 | turnin Good Steel |
-| 44 | 9.15 | 69.2 | 75 | turnin Delicate Instruments, Stolen Enchanting Supplies |
-| 45 | 9.18 | 70.1 | 210 | accept Deliver Thomas' Report; turnin Report to Thomas |
-| 46 | 9.27 | 70.2 | 630 | turnin Protect the Frontier |
-| 47 | 9.44 | 74.3 | 1080 | turnin Princess Must Die! |
-| 48 | 9.61 | 75.8 | 1125 | turnin Deliver Thomas' Report |
-| 49 | 9.74 | 76.0 | 840 | accept Westbrook Garrison Needs Help!; turnin The Jasperlode Mine |
-| 50 | 9.79 | 77.9 | 285 | accept Riverpaw Gnoll Bounty; turnin Westbrook Garrison Needs Help! |
-| 51 | 10.01 | 83.3 | 1440 | complete Riverpaw Gnoll Bounty |
-| 52 | 10.12 | 84.0 | 840 | turnin Riverpaw Gnoll Bounty |
+| 26 | 7.83 | 31.2 | 630 | accept Slimy Menace; turnin A Net Disaster |
+| 27 | 7.97 | 31.3 | 630 | turnin Bottles and Baubles |
+| 28 | 8.00 | 32.4 | 160 | complete Slimy Menace |
+| 29 | 8.12 | 32.8 | 630 | turnin Slimy Menace |
+| 30 | 8.18 | 33.4 | 315 | accept The Escape; turnin Collecting Kelp |
+| 31 | 8.34 | 35.0 | 860 | turnin The Escape |
+| 32 | 8.39 | 38.2 | 318 | complete Princess Must Die! |
+| 33 | 8.39 | 39.1 | 0 | accept Delicate Instruments, Stolen Enchanting Supplies |
+| 34 | 8.47 | 40.1 | 420 | accept Find the Lost Guards, Protect the Frontier; turnin Further Concerns |
+| 35 | 8.47 | 40.4 | 0 | accept Downstream |
+| 36 | 8.47 | 41.3 | 0 | accept A Bundle of Trouble, Red Linen Goods, Good Steel |
+| 37 | 8.94 | 55.4 | 2546 | complete A Bundle of Trouble, Red Linen Goods, Protect the Frontier, Downstream |
+| 38 | 9.33 | 57.0 | 2470 | turnin A Bundle of Trouble, Red Linen Goods, Downstream |
+| 39 | 9.37 | 58.0 | 210 | accept Discover Rolf's Fate; turnin Find the Lost Guards |
+| 40 | 9.43 | 58.9 | 420 | accept Report to Thomas; turnin Discover Rolf's Fate |
+| 41 | 9.44 | 61.0 | 75 | complete Stolen Enchanting Supplies |
+| 42 | 9.53 | 65.0 | 600 | complete The Jasperlode Mine, Delicate Instruments, Good Steel |
+| 43 | 9.69 | 67.3 | 990 | turnin Good Steel |
+| 44 | 9.96 | 69.2 | 1755 | turnin Delicate Instruments, Stolen Enchanting Supplies |
+| 45 | 9.99 | 70.1 | 210 | accept Deliver Thomas' Report; turnin Report to Thomas |
+| 46 | 10.07 | 70.2 | 630 | turnin Protect the Frontier |
+| 47 | 10.22 | 74.3 | 1104 | turnin Princess Must Die! |
+| 48 | 10.37 | 75.8 | 1131 | turnin Deliver Thomas' Report |
+| 49 | 10.48 | 76.0 | 840 | accept Westbrook Garrison Needs Help!; turnin The Jasperlode Mine |
+| 50 | 10.52 | 77.9 | 291 | accept Riverpaw Gnoll Bounty; turnin Westbrook Garrison Needs Help! |
+| 51 | 10.69 | 83.3 | 1296 | complete Riverpaw Gnoll Bounty |
+| 52 | 10.80 | 84.0 | 840 | turnin Riverpaw Gnoll Bounty |

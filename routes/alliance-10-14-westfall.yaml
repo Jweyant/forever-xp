@@ -1,0 +1,89 @@
+# ForeverXP — Human 10-14, Westfall (Saldean's Farm, Sentinel Hill, the coast, Moonbrook).
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (Harvesting the Harvesters, Alba Fairmoon's Testing the
+# Wells / Murloc Gills / The State of the Mines); their XP is estimated (~ in the report) until
+# ForeverScout logs measure it, so the estimate may be off.
+# Ends at Sentinel Hill with The Defias Brotherhood, which hands you to Lakeshire for 14-17 Redridge Mountains.
+# Skipped on purpose: 6181/6281/6261/6285 A Swift Message chain (two flights to Stormwind and back),
+# Alba Fairmoon's chain after 92747 Moonbrook Espionage (Stormwind trips, dynamite, then the
+# Deadmines), 92910/92911 Harvesting the Harvesters parts 2-3 (start from a random drop), 14 The
+# People's Militia part 3 (30 kills in the Dagger Hills; Redridge is faster), 103/152/104 Captain Grayson and 136 Captain Sanders' treasure (far south-west
+# corner, level 16+), 92109/92110 the Odd Child (needs herbs and vials), 117 Thunderbrew (no XP).
+guide:
+  name: 10-14 Westfall
+  display: ForeverXP 10-14 Westfall
+  next: 14-17 Redridge Mountains
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Human
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Into Westfall: the Furlbrow and Saldean farms
+  - goto: [1436, 60.0, 17.0]
+    text: Follow the road south out of Westbrook into Westfall.
+  - accept: 64
+    text: Farmer Furlbrow is at the first farm on the road.
+  - accept: [36, 151]
+    text: Verna Furlbrow is next to him.
+  - turnin: 36
+    accept: [38, 22]
+    text: Salma Saldean is in the house at the Saldean farm, further down the road.
+  - accept: [109, 9]
+    text: Farmer Saldean is outside the house.
+  - accept: 92909
+    text: Ozwin Ironsprocket is in the field west of the Saldean farm.
+
+  # --- Sentinel Hill
+  - turnin: 109
+    accept: 12
+    text: Gryan Stoutmantle is in the tower on Sentinel Hill.
+  - accept: 102
+  - fp: Sentinel Hill
+  - home: Sentinel Hill
+  - accept: [92742, 92744]
+    text: Alba Fairmoon is at the bottom of the hill.
+
+  # --- North loop: Molsen Farm, the Jansen Stead, back by the road
+  - complete: [12, 92909, 22]
+    text: Defias Trappers and Smugglers are around the Molsen Farm. Harvest golems in the fields drop the isosprings and gyrostabilizers, Goretusks the livers. Grab oats from the sacks, and okra, snouts and vulture meat for the stew, as you go.
+  - complete: 92742
+    text: Use the sample kit at the Molsen Farm well, then at the Jansen Stead well to the north.
+  - complete: [64, 151]
+    text: The pocket watch is in the wardrobe in the Jansen Stead farmhouse. Finish the oats on the way.
+  - turnin: [64, 151]
+  - turnin: 22
+  - turnin: 92909
+  - turnin: 12
+  - turnin: 92742
+
+  # --- West coast: murlocs and the Riverpaw gnolls
+  - complete: [92744, 38, 102]
+    text: Murlocs along the coast drop the gills and the eyes. Riverpaw gnolls inland from the coast drop the paws.
+  - turnin: 92744
+    accept: 92745
+  - turnin: 102
+  - complete: 92745
+    text: Riverpaw Miners are in the Gold Coast Quarry by the coast; Kobold Diggers are in the Jangolode Mine in the north.
+  - complete: [38, 9]
+    text: Harvest Watchers are in the fields around the Saldean farm. Finish the stew items if you're short.
+  - turnin: 38
+  - turnin: 9
+  - turnin: 92745
+    accept: 92747
+    text: Back to Alba Fairmoon.
+  - accept: 13
+    text: Gryan Stoutmantle, top of the tower.
+  - accept: 153
+    text: Scout Galiaan is next to Alba.
+
+  # --- Moonbrook
+  - complete: [13, 92747, 153]
+    text: Defias Pillagers and Looters fill Moonbrook and the farms around it. The supply crates are in Moonbrook. Every Defias can drop a red leather bandana.
+  - turnin: 13
+  - turnin: 92747
+  - turnin: 153
+  - accept: 65
+    text: Gryan Stoutmantle sends you to Wiley in Lakeshire, where the next guide starts.
+

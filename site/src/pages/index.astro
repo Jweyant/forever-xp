@@ -9,7 +9,8 @@ import notesJson from "../data/notes.json";
 import { SITE, ICON } from "../config";
 import { news } from "../lib/changes";
 
-const horde = guides.filter((g) => g.faction === "Horde");
+// The Orc/Troll line through the shared Horde route: one guide per level band.
+const horde = guides.filter((g) => g.faction === "Horde" && (g.for === "Orc/Troll" || g.for === "Horde"));
 const totalMinutes = horde.reduce((s, g) => s + (g.minutes || 0), 0);
 const skips = quests.filter((q) => q.verdict === "skip");
 const worst = [...skips].filter((q) => (rateOf(q) ?? 0) > 0).sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)).slice(0, 5);
@@ -167,8 +168,8 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
 
   <section>
     <h2>Horde routes, level 1 to 30</h2>
-    <p class="muted">{horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route. <a href="/guides/">Alliance routes</a> cover every starting zone to level 10.</p>
-    <XpBar guides={guides} />
+    <p class="muted">Orc and Troll: {horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route. <a href="/guides/">Every other race</a> has its own starting zone route, and the Alliance has routes to level 20.</p>
+    <XpBar guides={horde} />
   </section>
 
   <section>

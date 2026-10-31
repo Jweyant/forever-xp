@@ -6,6 +6,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #defaultfor Human
 #name 6-10 Elwynn Forest
+#next 10-14 Westfall
 #displayname ForeverXP 6-10 Elwynn Forest
 step
     .goto 1429,42.11,65.93

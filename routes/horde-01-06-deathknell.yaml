@@ -1,0 +1,124 @@
+# ForeverXP — Undead 1-6, Deathknell.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (98389 A Light in the Darkness, and the Undead
+# Paladin quests 98601/90902/91208/91209 behind `only: Paladin`); no source has their XP yet,
+# so the estimate uses an approximate value for them (marked ~ in the report).
+# Skipped on purpose: 5847 Welcome! (voucher item only some players have), 8/590 A Rogue's Deal
+# (picked up on the road to Brill in the next guide), and the Warlock imp quest 1470 (class quests
+# other than the trainer letters are left to the player).
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 1-6 Deathknell
+  display: ForeverXP 1-6 Deathknell
+  next: 6-12 Tirisfal Glades
+  group: ForeverXP Horde
+  for: Undead
+  class: Warrior
+  start_level: 1
+  start: [1420, 30.0, 72.5]   # the crypt where Undead rise
+  version: 1
+
+steps:
+  - accept: 363
+    text: Undertaker Mordo is just outside the crypt.
+  - turnin: 363
+    accept: 364
+    text: Shadow Priest Sarvis is in the church.
+
+  # --- First kills
+  - complete: 364
+    text: Mindless and Wretched Zombies shamble around the graveyard and the houses east of the church.
+  - turnin: 364
+    accept: 3901
+
+  # --- Class letters (all inside Deathknell)
+  - accept: 3095
+    only: Warrior
+  - turnin: 3095
+    only: Warrior
+    text: Dannal Stern is in the house east of the church. Train Battle Shout or Charge if you can.
+  - accept: 3096
+    only: Rogue
+  - turnin: 3096
+    only: Rogue
+    text: David Trias is in the house east of the church.
+  - accept: 3097
+    only: Priest
+  - turnin: 3097
+    only: Priest
+    text: Dark Cleric Duesten is inside the church.
+  - accept: 3098
+    only: Mage
+  - turnin: 3098
+    only: Mage
+    text: Isabella is inside the church.
+  - accept: 3099
+    only: Warlock
+  - turnin: 3099
+    only: Warlock
+    text: Maximillion is inside the church.
+  - accept: 98601
+    only: Paladin
+  - turnin: 98601
+    accept: 90902
+    only: Paladin
+    text: Aramis Hammerhand is inside the church. Rediscovering the Light needs level 2.
+  - complete: 90902
+    only: Paladin
+    text: Cast Holy Light on 5 Injured Deathguards lying around Deathknell.
+  - turnin: 90902
+    only: Paladin
+
+  - accept: 376
+    text: Novice Elreth is by the church door.
+  - accept: 98389
+    text: Aramis Hammerhand, inside the church. Needs level 2; come back for it after the skeletons if you're still level 1.
+
+  # --- North-east of town: skeletons, wolves and bats
+  - complete: [3901, 376]
+    text: Rattlecage Skeletons are just north of town. Scavengers and Duskbats are further east toward the Scarlet camp.
+  - turnin: 3901
+  - turnin: 376
+    accept: 6395
+  - accept: 3902
+    text: Deathguard Saltain, by the houses east of the church.
+  - accept: 380
+    text: Executor Arren, at the east edge of town.
+  - complete: 3902
+    text: The Scavenged Goods are brown crates around the houses and the edges of Deathknell.
+  - turnin: 3902
+
+  # --- Night Web's Hollow
+  - accept: 91208
+    only: Paladin
+    text: Needs level 4. Skip it for now if you're short and grab it when you come back.
+  - complete: 91208
+    only: Paladin
+    text: The Frightened Paladin is hiding west of town on the way to the mine.
+  - complete: [380, 98389]
+    text: Young Night Web Spiders are outside the mine, Night Web Spiders inside. The Webbed Victims (Forsaken Adventurers) are cocooned in the mine.
+  - turnin: 380
+    accept: 381
+  - turnin: 98389
+  - turnin: 91208
+    accept: 91209
+    only: Paladin
+
+  # --- East: Scarlet camp and Samuel Fipps
+  - complete: 381
+    text: Scarlet Converts and Initiates are in the camp east of Deathknell. Samuel Fipps wanders among the Scarlets there; kill him for Marla's quest too.
+  - complete: 6395
+    text: If you have Samuel Fipps' Remains, bury them at Marla's Grave in the graveyard north of the church.
+  - turnin: 6395
+  - turnin: 381
+    accept: 382
+  - complete: 382
+    text: Meven Korgal is the officer in the south part of the Scarlet camp.
+  - turnin: 382
+    accept: [383, 96656]
+    text: Take both. The Adventurer is a free turn-in at Eleanor Shackleton's camp on the road into Brill.
+  - accept: 5651
+    only: Priest
+    text: Dark Cleric Duesten in the church. Needs level 5.
+  - train: Deathknell
+    text: Train your level 4/6 spells before you leave; the next trainers are in Brill.
