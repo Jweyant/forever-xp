@@ -20,6 +20,7 @@ import json
 import math
 import re
 import sys
+import urllib.error
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
@@ -470,6 +471,91 @@ def apply_quest_faction(items, quests_path=Path("gamedata/quests.json")):
     return n
 
 
+# Classic PvP rank titles, Alliance / Horde, by RequiredPVPRank (1-14).
+PVP_RANKS = {1: ("Private", "Scout"), 2: ("Corporal", "Grunt"), 3: ("Sergeant", "Sergeant"),
+             4: ("Master Sergeant", "Senior Sergeant"), 5: ("Sergeant Major", "First Sergeant"),
+             6: ("Knight", "Stone Guard"), 7: ("Knight-Lieutenant", "Blood Guard"), 8: ("Knight-Captain", "Legionnaire"),
+             9: ("Knight-Champion", "Centurion"), 10: ("Lieutenant Commander", "Champion"),
+             11: ("Commander", "Lieutenant General"), 12: ("Marshal", "General"),
+             13: ("Field Marshal", "Warlord"), 14: ("Grand Marshal", "High Warlord")}
+
+
+def pvp_rank_source(rec):
+    """Items that need a PvP rank are rank rewards, whatever else we know about them."""
+    rank = rec.get("pvprank")
+    if not rank:
+        return None
+    names = PVP_RANKS.get(rank)
+    if names:
+        side = rec.get("side")
+        title = names[0] if side == "A" else names[1] if side == "H" else f"{names[0]} / {names[1]}"
+        return {"t": "pvp", "n": f"Rank {rank} ({title})", "z": "PvP rank reward"}
+    return {"t": "pvp", "n": f"Rank {rank}", "z": "PvP rank reward"}
+
+
+JOURNAL_TABLES = ["JournalInstance", "JournalEncounter", "JournalEncounterItem", "Map"]
+
+
+def _col(row, *names):
+    """A column by any of several names, since DB2 exports rename fields between builds."""
+    for n in names:
+        if n in row:
+            return row[n]
+    lower = {k.lower(): v for k, v in row.items()}
+    for n in names:
+        if n.lower() in lower:
+            return lower[n.lower()]
+    return None
+
+
+def journal_sources(cache, download, keep):
+    """item id -> boss-drop sources from the client's dungeon journal (JournalEncounterItem).
+
+    The journal is the one place the Forever client itself says which boss drops what, so it
+    covers new dungeon and raid items that no open-source loot table knows yet.
+    """
+    src = defaultdict(list)
+    tables = {}
+    for t in JOURNAL_TABLES:
+        try:
+            tables[t] = load_csv(cache, t, download)
+        except (SystemExit, OSError, urllib.error.URLError) as e:  # table missing in this build or wago down
+            print(f"dungeon journal: {t} unavailable ({e}); skipping", file=sys.stderr)
+            return {}
+    # Map -> instance type (1 dungeon, 2 raid)
+    map_type = {}
+    for r in tables["Map"]:
+        mid, itype = num(_col(r, "ID"), int), num(_col(r, "InstanceType"), int)
+        if mid is not None:
+            map_type[mid] = itype
+    inst = {}
+    for r in tables["JournalInstance"]:
+        iid = num(_col(r, "ID"), int)
+        if iid is None:
+            continue
+        mid = num(_col(r, "MapID", "Map"), int)
+        inst[iid] = {"name": _col(r, "Name_lang", "Name") or "", "kind": "raid" if map_type.get(mid) == 2 else "dungeon"}
+    enc = {}
+    for r in tables["JournalEncounter"]:
+        eid = num(_col(r, "ID"), int)
+        if eid is None:
+            continue
+        enc[eid] = {"name": _col(r, "Name_lang", "Name") or "", "inst": num(_col(r, "JournalInstanceID", "InstanceID"), int)}
+    n = 0
+    for r in tables["JournalEncounterItem"]:
+        item = num(_col(r, "ItemID"), int)
+        e = enc.get(num(_col(r, "JournalEncounterID", "EncounterID"), int))
+        if item in keep and e and e["name"]:
+            i = inst.get(e["inst"]) or {"name": "", "kind": "dungeon"}
+            rec = {"t": i["kind"], "n": e["name"], "boss": 1}
+            if i["name"]:
+                rec["z"] = i["name"]
+            src[item].append(rec)
+            n += 1
+    print(f"dungeon journal: {n} boss drops for {len(src)} items")
+    return src
+
+
 def rank_sources(lst):
     order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
              "drop": 8, "world": 9, "logged": -1}
@@ -527,6 +613,7 @@ def main():
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
     cm = cmangos_sources(a.cmangos, keep) if a.cmangos else {}
     qs = questie_sources(a.questie, keep) if a.questie else {}
+    jn = journal_sources(a.cache, a.download, keep)
     logged = defaultdict(list)
     loot_csv = Path("out/loot.csv")
     if loot_csv.exists():
@@ -539,7 +626,16 @@ def main():
                                                "seen": int(r.get("players") or 1)})
     no_src = 0
     for iid, rec in items.items():
-        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
+        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
+        pvp = pvp_rank_source(rec)
+        if pvp:
+            # AtlasLoot's PvP entries only say "Weapons" or "Armor"; the rank is the useful part.
+            had = False
+            for x in s:
+                if x["t"] == "pvp":
+                    x["n"], had = pvp["n"], True
+            if not had:
+                s = rank_sources(s + [pvp])
         if s:
             rec["src"] = s
         else:
