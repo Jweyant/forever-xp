@@ -416,23 +416,26 @@ def slugify(s):
 
 
 # Talents that raise hit chance, for the BIS planner's hit cap: spell id -> (what the hit applies to,
-# which value of the talent's text is the hit %). "phys" is melee and ranged, "spell:<schools>" spells
-# of those schools, "all" both. Taken from Forever's own talent text (tools/build_talents.py); where
-# the text just says "your chance to hit", it counts for everything. Left out on purpose: Furious
-# Precision (off-hand attacks only), Survival Tactics (traps and Feign Death), and talents that lower
-# the chance to be hit.
+# which value of the talent's text is the hit %; the % per rank comes from the data). "phys" is
+# melee and ranged, "spell:<schools>" spells of those schools, "all" both.
+# What each one applies to is read from the talent spell's own effects in Forever's game data (as
+# shipped in the wowsims/forever engine's spell tables, checked Oct 31 2026 against build 1.60.1.70707):
+# SPELL_AURA_MOD_HIT_CHANCE is melee and ranged hit, SPELL_AURA_MOD_SPELL_HIT_CHANCE spell hit, and a
+# SPELLMOD hit modifier limited to one school's spells counts for that school. Talents whose text
+# only says "your chance to hit" carry both effects. Left out on purpose: Furious Precision (off-hand
+# attacks only), Survival Tactics (traps and Feign Death) and talents that lower the chance to be hit.
+# Arcane Focus left the game in the 1.60.1.70685 hotfixes, when Elemental Precision became Precision.
 HIT_TALENTS = {
-    20189: ("phys", 0),            # Paladin: Precision
-    13705: ("phys", 0),            # Rogue: Precision
-    19290: ("phys", 0),            # Hunter: Surefooted
-    18174: ("spell:all", 0),       # Warlock: Suppression
-    16179: ("all", 1),             # Shaman: Tidal Focus
-    16819: ("all", 1),             # Druid: Nature's Reach
-    15260: ("spell:shadow", 0),    # Priest: Shadow Focus
-    1309957: ("spell:holy", 0),    # Priest: Holy Precision
-    1310904: ("spell:holy", 0),    # Paladin: Divine Precision
-    29438: ("spell:fire,frost", 0),  # Mage: Elemental Precision
-    11222: ("spell:arcane", 0),    # Mage: Arcane Focus
+    20189: ("all", 0),             # Paladin: Precision (melee + spell hit effects)
+    13705: ("all", 0),             # Rogue: Precision (melee + spell hit effects)
+    19290: ("all", 0),             # Hunter: Surefooted (melee + spell hit effects)
+    18174: ("all", 0),             # Warlock: Suppression (spell + melee hit effects)
+    16179: ("all", 1),             # Shaman: Tidal Focus (melee + spell hit effects)
+    16819: ("all", 1),             # Druid: Nature's Reach (melee + spell hit effects)
+    15260: ("spell:shadow", 0),    # Priest: Shadow Focus (hit modifier on Shadow spells)
+    1309957: ("spell:holy", 0),    # Priest: Holy Precision (hit modifier on Holy spells)
+    1310904: ("spell:holy", 0),    # Paladin: Divine Precision (hit modifier on Holy spells)
+    29438: ("spell:all", 0),       # Mage: Precision, was Elemental Precision (spell hit, all schools)
 }
 
 

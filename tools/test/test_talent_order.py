@@ -62,6 +62,19 @@ class TalentOrder(unittest.TestCase):
         self.assertEqual(len(warnings), 1)
 
 
+class NewestCopy(unittest.TestCase):
+    def test_picks_the_newest_client_build_and_skips_unreadable_files(self):
+        tmp = Path(tempfile.mkdtemp())
+        old, new, bad = tmp / "old.json", tmp / "new.json", tmp / "bad.json"
+        old.write_text(json.dumps({"builds": {"forever": "1.60.1.70532"}}))
+        new.write_text(json.dumps({"builds": {"forever": "1.60.1.70707"}}))
+        bad.write_text("not json")
+        self.assertEqual(cto.newest([old, new]), new)
+        self.assertEqual(cto.newest([new, old]), new)
+        self.assertEqual(cto.newest([bad, old]), old)
+        self.assertEqual(cto.newest([old, old]), old)
+
+
 class SetupBuilds(unittest.TestCase):
     def test_every_setup_build_fits_forever_trees(self):
         trees = {name.upper(): [[t[4] for t in tals] for _, _, _, tals in tr] for _, name, tr in TALENTS["talents"]}

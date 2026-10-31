@@ -63,9 +63,15 @@ jobs:
           path: ext/wowsims
           persist-credentials: false
 
-      # A build string means the same talents to the engine as to our data, or the run sims the wrong build.
+      # A build string means the same talents to the engine as to our data, or the run sims the wrong
+      # build. The daily talent refresh lands on the `data` branch, so check the newer of the two copies.
       - name: Check talent order against the engine
-        run: python3 -I tools/check_talent_order.py gamedata/talents.json ext/wowsims gamedata/simconfigs
+        run: |
+          extra=""
+          if git fetch -q --depth=1 origin data && git show FETCH_HEAD:gamedata/talents.json > "$RUNNER_TEMP/talents-data.json"; then
+            extra="$RUNNER_TEMP/talents-data.json"
+          fi
+          python3 -I tools/check_talent_order.py ext/wowsims gamedata/simconfigs gamedata/talents.json $extra
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
