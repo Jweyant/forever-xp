@@ -5,7 +5,8 @@
 #   - Questie's Forever database (GPLv3) for Forever quest rewards, vendors, chests and drops
 #   - wowlayerup-forever/opendata (data CC BY 4.0) for quest XP and givers Questie doesn't have yet
 #   - wowsims/forever (MIT) item database, for item icons the client tables leave unnamed
-# It also rebuilds gamedata/quests.json (every Forever quest) from Questie, and commits the result
+# It also rebuilds gamedata/quests.json (every Forever quest) from Questie and gamedata/raids.json
+# (dungeons and raids, with player kill data from gamedata/players/), and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
 #
 # Runs daily (Questie and the Forever client change often around launch), on demand (Actions > Refresh gear data > Run workflow), and on pushes to
@@ -19,7 +20,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/build_items.py", "tools/build_quests.py", "tools/questxp.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
+    paths: ["tools/build_items.py", "tools/build_raids.py", "tools/build_quests.py", "tools/questxp.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
 
 permissions:
   contents: write
@@ -77,9 +78,12 @@ jobs:
       - name: Build quest database
         run: python3 tools/build_quests.py --cache .cache/wago --cmangos ext/cmangos.sql --opendata ext/opendata --out gamedata/quests.json
 
+      - name: Build dungeon and raid database
+        run: python3 tools/build_raids.py --atlasloot ext/AtlasLootClassic --cmangos ext/cmangos.sql --questie data/questiedb --out gamedata/raids.json
+
       - name: Commit if changed
         id: commit
-        run: bash tools/push_data.sh "Refresh gear and quest data from Forever client, Questie, cmangos and AtlasLoot" gamedata/items.json gamedata/items-report.md gamedata/other-items.json gamedata/quests.json
+        run: bash tools/push_data.sh "Refresh gear and quest data from Forever client, Questie, cmangos and AtlasLoot" gamedata/items.json gamedata/items-report.md gamedata/other-items.json gamedata/quests.json gamedata/raids.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       - name: Deploy the site with the new data

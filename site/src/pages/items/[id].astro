@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
 import { gear, itemById, rewardedBy, setItems } from "../../lib/gear";
 import { qById } from "../../lib/questdb";
+import { instanceBySlug, raidSlug } from "../../lib/raids";
 import { tooltipHtml, seenText, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
 import type { Item } from "../../scripts/gear/model";
 
@@ -50,7 +51,7 @@ const unconfirmed = srcs.length - confirmed.length;
         {srcs.map((s) => (
           <li><span class="k">{kindName(s.t)}</span>
             {s.qid && qById.has(s.qid) ? <a href={`/quests/${s.qid}/`}>{s.n}</a> : <b>{s.n || kindName(s.t)}</b>}{" "}
-            <span class="muted">{[s.z, s.boss ? "boss" : "", s.ch ? `${Number(s.ch)}% drop chance` : ""].filter(Boolean).join(", ")}</span>
+            <span class="muted">{s.z && instanceBySlug.has(raidSlug(s.z)) ? <a href={`/raids/${raidSlug(s.z)}/`}>{s.z}</a> : s.z}{[s.z ? "" : null, s.boss ? "boss" : "", s.ch ? `${Number(s.ch)}% drop chance` : ""].filter((x) => x).map((x) => `, ${x}`).join("")}</span>
             {seenText(s.seen) && <span class="confirmed" title="Different players whose ForeverScout logs saw this drop in WoW Forever">{seenText(s.seen)}</span>}</li>
         ))}
       </ul>

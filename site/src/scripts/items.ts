@@ -39,6 +39,22 @@ export function srcText(it: Item) {
   const seen = seenText(s.seen);
   return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}${seen ? ` (${seen[0].toLowerCase()}${seen.slice(1)})` : ""}`;
 }
+/** Dungeon or raid page slug, matching tools/build_raids.py. */
+export const instSlug = (name: string) => name.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/** The item's main source as HTML, linking quests and (when `instances` has a page for it) dungeons and raids. */
+export function srcHtml(it: Item, instances: Set<string> = new Set()) {
+  const s = it.src?.[0];
+  if (!s) return esc(srcText(it));
+  const label = esc(SRC_LABEL[s.t] || s.t);
+  const seen = seenText(s.seen);
+  const tail = seen ? ` (${esc(seen[0].toLowerCase() + seen.slice(1))})` : "";
+  if (s.t === "quest" && num(s.qid) > 0) return `${label}: <a href="/quests/${num(s.qid)}/">${esc(s.n || `Quest ${num(s.qid)}`)}</a>${tail}`;
+  const slug = s.z ? instSlug(s.z) : "";
+  if ((s.t === "raid" || s.t === "dungeon") && slug && instances.has(slug)) {
+    return `${label}: ${s.n ? `${esc(s.n)}, ` : ""}<a href="/raids/${esc(slug)}/">${esc(s.z || "")}</a>${tail}`;
+  }
+  return esc(srcText(it));
+}
 export const SLOT_NAME: Record<string, string> = {
   head: "Head", neck: "Neck", shoulder: "Shoulder", back: "Back", chest: "Chest", wrist: "Wrist", hands: "Hands",
   waist: "Waist", legs: "Legs", feet: "Feet", finger: "Finger", trinket: "Trinket", mainhand: "Main Hand",
