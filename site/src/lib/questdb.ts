@@ -5,7 +5,19 @@ export interface QQuest {
   id: number; n: string; lv: number; req: number; z: string; side?: "A" | "H"; cls?: string[]; xp?: number; xpe?: 1; xps?: string;
   start?: Place; end?: Place; obj?: string; pre?: number[]; next?: number; rep?: 1;
   rew?: { id: number; n: string; q?: number; icon?: string }[]; repu?: number; new?: 1; chg?: string[];
+  /** Objective spawn areas from Questie: name, npc/object/item, zone, points on a 0-100 map grid. */
+  objs?: { n: string; t: string; z: string; a: [number, number][] }[];
+  /** Where ForeverScout players progressed objectives: [x, y, players]. */
+  seen?: [number, number, number][];
 }
+/** The point nearest the middle of a spawn area, for a /way line. */
+export function centre(a: [number, number][]): [number, number] | null {
+  if (!a.length) return null;
+  const mx = a.reduce((s, p) => s + p[0], 0) / a.length, my = a.reduce((s, p) => s + p[1], 0) / a.length;
+  return a.reduce((b, p) => ((p[0] - mx) ** 2 + (p[1] - my) ** 2 < (b[0] - mx) ** 2 + (b[1] - my) ** 2 ? p : b));
+}
+/** Clamp a map coordinate to a plain 0-100 number for markup. */
+export const pct = (v: unknown) => Math.min(100, Math.max(0, Number(v) || 0));
 export const qdb = qdbJson as QQuest[];
 /** Quest XP for display: estimates (no source has the real number yet) get a "~". */
 export const xpText = (q: QQuest) => (q.xp ? `${q.xpe ? "~" : ""}${q.xp}` : "–");

@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
 import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
-import { qdb, qById, questChain, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
+import { qdb, qById, questChain, centre, pct, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
 import { itemById } from "../../lib/gear";
 
 export function getStaticPaths() {
@@ -15,6 +15,8 @@ const name = (id: number) => qById.get(id)?.n ?? `Quest ${id}`;
 const pre = (q.pre || []).filter((id) => id > 0);
 // Walk the chain backwards and forwards (links in either direction) so the page shows where this quest sits.
 const { chain, branches, from } = questChain(q);
+const objs = (q.objs || []).filter((o) => o && typeof o.n === "string" && Array.isArray(o.a) && o.a.length);
+const seen = Array.isArray(q.seen) ? q.seen : [];
 const why = !s ? null :
   s.verdict === "do" ? "Part of a Forever XP route." :
   s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` : `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
@@ -72,6 +74,30 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     <p class="small muted">The square stands in for the zone map: the marker sits at the in-game map coordinates. Click a <code>/way</code> line to copy it for TomTom.</p>
   </>)}
 
+  {objs.length > 0 && (<>
+    <h2>Objective areas</h2>
+    <div class="where">
+      {objs.map((o, i) => {
+        const c = centre(o.a);
+        return (
+          <figure class="pin">
+            <div class="grid" aria-hidden="true">
+              {o.a.map(([x, y]) => <span class="spawn" style={`left:${pct(x)}%;top:${pct(y)}%`}></span>)}
+              {i === 0 && seen.map(([x, y, n]) => <span class="seen" title={`${n} players`} style={`left:${pct(x)}%;top:${pct(y)}%`}></span>)}
+            </div>
+            <figcaption>
+              <span class="role">{o.t === "item" ? "Drops from" : o.t === "object" ? "Use" : "Kill or find"}</span>
+              <b>{o.n}</b>
+              <span class="muted">{o.z}{o.t === "item" ? ", spots where its sources spawn" : ""}</span>
+              {c && <button type="button" class="way" data-copy={`/way ${pct(c[0])} ${pct(c[1])} ${o.n}`} title="Copy for TomTom"><code>/way {pct(c[0])} {pct(c[1])} {o.n}</code><span>Copy</span></button>}
+            </figcaption>
+          </figure>
+        );
+      })}
+    </div>
+    <p class="small muted">Dots are spawn points from Questie's data{seen.length > 0 && <>; gold squares are where ForeverScout players actually progressed this quest</>}. The <code>/way</code> line points at the middle of the area.</p>
+  </>)}
+
   {q.rew && q.rew.length > 0 && (<>
     <h2>Rewards</h2>
     <ul class="rewards">
@@ -126,6 +152,8 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     background: linear-gradient(#0000 calc(25% - 1px), #8a6d3b33 0 25%, #0000 0) 0 0 / 100% 25%, linear-gradient(90deg, #0000 calc(25% - 1px), #8a6d3b33 0 25%, #0000 0) 0 0 / 25% 100%, radial-gradient(circle at 40% 40%, #3b4a36, #1f2a20); }
   .pin .dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid #111; box-shadow: 0 0 0 3px #0006, 0 0 10px #e8b92e; }
   .pin .dot.start { background: #e8b92e; } .pin .dot.end { background: #69ccf0; }
+  .pin .spawn { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #e05a4f; opacity: .85; }
+  .pin .seen { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border: 1px solid #111; background: #e8b92e; }
   .pin figcaption { display: grid; gap: 0.1rem; }
   .pin .role { font: 600 0.75rem var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--xp); }
   .rewards { list-style: none; padding: 0; display: grid; gap: 0.4rem; }
