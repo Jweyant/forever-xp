@@ -3,6 +3,7 @@
   python3 tools/discord_bot.py validate                 # check discord/server.json (no token needed)
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
                                                          # (and post or update the welcome and rules text)
+  python3 tools/discord_bot.py founding-members [--dry-run]   # give the founding role to the first members (hourly)
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
   python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
   python3 tools/discord_bot.py post-scouts SCOUTS.json [--dry-run]    # weekly Scout report to the report channel
@@ -36,6 +37,8 @@ NAME_RE = re.compile(r"^[a-z0-9-]{1,90}$")
 ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 &'-]{0,58}[A-Za-z0-9])?$")
 ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
+FOUNDING_KEYS = {"role", "count"}
+SNOWFLAKE = re.compile(r"^[0-9]{1,25}$")
 CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "message"}
 PRIVATE_KEYS = {"name", "type"}
 MESSAGES = ROOT / "discord" / "messages"
@@ -123,6 +126,16 @@ def validate(cfg):
             problems.append(f"retired role {name!r}: names are 1-60 letters, digits, spaces, & ' or -")
         elif name.lower() in listed:
             problems.append(f"retired role {name}: also listed in roles")
+    founding = cfg.get("founding_members")
+    if founding is not None:
+        if not isinstance(founding, dict) or set(founding) - FOUNDING_KEYS:
+            problems.append("founding_members needs only role and count")
+        elif not isinstance(founding.get("role"), str) or founding["role"].lower() not in listed:
+            problems.append("founding_members: role must be one of the listed roles")
+        elif founding["role"].lower() in {"admin", "moderator"}:
+            problems.append("founding_members: can't hand out a staff role")
+        elif type(founding.get("count")) is not int or not 1 <= founding["count"] <= 250:
+            problems.append("founding_members: count must be a whole number from 1 to 250")
     seen_roles = set()
     for r in roles:
         name = r.get("name") if isinstance(r, dict) else None
@@ -208,7 +221,8 @@ class Discord:
         self.h = {"Authorization": f"Bot {token}", "User-Agent": UA, "Content-Type": "application/json"}
         self.dry = dry
 
-    def call(self, method, path, body=None, *, write=False):
+    def call(self, method, path, body=None, *, write=False, soft=()):
+        """soft: HTTP codes that return None instead of stopping the run."""
         if write and self.dry:
             log(f"  [dry run] {method} {path}")
             return {}
@@ -224,6 +238,8 @@ class Discord:
                     wait = float(json.loads(e.read() or b"{}").get("retry_after", 2))
                     time.sleep(min(wait, 30) + 0.25)
                     continue
+                if e.code in soft:
+                    return None
                 detail = e.read()[:300].decode("utf-8", "replace")
                 raise SystemExit(f"Discord API {method} {path} failed: {e.code} {detail}")
         raise SystemExit(f"Discord API {method} {path}: still rate limited")
@@ -382,6 +398,54 @@ def sync_roles(cfg, d, guild, roles, me):
     if moves:
         log(f"~ order {len(present)} roles as in discord/server.json")
         d.call("PATCH", f"/guilds/{guild}/roles", moves, write=True)
+
+
+# ---- founding members --------------------------------------------------------------------------
+def founding_members(cfg, d, guild):
+    """Give the founding role to the earliest members who joined, up to the configured count.
+    Bots and members who haven't accepted the rules are skipped. It only ever adds this one role;
+    it never removes it. If a holder leaves, the next-earliest member without it gets it.
+    Logs counts only: the run log is public, so no names or IDs."""
+    conf = cfg.get("founding_members")
+    if not conf:
+        log("No founding_members in discord/server.json.")
+        return
+    me = d.call("GET", "/users/@me")
+    roles = d.call("GET", f"/guilds/{guild}/roles")
+    role = next((r for r in roles if r["name"].lower() == conf["role"].lower() and not r.get("managed")), None)
+    if not role or not SNOWFLAKE.match(str(role["id"])):
+        log(f"! The {conf['role']} role doesn't exist yet; the layout run creates it.")
+        return
+    bot_top = max((r.get("position", 0) for r in roles if (r.get("tags") or {}).get("bot_id") == me["id"]), default=0)
+    if role.get("position", 0) >= bot_top:
+        log(f"! {conf['role']} is above the bot's role, so the bot can't give it out.")
+        return
+
+    members, after = [], "0"
+    for _ in range(50):   # up to 50,000 members
+        page = d.call("GET", f"/guilds/{guild}/members?limit=1000&after={after}", soft=(403,))
+        if page is None:
+            log("! Can't list members. Turn on Server Members Intent: Discord developer portal > Bot > Privileged Gateway Intents.")
+            return
+        members += page
+        if len(page) < 1000:
+            break
+        after = page[-1]["user"]["id"]
+
+    people = [m for m in members
+              if isinstance(m.get("user"), dict) and not m["user"].get("bot") and not m.get("pending")
+              and SNOWFLAKE.match(str(m["user"].get("id", ""))) and isinstance(m.get("joined_at"), str)]
+    holders = sum(1 for m in people if role["id"] in (m.get("roles") or []))
+    room = conf["count"] - holders
+    if room <= 0:
+        log(f"{conf['role']}: {holders} of {conf['count']}, full.")
+        return
+    waiting = sorted((m for m in people if role["id"] not in (m.get("roles") or [])),
+                     key=lambda m: (m["joined_at"], int(m["user"]["id"])))[:room]
+    for m in waiting:
+        d.call("PUT", f"/guilds/{guild}/members/{m['user']['id']}/roles/{role['id']}", write=True)
+        time.sleep(0.5)
+    log(f"{conf['role']}: gave it to {len(waiting)}, now {holders + len(waiting)} of {conf['count']}.")
 
 
 # ---- patch notes -------------------------------------------------------------------------------
@@ -757,6 +821,8 @@ def main():
     r = sub.add_parser("post-scouts")
     r.add_argument("scouts")
     r.add_argument("--dry-run", action="store_true")
+    f = sub.add_parser("founding-members")
+    f.add_argument("--dry-run", action="store_true")
     u = sub.add_parser("update-scouts")
     u.add_argument("scouts")
     u.add_argument("--dry-run", action="store_true")
@@ -775,6 +841,8 @@ def main():
     d = Discord(os.environ.get("DISCORD_BOT_TOKEN"), dry=a.dry_run)
     if a.cmd == "setup":
         setup(cfg, d, guild)
+    elif a.cmd == "founding-members":
+        founding_members(cfg, d, guild)
     elif a.cmd == "post-date":
         post_date(cfg, a.notes, a.date, d, guild)
     elif a.cmd == "post-scouts":
