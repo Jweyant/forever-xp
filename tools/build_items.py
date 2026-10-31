@@ -652,7 +652,8 @@ def main():
         f"# Gear database\n\nForever client build {FOREVER_BUILD}.\n\n"
         f"- Equippable items: {len(items)} (by quality: {dict(sorted(by_q.items()))})\n"
         f"- Item sets: {len(sets)}\n- Items with a known source: {len(items) - no_src}\n"
-        f"- Items with no known source yet: {no_src}\n")
+        f"- Items with no known source yet: {no_src}\n"
+        + ("\nDungeon journal:\n" + "".join(f"- {line}\n" for line in JOURNAL_NOTE) if JOURNAL_NOTE else ""))
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 
