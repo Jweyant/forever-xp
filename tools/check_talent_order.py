@@ -8,7 +8,10 @@ the other), the same string means different talents to each.
 Fails when a sim setup in gamedata/simconfigs/ puts points where the two disagree, since that run
 would sim a different build than the one we name. Other differences are printed as warnings.
 
-    python3 -I tools/check_talent_order.py gamedata/talents.json ext/wowsims gamedata/simconfigs
+Given more than one talents file (main's copy and the `data` branch's, where the daily refresh
+lands), it checks the one from the newest Forever client build, as the site deploy would use.
+
+    python3 -I tools/check_talent_order.py ext/wowsims gamedata/simconfigs gamedata/talents.json [more.json ...]
 """
 import json
 import re
@@ -90,10 +93,30 @@ def check(talents_json, checkout, configs):
     return errors, warnings
 
 
+def build_of(path):
+    """The Forever client build a talents file was made from, as a number tuple; () if unreadable."""
+    try:
+        b = json.loads(Path(path).read_text())["builds"]["forever"]
+        return tuple(int(x) for x in re.fullmatch(r"\d+(?:\.\d+){3}", b).group(0).split("."))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return ()
+
+
+def newest(paths):
+    """The readable talents file from the newest client build (the first one on a tie)."""
+    usable = [p for p in paths if build_of(p)]
+    if not usable:
+        raise SystemExit("no readable talents file")
+    return max(usable, key=lambda p: (build_of(p), -paths.index(p)))
+
+
 def main(argv):
-    if len(argv) != 4:
+    if len(argv) < 4:
         raise SystemExit(__doc__.strip().splitlines()[-1].strip())
-    errors, warnings = check(*argv[1:])
+    talents = newest(argv[3:])
+    b = ".".join(map(str, build_of(talents)))
+    print(f"talent data: {talents} (Forever {b})")
+    errors, warnings = check(talents, argv[1], argv[2])
     for w in warnings:
         print(f"warning: {w}")
     for e in errors:
