@@ -38,6 +38,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Player loot sightings (gamedata/players/loot.csv) are committed to the `data` branch by
+      # the player-data workflow; the gear build folds them in as confirmed drop sources.
+      - name: Use the newest player loot data
+        run: |
+          git fetch -q --depth 1 origin data || { echo "No data branch yet."; exit 0; }
+          f=gamedata/players/loot.csv
+          d=$(git log -1 --format=%ct FETCH_HEAD -- "$f" 2>/dev/null); m=$(git log -1 --format=%ct HEAD -- "$f" 2>/dev/null)
+          if [ "${d:-0}" -gt "${m:-0}" ]; then mkdir -p gamedata/players; git show "FETCH_HEAD:$f" > "$f"; echo "Using $f from the data branch"; fi
+
       - name: Get open-source data
         run: |
           git clone -q --depth 1 https://github.com/cmangos/classic-db ext/classic-db

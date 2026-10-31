@@ -477,11 +477,55 @@ def questie_sources(qdir, keep):
     return src
 
 
+# Player logs are public input: a drop is only published once this many different players saw it.
+MIN_LOGGED_PLAYERS = 2
+
+
+def read_loot_csv(path):
+    """gamedata/players/loot.csv (tools/ingest_logs.py) -> {item id: [logged source, ...]}.
+    Rows seen by fewer than MIN_LOGGED_PLAYERS players are left out."""
+    logged = defaultdict(list)
+    with Path(path).open() as f:
+        for r in csv.DictReader(f):
+            try:
+                iid, players = int(r.get("item") or 0), int(r.get("players") or 0)
+            except ValueError:
+                continue
+            if iid <= 0 or players < MIN_LOGGED_PLAYERS:
+                continue
+            logged[iid].append({"t": "logged", "n": str(r.get("source") or "")[:80], "z": str(r.get("zone") or "")[:60],
+                                "seen": players})
+    return logged
+
+
+def _norm(s):
+    return re.sub(r"[^a-z0-9]+", " ", str(s or "").lower()).strip()
+
+
+def confirm_sources(logged, known):
+    """Fold player sightings into the sources other databases already list.
+
+    A sighting whose NPC or object name matches a known source confirms it (`seen` = players),
+    which ranks it first. Sightings that match nothing stay as "logged" sources: drops Forever
+    added or changed that no database has yet."""
+    out = [dict(s) for s in known]
+    rest = []
+    for lg in logged:
+        n = _norm(lg.get("n"))
+        hit = [s for s in out if n and _norm(s.get("n")) == n] if n else []
+        if hit:
+            for s in hit:
+                s["seen"] = max(s.get("seen", 0), lg["seen"])
+        else:
+            rest.append(lg)
+    return rest + out
+
+
 def rank_sources(lst):
     order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
              "drop": 8, "world": 9, "logged": -1}
     seen, out = set(), []
-    for s in sorted(lst, key=lambda s: (order.get(s["t"], 9), -s.get("ch", 0))):
+    for s in sorted(lst, key=lambda s: (0 if s.get("seen") else 1, order.get(s["t"], 9), -s.get("ch", 0))):
         key = (s["t"], s.get("n"), s.get("z"))
         if key in seen:
             continue
@@ -639,21 +683,15 @@ def main():
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
     cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
-    logged = defaultdict(list)
+    logged = {}
     loot_csv = Path("out/loot.csv")
     if not loot_csv.exists():  # published aggregate from the player-data workflow
         loot_csv = Path("gamedata/players/loot.csv")
     if loot_csv.exists():
-        with loot_csv.open() as f:
-            for r in csv.DictReader(f):
-                # Player logs are public input: only trust a drop once 2+ different players saw it.
-                if int(r.get("players") or 0) < 2:
-                    continue
-                logged[int(r["item"])].append({"t": "logged", "n": r.get("source") or "", "z": r.get("zone") or "",
-                                               "seen": int(r.get("players") or 1)})
+        logged = read_loot_csv(loot_csv)
     no_src = 0
     for iid, rec in items.items():
-        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
+        s = rank_sources(confirm_sources(logged.get(iid, []), al.get(iid, []) + qs.get(iid, []) + cm.get(iid, [])))
         if s:
             rec["src"] = s
         else:

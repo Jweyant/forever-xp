@@ -26,11 +26,18 @@ export const SRC_LABEL: Record<string, string> = {
   chest: "Chest", raid: "Raid", dungeon: "Dungeon", pvp: "PvP", rep: "Reputation", quest: "Quest", craft: "Crafted",
   vendor: "Vendor", drop: "Drop", world: "World drop", logged: "Seen in Forever",
 };
+/** "Confirmed in Forever by 3 players": how many different players' logs saw a source drop this item. */
+export function seenText(seen: unknown): string {
+  const n = Math.floor(Number(seen));
+  if (!Number.isFinite(n) || n < 1) return "";
+  return `Confirmed in Forever by ${n} player${n === 1 ? "" : "s"}`;
+}
 export function srcText(it: Item) {
   const s = it.src?.[0];
   if (!s) return "Source not known yet";
   const where = [s.n, s.z].filter(Boolean).join(", ");
-  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}`;
+  const seen = seenText(s.seen);
+  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}${seen ? ` (${seen[0].toLowerCase()}${seen.slice(1)})` : ""}`;
 }
 export const SLOT_NAME: Record<string, string> = {
   head: "Head", neck: "Neck", shoulder: "Shoulder", back: "Back", chest: "Chest", wrist: "Wrist", hands: "Hands",

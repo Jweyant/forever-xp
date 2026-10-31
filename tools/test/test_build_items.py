@@ -83,5 +83,38 @@ class DisplayIds(unittest.TestCase):
                                 "d": [["Young Wolf", "Elwynn Forest"]], "qu": [[33, "Wolves Across the Border"]]}])
 
 
+
+class LoggedSources(unittest.TestCase):
+    """Player loot sightings confirm known sources or add new ones, never below the player threshold."""
+
+    def test_loot_csv_threshold_and_bad_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "loot.csv"
+            p.write_text('item,source,zone,players,looted\n'
+                         '100,"Kobold Vermin","Elwynn Forest",3,7\n'
+                         '100,"Chest #99","Elwynn Forest",1,1\n'      # one player: not published
+                         'x,"Bad","",5,5\n'                            # not an item id
+                         '101,"<b>Defias</b>","Westfall",2,2\n')
+            logged = build_items.read_loot_csv(p)
+        self.assertEqual(logged, {100: [{"t": "logged", "n": "Kobold Vermin", "z": "Elwynn Forest", "seen": 3}],
+                                  101: [{"t": "logged", "n": "<b>Defias</b>", "z": "Westfall", "seen": 2}]})
+
+    def test_sighting_confirms_a_known_source_and_ranks_it_first(self):
+        known = [{"t": "vendor", "n": "Smith Argus", "z": "Elwynn Forest"},
+                 {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest", "ch": 1.5}]
+        logged = [{"t": "logged", "n": "kobold vermin", "z": "Elwynn Forest", "seen": 4}]
+        out = build_items.rank_sources(build_items.confirm_sources(logged, known))
+        self.assertEqual(out[0], {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest", "ch": 1.5, "seen": 4})
+        self.assertEqual([s["t"] for s in out], ["drop", "vendor"])  # no duplicate "logged" row
+        self.assertNotIn("seen", known[1])  # inputs untouched
+
+    def test_unmatched_sighting_is_a_new_forever_drop(self):
+        known = [{"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}]
+        logged = [{"t": "logged", "n": "Skyborne Scavenger", "z": "Durotar", "seen": 2}]
+        out = build_items.rank_sources(build_items.confirm_sources(logged, known))
+        self.assertEqual(out, [{"t": "logged", "n": "Skyborne Scavenger", "z": "Durotar", "seen": 2},
+                               {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}])
+
+
 if __name__ == "__main__":
     unittest.main()

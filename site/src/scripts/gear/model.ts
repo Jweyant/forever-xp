@@ -12,7 +12,8 @@ export interface Item {
   /** New to Forever (not in the classic item list), or changed from classic: [what, classic value, Forever value]. */
   new?: 1; chg?: [string, number, number][];
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
-  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
+  /** `seen`: how many different players' ForeverScout logs saw this drop in Forever (tools/build_items.py). */
+  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number; seen?: number }[];
 }
 
 export const CRIT_RATING = 14;

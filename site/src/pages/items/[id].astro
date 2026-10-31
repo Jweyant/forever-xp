@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
 import { gear, itemById, rewardedBy, setItems } from "../../lib/gear";
 import { qById } from "../../lib/questdb";
-import { tooltipHtml, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
+import { tooltipHtml, seenText, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
 import type { Item } from "../../scripts/gear/model";
 
 export function getStaticPaths() {
@@ -23,6 +23,8 @@ const QNAME = ["Poor", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Artif
 const qualityName = QNAME[it.q] || "";
 const desc = `${it.name}: ${qualityName.toLowerCase()} ${slot.toLowerCase()} ${it.type && it.type !== "misc" ? it.type.replace(/[12]$/, "") : ""}, item level ${it.ilvl}${it.req ? `, requires level ${it.req}` : ""}, in WoW Forever. Stats and where to get it.`;
 const kindName = (t: string) => SRC_LABEL[t] || t;
+const confirmed = srcs.filter((s) => seenText(s.seen));
+const unconfirmed = srcs.length - confirmed.length;
 ---
 <Base image="/og/items.jpg" title={`${it.name}`} description={desc}>
   <p class="crumbs"><a href="/items/">Items</a> / <a href={`/items/?slot=${it.slot}`}>{slot}</a></p>
@@ -47,10 +49,12 @@ const kindName = (t: string) => SRC_LABEL[t] || t;
         ))}
         {srcs.map((s) => (
           <li><span class="k">{kindName(s.t)}</span>
-            {s.qid && qById.has(s.qid) ? <a href={`/quests/${s.qid}/`}>{s.n}</a> : <b>{s.n || kindName(s.t)}</b>}
-            <span class="muted">{[s.z, s.boss ? "boss" : "", s.ch ? `${s.ch}% drop chance` : ""].filter(Boolean).join(", ")}</span></li>
+            {s.qid && qById.has(s.qid) ? <a href={`/quests/${s.qid}/`}>{s.n}</a> : <b>{s.n || kindName(s.t)}</b>}{" "}
+            <span class="muted">{[s.z, s.boss ? "boss" : "", s.ch ? `${Number(s.ch)}% drop chance` : ""].filter(Boolean).join(", ")}</span>
+            {seenText(s.seen) && <span class="confirmed" title="Different players whose ForeverScout logs saw this drop in WoW Forever">{seenText(s.seen)}</span>}</li>
         ))}
       </ul>
+      {srcs.length > 0 && unconfirmed > 0 && <p class="small muted">{confirmed.length > 0 ? `${unconfirmed} of these sources ${unconfirmed === 1 ? "is" : "are"} from Classic-era data and not yet confirmed in Forever.` : "These sources are from Classic-era data. Forever changed and added loot, so they may be out of date."} Loot it with <a href="/scout/">ForeverScout</a> running and it gets confirmed for everyone.</p>}
       <p><a class="btn secondary" href="/bis/">Plan your gear in the BIS planner</a></p>
     </div>
   </div>
@@ -82,5 +86,6 @@ const kindName = (t: string) => SRC_LABEL[t] || t;
   .srcs { list-style: none; padding: 0; }
   .srcs li { padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
   .srcs .k { display: inline-block; min-width: 5.5rem; font: 600 0.8rem var(--font-body); color: var(--xp); }
+  .srcs .confirmed { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; border-radius: 999px; font: 600 0.72rem var(--font-body); color: var(--bg); background: var(--xp); white-space: nowrap; }
   .ilist { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.4rem 1rem; max-width: none; }
 </style>

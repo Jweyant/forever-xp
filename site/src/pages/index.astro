@@ -178,7 +178,7 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
       <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
       <li><h3>Everyone benefits</h3><p>Routes get measured times, new items get drop sources so other players can find them, and missing quests go back to Questie.</p></li>
     </ol>
-    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">{meta.measured_quests} quests measured from player logs so far.</span></p>
+    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">From player logs so far: {meta.measured_quests} quests measured, {meta.confirmed_items || 0} item drops confirmed in Forever.</span></p>
   </section>
 </Base>
 <script>

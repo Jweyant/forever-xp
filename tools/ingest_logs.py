@@ -309,8 +309,22 @@ def write_timing(db, out_dir):
     (out_dir / "quest_timing.csv").write_text("\n".join(out) + "\n")
 
 
+INSTALL_RE = re.compile(r"([0-9a-f]{32})-[0-9a-f]{16}\.lua$")
+
+
+def player_key(char_id, source):
+    """One player, not one character: logs that came through the uploader are named
+    logs/<install>-<slot>.lua (tools/pull_logs.py), so alts on the same install count once.
+    Logs attached by hand have no install id and fall back to the character id."""
+    m = INSTALL_RE.search(str(source or ""))
+    return "i:" + m.group(1) if m else "c:" + str(char_id)
+
+
 def write_loot(db, out_dir):
-    """Which NPC or object dropped which item, from ForeverScout 'loot' events."""
+    """Which NPC or object dropped which item, from ForeverScout 'loot' events.
+
+    players = distinct players (installs) who looted it from that source in that zone;
+    looted = how many times it was seen dropping there, across everyone."""
     zones = {}
     zfile = Path(__file__).parent / "zone_sizes.json"
     if zfile.exists():
@@ -321,17 +335,26 @@ def write_loot(db, out_dir):
         if e.get("npc") and e.get("name"):
             names[e["npc"]] = e["name"]
     seen = defaultdict(set)
-    for char, raw in db.execute("""SELECT s.char_id, e.json FROM events e JOIN sessions s ON s.id = e.session_id
-                                   WHERE e.k = 'loot'"""):
+    looted = defaultdict(int)
+    for char, source, raw in db.execute("""SELECT s.char_id, s.source, e.json FROM events e
+                                           JOIN sessions s ON s.id = e.session_id WHERE e.k = 'loot'"""):
         e = json.loads(raw)
-        if not e.get("item"):
+        try:
+            item = int(e.get("item") or 0)
+        except (TypeError, ValueError):
+            continue
+        if item <= 0:
             continue
         src = e.get("src")
         label = names.get(src) or (f"Object #{src}" if e.get("kind") == "GameObject" else f"NPC #{src}" if src else "")
-        seen[(int(e["item"]), label, zones.get(e.get("map"), ""))].add(char)
-    out = ["item,source,zone,players"]
-    for (item, label, zone), chars in sorted(seen.items()):
-        out.append(",".join([str(item), '"' + label.replace('"', "'") + '"', '"' + (zone or "") + '"', str(len(chars))]))
+        key = (item, str(label), zones.get(e.get("map")) or "")
+        seen[key].add(player_key(char, source))
+        looted[key] += 1
+    out = ["item,source,zone,players,looted"]
+    for key, players in sorted(seen.items()):
+        item, label, zone = key
+        out.append(",".join([str(item), '"' + label.replace('"', "'") + '"', '"' + zone + '"',
+                             str(len(players)), str(looted[key])]))
     (out_dir / "loot.csv").write_text("\n".join(out) + "\n")
 
 

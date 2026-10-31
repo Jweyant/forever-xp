@@ -308,12 +308,14 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     build_game_data()
     gear = ROOT / "gamedata" / "items.json"
+    confirmed_items = 0
     if gear.exists():
         pub = ROOT / "site" / "public" / "data"
         pub.mkdir(parents=True, exist_ok=True)
         (pub / "items.json").write_bytes(gear.read_bytes())
         (OUT / "items.json").write_bytes(gear.read_bytes())
         write_item_index(gear, pub)
+        confirmed_items = count_confirmed(gear)
     else:
         (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
     # Stat weights measured by wowsims/forever (tools/build_simweights.py); the planner falls back to
@@ -330,10 +332,19 @@ def main():
         "built": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "skip_threshold": SKIP_XP_PER_MIN,
         "measured_quests": len(measured),
+        "confirmed_items": confirmed_items,
         "quests": len(quests),
         "guides": len(guides),
     }, indent=1))
-    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured -> {OUT}")
+    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured, "
+          f"{confirmed_items} items confirmed -> {OUT}")
+
+
+def count_confirmed(gear):
+    """Items with at least one drop source confirmed by player logs (a `seen` count)."""
+    g = json.loads(gear.read_text())
+    return sum(1 for i in g.get("items", []) if isinstance(i, dict)
+               and any(isinstance(s, dict) and num(s.get("seen"), int) for s in i.get("src") or []))
 
 
 def decode_desc(d, rank):
