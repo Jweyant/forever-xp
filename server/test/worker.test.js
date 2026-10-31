@@ -126,3 +126,43 @@ test("wrangler.toml declares the burst limit the code expects", async () => {
   assert.match(block, /^\s*namespace_id\s*=\s*"\d+"\s*$/m);
   assert.match(block, /^\s*simple\s*=\s*\{\s*limit\s*=\s*5\s*,\s*period\s*=\s*10\s*\}\s*$/m);
 });
+
+test("the schedule starts the notes workflow on main: quick, and a full run at the top of the hour", async () => {
+  const { startNotesRun } = await import("../src/index.js");
+  const calls = [];
+  const fake = async (url, init) => { calls.push({ url, init }); return { status: 204 }; };
+  const quick = await startNotesRun({ GH_DISPATCH_TOKEN: "tok" }, Date.UTC(2026, 10, 4, 22, 45), fake);
+  const full = await startNotesRun({ GH_DISPATCH_TOKEN: "tok" }, Date.UTC(2026, 10, 4, 23, 0), fake);
+  assert.deepEqual([quick.full, full.full], [false, true]);
+  assert.equal(calls.length, 2);
+  for (const c of calls) {
+    assert.equal(c.url, "https://api.github.com/repos/Jweyant/forever-xp/actions/workflows/blizzard-notes.yml/dispatches");
+    assert.equal(c.init.method, "POST");
+    assert.equal(c.init.headers.authorization, "Bearer tok");
+  }
+  assert.deepEqual(JSON.parse(calls[0].init.body), { ref: "main", inputs: { quick: "true" } });
+  assert.deepEqual(JSON.parse(calls[1].init.body), { ref: "main", inputs: { quick: "false" } });
+});
+
+test("the schedule does nothing without a token, and never logs the token", async () => {
+  const { startNotesRun } = await import("../src/index.js");
+  let called = false;
+  assert.deepEqual(await startNotesRun({}, Date.now(), async () => { called = true; }), { skipped: true });
+  assert.equal(called, false);
+  const logged = [];
+  const log = console.log;
+  console.log = (...a) => logged.push(a.join(" "));
+  try {
+    await startNotesRun({ GH_DISPATCH_TOKEN: "super-secret" }, Date.now(), async () => ({ status: 401 }));
+  } finally {
+    console.log = log;
+  }
+  assert.ok(logged.every((l) => !l.includes("super-secret")));
+});
+
+test("the scheduled handler hands the request to waitUntil", async () => {
+  const waits = [];
+  await worker.scheduled({ scheduledTime: Date.now() }, {}, { waitUntil: (p) => waits.push(p) });
+  assert.equal(waits.length, 1);
+  await waits[0];
+});

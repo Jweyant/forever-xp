@@ -140,6 +140,14 @@ def write_item_index(gear, pub):
     g = json.loads(gear.read_text())
     idx = [[i["id"], i["name"], i.get("q", 1), i.get("icon", ""), SLOT_NAME.get(i.get("slot"), (i.get("slot") or "").title()),
             i.get("ilvl", 0)] for i in g["items"]]
+    # Non-gear items (no pages of their own): [id, name, quality, "", category, 0, 1]; search links them to the item list.
+    other = ROOT / "gamedata" / "other-items.json"
+    if other.exists():
+        rows = json.loads(other.read_text())
+        idx += [[num(o.get("id"), int), str(o.get("n", "")), (o["q"] if isinstance(o.get("q"), int) and 0 <= o["q"] <= 7 else 1),
+                 re.sub(r"[^a-z0-9_-]", "", str(o.get("icon") or "").lower()), str(o.get("c", "")), 0, 1]
+                for o in rows if isinstance(o, dict) and num(o.get("id"), int)]
+        (pub / "other-items.json").write_bytes(other.read_bytes())
     (pub / "item-index.json").write_text(json.dumps(idx, separators=(",", ":"), ensure_ascii=False))
 
 
@@ -155,7 +163,20 @@ def write_questdb(gear):
     if gear.exists():
         g = json.loads(gear.read_text())
         items = {i["id"]: i for i in (g["items"] if isinstance(g, dict) else g)}
+    # Where ForeverScout players actually progressed each objective (aggregated by tools/ingest_logs.py).
+    seen = {}
+    for p in (ROOT / "gamedata" / "players" / "objective_areas.json", ROOT / "out" / "objective_areas.json"):
+        if p.exists():
+            seen = json.loads(p.read_text())
+            break
     for q in qdb:
+        s = seen.get(str(q["id"])) if isinstance(seen, dict) else None
+        if isinstance(s, dict):
+            cells = [[num(c[0]), num(c[1]), num(c[2], int)] for o in s.values() if isinstance(o, dict)
+                     for c in (o.get("cells") or []) if isinstance(c, list) and len(c) == 3]
+            cells = [c for c in cells if None not in c and 0 <= c[0] <= 100 and 0 <= c[1] <= 100]
+            if cells:
+                q["seen"] = cells[:200]
         for r in q.get("rew", []):
             it = items.get(r["id"])
             if it:
@@ -216,6 +237,8 @@ def main():
     # Measured timings, once ForeverScout logs have been ingested.
     measured = {}
     timing = ROOT / "out" / "quest_timing.csv"
+    if not timing.exists():  # published aggregate from the player-data workflow
+        timing = ROOT / "gamedata" / "players" / "quest_timing.csv"
     if timing.exists():
         with timing.open() as f:
             for r in csv.DictReader(f):
@@ -286,17 +309,24 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     build_game_data()
     gear = ROOT / "gamedata" / "items.json"
+    confirmed_items = 0
     if gear.exists():
         pub = ROOT / "site" / "public" / "data"
         pub.mkdir(parents=True, exist_ok=True)
         (pub / "items.json").write_bytes(gear.read_bytes())
         (OUT / "items.json").write_bytes(gear.read_bytes())
         write_item_index(gear, pub)
+        confirmed_items = count_confirmed(gear)
     else:
         (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
+    # Stat weights measured by wowsims/forever (tools/build_simweights.py); the planner falls back to
+    # its starting weights for specs not listed.
+    sim = ROOT / "gamedata" / "simweights.json"
+    (OUT / "simweights.json").write_text(sim.read_text() if sim.exists() else '{"source":{},"specs":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
-    (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[]}')
+    (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
     write_questdb(gear)
+    write_scouts()
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))
@@ -304,10 +334,60 @@ def main():
         "built": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "skip_threshold": SKIP_XP_PER_MIN,
         "measured_quests": len(measured),
+        "confirmed_items": confirmed_items,
         "quests": len(quests),
         "guides": len(guides),
     }, indent=1))
-    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured -> {OUT}")
+    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured, "
+          f"{confirmed_items} items confirmed -> {OUT}")
+
+
+SCOUT_HANDLE = re.compile(r"^Scout [0-9a-f]{6}$")
+SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
+
+
+def write_scouts():
+    """The Scout leaderboard for /scouts/ (tools/ingest_logs.py write_scouts), allow-listed:
+    handles must look like "Scout 1a2b3c", every count is a whole number, lists are capped."""
+    src = ROOT / "out" / "scouts.json"
+    if not src.exists():  # published aggregate from the player-data workflow
+        src = ROOT / "gamedata" / "players" / "scouts.json"
+    try:
+        doc = json.loads(src.read_text()) if src.exists() else {}
+    except ValueError:
+        doc = {}
+    doc = doc if isinstance(doc, dict) else {}
+
+    def whole(v):
+        n = num(v, int)
+        return max(0, min(n, 10_000_000)) if isinstance(n, int) else 0
+
+    def rows(v, cap):
+        out = []
+        for r in v if isinstance(v, list) else []:
+            if isinstance(r, dict) and isinstance(r.get("handle"), str) and SCOUT_HANDLE.match(r["handle"]):
+                out.append({"handle": r["handle"], **{k: whole(r.get(k)) for k in SCOUT_COUNTS}})
+        out.sort(key=lambda r: (-r["score"], r["handle"]))
+        return out[:cap]
+
+    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
+    week = doc.get("week") if isinstance(doc.get("week"), dict) else {}
+    clean = {
+        "updated": whole(doc.get("updated")),
+        "totals": {k: whole(totals.get(k)) for k in ("scouts", "sessions", "quests", "drops", "discoveries")},
+        "week": {k: whole(week.get(k)) for k in ("scouts", "quests", "drops")},
+        "board": rows(doc.get("board"), 50),
+        "week_board": rows(doc.get("week_board"), 10),
+    }
+    (OUT / "scouts.json").write_text(json.dumps(clean, indent=1))
+    return clean
+
+
+def count_confirmed(gear):
+    """Items with at least one drop source confirmed by player logs (a `seen` count)."""
+    g = json.loads(gear.read_text())
+    return sum(1 for i in g.get("items", []) if isinstance(i, dict)
+               and any(isinstance(s, dict) and num(s.get("seen"), int) for s in i.get("src") or []))
 
 
 def decode_desc(d, rank):

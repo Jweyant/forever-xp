@@ -2,11 +2,12 @@
 // State lives in the URL hash (shareable) and in localStorage (comes back next visit).
 import {
   CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
-  weightsFor, canUse, fits, score, sourceKind, canDualWield,
+  weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 import { drawFigure, type FigItem } from "./figure";
+import { toggle3d, send3d } from "./viewer3d";
 import { afterSignIn } from "../account";
 afterSignIn(); // put back a plan the sign-in round trip dropped from the address
 
@@ -26,6 +27,28 @@ const RACES: Record<string, { name: string; side: Side | "both"; icon?: string }
   skyborne: { name: "Skyborne", side: "both" },
 };
 const RACE_TOKEN: Record<string, string> = { scourge: "undead", undead: "undead", nightelf: "nightelf" };
+// Forever's race/class combinations: vanilla's plus Dwarf Shaman, Gnome Priest, Human Hunter,
+// Orc Mage, Troll Warlock and Undead Paladin. Skyborne plays both sides but is a Mage only on
+// Alliance and a Shaman only on Horde. No Tauren Mage here either.
+const RACE_CLASSES: Record<string, string[]> = {
+  human: ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "MAGE", "WARLOCK"],
+  dwarf: ["WARRIOR", "PALADIN", "HUNTER", "ROGUE", "PRIEST", "SHAMAN"],
+  nightelf: ["WARRIOR", "HUNTER", "ROGUE", "PRIEST", "DRUID"],
+  gnome: ["WARRIOR", "ROGUE", "PRIEST", "MAGE", "WARLOCK"],
+  orc: ["WARRIOR", "HUNTER", "ROGUE", "SHAMAN", "MAGE", "WARLOCK"],
+  undead: ["WARRIOR", "PALADIN", "ROGUE", "PRIEST", "MAGE", "WARLOCK"],
+  tauren: ["WARRIOR", "HUNTER", "SHAMAN", "DRUID"],
+  troll: ["WARRIOR", "HUNTER", "ROGUE", "PRIEST", "MAGE", "SHAMAN", "WARLOCK"],
+  skyborne: ["WARRIOR", "HUNTER", "ROGUE", "DRUID", "MAGE", "SHAMAN"],
+};
+/** Can this race be this class on this side? (Game imports skip this: the game is the truth.) */
+function canBe(race: string, cls: string, side: "H" | "A"): boolean {
+  if (!has(RACE_CLASSES, race) || !RACE_CLASSES[race].includes(cls)) return false;
+  if (RACES[race].side !== "both" && RACES[race].side !== side) return false;
+  if (race === "skyborne" && cls === "MAGE") return side === "A";
+  if (race === "skyborne" && cls === "SHAMAN") return side === "H";
+  return true;
+}
 const st: State = {
   cls: "WARRIOR", spec: "fury", goal: "pve", level: 60, side: "H", race: "orc", body: "M",
   sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null,
@@ -49,12 +72,15 @@ function slotWeights(doll: DollSlot, it: Item): Stats {
   let k = 1;
   if (doll === "ranged") k = hunter ? 1 : 0.08;
   else if (hunter) k = 0.15;
-  else if (doll === "offhand") k = 0.5;
+  // The sim measures off-hand weapon DPS on its own; without it, an off-hand counts half.
+  else if (doll === "offhand") k = Number.isFinite(w.dps_oh) && w.dps ? w.dps_oh / w.dps : 0.5;
   if (it.slot === "twohand" && !hunter) k *= 1.9;
   return k === 1 ? w : { ...w, dps: (w.dps || 0) * k };
 }
 const val = (doll: DollSlot, it: Item | undefined) => (it ? score(it, slotWeights(doll, it)) : 0);
 const gearOf = () => (view === "plan" ? st.plan : st.cur);
+/** The first race that can be the current class on the current side. */
+const validRace = () => Object.keys(RACES).find((r) => canBe(r, st.cls, st.side)) || (st.side === "A" ? "human" : "orc");
 
 // ---------- URL + storage ----------
 function encode(): string {
@@ -79,7 +105,7 @@ function decode(h: string) {
   const l = Math.round(+(p.get("l") || 60)); if (l >= 1 && l <= 60) st.level = l;
   if (p.get("f") === "A" || p.get("f") === "H") st.side = p.get("f") as Side;
   const [race, body] = (p.get("r") || "").split(".");
-  st.race = has(RACES, race) ? race : st.side === "A" ? "human" : "orc";
+  st.race = has(RACES, race) && canBe(race, st.cls, st.side) ? race : validRace();
   st.body = body === "F" ? "F" : "M";
   if (p.get("src")) st.sources = new Set(p.get("src")!.split(".").filter((s) => ALL_SOURCES.includes(s as never)));
   const slots = (v: string | null) => {
@@ -109,6 +135,7 @@ function importGear(text: string): string {
   if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; }
   st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as Side;
   const rk = RACE_TOKEN[raceTok.toLowerCase()] || raceTok.toLowerCase();
+  // The game said so: imports skip canBe(), so a combo this file doesn't know yet still loads.
   if (has(RACES, rk)) st.race = rk;
   if (body) st.body = body as "M" | "F";
   st.cur = {}; let missing = 0, n = 0;
@@ -305,7 +332,7 @@ function renderControls() {
   ($("#g-level") as HTMLInputElement).value = String(st.level);
   $("#g-level-out").textContent = String(st.level);
   ($("#g-side") as HTMLSelectElement).value = st.side;
-  $("#g-race").innerHTML = Object.entries(RACES).filter(([, r]) => r.side === "both" || r.side === st.side)
+  $("#g-race").innerHTML = Object.entries(RACES).filter(([k]) => canBe(k, st.cls, st.side) || k === st.race)
     .map(([k, r]) => `<option value="${k}"${k === st.race ? " selected" : ""}>${r.name}</option>`).join("");
   ($("#g-body") as HTMLSelectElement).value = st.body;
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => (c.checked = st.sources.has(c.dataset.src!)));
@@ -313,11 +340,27 @@ function renderControls() {
   const w = weights();
   $("#g-weights").innerHTML = WEIGHT_KEYS.map((k) => `<label><span>${STAT_LABEL[k] || k}</span>
     <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"${st.goal === "custom" ? "" : " disabled"}></label>`).join("");
-  $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion." : "Starting weights for this spec and goal. Pick Custom weights to edit them.";
+  const sim = simPresets(st.cls, st.spec)[0];
+  $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion."
+    : sim ? `Measured by our own sim runs (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts at its value below the cap; the planner doesn't stop counting it past the cap yet. Pick Custom weights to edit them.`
+    : "Starting weights for this spec and goal: there are no sim weights for this spec yet. Pick Custom weights to edit them.";
+  renderWeightSource(sim?.label);
+}
+
+/** One line under the controls saying where the weights come from, with the link wowsims asks for. */
+function renderWeightSource(simLabel?: string) {
+  const el = $("#g-wsrc");
+  el.replaceChildren();
+  if (st.goal === "custom") { el.textContent = "Stat weights: your own (Custom)."; return; }
+  if (!simLabel) { el.textContent = "Stat weights: starting estimates (no sim weights for this spec yet)."; return; }
+  const a = document.createElement("a");
+  a.href = SIM_SITE; a.textContent = "wowsims"; a.rel = "noopener"; a.target = "_blank";
+  el.append("Stat weights: our own sim runs on the ", a, ` engine (${simLabel})${st.goal === "pve" ? "" : ", adjusted for your goal"}.`);
 }
 
 function render() {
   renderControls(); renderDoll(); renderStats(); renderRows(); save();
+  send3d(st.race, st.body, gearOf(), byId); // no-op unless the 3D dialog is open
 }
 
 // ---------- editing ----------
@@ -381,10 +424,10 @@ function bind() {
   $("#g-level").addEventListener("change", (e) => { st.level = lvl(e); render(); });
   $("#g-side").addEventListener("change", (e) => {
     st.side = (e.target as HTMLSelectElement).value === "A" ? "A" : "H";
-    if (RACES[st.race].side !== "both" && RACES[st.race].side !== st.side) st.race = st.side === "A" ? "human" : "orc";
+    if (!canBe(st.race, st.cls, st.side)) st.race = validRace();
     render();
   });
-  $("#g-race").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; if (has(RACES, v)) { st.race = v; render(); } });
+  $("#g-race").addEventListener("change", (e) => { const v = (e.target as HTMLSelectElement).value; if (has(RACES, v) && canBe(v, st.cls, st.side)) { st.race = v; render(); } });
   $("#g-body").addEventListener("change", (e) => { st.body = (e.target as HTMLSelectElement).value === "F" ? "F" : "M"; render(); });
   document.querySelectorAll<HTMLInputElement>("[data-src]").forEach((c) => c.addEventListener("change", () => {
     if (c.checked) st.sources.add(c.dataset.src!); else st.sources.delete(c.dataset.src!); render();
@@ -402,6 +445,16 @@ function bind() {
   });
   $("#g-keep").addEventListener("click", () => { const before = { ...st.plan }; st.plan = { ...st.cur }; render(); toast("Plan reset to your current gear.", { label: "Undo", run: () => { st.plan = before; render(); } }); });
   $("#g-import-go").addEventListener("click", () => { toast(importGear(($("#g-import") as HTMLTextAreaElement).value)); render(); });
+  $("#g-pawn").addEventListener("click", async () => {
+    const spec = SPECS[st.cls].find((s) => s.key === st.spec);
+    const goal = GOALS.find((g) => g.key === st.goal);
+    const tag = pawnScale(`Forever XP ${spec?.name || ""} ${CLASSES[st.cls].name} ${goal?.key === "pve" ? "" : goal?.name || ""}`.replace(/\s+/g, " ").trim(),
+      weights(), st.cls === "HUNTER");
+    const out = $("#g-pawn-out") as HTMLTextAreaElement;
+    out.value = tag;
+    try { await navigator.clipboard.writeText(tag); out.hidden = true; toast("Pawn scale copied. In game, open Pawn, choose Import, and paste it."); }
+    catch { out.hidden = false; out.select(); toast("Copy the Pawn scale from the box below the button."); }
+  });
   $("#g-copy").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(location.href); toast("Plan link copied. Share it anywhere."); } catch { toast("Copy the address bar to share this plan."); }
   });
@@ -417,9 +470,12 @@ function bind() {
   document.querySelectorAll<HTMLButtonElement>("[data-pickcls]").forEach((b) => b.addEventListener("click", () => {
     const c = b.dataset.pickcls;
     if (!has(CLASSES, c) || st.cls === c) return;
-    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {}; render();
+    st.cls = c; st.spec = SPECS[st.cls][0].key; st.custom = null; st.plan = {};
+    if (!canBe(st.race, st.cls, st.side)) st.race = validRace();
+    render();
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((b) => b.addEventListener("click", () => { view = b.dataset.view as "plan" | "cur"; render(); }));
+  $("#g-3d-open").addEventListener("click", () => toggle3d(() => send3d(st.race, st.body, gearOf(), byId)));
 
   // Character sheet: hover for the tooltip, click to change, right-click or long-press to remove.
   const doll = $("#g-doll"), tip = $("#g-tip");

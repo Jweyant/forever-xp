@@ -2,13 +2,15 @@
 import Base from "../layouts/Base.astro";
 import XpBar from "../components/XpBar.astro";
 import Logo from "../components/Logo.astro";
-import { guides, quests, meta, rateOf, fmtMinutes } from "../lib/data";
+import { guides, quests, meta, scouts, rateOf, fmtMinutes } from "../lib/data";
 import { qdb } from "../lib/questdb";
 import { gear } from "../lib/gear";
 import notesJson from "../data/notes.json";
 import { SITE, ICON } from "../config";
+import { news } from "../lib/changes";
 
-const horde = guides.filter((g) => g.faction === "Horde");
+// The Orc/Troll line through the shared Horde route: one guide per level band.
+const horde = guides.filter((g) => g.faction === "Horde" && (g.for === "Orc/Troll" || g.for === "Horde"));
 const totalMinutes = horde.reduce((s, g) => s + (g.minutes || 0), 0);
 const skips = quests.filter((q) => q.verdict === "skip");
 const worst = [...skips].filter((q) => (rateOf(q) ?? 0) > 0).sort((a, b) => (rateOf(a) ?? 0) - (rateOf(b) ?? 0)).slice(0, 5);
@@ -18,6 +20,7 @@ const pool = notes.rows.filter((r) => r.kind !== "Known issues" && !("dev" in r)
 const seenArea = new Set<string>();
 const latest = [...pool.filter((r) => !seenArea.has(r.section + (r.cls || "")) && seenArea.add(r.section + (r.cls || ""))), ...pool].filter((r, i, a) => a.indexOf(r) === i).slice(0, 6);
 const n = (v: number) => v.toLocaleString("en-US");
+const headlines = news.filter((a) => !a.notes).slice(0, 5);
 const tools = [
   { href: "/bis/", icon: "inv_chest_plate06", title: "BIS planner", text: "An in-game style character sheet with the best item for every slot. Import your gear straight from the game." },
   { href: "/quests/", icon: "inv_misc_note_01", title: "Quest database", text: `All ${n(qdb.length)} quests with givers, coordinates, chains and rewards. ${n(qdb.filter((q) => q.new).length)} are new in Forever.` },
@@ -48,8 +51,26 @@ for (const r of fresh) {
 const newGroups = [...groupMap.values()].sort((a, b) => b.count - a.count).slice(0, 8);
 const newAreas = [...new Set(fresh.map((r) => r.section))];
 const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate}${g ? `&${g.key}=${encodeURIComponent(g.name)}` : ""}`;
+
+// "News from Blizzard" strip at the top: up to three announcements from the last week (name
+// reservation, realms, launch news), newest first. The site rebuilds whenever new ones arrive.
+const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T12:00:00Z`)) / 864e5 <= 7).slice(0, 3);
 ---
 <Base title={SITE.name} description="Free WoW Forever tools: a BIS gear planner, every quest with coordinates, the item database, talent calculator, all of Blizzard's changes and fast leveling routes.">
+  {recentNews.length > 0 && (
+    <section class="newsbar" aria-labelledby="nb-title">
+      <div class="wn-head">
+        <span class="wn-pill nb-pill">News</span>
+        <h2 id="nb-title">From Blizzard</h2>
+        <a class="nb-all" href="/news/">All Blizzard news</a>
+      </div>
+      <ul class="nb-items">
+        {recentNews.map((a) => (
+          <li><time datetime={a.date}>{fmt(a.date)}</time><a href={a.url} rel="noopener">{a.title}</a></li>
+        ))}
+      </ul>
+    </section>
+  )}
   {showNew && (
     <section class="whatsnew" aria-labelledby="wn-title">
       <div class="wn-head">
@@ -84,6 +105,21 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
     </div>
   </section>
 
+  <section class="scoutband" aria-labelledby="sb-title">
+    <span class="ico lg"><img src={ICON("inv_misc_bag_10")} alt="" width="58" height="58" loading="lazy" /></span>
+    <div>
+      <h2 id="sb-title">ForeverScout records the gear you find</h2>
+      <p>Forever adds items Classic never had, and nobody knows where most of them drop yet. When you loot something green or better, ForeverScout notes the item and the NPC or chest that dropped it. <b>Each recording helps other players find new gear and new items.</b></p>
+      <ul>
+        <li>Drop sources show up in the <a href="/items/">item database</a> and the <a href="/bis/">BIS planner</a></li>
+        <li>Once two players loot the same drop, its item page says <b>Confirmed in Forever</b></li>
+        <li>Every quest you time and drop you log earns points on the <a href="/scouts/">Scout leaderboard</a></li>
+        <li>No names, realms, gold or chat</li>
+      </ul>
+      <p class="ctas"><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/scouts/">See the leaderboard</a></p>
+    </div>
+  </section>
+
   <section class="tools" aria-label="Tools">
     {tools.map((t) => (
       <a href={t.href}>
@@ -95,7 +131,7 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
 
   <section class="two">
     <div>
-      <h2>Latest from Blizzard</h2>
+      <h2>Latest changes</h2>
       <ol class="latest">
         {latest.map((r) => (
           <li>
@@ -106,6 +142,20 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
       </ol>
       <p><a href="/changes/">All {n(notes.rows.length)} changes</a></p>
     </div>
+    {headlines.length > 0 && (
+      <div>
+        <h2>News from Blizzard</h2>
+        <ol class="latest">
+          {headlines.map((a) => (
+            <li>
+              <span class="muted small">{fmt(a.date)}, {a.kind === "Article" ? "Article" : a.category}</span>
+              <a href={a.url} rel="noopener">{a.title}</a>
+            </li>
+          ))}
+        </ol>
+        <p><a href="/news/">All Blizzard news</a></p>
+      </div>
+    )}
     <div>
       <h2>Slowest quests to skip</h2>
       <ol class="latest">
@@ -119,8 +169,8 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
 
   <section>
     <h2>Horde routes, level 1 to 30</h2>
-    <p class="muted">{horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route. <a href="/guides/">Alliance routes</a> cover every starting zone to level 10.</p>
-    <XpBar guides={guides} />
+    <p class="muted">Orc and Troll: {horde.length} guides, about {fmtMinutes(totalMinutes)} of play. Click a segment to open its route. <a href="/guides/">Every other race</a> has its own starting zone route, and the Alliance has routes to level 20.</p>
+    <XpBar guides={horde} />
   </section>
 
   <section>
@@ -128,9 +178,9 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
     <ol class="loop">
       <li><h3>You play</h3><p>ForeverScout records quests, XP, loot and how long each quest really took. No names, realms or chat.</p></li>
       <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
-      <li><h3>Everyone benefits</h3><p>Routes get measured times, new items get drop sources, and missing quests go back to Questie.</p></li>
+      <li><h3>Everyone benefits</h3><p>Routes get measured times, drops get a "Confirmed in Forever" badge on their item page, missing quests go back to Questie, and you climb the <a href="/scouts/">Scout leaderboard</a>.</p></li>
     </ol>
-    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">{meta.measured_quests} quests measured from player logs so far.</span></p>
+    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">From player logs so far: {meta.measured_quests} quests measured, {meta.confirmed_items || 0} item drops confirmed in Forever{scouts.totals.scouts > 0 ? `, by ${Number(scouts.totals.scouts)} scouts` : ""}.</span></p>
   </section>
 </Base>
 <script>
@@ -166,6 +216,12 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
   .wn-items { margin: 0 0 0.4rem; padding-left: 1.1rem; max-width: 90ch; }
   .wn-items li { margin: 0.15rem 0; }
   .wn-all { font-weight: 600; }
+  .newsbar { margin: 0.6rem 0 0.4rem; padding: 0.8rem 1.1rem; border: 1px solid var(--line); border-left: 4px solid #0f4c9c; border-radius: var(--radius); background: color-mix(in srgb, #0f4c9c 6%, var(--surface)); }
+  .nb-pill { background: #0f4c9c; color: #fff; }
+  .nb-all { margin-left: auto; font-weight: 600; font-size: var(--step--1); }
+  .nb-items { list-style: none; padding: 0; margin: 0.5rem 0 0; max-width: none; }
+  .nb-items li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 0.6rem; padding: 0.2rem 0; overflow-wrap: anywhere; }
+  .nb-items time { color: var(--muted); font-size: var(--step--1); padding-top: 0.1rem; }
   .hero { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2.5rem; align-items: center; padding: 1.5rem 0 1rem; }
   .hero .mark { padding: 1rem; }
   .hero h1 { max-width: 18ch; margin-bottom: 0.4em; font-size: clamp(2.4rem, 5vw, 3.7rem); }
@@ -174,14 +230,20 @@ const newHref = (g?: { key: string; name: string }) => `/changes/?date=${newDate
   .launch-count { margin-top: 1.1rem; color: var(--muted); }
   .launch-count b { color: var(--ink); }
   @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero .mark { padding: 0; } .hero .mark :global(svg) { width: 130px; height: auto; } }
+  .scoutband { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.4rem 1.2rem; align-items: start; margin-top: 1.5rem; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: 10px; background: color-mix(in srgb, var(--xp) 8%, var(--surface)); }
+  .scoutband .ico { --qb: #1eff00; }
+  .scoutband h2 { margin: 0 0 0.4rem; font-size: var(--step-2); }
+  .scoutband p { max-width: 75ch; }
+  .scoutband ul { margin: 0.2rem 0 0.9rem; padding-left: 1.1rem; }
+  .scoutband .ctas { margin: 0; }
+  @media (max-width: 560px) { .scoutband { grid-template-columns: 1fr; } }
   .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
   .tools a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.9rem; row-gap: 0.15rem; align-items: start; padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); transition: border-color .12s, transform .12s; }
   .tools a:hover { border-color: var(--xp); transform: translateY(-1px); }
   .tools .ico { grid-row: span 2; --qb: #8a6d3b; }
   .tools b { font-family: var(--font-display); font-size: var(--step-1); }
   .tools .txt { grid-column: 2; color: var(--muted); font-size: var(--step--1); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2.5rem; }
-  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 2.5rem; }
   .latest { list-style: none; padding: 0; margin: 0 0 0.8rem; border-top: 2px solid var(--ink); max-width: none; }
   .latest li { display: grid; gap: 0.1rem; padding: 0.55rem 0; border-bottom: 1px solid var(--line); }
   .latest img { vertical-align: -2px; border-radius: 50%; }

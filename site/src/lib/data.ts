@@ -2,6 +2,7 @@ import guidesJson from "../data/guides.json";
 import questsJson from "../data/quests.json";
 import zonesJson from "../data/zones.json";
 import metaJson from "../data/meta.json";
+import scoutsJson from "../data/scouts.json";
 
 export type Verdict = "do" | "skip" | "optional" | "unknown";
 export interface Quest {
@@ -24,7 +25,16 @@ export interface Guide {
 export const guides = guidesJson as Guide[];
 export const quests = questsJson as Quest[];
 export const zones = zonesJson as { name: string; slug: string; quests: number; do: number; skip: number; optional: number; unknown: number; median_xp_per_min: number | null }[];
-export const meta = metaJson as { built: string; skip_threshold: number; measured_quests: number; quests: number; guides: number };
+export const meta = metaJson as { built: string; skip_threshold: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
+export interface ScoutRow { handle: string; score: number; quests: number; drops: number; discoveries: number; zones: number; sessions: number }
+/** Contributor leaderboard (tools/site_data.py write_scouts): anonymous handles and counts only. */
+export const scouts = scoutsJson as {
+  updated: number;
+  totals: { scouts: number; sessions: number; quests: number; drops: number; discoveries: number };
+  week: { scouts: number; quests: number; drops: number };
+  board: ScoutRow[];
+  week_board: ScoutRow[];
+};
 export const questById = new Map(quests.map((q) => [q.id, q]));
 export const guideBySlug = new Map(guides.map((g) => [g.slug, g]));
 

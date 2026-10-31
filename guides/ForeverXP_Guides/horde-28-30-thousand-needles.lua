@@ -37,7 +37,7 @@ step
     .accept 4821 >> Accept Alien Egg
 step
     .goto 1441,46.0,50.86
-    .accept 5147 >> Accept Wanted - Arnak Grimtotem
+    .accept 5147 >> Accept WANTED: Arnak Grimtotem
 step
     .goto 1441,46.38,41.96
     .complete 4841,1
@@ -123,7 +123,7 @@ step
 step
     .goto 1441,45.67,50.74
     .target Cliffwatcher Longhorn
-    .turnin 5147 >> Turn in Wanted - Arnak Grimtotem
+    .turnin 5147 >> Turn in WANTED: Arnak Grimtotem
 step
     .goto 1441,53.95,41.49
     .target Dorn Plainstalker
@@ -153,8 +153,8 @@ step
     .target Dorn Plainstalker
     .turnin 1151 >> Turn in Test of Strength
 step
-    .goto 1441,78.0,77.0 >> Head east to the Shimmering Flats racetrack.
-    >>Head east to the Shimmering Flats racetrack.
+    .goto 1441,78.0,77.0 >> Head east to the Shimmering Flats racetrack. The racetrack quests need level 28; kill a few basilisks on the way if you're short.
+    >>Head east to the Shimmering Flats racetrack. The racetrack quests need level 28; kill a few basilisks on the way if you're short.
 step
     .goto 1441,78.06,77.13
     .target Fizzle Brassbolts

@@ -2,7 +2,7 @@
 
 Estimated finish: level 30.05 after 222 minutes. Quests still in log: []
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
@@ -20,7 +20,7 @@ Estimates use Classic XP rules and generic kill/travel times until ForeverScout 
 | 1149 Test of Faith | 1050 | 0.0 | 2100 |
 | 4821 Alien Egg | 2100 | 1.3 | 1635 |
 | 1153 A New Ore Sample | 2350 | 1.9 | 1265 |
-| 5147 Wanted - Arnak Grimtotem | 2350 | 2.8 | 854 |
+| 5147 WANTED: Arnak Grimtotem | 2350 | 2.8 | 854 |
 | 1150 Test of Endurance | 2450 | 4.2 | 584 |
 | 5064 Grimtotem Spying | 2300 | 3.9 | 584 |
 | 1151 Test of Strength | 3050 | 5.8 | 529 |
@@ -43,7 +43,7 @@ Estimates use Classic XP rules and generic kill/travel times until ForeverScout 
 | 7 | 26.89 | 21.0 | 0 | home Freewind Post |
 | 8 | 26.89 | 21.3 | 0 | accept Pacify the Centaur |
 | 9 | 26.89 | 21.5 | 0 | accept Alien Egg |
-| 10 | 26.89 | 21.7 | 0 | accept Wanted - Arnak Grimtotem |
+| 10 | 26.89 | 21.7 | 0 | accept WANTED: Arnak Grimtotem |
 | 11 | 27.04 | 33.3 | 5640 | complete Pacify the Centaur |
 | 12 | 27.05 | 34.6 | 160 | complete Alien Egg |
 | 13 | 27.06 | 36.4 | 538 | complete A New Ore Sample |
@@ -57,12 +57,12 @@ Estimates use Classic XP rules and generic kill/travel times until ForeverScout 
 | 21 | 27.31 | 47.2 | 0 | accept Hypercapacitor Gizmo |
 | 22 | 27.32 | 48.3 | 412 | complete Hypercapacitor Gizmo |
 | 23 | 27.40 | 49.0 | 3050 | turnin Hypercapacitor Gizmo |
-| 24 | 27.42 | 51.8 | 716 | complete Wanted - Arnak Grimtotem |
+| 24 | 27.42 | 51.8 | 716 | complete WANTED: Arnak Grimtotem |
 | 25 | 27.42 | 51.9 | 0 | accept Free at Last |
 | 26 | 27.42 | 51.9 | 0 | complete Free at Last |
 | 27 | 27.49 | 54.3 | 2670 | turnin Free at Last |
 | 28 | 27.49 | 54.6 | 0 | hs Freewind Post |
-| 29 | 27.55 | 54.8 | 2350 | turnin Wanted - Arnak Grimtotem |
+| 29 | 27.55 | 54.8 | 2350 | turnin WANTED: Arnak Grimtotem |
 | 30 | 27.55 | 56.2 | 160 | accept Test of Faith |
 | 31 | 27.55 | 56.2 | 0 | complete Test of Faith |
 | 32 | 27.58 | 56.4 | 1050 | accept Test of Endurance; turnin Test of Faith |
@@ -70,7 +70,7 @@ Estimates use Classic XP rules and generic kill/travel times until ForeverScout 
 | 34 | 27.68 | 64.3 | 2930 | accept Test of Strength; turnin Test of Endurance |
 | 35 | 27.71 | 70.1 | 1212 | complete Test of Strength |
 | 36 | 27.81 | 75.4 | 3850 | turnin Test of Strength |
-| 37 | 27.82 | 79.6 | 640 | Head east to the Shimmering Flats racetrack. |
+| 37 | 27.82 | 79.6 | 640 | Head east to the Shimmering Flats racetrack. The racetrack quests need level 28; kill a few basilisks on the way if you're short. |
 | 38 | 27.82 | 79.8 | 0 | accept Salt Flat Venom, Hardened Shells |
 | 39 | 27.82 | 80.0 | 0 | accept Rocket Car Parts |
 | 40 | 27.99 | 94.8 | 6480 | complete Salt Flat Venom, Hardened Shells, Rocket Car Parts |

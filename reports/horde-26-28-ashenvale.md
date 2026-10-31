@@ -2,7 +2,7 @@
 
 Estimated finish: level 25.43 after 62 minutes. Quests still in log: []
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 

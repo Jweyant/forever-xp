@@ -103,12 +103,139 @@ def icon_names(cache, download):
                                      headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
         path.write_bytes(urllib.request.urlopen(req, timeout=180).read())
     raw = json.loads(path.read_text())
-    return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower() for k, v in raw.items() if v.startswith("interface/icons/")}
+    # The render service names icons with hyphens where the file name has spaces.
+    return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower().replace(" ", "-")
+            for k, v in raw.items() if v.startswith("interface/icons/")}
+
+
+def wowsims_icons(path):
+    """ItemID -> icon name from wowsims/forever's item database (MIT), for items the client
+    tables leave without a named icon. Names wowsims couldn't resolve ("unknown_...") are skipped."""
+    if not path or not Path(path).exists():
+        return {}
+    db = json.loads(Path(path).read_text())
+    out = {}
+    for e in (db.get("items") or []) + (db.get("itemIcons") or []):
+        icon = str(e.get("icon") or "").lower().replace(" ", "-")
+        if re.fullmatch(r"[a-z0-9_-]+", icon) and not icon.startswith("unknown_") and str(e.get("id", "")).isdigit():
+            out.setdefault(int(e["id"]), icon)
+    return out
+
+
+def display_ids(cache, download):
+    """ItemID -> ItemDisplayInfoID (the 3D model an item uses), via ItemModifiedAppearance ->
+    ItemAppearance. Loaded tolerantly outside TABLES: if the Forever build doesn't ship these
+    tables, items simply carry no display id (cmangos fills what it can, the site skips the rest).
+    """
+    try:
+        ima = load_csv(cache, "ItemModifiedAppearance", download)
+        app = load_csv(cache, "ItemAppearance", download)
+    except (SystemExit, OSError) as e:
+        print(f"display ids: tables unavailable ({e}); relying on cmangos displayid", file=sys.stderr)
+        return {}
+    info = {r.get("ID"): num(r.get("ItemDisplayInfoID"), int) for r in app}
+    best = {}
+    for r in ima:
+        iid = num(r.get("ItemID"), int)
+        order = num(r.get("OrderIndex"), int)
+        did = info.get(r.get("ItemAppearanceID"), 0)
+        # The default appearance is the lowest OrderIndex.
+        if iid and did and (iid not in best or order < best[iid][0]):
+            best[iid] = (order, did)
+    return {iid: v[1] for iid, v in best.items()}
+
+
+def appearance_icons(cache, download):
+    """ItemID -> icon file ID from the item's default appearance (ItemAppearance.DefaultIconFileDataID).
+    Newer items often leave Item.IconFileDataID empty and only set the icon here."""
+    try:
+        ima = load_csv(cache, "ItemModifiedAppearance", download)
+        app = load_csv(cache, "ItemAppearance", download)
+    except (SystemExit, OSError):
+        return {}
+    icon = {r.get("ID"): num(r.get("DefaultIconFileDataID"), int) for r in app}
+    best = {}
+    for r in ima:
+        iid, order = num(r.get("ItemID"), int), num(r.get("OrderIndex"), int)
+        fid = icon.get(r.get("ItemAppearanceID"), 0)
+        if iid and fid and (iid not in best or order < best[iid][0]):
+            best[iid] = (order, fid)
+    return {iid: v[1] for iid, v in best.items()}
+
+
+def client_icons_and_quality(cache, download, wowsims=None):
+    """ItemID -> (icon name or None, quality or None) for every item in the client, gear or not.
+    Icon: the item's own icon, else its default appearance's, else wowsims' name. Quality from
+    ItemSparse. The tables are cached, so this re-reads files client_items already fetched."""
+    names = icon_names(cache, download)
+    app = appearance_icons(cache, download)
+    out = {}
+    for r in load_csv(cache, "Item", download):
+        iid = num(r.get("ID"), int)
+        if iid:
+            out[iid] = [names.get(num(r.get("IconFileDataID"), int)) or names.get(app.get(iid, 0)) or (wowsims or {}).get(iid), None]
+    for s in load_csv(cache, "ItemSparse", download):
+        iid, q = num(s.get("ID"), int), num(s.get("OverallQualityID"), int)
+        if iid in out and q is not None and 0 <= q <= 7:
+            out[iid][1] = q
+    return {k: tuple(v) for k, v in out.items()}
+
+
+def client_item_text(cache, download):
+    """ItemID -> tooltip fields for non-gear items, from the client: ds flavor text, u "Use:" texts,
+    st stack size, b binding (1 picked up, 2 equipped), sp sell price in copper, il item level.
+    Missing tables or columns just leave fields out."""
+    try:
+        sparse = load_csv(cache, "ItemSparse", download)
+        effect = {r["ID"]: r for r in load_csv(cache, "ItemEffect", download)}
+        links = load_csv(cache, "ItemXItemEffect", download)
+        spell_desc = {r["ID"]: r.get("Description_lang", "") for r in load_csv(cache, "Spell", download)}
+        spell_name = {r["ID"]: r.get("Name_lang", "") for r in load_csv(cache, "SpellName", download)}
+    except (SystemExit, OSError, KeyError):
+        return {}
+    uses = defaultdict(list)
+    for x in links:
+        e = effect.get(x.get("ItemEffectID"))
+        if not e or num(e.get("TriggerType"), int) not in (0, 5):  # 0 on use, 5 learn (recipes)
+            continue
+        sid = e.get("SpellID")
+        text = cleanup_spell_text(spell_desc.get(sid, "") or spell_name.get(sid, ""))
+        iid = num(x.get("ItemID"), int)
+        if text and iid and text not in uses[iid]:
+            uses[iid].append(text[:220])
+    out = {}
+    for s in sparse:
+        iid = num(s.get("ID"), int)
+        if not iid:
+            continue
+        rec = {}
+        desc = cleanup_spell_text(s.get("Description_lang") or "")
+        if desc:
+            rec["ds"] = desc[:200]
+        if uses.get(iid):
+            rec["u"] = uses[iid][:3]
+        for key, col, lo, hi in (("st", "Stackable", 2, 1000), ("b", "Bonding", 1, 2), ("sp", "SellPrice", 1, 10**8),
+                                 ("il", "ItemLevel", 1, 400)):
+            v = num(s.get(col), int)
+            if v is not None and lo <= v <= hi:
+                rec[key] = v
+        if rec:
+            out[iid] = rec
+    return out
+
+
+def cleanup_spell_text(s):
+    """Client text holds unresolved spell variables ($s1, $d, $/1000;s1) and markup; drop them."""
+    s = re.sub(r"\$\/?\d*;?[a-zA-Z]+\d*", "", str(s or ""))
+    s = re.sub(r"\|c[0-9a-fA-F]{8}|\|r|\|n", " ", s)
+    return re.sub(r"\s{2,}", " ", s).strip()
 
 
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
     icons = icon_names(cache, download)
+    dids = display_ids(cache, download)
+    app_icons = appearance_icons(cache, download)
     item = {r["ID"]: r for r in T["Item"]}
     rpp = {num(r["ID"], int): r for r in T["RandPropPoints"]}
     aq = {num(r["ID"], int): r for r in T["ItemArmorQuality"]}
@@ -227,9 +354,12 @@ def client_items(cache, download):
         rec = {"id": int(iid), "name": name, "q": q, "ilvl": ilvl, "req": req, "slot": SLOTS[inv], "inv": inv,
                "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc", "cls": cls,
                "stats": stats}
-        icon = icons.get(num(it.get("IconFileDataID"), int))
+        icon = icons.get(num(it.get("IconFileDataID"), int)) or icons.get(app_icons.get(int(iid), 0))
         if icon:
             rec["icon"] = icon
+        did = dids.get(int(iid))
+        if did:
+            rec["did"] = did
         if weapon:
             rec["weapon"] = weapon
         if effects:
@@ -305,7 +435,11 @@ def atlasloot(path):
 def cmangos_sources(sql, keep):
     d = mysqldump.read(sql, ["creature_loot_template", "reference_loot_template", "creature_template",
                              "creature", "npc_vendor", "npc_vendor_template", "quest_template",
-                             "gameobject_loot_template", "spell_template", "instance_template"])
+                             "gameobject_loot_template", "spell_template", "instance_template",
+                             "item_template"])
+    # Fallback display ids for items the client's appearance tables miss (classic-era art).
+    display = {r["entry"]: r["displayid"] for r in d["item_template"]
+               if r.get("entry") in keep and isinstance(r.get("displayid"), int) and r["displayid"] > 0}
     ctpl = {c["Entry"]: c for c in d["creature_template"]}
     cmap = {}
     for c in d["creature"]:
@@ -383,7 +517,8 @@ def cmangos_sources(sql, keep):
         for i in (1, 2, 3):
             if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep:
                 src[sp[f"EffectItemType{i}"]].append({"t": "craft", "n": sp["SpellName"]})
-    return src
+    classic = {r["entry"]: r for r in d["item_template"] if isinstance(r.get("entry"), int)}
+    return src, display, classic
 
 
 def questie_sources(qdir, keep):
@@ -561,12 +696,55 @@ def journal_sources(cache, download, keep):
     print(f"dungeon journal: {n} boss drops for {len(src)} items")
     return src
 
+# Player logs are public input: a drop is only published once this many different players saw it.
+MIN_LOGGED_PLAYERS = 2
+
+
+def read_loot_csv(path):
+    """gamedata/players/loot.csv (tools/ingest_logs.py) -> {item id: [logged source, ...]}.
+    Rows seen by fewer than MIN_LOGGED_PLAYERS players are left out."""
+    logged = defaultdict(list)
+    with Path(path).open() as f:
+        for r in csv.DictReader(f):
+            try:
+                iid, players = int(r.get("item") or 0), int(r.get("players") or 0)
+            except ValueError:
+                continue
+            if iid <= 0 or players < MIN_LOGGED_PLAYERS:
+                continue
+            logged[iid].append({"t": "logged", "n": str(r.get("source") or "")[:80], "z": str(r.get("zone") or "")[:60],
+                                "seen": players})
+    return logged
+
+
+def _norm(s):
+    return re.sub(r"[^a-z0-9]+", " ", str(s or "").lower()).strip()
+
+
+def confirm_sources(logged, known):
+    """Fold player sightings into the sources other databases already list.
+
+    A sighting whose NPC or object name matches a known source confirms it (`seen` = players),
+    which ranks it first. Sightings that match nothing stay as "logged" sources: drops Forever
+    added or changed that no database has yet."""
+    out = [dict(s) for s in known]
+    rest = []
+    for lg in logged:
+        n = _norm(lg.get("n"))
+        hit = [s for s in out if n and _norm(s.get("n")) == n] if n else []
+        if hit:
+            for s in hit:
+                s["seen"] = max(s.get("seen", 0), lg["seen"])
+        else:
+            rest.append(lg)
+    return rest + out
+
 
 def rank_sources(lst):
     order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
              "drop": 8, "world": 9, "logged": -1}
     seen, out = set(), []
-    for s in sorted(lst, key=lambda s: (order.get(s["t"], 9), -s.get("ch", 0))):
+    for s in sorted(lst, key=lambda s: (0 if s.get("seen") else 1, order.get(s["t"], 9), -s.get("ch", 0))):
         key = (s["t"], s.get("n"), s.get("z"))
         if key in seen:
             continue
@@ -599,14 +777,121 @@ def effective_level(rec, sources):
     return best if best is not None else max(1, min(60, rec["ilvl"] - 5))
 
 
+# Item classes kept for the non-gear list (weapons and armor come from the client gear tables).
+OTHER_CLASSES = {0: "Consumable", 1: "Container", 3: "Gem", 5: "Reagent", 6: "Projectile", 7: "Trade goods",
+                 9: "Recipe", 11: "Quiver", 12: "Quest item", 13: "Key", 15: "Miscellaneous"}
+JUNK_NAME = re.compile(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|PH|QA ?test\w*)\b", re.I)
+
+
+def _ids(v):
+    """Questie ID lists arrive as lists, {"1": ..} maps, or Python-literal strings."""
+    if isinstance(v, str):
+        try:
+            import ast
+            v = ast.literal_eval(v)
+        except (ValueError, SyntaxError):
+            return []
+    if isinstance(v, dict):
+        v = [v[k] for k in sorted(v, key=lambda k: int(k) if str(k).isdigit() else 0)]
+    out = []
+    for x in v if isinstance(v, list) else []:
+        if isinstance(x, (list, dict)):
+            x = _ids(x)[:1]
+            x = x[0] if x else None
+        try:
+            out.append(int(x))
+        except (TypeError, ValueError):
+            pass
+    return out
+
+
+def other_items(sqlite_path, gear_ids, classic, max_names=3):
+    """Every non-gear Forever item Questie knows (consumables, trade goods, recipes, quest items...),
+    with where it comes from and which quests use it. Compact keys for the item list:
+    id, n name, q quality, c category, rl required level, d drops from [[npc, zone]], v sold by,
+    o found in (objects), qs starts quest, qr reward from quests, qu used by quests (quests as [id, name]).
+    main() adds icon (and the client's quality) afterwards from client_icons_and_quality()."""
+    import sqlite3
+    if not sqlite_path or not Path(sqlite_path).exists():
+        return []
+    db = sqlite3.connect(sqlite_path)
+    zones = dict(db.execute("SELECT id, name FROM zones"))
+    npcs = {i: (n, z) for i, n, z in db.execute("SELECT id, name, zone_id FROM npcs")}
+    objects = {i: n for i, n in db.execute("SELECT id, name FROM objects")}
+    quests = {}
+    used_by = defaultdict(set)
+    for qid, name, raw in db.execute("SELECT id, name, json FROM quests"):
+        quests[qid] = name
+        q = json.loads(raw)
+        objs = q.get("objectives") or []
+        groups = [objs.get(k) for k in ("1", "2", "3")] if isinstance(objs, dict) else (objs if isinstance(objs, list) else [])
+        for iid in _ids(groups[2] if len(groups) > 2 and groups[2] else []):
+            used_by[iid].add(qid)
+        for iid in _ids([q.get("sourceItemId")]):
+            used_by[iid].add(qid)
+    zname = lambda z: (zones.get(z) or "").replace("_", " ").title() if z else ""  # noqa: E731
+    out = []
+    for iid, name, raw in db.execute("SELECT id, name, json FROM items ORDER BY id"):
+        it = json.loads(raw)
+        cls = it.get("class")
+        cls = int(cls) if str(cls).lstrip("-").isdigit() else -1
+        if iid in gear_ids or cls not in OTHER_CLASSES or not name or JUNK_NAME.search(name) or name.startswith(("zz", "QA")):
+            continue
+        c = classic.get(iid) or {}
+        rec = {"id": iid, "n": name, "q": c.get("Quality") if isinstance(c.get("Quality"), int) else 1, "c": OTHER_CLASSES[cls]}
+        rl = it.get("requiredLevel")
+        if str(rl).isdigit() and int(rl) > 1:
+            rec["rl"] = int(rl)
+        drops = [[npcs[n][0], zname(npcs[n][1])] for n in _ids(it.get("npcDrops")) if n in npcs][:max_names]
+        vend = sorted({npcs[n][0] for n in _ids(it.get("vendors")) if n in npcs})[:max_names]
+        objs = sorted({objects[o] for o in _ids(it.get("objectDrops")) if o in objects})[:max_names]
+        start = [[q, quests[q]] for q in _ids([it.get("startQuest")]) if q in quests]
+        rew = [[q, quests[q]] for q in _ids(it.get("questRewards")) if q in quests][:max_names]
+        used = [[q, quests[q]] for q in sorted(used_by.get(iid, set()) | set(_ids(it.get("relatedQuests")))) if q in quests][:max_names]
+        for key, val in (("d", drops), ("v", vend), ("o", objs), ("qr", rew), ("qu", used)):
+            if val:
+                rec[key] = val
+        if start:
+            rec["qs"] = start[0]
+        out.append(rec)
+    return out
+
+
+def forever_changes(items, classic):
+    """Mark items that are new to Forever (no classic item with that ID) or changed from classic
+    (item level, quality or required level). Returns (new, changed) counts. Without classic data,
+    nothing is marked."""
+    if not classic:
+        return 0, 0
+    new = changed = 0
+    for iid, rec in items.items():
+        c = classic.get(iid)
+        if not c:
+            rec["new"] = 1
+            new += 1
+            continue
+        chg = []
+        for key, label in (("ItemLevel", "item level"), ("Quality", "quality"), ("RequiredLevel", "required level")):
+            old, now = c.get(key), rec.get({"ItemLevel": "ilvl", "Quality": "q", "RequiredLevel": "req"}[key])
+            if isinstance(old, int) and isinstance(now, int) and old != now and (key != "RequiredLevel" or old > 0):
+                chg.append([label, old, now])
+        if chg:
+            rec["chg"] = chg
+            changed += 1
+    return new, changed
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cache", default=".cache/wago")
     ap.add_argument("--download", action="store_true")
     ap.add_argument("--cmangos")
     ap.add_argument("--atlasloot")
+    ap.add_argument("--wowsims-db", help="wowsims/forever assets/database/db.json (MIT), a last fallback for item icons")
     ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
+    ap.add_argument("--questie-sqlite", default="data/forever_questdb.sqlite", help="from tools/refresh_questie_data.sh, for non-gear items")
+    ap.add_argument("--other-out", default="gamedata/other-items.json")
     ap.add_argument("--report", default="gamedata/items-report.md")
     ap.add_argument("--build", help="Forever client build to read (default: the newest on wago.tools)")
     a = ap.parse_args()
@@ -615,24 +900,24 @@ def main():
     print(f"Forever client build {FOREVER_BUILD} ({product})")
 
     items, sets = client_items(a.cache, a.download)
+    ws = wowsims_icons(a.wowsims_db)
+    for iid, rec in items.items():
+        if not rec.get("icon") and ws.get(iid):
+            rec["icon"] = ws[iid]
     keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
-    cm = cmangos_sources(a.cmangos, keep) if a.cmangos else {}
+    cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
     jn = journal_sources(a.cache, a.download, keep)
-    logged = defaultdict(list)
+    logged = {}
     loot_csv = Path("out/loot.csv")
+    if not loot_csv.exists():  # published aggregate from the player-data workflow
+        loot_csv = Path("gamedata/players/loot.csv")
     if loot_csv.exists():
-        with loot_csv.open() as f:
-            for r in csv.DictReader(f):
-                # Player logs are public input: only trust a drop once 2+ different players saw it.
-                if int(r.get("players") or 0) < 2:
-                    continue
-                logged[int(r["item"])].append({"t": "logged", "n": r.get("source") or "", "z": r.get("zone") or "",
-                                               "seen": int(r.get("players") or 1)})
+        logged = read_loot_csv(loot_csv)
     no_src = 0
     for iid, rec in items.items():
-        s = rank_sources(logged.get(iid, []) + al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
+        s = rank_sources(confirm_sources(logged.get(iid, []), al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, [])))
         pvp = pvp_rank_source(rec)
         if pvp:
             # AtlasLoot's PvP entries only say "Weapons" or "Armor"; the rank is the useful part.
@@ -647,10 +932,25 @@ def main():
         else:
             no_src += 1
         rec["lvl"] = effective_level(rec, s)
+        if "did" not in rec and cm_did.get(iid):
+            rec["did"] = cm_did[iid]
     apply_quest_faction(items)
+    new, changed = forever_changes(items, classic)
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+    other = other_items(a.questie_sqlite, set(items), classic)
+    client = client_icons_and_quality(a.cache, a.download, ws) if other else {}
+    text = client_item_text(a.cache, a.download) if other else {}
+    for rec in other:
+        icon, q = client.get(rec["id"], (None, None))
+        if icon:
+            rec["icon"] = icon
+        if q is not None:
+            rec["q"] = q
+        rec.update(text.get(rec["id"], {}))
+    if other:
+        Path(a.other_out).write_text(json.dumps(other, separators=(",", ":"), ensure_ascii=False))
     by_q = defaultdict(int)
     for r in items.values():
         by_q[r["q"]] += 1
@@ -659,6 +959,10 @@ def main():
         f"- Equippable items: {len(items)} (by quality: {dict(sorted(by_q.items()))})\n"
         f"- Item sets: {len(sets)}\n- Items with a known source: {len(items) - no_src}\n"
         f"- Items with no known source yet: {no_src}\n"
+        f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
+        f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n"
+        f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}"
+        f" ({sum(1 for r in other if r.get('icon'))} with an icon)\n"
         + ("\nDungeon journal:\n" + "".join(f"- {line}\n" for line in JOURNAL_NOTE) if JOURNAL_NOTE else ""))
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 

@@ -72,8 +72,14 @@ function GetQuestID() return currentQuest and currentQuest.id or 0 end
 function GetRewardXP() return currentQuest and currentQuest.xp or 0 end
 function GetTitleText() return currentQuest and currentQuest.title end
 function GetObjectiveText() return currentQuest and currentQuest.obj end
+-- One quest in the log while boars are being killed: "Mottled Boar slain" belongs to quest 789, objective 1.
 C_QuestLog = { GetLogIndexForQuestID = function(id) return id end,
-               GetInfo = function(i) return { level = (i == 99999 and 7) or 2 } end }
+               GetInfo = function(i) return { level = (i == 99999 and 7) or 2, questID = (i == 1 and 789) or i, isHeader = false } end,
+               GetNumQuestLogEntries = function() return 1 end,
+               GetQuestObjectives = function(id)
+                 if id == 789 then return { { text = "Mottled Boar slain: 0/10" } } end
+                 return {}
+               end }
 
 -- UI stubs (Windows.lua is loaded but its frames are never shown here)
 local frames = {}

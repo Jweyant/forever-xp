@@ -1,6 +1,6 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
-import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
+import { loadGear, loadOther, tooltipHtml, otherTooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
 import { accountsOn, me, startSignIn, afterSignIn } from "./account";
 
 const root = document.documentElement;
@@ -79,8 +79,12 @@ async function showItemTip(el: HTMLElement) {
     const db = await loadGear();
     if (tipFor !== el) return;
     const it = db.byId.get(id);
-    if (!it) return;
-    tip.innerHTML = tooltipHtml(it, db.sets, el.dataset.tipHint ? [`<p class="tt-hint">${esc(el.dataset.tipHint)}</p>`] : []);
+    if (it) tip.innerHTML = tooltipHtml(it, db.sets, el.dataset.tipHint ? [`<p class="tt-hint">${esc(el.dataset.tipHint)}</p>`] : []);
+    else {
+      const o = (await loadOther()).byId.get(id);
+      if (!o || tipFor !== el) return;
+      tip.innerHTML = otherTooltipHtml(o);
+    }
     placeTip(tip, el);
   } catch { /* gear data unavailable: no tooltip */ }
 }
@@ -96,7 +100,7 @@ window.addEventListener("scroll", () => { if (tipFor) hideTip(); }, { passive: t
 
 // ---------- Quick search ----------
 type QRow = [number, string, number, string, string, string, number?];
-type IRow = [number, string, number, string, string, number];
+type IRow = [number, string, number, string, string, number, number?];
 interface Hit { href: string; html: string }
 const dlg = document.getElementById("search") as HTMLDialogElement;
 const input = document.getElementById("search-q") as HTMLInputElement;
@@ -147,6 +151,7 @@ async function runSearch() {
     .sort((a, b) => a.r - b.r || b.i[5] - a.i[5]).slice(0, 7)
     .map(({ i }) => {
       const q = QUALITY[num(i[2])] || "common";
+      if (i[6] === 1) return { href: `/items/?q=${num(i[0])}`, html: `<span class="ico sm qb-${q}">${i[3] ? `<img src="${esc(ICON(i[3], 36))}" alt="">` : ""}</span><span><b class="q-${q}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}</span></span><span></span>` };
       return { href: `/items/${num(i[0])}/`, html: `<span class="ico sm qb-${q}">${i[3] ? `<img src="${esc(ICON(i[3], 36))}" alt="">` : ""}</span><span><b class="q-${q}">${esc(i[1])}</b><br><span class="sub">${esc(i[4])}, item level ${num(i[5])}</span></span><span></span>` };
     });
   hits = [...pageHits, ...qs, ...is];
@@ -209,3 +214,13 @@ if (acct && accountsOn()) {
 }
 if (signin === "ok") toast("Signed in. Your saved plans are under your name, top right.");
 else if (signin === "failed") toast("Sign-in didn't work. Please try again.");
+
+// Item icons come from Blizzard's render service, which doesn't have every Forever icon.
+// When one fails to load, show the game's question-mark icon instead of an empty box.
+const QMARK = "inv_misc_questionmark";
+document.addEventListener("error", (e) => {
+  const img = e.target;
+  if (!(img instanceof HTMLImageElement) || !img.src.startsWith("https://render.worldofwarcraft.com/us/icons/")) return;
+  if (img.src.includes(QMARK)) { img.style.visibility = "hidden"; return; }
+  img.src = img.src.replace(/\/[a-z0-9_-]+\.jpg$/, `/${QMARK}.jpg`);
+}, true);

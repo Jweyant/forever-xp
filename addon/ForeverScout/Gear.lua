@@ -35,9 +35,9 @@ end
 
 function ns.ShowGear()
   ns.ShowCopy("Your gear for forever-xp.com",
-    "Ctrl+C to copy, then paste it on forever-xp.com/bis under Import from the game. "
-      .. "It only contains your class, level, race, faction and equipped item IDs.",
-    ns.GearString())
+    "Ctrl+C, then paste on forever-xp.com/bis under Import from the game. "
+      .. "Only your class, level, race, faction and equipped item IDs.",
+    ns.GearString(), true)
 end
 
 ------------------------------------------------------------------------------------------

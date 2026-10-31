@@ -2,12 +2,20 @@
 ## Title: Forever|cFF4FC3F7XP|r Guides
 ## Notes: Free leveling guides for WoW Forever, built from player data. Requires RestedXP Guides.
 ## Author: ForeverXP contributors
-## Version: 0.3.0
+## Version: 0.4.0
 ## IconTexture: Interface\Icons\INV_Misc_Book_09
 ## Dependencies: RXPGuides
 
 horde-01-06-valley-of-trials.lua
 horde-06-12-durotar.lua
+horde-01-06-deathknell.lua
+horde-06-12-tirisfal.lua
+horde-01-06-camp-narache.lua
+horde-06-12-mulgore.lua
+horde-01-13-zephras-isle.lua
+horde-12-15-barrens.lua
+horde-15-18-barrens.lua
+horde-18-22-barrens.lua
 horde-22-24-southern-barrens.lua
 horde-24-26-stonetalon.lua
 horde-26-28-ashenvale.lua
@@ -19,3 +27,10 @@ alliance-01-06-coldridge.lua
 alliance-06-10-dun-morogh.lua
 alliance-01-06-shadowglen.lua
 alliance-06-10-teldrassil.lua
+alliance-01-13-zephras-isle.lua
+alliance-10-14-westfall.lua
+alliance-10-14-loch-modan.lua
+alliance-10-14-darkshore.lua
+alliance-14-17-redridge.lua
+alliance-14-17-darkshore.lua
+alliance-17-20-loch-modan.lua

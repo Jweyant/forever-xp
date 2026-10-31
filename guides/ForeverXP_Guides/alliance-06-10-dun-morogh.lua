@@ -6,6 +6,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #defaultfor Dwarf/Gnome
 #name 6-10 Dun Morogh
+#next 10-14 Loch Modan
 #displayname ForeverXP 6-10 Dun Morogh
 step
     .goto 1426,46.73,53.83

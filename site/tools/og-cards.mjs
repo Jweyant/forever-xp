@@ -28,6 +28,7 @@ const list = (a) => (a.length > 1 ? `${a.slice(0, -1).join(", ")} and ${a.at(-1)
 
 const cards = [
   { file: "changes", eyebrow: "WoW Forever", title: "Every WoW Forever change", text: "Every Blizzard note and every class, race and talent change in one searchable list. Updated every hour." },
+  { file: "news", eyebrow: "WoW Forever", title: "News from Blizzard", text: "Every WoW Forever announcement from Blizzard: name reservation, realms, launch news and articles." },
   { file: "bis", eyebrow: "WoW Forever", title: "BIS planner", text: "Best-in-slot gear for every slot. Import your character, pick PvE, PvP or leveling, and see what to chase." },
   { file: "talents", eyebrow: "WoW Forever", title: "Talent calculator", text: "All nine classes, built from the Forever game client, with builds you can share." },
   { file: "guides", eyebrow: "WoW Forever", title: "Leveling guides", text: "Free Horde and Alliance leveling routes, with the time and XP for every step." },

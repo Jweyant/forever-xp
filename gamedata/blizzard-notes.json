@@ -1,5 +1,6 @@
 {
- "updated": "2026-10-28",
+ "updated": "2026-10-31",
+ "blue_seen": "2026-10-29T21:00:50Z",
  "sources": [
   {
    "id": 2360696,
@@ -54,6 +55,425 @@
   {
    "title": "Character creation and names",
    "url": "https://worldofwarcraft.blizzard.com/en-us/news/24303866/"
+  }
+ ],
+ "announcements": [
+  {
+   "id": 2396008,
+   "date": "2026-10-29",
+   "title": "World of Warcraft: Forever Goes Live Globally November 4!",
+   "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-goes-live-globally-november-4/2396008",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Begin your first adventure or return to a new and reimagined Azeroth in World of Warcraft: Forever, launching worldwide November 4 at 3:00 pm PST. Adventure to level 60 across the original continents, discover new stories, and meet fellow a…"
+  },
+  {
+   "id": 2395799,
+   "date": "2026-10-29",
+   "title": "The WoW: Forever Podcast: Episode 6 - All About Tech ft. @Shobek",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-6-all-about-tech-ft-e280aashobek/2395799",
+   "category": "General Discussion",
+   "kind": "Forum post"
+  },
+  {
+   "id": 2394467,
+   "date": "2026-10-28",
+   "title": "Overly Restrictive Name Check and Fix Incoming - October 27",
+   "url": "https://us.forums.blizzard.com/en/wow/t/overly-restrictive-name-check-and-fix-incoming-october-27/2394467",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "In WoW Forever, we’ve been working on the restricted name list, which is a list the game uses to check for non-profane names that we wish to restrict, such as major Warcraft lore characters or names that are blocked for technical reasons. Today we’ve determined that we have a bu…"
+  },
+  {
+   "id": 2393431,
+   "date": "2026-10-27",
+   "title": "Name Reservation Issue for Oceanic Players",
+   "url": "https://us.forums.blizzard.com/en/wow/t/name-reservation-issue-for-oceanic-players/2393431",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Attention Oceanic players connecting to Australian-based servers! Due to a bug, you must create any characters on Roleplay or Roleplay-PvP rulesets before creating characters on Normal or PvP rulesets. If you first create a character on the Normal or PvP ruleset, the Roleplay an…"
+  },
+  {
+   "id": 2393349,
+   "date": "2026-10-27",
+   "title": "Your Next Adventure in WoW: Forever Starts in the WoW Portal Room",
+   "url": "https://us.forums.blizzard.com/en/wow/t/your-next-adventure-in-wow-forever-starts-in-the-wow-portal-room/2393349",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Whether you’re new to Azeroth, returning after a break, or have made World of Warcraft part of your life for years, the WoW Portal Room is a welcoming Discord server where you can meet fellow adventurers and find your next community…"
+  },
+  {
+   "id": 2392363,
+   "date": "2026-10-26",
+   "title": "Watch the WoW: Forever Short Story, “Unbowed”",
+   "url": "https://us.forums.blizzard.com/en/wow/t/watch-the-wow-forever-short-story-e2809cunbowede2809d/2392363",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Can a Forsaken still serve the Light? Join the fallen crusader, Cormack, for a special fireside telling of our newest short story, “Unbowed”. View Full Article"
+  },
+  {
+   "id": 2390465,
+   "date": "2026-10-23",
+   "title": "Thank You For Testing the WoW Forever Beta",
+   "url": "https://us.forums.blizzard.com/en/wow/t/thank-you-for-testing-the-wow-forever-beta/2390465",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "The WoW Forever Beta is now closed, and we're incredibly grateful to everyone who joined us over the last five weeks of playtesting, data gathering, bu…"
+  },
+  {
+   "id": 2389801,
+   "date": "2026-10-22",
+   "title": "Beta Realm Restart Today At 2:00 p.m. PDT",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-realm-restart-today-at-200-pm-pdt/2389801",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "In about 40 minutes, at 2:00 p.m. PDT (4:00 p.m. CDT, 5:00 p.m. EDT), we will quickly restart the WoW Forever Beta. Players who are currently in game w…"
+  },
+  {
+   "id": 2389633,
+   "date": "2026-10-22",
+   "title": "The WoW Forever Beta Celebration is Underway",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-beta-celebration-is-underway/2389633",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "The WoW Forever Beta will end 24 hours from now, at 10:00 a.m. PDT on Friday, October 23, and until that fateful moment, we're celebrating the joy and…"
+  },
+  {
+   "id": 2389565,
+   "date": "2026-10-22",
+   "title": "The WoW: Forever Podcast: Episode 5 - End of Beta Special",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-5-end-of-beta-special/2389565",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "End of Beta Special | Episode 5 - The WoW: Forever Podcast https://www.youtube.com/watch End of Beta Special | Episode 5 - The WoW: Forever Podcast"
+  },
+  {
+   "id": 2389502,
+   "date": "2026-10-22",
+   "title": "The Roleplay-PvP Ruleset is Coming to WoW Forever",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-roleplay-pvp-ruleset-is-coming-to-wow-forever/2389502",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Greetings, In a recent episode of the WoW Forever Podcast we discussed some of our concerns with adding a Roleplay-PVP ruleset in WoW Forever, but we a…"
+  },
+  {
+   "id": 2388547,
+   "date": "2026-10-21",
+   "title": "Testing WoW Forever Today - October 21",
+   "url": "https://us.forums.blizzard.com/en/wow/t/testing-wow-forever-today-october-21/2388547",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "The WoW Forever Beta is going offline in a few minutes. In this region, https://us.forums.blizzard.com/en/wow/t/heads-up-wow-forever-stress-test-on-oct…"
+  },
+  {
+   "id": 2387920,
+   "date": "2026-10-20",
+   "title": "Heads Up -- WoW Forever Stress Test on October 21",
+   "url": "https://us.forums.blizzard.com/en/wow/t/heads-up-wow-forever-stress-test-on-october-21/2387920",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Tomorrow, October 21, we will take the WoW Forever Beta offline and we will then open WoW Forever on its proper regional hardware. Date Timezone Stress…"
+  },
+  {
+   "id": 2385060,
+   "date": "2026-10-16",
+   "title": "Datamined in the Latest Beta Build",
+   "url": "https://us.forums.blizzard.com/en/wow/t/datamined-in-the-latest-beta-build/2385060",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "A number of art assets were recently datamined in the latest Beta build of WoW Forever. While we appreciate the feedback and discussion online, please…"
+  },
+  {
+   "id": 2383617,
+   "date": "2026-10-15",
+   "title": "WoW Forever Stress Test October 21",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-stress-test-october-21/2383617",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "UPDATE – This test is now taking place on October 21 Please join us for the WoW Forever Stress Test on October 21. On that day, we will first take the…"
+  },
+  {
+   "id": 2383475,
+   "date": "2026-10-15",
+   "title": "Beta Realm Maintenance - October 15",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-realm-maintenance-october-15/2383475",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're planning to take the WoW Forever Beta down in about 15 minutes, at 1:15 p.m. PDT. This will be a maintenance period that includes deploying and t…"
+  },
+  {
+   "id": 2383164,
+   "date": "2026-10-15",
+   "title": "The WoW: Forever Podcast: Episode 4 - The PvP Episode ft. @TipsOutBaby & @Savixirl",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-4-the-pvp-episode-ft-e280aatipsoutbabye280ac-e280aasavixirl/2383164",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "The PvP Episode ft. @TipsOutBaby & @Savixirl | Episode 4 - The WoW: Forever Podcast https://www.youtube.com/watch The PvP Episode ft. @TipsOutBaby & @S…"
+  },
+  {
+   "id": 2382032,
+   "date": "2026-10-14",
+   "title": "Beta Maintenance - October 14",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-maintenance-october-14/2382032",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're taking the WoW Forever Beta offline in a few minutes for maintenance. We're going to run some internal tests, and we don't expect it to be down f…"
+  },
+  {
+   "id": 2381433,
+   "date": "2026-10-13",
+   "title": "Temporary Economy Holds For RMT",
+   "url": "https://us.forums.blizzard.com/en/wow/t/temporary-economy-holds-for-rmt/2381433",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Hello! Some players have started to encounter our latest weapon in our efforts against the Real Money Trade (RMT) aka gold buying. If your account is s…"
+  },
+  {
+   "id": 2376010,
+   "date": "2026-10-08",
+   "title": "The WoW: Forever Podcast: Episode 3 - Dive Into Dungeons With Devs ft. @Hammerdancegaming",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-3-dive-into-dungeons-with-devs-ft-hammerdancegaming/2376010",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Dive into Dungeons with Devs ft. @hammerdancegaming | Episode 3 - The WoW: Forever Podcast https://www.youtube.com/watch Dive into Dungeons with Devs f…"
+  },
+  {
+   "id": 2375900,
+   "date": "2026-10-08",
+   "title": "Beta Realm Maintenance - October 8",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-realm-maintenance-october-8/2375900",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Starting in one hour at 9:00 a.m. PDT, we will take the WoW Forever Beta down for maintenance and updates. We're starting a bit earlier today than we h…"
+  },
+  {
+   "id": 2374348,
+   "date": "2026-10-06",
+   "title": "Brief Beta Realm Maintenance - October 6",
+   "url": "https://us.forums.blizzard.com/en/wow/t/brief-beta-realm-maintenance-october-6/2374348",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're planning to do realm restarts at 3:00 p.m. PDT (about 40 minutes from now), to pick up some priority fixes for the Beta. One of the fixes is inte…"
+  },
+  {
+   "id": 2373436,
+   "date": "2026-10-05",
+   "title": "Brief Realm Maintenance - October 5",
+   "url": "https://us.forums.blizzard.com/en/wow/t/brief-realm-maintenance-october-5/2373436",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're going to do realm restarts in a few minutes, to apply some fixes that should improve the quality of the game service. Beta testers who are in-gam…"
+  },
+  {
+   "id": 2369360,
+   "date": "2026-10-02",
+   "title": "Warrior Updates in Today's Beta Build",
+   "url": "https://us.forums.blizzard.com/en/wow/t/warrior-updates-in-todays-beta-build/2369360",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "A number of additional updates for Warriors in WoW Forever made it into today's new Beta build, and we just added all of the following to our https://u…",
+   "notes": 1
+  },
+  {
+   "id": 2369114,
+   "date": "2026-10-02",
+   "title": "Beta Service Issue - October 1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-service-issue-october-1/2369114",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're aware of and working to address an issue that appears to be preventing testers from logging into the WoW: Forever Beta. We will continue to work…"
+  },
+  {
+   "id": 2368931,
+   "date": "2026-10-01",
+   "title": "Dialog Bug for Australian Testers -- fixed",
+   "url": "https://us.forums.blizzard.com/en/wow/t/dialog-bug-for-australian-testers-fixed/2368931",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Update 04:00 AEDT October 4 We've fixed the bug that was causing this. With the new build of the WoW Forever Beta, we have an unexpected bug where Aust…"
+  },
+  {
+   "id": 2368776,
+   "date": "2026-10-01",
+   "title": "Legacy Points for Beta Testing",
+   "url": "https://us.forums.blizzard.com/en/wow/t/legacy-points-for-beta-testing/2368776",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Over the first two weeks of the WoW Forever Beta, we've seen an increasing number of testers pushing to earn points in the Legacy system. In a future w…"
+  },
+  {
+   "id": 2368705,
+   "date": "2026-10-01",
+   "title": "Actions Taken Against Botting and RMT",
+   "url": "https://us.forums.blizzard.com/en/wow/t/actions-taken-against-botting-and-rmt/2368705",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Since https://us.forums.blizzard.com/en/wow/t/2364933/43 our previous note on the subject of addressing Real Money Transactions (RMT) in WoW: Forever,…"
+  },
+  {
+   "id": 2368192,
+   "date": "2026-10-01",
+   "title": "The WoW: Forever Podcast: Episode 2 - Speed Running Classes ft. @sodapoppin",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-2-speed-running-classes-ft-e280aasodapoppine280ac/2368192",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Speed Running Classes ft. @sodapoppin | Episode 2 - The WoW: Forever Podcast https://www.youtube.com/watch Speed Running Classes ft. @sodapoppin | Epis…"
+  },
+  {
+   "id": 2367661,
+   "date": "2026-10-01",
+   "title": "Beta Update Maintenance - October 1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-update-maintenance-october-1/2367661",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Tomorrow morning PDT, we will take the WoW Forever Beta offline for maintenance. Several hours later, the Beta will resume with an updated build that i…"
+  },
+  {
+   "id": 2362048,
+   "date": "2026-09-25",
+   "title": "Beta Realm Restarts Incoming - Sept. 25",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-realm-restarts-incoming-sept-25/2362048",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "To implement fixes that should address stability issues, we will shutdown and restart the Beta in the next few minutes. The maintenance period should b…"
+  },
+  {
+   "id": 2361993,
+   "date": "2026-09-25",
+   "title": "What insights would you like to see in a future episode of the WoW: Forever Podcast?",
+   "url": "https://us.forums.blizzard.com/en/wow/t/what-insights-would-you-like-to-see-in-a-future-episode-of-the-wow-forever-podcast/2361993",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Greetings! We've been super excited about the reception to our first episode of the https://www.youtube.com/watch WoW: Forever Podcast and are already…"
+  },
+  {
+   "id": 2368190,
+   "date": "2026-09-24",
+   "title": "The WoW: Forever Podcast: Episode 1 - Unpacking Beta Launch ft. @Xaryu",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-1-unpacking-beta-launch-ft-e280aaxaryue280ac/2368190",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Unpacking Beta Launch ft. @Xaryu | Episode 1 - The WoW: Forever Podcast https://www.youtube.com/watch Unpacking Beta Launch ft. @Xaryu | Episode 1 - Th…"
+  },
+  {
+   "id": 2360719,
+   "date": "2026-09-24",
+   "title": "Beta is Up - Development Notes Posted",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-is-up-development-notes-posted/2360719",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-september-24/2360696/1 https://us.forums.blizzard.com/en/w…",
+   "notes": 1
+  },
+  {
+   "id": 2360696,
+   "date": "2026-09-24",
+   "title": "WoW Forever Beta Development Notes – Updated October 26",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-e28093-updated-october-26/2360696",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "Today, we updated the WoW Forever Beta with a new build that includes the following updates. Change Log Bugfixes Fixed a bug with casters not playing t…",
+   "notes": 1
+  },
+  {
+   "id": 2360489,
+   "date": "2026-09-24",
+   "title": "Beta Realm Maintenance is Underway - September 24",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-realm-maintenance-is-underway-september-24/2360489",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We took the Beta down for maintenance and to deploy a new build. We don't have an ETA just yet, but it should take at least a couple of hours. We'll ha…"
+  },
+  {
+   "id": 2359491,
+   "date": "2026-09-23",
+   "title": "Increased Weather Effects",
+   "url": "https://us.forums.blizzard.com/en/wow/t/increased-weather-effects/2359491",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Coming soon to the Beta Increased weather effects are coming to WoW: Forever Beta Zones https://www.youtube.com/watch Increased weather effects are com…"
+  },
+  {
+   "id": 2359185,
+   "date": "2026-09-23",
+   "title": "Auto-shoot Bug and Fix Incoming",
+   "url": "https://us.forums.blizzard.com/en/wow/t/auto-shoot-bug-and-fix-incoming/2359185",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We've been tracking an issue in the WoW Forever Beta where the 0.5-second cast time that precedes a Hunter's auto-shot or the use of a wand is not func…"
+  },
+  {
+   "id": 2358655,
+   "date": "2026-09-23",
+   "title": "Beta Client Update - September 22",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-client-update-september-22/2358655",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "A few moments ago, we made a new client build available to Beta testers: WoW Forever 1.60.1 Build 69977 Exit the Beta, go to your Battle.net App, and u…"
+  },
+  {
+   "id": 2352687,
+   "date": "2026-09-17",
+   "title": "WoW Forever Beta Known Issues - October 8",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-known-issues-october-8/2352687",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're opening the WoW Forever Beta today with the following known issues. Known Issues September 18, 2026 Barber Chairs cause a LUA error. Character fr…",
+   "notes": 1
+  },
+  {
+   "id": 2352595,
+   "date": "2026-09-17",
+   "title": "Beta Discussion Forum Right This Way",
+   "url": "https://us.forums.blizzard.com/en/wow/t/beta-discussion-forum-right-this-way/2352595",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "https://us.forums.blizzard.com/en/wow/c/in-development/wow-forever-beta-discussion/349 We've opened this new forum for WoW: Forever Beta discussions. S…"
+  },
+  {
+   "id": 2352429,
+   "date": "2026-09-17",
+   "title": "Almost there!",
+   "url": "https://us.forums.blizzard.com/en/wow/t/almost-there/2352429",
+   "category": "Beta Discussion",
+   "kind": "Forum post",
+   "excerpt": "We're seeing a lot of people waiting to get into the Beta. Thank you for joining us! We're working through a couple of final issues, and we hope to thr…"
+  },
+  {
+   "id": 2349672,
+   "date": "2026-09-15",
+   "title": "Krol’dok Stronghold",
+   "url": "https://us.forums.blizzard.com/en/wow/t/krole28099dok-stronghold/2349672",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "We've spotted one item from BlizzCon that we want to clarify. In various places, the new Krol'dok Stronghold dungeon is listed alongside an incorrect l…"
+  },
+  {
+   "id": 2347228,
+   "date": "2026-09-12",
+   "title": "Welcome to WoW: Forever Community Connections!",
+   "url": "https://us.forums.blizzard.com/en/wow/t/welcome-to-wow-forever-community-connections/2347228",
+   "category": "Community Connections",
+   "kind": "Forum post",
+   "excerpt": "Use this forum to post about your community in WoW: Forever. Connect with new friends and find old guildmates right here!"
+  },
+  {
+   "id": 2347170,
+   "date": "2026-09-12",
+   "title": "World of Warcraft: Forever Revealed at BlizzCon 2026",
+   "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-revealed-at-blizzcon-2026/2347170",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "In this thread, we'll collect everything you need to know about World of Warcraft: Forever. World of Warcraft: Forever | New Horizons | Cinematic Trail…"
+  },
+  {
+   "id": 2347166,
+   "date": "2026-09-12",
+   "title": "Welcome to the WoW: Forever General Discussion Forum. Please read this--",
+   "url": "https://us.forums.blizzard.com/en/wow/t/welcome-to-the-wow-forever-general-discussion-forum-please-read-this/2347166",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Welcome to the World of Warcraft: Forever General Discussion forum ! This forum is here to provide you with a friendly environment where you can discus…"
   }
  ],
  "rows": [

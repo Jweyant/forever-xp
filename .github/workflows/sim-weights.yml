@@ -1,0 +1,100 @@
+# Rebuilds gamedata/simweights.json, the BIS planner's stat weights, by running OUR OWN simulations
+# (tools/simrunner, configured by gamedata/simconfigs/) on the wowsims/forever combat engine
+# (https://github.com/wowsims/forever, MIT). Every published number comes from these runs; nothing
+# published by wowsims ships.
+#
+# The engine is pinned to one commit (WOWSIMS_COMMIT below, and the pseudo-version in
+# tools/simrunner/go.mod — the offline test checks they agree), so the weights only change when a
+# reviewed pull request moves the pin or edits a setup. Runs on demand and on pushes to work
+# branches that change the runner, the setups or this file. On main the data goes to the `data`
+# branch (tools/push_data.sh) and the site redeploys; on a work branch it's committed to that
+# branch so the pull request shows the real output. Pull requests only run the offline tests.
+
+name: Sim weights
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", ".github/workflows/sim-weights.yml"]
+  pull_request:
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", ".github/workflows/sim-weights.yml"]
+
+permissions:
+  contents: read
+
+env:
+  WOWSIMS_COMMIT: 376a6aa2886bddbd66784bfe3ba691e99abb9496  # wowsims/forever, 2026-10-31
+
+concurrency:
+  group: sim-weights-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Sim setup tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: python3 -I tools/test/test_simconfigs.py
+
+  build:
+    name: Run the sims
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # commit gamedata/simweights.json (to the data branch when on main)
+      actions: write   # start the site deploy after a data commit on main
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The engine, at exactly the pinned commit, in its own directory. The runner stages each
+      # setup inside it so SIML `use` lines resolve against the engine's files at that commit.
+      - name: Check out the engine at the pinned commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wowsims/forever
+          ref: ${{ env.WOWSIMS_COMMIT }}
+          path: ext/wowsims
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.25"
+          cache-dependency-path: tools/simrunner/go.mod
+
+      # The engine's generated protobuf Go files aren't committed there; generate them with a
+      # protoc release pinned by version and checksum, and the protoc-gen-go the engine uses.
+      - name: Generate the engine's proto code
+        run: |
+          curl -fsSL --retry 5 -o "$RUNNER_TEMP/protoc.zip" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-x86_64.zip"
+          echo "121f6c7afe1d4d0e3ea6aab9432038599250134cbf4474cb1167d2c7decd4278  $RUNNER_TEMP/protoc.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/protoc.zip" -d "$RUNNER_TEMP/protoc"
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10
+          PATH="$RUNNER_TEMP/protoc/bin:$(go env GOPATH)/bin:$PATH" make -C ext/wowsims sim/core/proto/api.pb.go
+
+      # go mod tidy resolves the engine against the pinned checkout (the replace in go.mod), so the
+      # build never drifts from the pin silently.
+      - name: Run our stat-weight sims
+        working-directory: tools/simrunner
+        run: |
+          go mod tidy
+          go run -tags=with_db . -checkout "$GITHUB_WORKSPACE/ext/wowsims" \
+            -configs "$GITHUB_WORKSPACE/gamedata/simconfigs" \
+            -out "$GITHUB_WORKSPACE/gamedata/simweights.json" -iterations 5000
+
+      - name: Commit if changed
+        id: commit
+        run: bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json
+
+      # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
+      - name: Deploy the site with the new data
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-site.yml --ref main

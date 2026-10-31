@@ -8,7 +8,22 @@ interface Note { id: string; date: string; kind: string; section: string; path: 
 interface Talent { cls: string | null; tree: string; name: string; was?: string | null; kinds: string[]; forever?: string; est?: boolean }
 export type Row = { id: string; date: string; kind: "Blizzard" | "Known issue" | "Datamined"; area: string; path: string[]; text: string; url?: string; cls?: string; race?: string; detail?: string[]; note?: string[]; dev?: boolean; chips?: string[] };
 
-export const notes = notesJson as { updated: string; sources: { id: number; title: string; url: string; kind: string; updated: string; rows: number }[]; articles: { title: string; url: string }[]; rows: Note[] };
+export const notes = notesJson as { updated: string; sources: { id: number; title: string; url: string; kind: string; updated: string; rows: number }[]; articles: { title: string; url: string }[]; announcements?: unknown[]; rows: Note[] };
+
+// Blizzard's announcements for the News page. The collector already checks them; this checks again
+// before anything reaches a page, and only ever links to a forum topic.
+export type News = { id: number; date: string; title: string; url: string; category: string; kind: "Article" | "Forum post"; excerpt?: string; notes?: boolean };
+const FORUM_TOPIC = /^https:\/\/us\.forums\.blizzard\.com\/en\/wow\/t\/[a-z0-9-]{1,120}\/\d{1,12}$/;
+const str = (v: unknown, n: number) => (typeof v === "string" ? v.slice(0, n) : "");
+export const news: News[] = (Array.isArray(notes.announcements) ? notes.announcements : [])
+  .filter((a): a is Record<string, unknown> => !!a && typeof a === "object")
+  .filter((a) => Number.isInteger(a.id) && typeof a.title === "string" && a.title && typeof a.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a.date) && typeof a.url === "string" && FORUM_TOPIC.test(a.url))
+  .map((a) => ({
+    id: Number(a.id), date: a.date as string, title: str(a.title, 200), url: a.url as string,
+    category: str(a.category, 60) || "WoW Forever", kind: a.kind === "Article" ? "Article" as const : "Forum post" as const,
+    excerpt: str(a.excerpt, 300) || undefined, notes: a.notes === 1,
+  }))
+  .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
 const data = changesJson as unknown as { builds: { forever: string }; talents: Talent[] };
 export const build = data.builds.forever;
 

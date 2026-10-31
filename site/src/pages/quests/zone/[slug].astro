@@ -1,6 +1,6 @@
 ---
 import Base from "../../../layouts/Base.astro";
-import { qdb, qzones, SIDE_LABEL } from "../../../lib/questdb";
+import { qdb, qzones, SIDE_LABEL, xpText } from "../../../lib/questdb";
 import { questById, VERDICT_LABEL } from "../../../lib/data";
 export function getStaticPaths() {
   return qzones.map((z) => ({ params: { slug: z.slug }, props: { z } }));
@@ -35,7 +35,7 @@ const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.
             <td data-v={q.n}><a href={`/quests/${q.id}/`}>{q.n}</a>{q.new && <span class="tag-new">NEW</span>}{q.rew?.length ? <span class="rw" title="Has item rewards"> ◆</span> : null}</td>
             <td class="opt">{q.start ? <>{q.start.n}{q.start.x != null ? <span class="muted small"> {q.start.x}, {q.start.y}</span> : null}</> : "–"}</td>
             <td class="opt">{q.side ? SIDE_LABEL[q.side] : "Both"}</td>
-            <td class="num opt" data-v={q.xp ?? ""}>{q.xp ?? "–"}</td>
+            <td class="num opt" data-v={q.xp ?? ""} title={q.xpe ? "Estimate" : undefined}>{xpText(q)}</td>
             <td data-v={s?.verdict ?? "z"}>{s ? <span class={`verdict ${s.verdict}`}>{VERDICT_LABEL[s.verdict]}</span> : <span class="muted">–</span>}</td>
           </tr>); })}
       </tbody>

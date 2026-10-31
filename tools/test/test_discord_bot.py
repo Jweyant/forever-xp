@@ -1,6 +1,7 @@
 """Offline tests for tools/discord_bot.py: config validation, safe message text, and a setup
 run against a fake Discord API (no token, no network)."""
 import json
+import time
 import sys
 import tempfile
 import unittest
@@ -223,6 +224,41 @@ class Tests(unittest.TestCase):
             bot.post_notes(CFG, old, new, d, "1")
             self.assertEqual(d.calls, [])
 
+    def test_recent_announcements_not_yet_in_the_channel_are_posted_safely(self):
+        today = time.strftime("%Y-%m-%d")
+        base = "https://us.forums.blizzard.com/en/wow/t/"
+        with tempfile.TemporaryDirectory() as t:
+            old, new = Path(t, "old.json"), Path(t, "new.json")
+            old.write_text(json.dumps({"rows": []}))   # no announcements list yet: recent ones still go out
+            new.write_text(json.dumps({"rows": [], "announcements": [
+                {"id": 4, "date": today, "title": "Realms are up @everyone", "url": base + "realms/4", "excerpt": "Queues **now** [x](https://evil.example)"},
+                {"id": 3, "date": today, "title": "Hotfixes", "url": base + "hotfixes/3", "notes": 1},
+                {"id": 2, "date": "2026-01-01", "title": "Too old", "url": base + "old/2"},
+                {"id": 5, "date": today, "title": "Elsewhere", "url": "https://evil.example/t/x/5"},
+                {"id": 1, "date": today, "title": "Already posted", "url": base + "seen/1"},
+                {"id": 6, "date": today, "title": "Someone else posted it", "url": base + "other/6"},
+            ]}))
+            channel = [
+                {"author": {"id": "42"}, "embeds": [{"url": base + "seen/1"}]},          # the bot's own post
+                {"author": {"id": "77"}, "embeds": [{"url": base + "other/6"}]},         # not the bot's: doesn't count
+            ]
+            d = FakeDiscord([{"id": "5", "type": 5, "name": "forever-announcements"}], [], messages=channel)
+            bot.post_notes(CFG, old, new, d, "1")
+            msgs = posts(d)
+            self.assertEqual([m["embeds"][0]["url"] for m in msgs], [base + "other/6", base + "realms/4"])
+            e = msgs[1]["embeds"][0]
+            self.assertNotIn("@everyone", e["title"])
+            self.assertNotIn("*", e["description"])
+            self.assertNotIn("[", e["description"])
+            self.assertTrue(all(m["allowed_mentions"] == {"parse": []} for m in msgs))
+
+    def test_recent_means_the_last_week_oldest_first(self):
+        now = time.time()
+        day = lambda n: time.strftime("%Y-%m-%d", time.gmtime(now - n * 86400))  # noqa: E731
+        doc = {"announcements": [{"id": i, "date": day(n), "title": str(n), "url": f"https://us.forums.blizzard.com/en/wow/t/a/{i}"}
+                                 for i, n in ((1, 0), (2, 6), (3, 9))]}
+        self.assertEqual([x["title"] for x in bot.recent_announcements(doc, today=now)], ["6", "0"])
+
     def test_renamed_channel_is_renamed_not_duplicated(self):
         cfg = {"categories": [{"name": "Start Here", "channels": [
             {"name": "forever-announcements", "aliases": ["patch-notes"], "type": "announcement", "feed": True}]}]}
@@ -284,6 +320,119 @@ class Tests(unittest.TestCase):
         d = FakeDiscord([], [])
         bot.post_notes(CFG, "/nonexistent/old.json", "/nonexistent/new.json", d, "1")
         self.assertEqual(d.calls, [])
+
+
+    # ---- welcome/rules messages and private channels ----
+    def _server(self, messages=(), private_visible=False):
+        chans = [{"id": "10", "type": 4, "name": "Start Here"},
+                 {"id": "20", "type": 0, "name": "welcome", "parent_id": "10"},
+                 {"id": "21", "type": 0, "name": "rules", "parent_id": "10"},
+                 {"id": "22", "type": 0, "name": "general"},
+                 {"id": "30", "type": 0, "name": "moderator-only", "parent_id": None,
+                  "permission_overwrites": [] if private_visible else [{"id": "1", "type": 0, "allow": "0", "deny": str(bot.VIEW)}]}]
+        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "50", "name": "forever-xp", "position": 9, "managed": True, "tags": {"bot_id": "42"}}]
+        return FakeDiscord(chans, roles, messages)
+
+    def test_welcome_and_rules_are_posted_without_pings_or_previews(self):
+        d = self._server()
+        bot.setup(CFG, d, "1")
+        sent = {p: b for m, p, b in d.calls if m == "POST" and p.endswith("/messages")}
+        self.assertEqual(set(sent), {"/channels/20/messages", "/channels/21/messages"})
+        for b in sent.values():
+            self.assertEqual(b["allowed_mentions"], {"parse": []})
+            self.assertTrue(b["flags"] & bot.SUPPRESS_EMBEDS)
+            self.assertLessEqual(len(b["content"]), 2000)
+            self.assertNotIn("{#", b["content"])
+        self.assertIn("<#21>", sent["/channels/20/messages"]["content"])   # {#rules} became a channel link
+        self.assertIn("<#22>", sent["/channels/20/messages"]["content"])
+
+    def test_bot_edits_its_own_message_and_ignores_others(self):
+        text = bot.render_message((bot.MESSAGES / "rules.md").read_text(), [{"id": "21", "type": 0, "name": "rules"}])
+        msgs = [{"id": "500", "author": {"id": "7"}, "content": "someone else"},
+                {"id": "300", "author": {"id": "42"}, "content": "old text"}]
+        d = FakeDiscord([], [], msgs)
+        bot.sync_message(d, {"id": "21", "name": "rules"}, text, {"id": "42"})
+        self.assertEqual([(m, p) for m, p, _ in d.calls if m != "GET"], [("PATCH", "/channels/21/messages/300")])
+        d = FakeDiscord([], [], [{"id": "300", "author": {"id": "42"}, "content": text}])
+        bot.sync_message(d, {"id": "21", "name": "rules"}, text, {"id": "42"})
+        self.assertEqual([m for m, _, _ in d.calls], ["GET"])     # unchanged: nothing posted or edited
+
+    def test_unknown_channel_links_stay_plain(self):
+        self.assertEqual(bot.render_message("see {#nope} and {#rules}", [{"id": "21", "type": 0, "name": "rules"}]), "see #nope and <#21>")
+
+    def test_message_validation(self):
+        def cfg(ch):
+            return {"categories": [{"name": "X", "channels": [ch]}]}
+        ok = {"name": "rules", "type": "text", "readonly": True, "message": "rules.md"}
+        self.assertEqual(bot.validate(cfg(ok)), [])
+        for bad in ({**ok, "readonly": False}, {**ok, "feed": True}, {**ok, "type": "announcement"},
+                    {**ok, "message": "../server.json"}, {**ok, "message": "missing.md"}, {**ok, "message": 5}):
+            self.assertTrue(bot.validate(cfg(bad)), bad)
+
+    def test_private_channel_is_checked_not_changed(self):
+        d = self._server(private_visible=True)
+        out = []
+        orig, bot.log = bot.log, out.append
+        try:
+            bot.setup(CFG, d, "1")
+        finally:
+            bot.log = orig
+        self.assertFalse(any("/channels/30" in p for m, p, _ in d.calls if m != "GET"))
+        self.assertTrue(any("moderator-only" in line and "@everyone can see it" in line for line in out))
+        self.assertNotIn("moderator-only", [b.get("name") for m, p, b in d.calls if m == "POST" and p.endswith("/channels")])
+
+    def test_missing_private_channel_is_created_hidden(self):
+        d = self._server()
+        d.channels = [c for c in d.channels if c["name"] != "moderator-only"]
+        bot.setup(CFG, d, "1")
+        made = next(b for m, p, b in d.calls if m == "POST" and p.endswith("/channels") and b["name"] == "moderator-only")
+        ow = {o["id"]: o for o in made["permission_overwrites"]}
+        self.assertTrue(int(ow["1"]["deny"]) & bot.VIEW)
+        self.assertTrue(int(ow["50"]["allow"]) & bot.VIEW)
+        self.assertNotIn("parent_id", made)
+
+    def test_private_channel_validation(self):
+        for bad in ([{"name": "Mods!", "type": "text"}], [{"name": "mods", "type": "voice"}], [{"name": "mods", "type": "text", "topic": "x"}],
+                    [{"name": "general", "type": "text"}], "mods"):
+            cfg = {"categories": [{"name": "X", "channels": [{"name": "general", "type": "text"}]}], "private_channels": bad}
+            self.assertTrue(bot.validate(cfg), bad)
+
+    def test_report_channel_validation(self):
+        two = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "report": True},
+                                                          {"name": "b", "type": "announcement", "report": True}]}]}
+        self.assertTrue(any("only one report channel" in x for x in bot.validate(two)))
+        forum = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "forum", "report": True}]}]}
+        self.assertTrue(bot.validate(forum))
+        bad = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "report": "yes"}]}]}
+        self.assertTrue(bot.validate(bad))
+
+    def test_scout_report_posts_only_safe_rows(self):
+        doc = {"totals": {"scouts": 3, "quests": 9, "drops": 4, "discoveries": 1}, "week": {"scouts": 2, "quests": 5, "drops": 4},
+               "board": [{"handle": "@everyone", "score": 99}, {"handle": "Scout 97800d", "score": "6", "quests": 2},
+                         {"handle": "Scout <b>x</b>", "score": 5}],
+               "week_board": [{"handle": "Scout 503897", "score": 2, "quests": 0, "drops": 2}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "scouts.json"
+            f.write_text(json.dumps(doc))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            bot.post_scouts(CFG, f, d, "1")
+        sent = posts(d)
+        self.assertEqual(len(sent), 1)
+        text = shown(sent[0])
+        self.assertIn("Scout 97800d", text)
+        self.assertNotIn("@everyone", text)
+        self.assertNotIn("<b>", text)
+        self.assertEqual(sent[0]["allowed_mentions"], {"parse": []})
+        self.assertTrue(any(m == "POST" and p == "/channels/7/messages/m1/crosspost" for m, p, b in d.calls))
+
+    def test_scout_report_waits_for_the_first_scout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "scouts.json"
+            f.write_text(json.dumps({"board": [], "totals": {}}))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            bot.post_scouts(CFG, f, d, "1")
+            bot.post_scouts(CFG, Path(tmp) / "missing.json", d, "1")
+        self.assertEqual(posts(d), [])
 
 
 if __name__ == "__main__":

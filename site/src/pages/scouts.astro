@@ -1,0 +1,83 @@
+---
+import Base from "../layouts/Base.astro";
+import { scouts } from "../lib/data";
+import { SITE } from "../config";
+const { totals, week, board, week_board } = scouts;
+const n = (x: unknown) => Number(x) || 0;
+const fmt = (x: unknown) => n(x).toLocaleString("en-US");
+---
+<Base image="/og/scout.jpg" title="Scout leaderboard" description="The WoW Forever players whose ForeverScout logs time quests and confirm item drops for everyone, ranked. Updated every six hours.">
+  <h1>Scout leaderboard</h1>
+  <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it.</p>
+
+  <ul class="tiles" aria-label="All scouts so far">
+    <li><b>{fmt(totals.scouts)}</b><span>scouts</span></li>
+    <li><b>{fmt(totals.quests)}</b><span>quests timed</span></li>
+    <li><b>{fmt(totals.drops)}</b><span>drops logged</span></li>
+    <li><b>{fmt(totals.discoveries)}</b><span>discoveries</span></li>
+  </ul>
+
+  {board.length === 0 ? (
+    <section class="empty">
+      <h2>No scouts on the board yet</h2>
+      <p>WoW Forever launches November 4. Install ForeverScout and the uploader before you log in, and your name is on this board after your first session.</p>
+      <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
+    </section>
+  ) : (<>
+    {week_board.length > 0 && (
+      <section>
+        <h2>This week</h2>
+        <p class="muted small">{fmt(week.scouts)} scouts timed {fmt(week.quests)} quests and logged {fmt(week.drops)} drops in the last seven days.</p>
+        <div class="table-scroll">
+          <table class="board">
+            <thead><tr><th class="num">#</th><th>Scout</th><th class="num">Points</th><th class="num">Quests timed</th><th class="num">Drops logged</th></tr></thead>
+            <tbody>{week_board.map((r, i) => <tr><td class="num">{i + 1}</td><td>{r.handle}</td><td class="num"><b>{fmt(r.score)}</b></td><td class="num">{fmt(r.quests)}</td><td class="num">{fmt(r.drops)}</td></tr>)}</tbody>
+          </table>
+        </div>
+      </section>
+    )}
+    <section>
+      <h2>All time</h2>
+      <div class="table-scroll">
+        <table class="board">
+          <thead><tr><th class="num">#</th><th>Scout</th><th class="num">Points</th><th class="num">Quests timed</th><th class="num">Drops logged</th><th class="num">Discoveries</th><th class="num opt">Zones</th><th class="num opt">Sessions</th></tr></thead>
+          <tbody>{board.map((r, i) => <tr class={i < 3 ? `top top${i + 1}` : ""}><td class="num">{i + 1}</td><td>{r.handle}</td><td class="num"><b>{fmt(r.score)}</b></td><td class="num">{fmt(r.quests)}</td><td class="num">{fmt(r.drops)}</td><td class="num">{fmt(r.discoveries)}</td><td class="num opt">{fmt(r.zones)}</td><td class="num opt">{fmt(r.sessions)}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </section>
+  </>)}
+
+  <div class="explain">
+    <section>
+      <h2>How points work</h2>
+      <ul>
+        <li><b>1 point</b> for each quest you time, from accept to turn-in.</li>
+        <li><b>1 point</b> for each drop you log: an item, the mob or chest it came from, and the zone.</li>
+        <li><b>3 points</b> for each <b>discovery</b>: you were the first to loot a drop, and another player's log then confirmed it.</li>
+      </ul>
+      <p class="muted small">The board updates every six hours from shared logs. Alts on the same computer count as one scout.</p>
+    </section>
+    <section>
+      <h2>Badges on item pages</h2>
+      <p>When two different scouts loot the same item from the same source, its item page shows <span class="confirmed">Confirmed in Forever by 2 players</span> next to that source, in the tooltip and in the BIS planner. Sources nobody has looted yet are marked as Classic-era data, because Forever changed and added loot.</p>
+      <p><a href="/items/">Browse the item database</a></p>
+    </section>
+    <section>
+      <h2>Your scout name</h2>
+      <p>The ForeverScout Uploader shows your name when you set it up, something like <b>Scout 97800d</b>. It's made from a one-way hash of a random id the uploader creates, so it can't be traced back to you. No character names, realms or chat are ever recorded.</p>
+      <p>Coming soon: link your scout name to your Discord sign-in to show your name here and earn roles in the <a href={SITE.discord} rel="noopener">Forever XP Discord</a>.</p>
+    </section>
+  </div>
+</Base>
+<style>
+  .tiles { list-style: none; padding: 0; margin: 1.2rem 0 1.6rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; max-width: none; }
+  .tiles li { background: var(--raise); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 1rem; }
+  .tiles b { display: block; font-size: var(--step-3); color: var(--xp); line-height: 1.1; }
+  .tiles span { color: var(--muted); font-size: 0.9rem; }
+  .empty { background: var(--raise); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.25rem; }
+  .empty h2 { margin-top: 0; }
+  .board td:nth-child(2) { font-family: var(--font-mono, ui-monospace, monospace); }
+  .board tr.top td:nth-child(1) { font-weight: 700; color: var(--xp); }
+  .explain { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 2rem; margin-top: 1.5rem; }
+  .confirmed { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px; font: 600 0.72rem var(--font-body); color: var(--bg); background: var(--xp); white-space: nowrap; }
+</style>

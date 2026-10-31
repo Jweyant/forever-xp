@@ -1,0 +1,237 @@
+# ForeverXP — Tauren 6-12, Mulgore. Ends at the Crossroads, where the Horde Barrens guides start.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Mulgore's map frame changed in Forever; all positions come from Questie's converted coordinates
+# (spot-checked: Bloodhoof, Camp Narache, Red Rocks, the Venture Co. mine and Thunder Bluff line up).
+# Forever-only quests on the way are included: 96605 The Great Outdoors, 99108 Sparring Match,
+# 96130 Chakuyak, 98430 The Longwalkers, 99411 Kyle's Gone Missing!, the Longwalker chain
+# (99079, 99081, 99101, 99080, 99082) and 98424 Fizsprocket's Notes / 98435 Thunderhorn's Report.
+# No source has their XP yet, so the estimate uses approximate values for them (~ in the report).
+# Skipped on purpose: the Camping 101 profession quests (one per profession, no XP value for leveling),
+# 98427 Ceasing Operations (Venture Co. Clearclutter is an elite), 744 Preparation for Ceremony
+# (harpies in the far north-west), 770 The Demon Scarred Cloak (rare drop from Ghost Howl),
+# 768/769 Gathering Leather / Kodo Hide Bag (skinning turn-ins in Thunder Bluff),
+# 76156 Stalk With The Earthmother chain and 97485 Traditions of the Bluff (Thunder Bluff errands
+# with shopping and long walks for little XP).
+# Quest order checked against the Ding! Tauren guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 6-12 Mulgore
+  display: ForeverXP 6-12 Mulgore
+  next: 12-15 The Barrens
+  group: ForeverXP Horde
+  for: Tauren
+  class: Hunter
+  version: 1
+
+steps:
+  # --- Bloodhoof Village
+  - turnin: 96659
+    accept: 96605
+    text: Kaga Wildhoof is camped at the south edge of Bloodhoof Village, by the road.
+  - complete: 96605
+    text: Type /sit next to Kaga's campfire and wait for the Boosted Rest buff.
+  - turnin: 96605
+  - turnin: 763
+    accept: [767, 745, 746]
+    text: Baine Bloodhoof is in the middle of the village.
+  - accept: 743
+  - accept: 99079
+  - turnin: 1656
+  - home: Bloodhoof Village
+  - accept: 748
+  - accept: 99108
+  - complete: 99108
+    text: Duel 3 players or beat 3 Novice Warriors next to Krang.
+  - turnin: 99108
+  - accept: 761
+  - turnin: 767
+    accept: 771
+  - accept: 766
+  - accept: 96130
+  - accept: 99411
+    text: Ahab Wheathoof is at the north end of the village. Kyle needs Tender Strider Meat from Adult or Elder Plainstriders; keep one when it drops.
+
+  # --- South and west: Palemane gnolls, Chakuyak, Perith
+  - complete: 745
+    text: Palemane gnolls are just south of the village. Poachers are mostly at Palemane Rock further west.
+  - complete: 96130
+    text: Chakuyak is a lone wolf west of the village.
+  - accept: 98430
+    text: Perith Stormhoof is held in the gnoll camp at Palemane Rock.
+  - complete: 98430
+    goto: [1412, 37.19, 64.62]
+    text: Walk Perith out of Palemane Rock. You hand this in to Cairne in Thunder Bluff later.
+  - complete: [748, 761]
+    text: Prairie Wolves and Plainstriders cover the fields; Wiry Swoops fly over them. Grab the Prairie Wolf Heart and Swoop Gizzard for Maur too.
+  - complete: 771
+    text: Ambercorn grows at the base of trees all over. Well Stones are around the Winterhoof Water Well south-east of the village.
+
+  # --- Bloodhoof turn-ins
+  - turnin: 745
+  - turnin: 748
+    accept: 754
+  - turnin: 96130
+  - turnin: 761
+  - turnin: 771
+    accept: 772
+
+  # --- East: Winterhoof well, Longwalker Malah, harpies
+  - accept: 749
+    text: Morin Cloudstalker is on the road just east of the village.
+  - complete: 754
+    goto: [1412, 51.76, 68.43]
+    text: Use the Winterhoof Cleansing Totem at the Winterhoof Water Well.
+  - turnin: 99079
+    accept: 99081
+    text: Malah Longwind is at the eastern edge of Mulgore.
+  - complete: 743
+    text: Windfury harpies are on the hills south of Malah.
+  - turnin: 99081
+    accept: 99101
+  - turnin: 99101
+    accept: 99080
+  - turnin: 754
+    accept: 756
+  - turnin: 743
+
+  # --- East again: Galak centaurs, Herak, stalkers and the caravan
+  - complete: 99080
+    text: Galak centaurs camp on the eastern edge, near Malah. Herak the Pillager is level 11; pull him alone.
+  - complete: 756
+    text: Prairie Stalkers and Flatland Cougars roam the plains between the centaurs and the caravan.
+  - turnin: 749
+    accept: 751
+    text: The Sealed Supply Crate is at the Ravaged Caravan north-east of the village.
+  - complete: 766
+    text: Finish Maur's four parts. Adult and Elder Plainstriders drop the Plainstrider Scale and Kyle's Tender Strider Meat; Flatland Cougars drop the femur.
+
+  # --- Bloodhoof turn-ins
+  - turnin: 751
+    accept: [764, 765]
+  - turnin: 99080
+    accept: 99082
+  - turnin: 756
+    accept: 758
+  - turnin: 766
+  - complete: 99411
+    text: Feed Kyle the Frenzied the Tender Strider Meat. He runs around the village.
+  - turnin: 99411
+
+  # --- North-west: Rite of Vision, Thunderhorn well, Bael'dun dig
+  - goto: [1412, 47.2, 61.6]
+    text: Drink the Water of the Seers at the fire in the middle of Bloodhoof and follow the wolf spirit north-west. You can also just run there.
+  - complete: 758
+    goto: [1412, 44.17, 51.11]
+    text: Use the Thunderhorn Cleansing Totem at the Thunderhorn Water Well.
+  - turnin: 772
+    accept: 773
+    text: Seer Wiserunner is in a small cave at the foot of the mesa.
+  - complete: 746
+    text: Bael'dun dwarves at the dig site drop Prospector's Picks. Smash them at the forge in the dig site.
+
+  # --- North-east: Venture Co. mine and Red Rocks
+  - goto: [1412, 60.5, 46.5]
+    text: Head east to the Venture Co. mine.
+  - complete: [764, 765]
+    text: Venture Co. workers fill the mine and the fields around it. Supervisor Fizsprocket is at the back of the mine; he drops Mulgore Expansion Plans.
+  - accept: 98424
+    text: Right-click the Mulgore Expansion Plans to start the quest.
+  - complete: 98424
+    text: The three loose pages are inside the mine.
+  - accept: 833
+    text: Lorekeeper Raintotem is at the foot of Red Rocks.
+  - complete: 833
+    text: Bristleback Interlopers are up on Red Rocks.
+  - turnin: 833
+  - turnin: 773
+    accept: 775
+    text: The Ancestral Spirit is at the top of Red Rocks.
+
+  # --- Thunder Bluff
+  - goto: [1412, 37.3, 38.6]
+    text: Take the lift up the west side of Thunder Bluff.
+  - turnin: 775
+    accept: 776
+  - turnin: 99082
+  - turnin: 98430
+
+  # --- Back to Bloodhoof
+  - turnin: 758
+    accept: 759
+    text: Run back down to Bloodhoof Village.
+  - turnin: 746
+  - turnin: [764, 765]
+  - turnin: 98424
+  - xp: 10
+    text: Several quests here need level 10. Kill plainstriders and wolves around the village if you're short.
+  - accept: 861
+    text: Skorn Whitecloud, in the big tent in the middle of the village.
+  - accept: 5928
+    only: Druid
+  - accept: 2984
+    only: Shaman
+    text: Narm Skychaser. Kranal Fiss is in the Barrens, north-east of the Crossroads.
+
+  # --- Hunter: pet quests (level 10)
+  - accept: 6061
+    only: Hunter
+  - complete: 6061
+    only: Hunter
+    text: Use the Taming Rod on an Adult Plainstrider.
+  - turnin: 6061
+    accept: 6087
+    only: Hunter
+  - complete: 6087
+    only: Hunter
+    text: Use the Taming Rod on a Prairie Stalker.
+  - turnin: 6087
+    accept: 6088
+    only: Hunter
+  - complete: 6088
+    only: Hunter
+    text: Use the Taming Rod on a Swoop.
+  - turnin: 6088
+    accept: 6089
+    only: Hunter
+  - tame: Prairie Stalker
+    only: Hunter
+    text: Tame a level 9-10 Prairie Stalker or Flatland Cougar as your pet.
+
+  # --- East wolves, then the north
+  - complete: 759
+    text: Prairie Wolf Alphas roam east of the village, around the Galak camp.
+  - turnin: 759
+    accept: 760
+  - complete: [861, 776]
+    text: Flatland Prowlers are on the northern plains. Arra'chea, the big kodo, walks the north end of Mulgore.
+  - complete: 760
+    goto: [1412, 42.7, 24.98]
+    text: Use the Wildmane Cleansing Totem at the Wildmane Water Well in the far north.
+  - hs: Bloodhoof Village
+    hs_to: [1412, 45.93, 64.16]
+  - turnin: 760
+    accept: 98435
+
+  # --- Thunder Bluff, then the Barrens
+  - turnin: 98435
+    text: Hamuul Runetotem is on Elder Rise in Thunder Bluff.
+  - turnin: 776
+  - turnin: 861
+    accept: 860
+  - turnin: 5928
+    only: Druid
+    text: Turak Runetotem is on Elder Rise. Follow his class quests when you have time.
+  - accept: 1505
+    only: Warrior
+    text: Torm Ragetotem on Hunter Rise. Uzzek is in the Barrens, north-east of the Crossroads.
+  - turnin: 6089
+    only: Hunter
+  - train: Holt Thunderhorn
+    only: Hunter
+  - fp: Thunder Bluff
+  - accept: 854
+    text: Leave Mulgore by the road east into the Barrens. Kirge Sternhorn is at Camp Taurajo.
+  - fp: Camp Taurajo
+  - turnin: 854
+    text: Follow the Gold Road north to the Crossroads.
+  - fp: Crossroads
+  - turnin: 860

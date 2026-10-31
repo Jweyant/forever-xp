@@ -1,0 +1,185 @@
+# ForeverXP — Alliance 17-20, Loch Modan (the Stonesplinter Valley, the Stonewrought Dam, the ogres,
+# Ironband's Excavation), then the Algaz Gauntlet to Menethil Harbor. Shared by every Alliance race:
+# Humans, Dwarves and Gnomes come from 14-17 Redridge, Night Elves from 14-17 Darkshore by boat.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included (Banner of the Fallen, Excavation Tools, Spoils of War);
+# their XP is an estimate (~ in the report) until ForeverScout logs measure it.
+# Ends at level 20 in Menethil Harbor, where the Wetlands (Forever adds 25 new quests, 21-34) begin.
+# Humans skip the trogg chain (their 14-17 Redridge guide brings them in at a higher level).
+# Skipped on purpose: 256 WANTED: Chok'sul (elite), 271/531 Vyrin's Revenge (Ol' Sooty is elite),
+# 1338 Stormpike's Order for non-Dwarves (Stormwind trip), 257 A Hunter's Boast for Dwarves/Gnomes
+# (done in 10-14), 98282/279/484 Menethil quests (level 22, left for the Wetlands guide),
+# 86614 Silver of the Waves and 94616 Water Sapta (level 20 and Shaman-only lines).
+guide:
+  name: 17-20 Loch Modan
+  display: ForeverXP 17-20 Loch Modan
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Alliance
+  sim_race: Human
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Getting to Thelsamar
+  - fly: Stormwind
+    only: Human/Dwarf/Gnome
+    fly_to: [1453, 71.3, 72.2]
+    fly_seconds: 120
+    text: Fly from Lakeshire to Stormwind.
+  - travel: Take the Deeprun Tram from the Dwarven District to Ironforge.
+    only: Human/Dwarf/Gnome
+    travel_to: [1455, 76.0, 51.0]
+    travel_seconds: 180
+  - travel: Take the boat from the south dock of Auberdine to Menethil Harbor.
+    only: NightElf
+    travel_to: [1437, 4.6, 57.0]
+    travel_seconds: 240
+  - fp: Menethil Harbor
+    only: NightElf
+  - goto: [1437, 53.0, 70.0]
+    only: NightElf
+    text: Follow the road east out of Menethil and south through Dun Algaz. Stay on the road; the Dragonmaw orcs along it are level 20.
+  - goto: [1432, 33.9, 51.0]
+    only: NightElf
+    text: Keep following the road south into Loch Modan and on to Thelsamar.
+  - fp: Thelsamar
+    only: NightElf
+  - fp: Ironforge
+    only: Human
+    text: Gryth Thurden, the Ironforge gryphon master, is in the Great Forge.
+  - goto: [1432, 33.9, 51.0]
+    only: Human
+    text: Run out of Ironforge, east through Dun Morogh and the tunnel at the end of the road to Thelsamar in Loch Modan.
+  - fly: Thelsamar
+    only: Dwarf/Gnome
+    fly_to: [1432, 33.9, 51.0]
+    fly_seconds: 150
+    text: Fly from Ironforge to Thelsamar.
+  - fp: Thelsamar
+    only: Human
+  - home: Thelsamar
+  - accept: 255
+    text: Magistrate Bluntnose is in Thelsamar.
+  - accept: 436
+    text: Jern Hornhelm is in Thelsamar.
+
+  # --- South: the trogg chain at the guard tower (Dwarves and Gnomes did parts 1-2 in 10-14)
+  - accept: [224, 267]
+    only: NightElf
+    text: Mountaineer Cobbleflint and Captain Rugelfuss are in the southern guard tower.
+  - complete: [224, 267]
+    only: NightElf
+    text: Stonesplinter Troggs and Scouts are in the hills between Thelsamar and the guard tower; all the troggs drop stone teeth.
+  - turnin: 224
+    only: NightElf
+    accept: 237
+  - turnin: 267
+    only: NightElf
+  - complete: 237
+    only: NightElf
+    text: Stonesplinter Skullthumpers and Seers are further south, toward the Stonesplinter Valley.
+  - turnin: 237
+    only: NightElf
+  - accept: 263
+    only: Dwarf/Gnome/NightElf
+    text: Mountaineer Wallbang is in the southern guard tower.
+  - accept: 86585
+    text: Mountaineer Ylva is south of the guard tower, by the Stonesplinter Valley.
+  - complete: [263, 86585]
+    only: Dwarf/Gnome/NightElf
+    text: Stonesplinter Shamans and Bonesnappers are in the Stonesplinter Valley. Raise the banner in the valley to call out Headsplitter.
+  - complete: 86585
+    only: Human
+    text: Raise the banner in the Stonesplinter Valley to call out Headsplitter.
+  - turnin: 263
+    only: Dwarf/Gnome/NightElf
+  - turnin: 86585
+    text: Captain Rugelfuss is in the guard tower.
+  - accept: 217
+    only: Dwarf/Gnome/NightElf
+  - complete: 217
+    only: Dwarf/Gnome/NightElf
+    text: Grawmug and his two guards are at the back of the Stonesplinter Valley. Pull them one at a time if you can.
+  - turnin: 217
+    only: Dwarf/Gnome/NightElf
+
+  # --- North: the dam, and a short run into the Wetlands
+  - accept: 250
+    text: Chief Engineer Hinderweir is on top of the Stonewrought Dam, north of the loch.
+  - complete: 250
+    text: The suspicious barrel is at the east end of the dam.
+  - turnin: 250
+    accept: 199
+  - turnin: 199
+    accept: 161
+  - turnin: 161
+    accept: 274
+    text: Ashlan Stonesmirk is in the Wetlands, just through the tunnel north of the dam.
+  - turnin: 274
+    accept: 278
+    text: Back to Hinderweir on the dam.
+
+  # --- East: ogres, the lodge, the excavation
+  - complete: 255
+    text: Mo'grosh Ogres, Brutes and Enforcers are at the ogre camp in the north-east hills. The ogres also drop the Mo'grosh Crystal for Hinderweir.
+  - accept: 257
+    only: Human/NightElf
+    text: Daryl the Youngling is in the Farstrider Lodge.
+  - complete: 257
+    only: Human/NightElf
+    text: Mountain Buzzards circle south of the lodge. You have 15 minutes.
+  - turnin: 257
+    only: Human/NightElf
+  - accept: 258
+    text: Daryl the Youngling, Farstrider Lodge.
+  - complete: 258
+    text: Elder Mountain Boars roam the hills north-west of the lodge. You have 12 minutes.
+  - turnin: 258
+  - turnin: 436
+    accept: 297
+    text: Magmar Fellhew is at Ironband's Excavation Site in the south-east.
+  - complete: 297
+    text: Stonesplinter Geomancers and Diggers in the dig pit drop the idols. Loot the Excavation Tools lying on the ground; they start a quest.
+  - accept: 86613
+    text: Loot the Excavation Tools on the ground at the dig.
+  - complete: 86613
+  - turnin: 297
+  - turnin: 86613
+    text: Prospector Ironband is next to Magmar.
+  - complete: 278
+    text: Loch Crocolisks along the east shore drop the tear; Forest Lurker spiders around the loch drop the venom.
+  - hs: Thelsamar
+    hs_to: [1432, 35.5, 48.4]
+  - turnin: 255
+  - turnin: 278
+    accept: 280
+  - complete: 280
+    text: Swim down to the base of the dam and use the mixture on the powder keg.
+  - turnin: 280
+    accept: 283
+  - turnin: 283
+    text: Back up to Hinderweir.
+  - xp: 19
+    text: The Algaz Gauntlet needs level 19. Kill ogres north-east or troggs south of Thelsamar if you're short.
+  - accept: 468
+    text: Mountaineer Kadrell walks around Thelsamar.
+
+  # --- North through Dun Algaz to Menethil Harbor
+  - turnin: 468
+    accept: 455
+    text: Mountaineer Rockgar is at the Algaz checkpoint in the north-west, where the road leaves for the Wetlands.
+  - complete: 455
+    text: Dragonmaw Scouts and Grunts camp along the road through Dun Algaz at the south edge of the Wetlands.
+  - goto: [1437, 10.6, 59.7]
+    text: Follow the road west to Menethil Harbor.
+  - fp: Menethil Harbor
+    only: Human/Dwarf/Gnome
+  - turnin: 455
+    accept: 98197
+    text: Valstag Ironjaw is in the keep at Menethil Harbor.
+  - complete: 98197
+    text: The timber and iron are stacked around Menethil Harbor's docks and walls.
+  - turnin: 98197
+  - xp: 20
+    text: Finish level 20 on the crocolisks and gnolls east of Menethil if you're short.

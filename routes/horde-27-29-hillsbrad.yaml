@@ -64,5 +64,7 @@ steps:
   - complete: 539
     text: Foreman Bonds and the miners are in Azurelode Mine south of Hillsbrad.
   - turnin: 539
+  - goto: [1424, 69.3, 43.6]
+    text: Finish the skulls on the Syndicate humans around Durnholde Keep.
   - complete: 546
   - turnin: 546

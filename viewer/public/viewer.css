@@ -1,0 +1,4 @@
+html, body { margin: 0; height: 100%; background: #0d0f16; color: #cfd4e0; font: 15px/1.5 system-ui, sans-serif; }
+#model { width: 100%; height: 100%; }
+#model canvas { display: block; width: 100% !important; height: 100% !important; }
+#note { position: absolute; inset: auto 0 0 0; margin: 0; padding: 0.6rem 1rem; text-align: center; background: rgba(13, 15, 22, 0.85); }

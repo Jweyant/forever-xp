@@ -2,7 +2,7 @@
 
 Estimated finish: level 5.58 after 30 minutes. Quests still in log: [420, 2160]
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
@@ -18,6 +18,8 @@ _none_
 | 3364 Scalding Mornbrew Delivery | 225 | 0.0 | 450 |
 | 218 The Stolen Journal | 560 | 1.3 | 424 |
 | 233 Coldridge Valley Mail Delivery | 190 | 0.0 | 380 |
+| 98581 Archaic Rune | ~170 | 0.0 | 340 |
+| 98574 Hallowed Memorandum | ~170 | 0.0 | 340 |
 | 3361 A Refugee's Quandary | 250 | 1.9 | 129 |
 | 3106 Simple Rune | 40 | 0.0 | 80 |
 | 3107 Consecrated Rune | 40 | 0.0 | 80 |
@@ -32,8 +34,6 @@ _none_
 | 183 The Boar Hunter | 250 | 3.6 | 69 |
 | 170 A New Threat | 170 | 4.3 | 40 |
 | 179 Dwarven Outfitters | 80 | 4.9 | 16 |
-| 98581 Archaic Rune | 0 | 0.0 | 0 |
-| 98574 Hallowed Memorandum | 0 | 0.0 | 0 |
 
 ## Step by step
 

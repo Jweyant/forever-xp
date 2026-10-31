@@ -7,7 +7,7 @@ const unknown = quests.filter((q) => q.verdict === "unknown").length;
   <h1>Help make the routes faster</h1>
   <p class="lede">
     Every number on this site is an estimate built from Classic rules until players send logs.
-    Right now {meta.measured_quests} quests are measured and {unknown} have no usable location at all.
+    Right now {meta.measured_quests} quests are measured, {meta.confirmed_items || 0} item drops are confirmed in Forever by players' logs, and {unknown} quests have no usable location at all.
   </p>
 
   <h2>Ways to help</h2>
@@ -15,6 +15,7 @@ const unknown = quests.filter((q) => q.verdict === "unknown").length;
     <section>
       <h3>Run ForeverScout while you level</h3>
       <p>The most useful thing you can do. Any level range helps, new Forever zones and quests most of all.</p>
+      <p>Each quest you time and drop you log earns points on the <a href="/scouts/">Scout leaderboard</a>, and drops two players confirm get a "Confirmed in Forever" badge on their item page.</p>
       <p><a href="/scout/">Install ForeverScout</a></p>
     </section>
     <section>

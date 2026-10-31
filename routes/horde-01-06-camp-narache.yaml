@@ -1,0 +1,88 @@
+# ForeverXP — Tauren 1-6, Camp Narache.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quest on the way: 95805 Grace of An'she and Mu'sha (timed incense run to the shrine in
+# the south-east hills). No source has its XP yet, so the estimate uses an approximate value (~ in the report).
+# Mulgore's map frame changed in Forever; all positions come from Questie's converted coordinates.
+# Skipped on purpose: 5844 Welcome! (voucher item only some players have).
+# Quest order checked against the Ding! Tauren guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 1-6 Camp Narache
+  display: ForeverXP 1-6 Camp Narache
+  next: 6-12 Mulgore
+  group: ForeverXP Horde
+  for: Tauren
+  class: Hunter
+  start_level: 1
+  start: [1412, 44.2, 76.9]   # Camp Narache, where Tauren spawn
+  version: 1
+
+steps:
+  # --- Camp Narache
+  - accept: 747
+    text: Grull Hawkwind is at the tent on the east side of camp.
+  - accept: 752
+    text: Chief Hawkwind is in the big tent in the middle of camp.
+  - complete: 747
+    text: Plainstriders are all around the camp. Kill every one you pass.
+  - turnin: 752
+    accept: 753
+    text: Greatmother Hawkwind is at the water well south-east of camp.
+  - complete: 753
+    text: The Water Pitcher is on the ground at the well.
+  - turnin: 747
+    accept: 750
+  - accept: 3092
+    only: Hunter
+  - accept: 3091
+    only: Warrior
+  - accept: 3093
+    only: Shaman
+  - accept: 3094
+    only: Druid
+  - turnin: 753
+    accept: 755
+  - turnin: 3092
+    only: Hunter
+  - train: Lanka Farshot
+    only: Hunter
+  - turnin: 3091
+    only: Warrior
+  - turnin: 3093
+    only: Shaman
+  - turnin: 3094
+    only: Druid
+  - accept: 3376
+    text: Brave Windfeather, near the chief's tent. Needs level 3; if you're not there yet, grab it when you come back.
+  - accept: 1656
+    text: Antur Fallow is at the small camp just west of Camp Narache. You'll hand this in at Bloodhoof Village.
+
+  # --- South: cougars, the Seer and the shrine run
+  - complete: 750
+    text: Mountain Cougars are in the hills south of camp.
+  - turnin: 755
+    accept: [757, 95805]
+    text: Seer Graytongue is up in the hills south of camp. Take both quests.
+  - turnin: 95805
+    text: The incense burns out in 10 minutes. Run straight east along the southern hills to the shrine and use the Ritual Fire. Don't stop to fight.
+
+  # --- Brambleblade Ravine: boars and quilboar
+  - turnin: 750
+    accept: 780
+    text: Back to Grull Hawkwind in camp.
+  - complete: 780
+    text: Battleboars are in the fields east of camp, toward the ravine.
+  - complete: [757, 3376]
+    text: Bristleback quilboar fill Brambleblade Ravine. Chief Sharptusk Thornmantle is at the far east end.
+  - goto: [1412, 59.8, 82.2]
+    text: The Dirt-stained Map is on the ground in the small cave in the ravine.
+  - accept: 781
+    text: Right-click the Dirt-stained Map to start the quest.
+
+  # --- Back to Camp Narache
+  - turnin: 780
+  - turnin: 3376
+  - turnin: [757, 781]
+    accept: [763, 96659]
+  - train: Lanka Farshot
+    only: Hunter
+    text: Train new spells, then follow the road north out of camp to Bloodhoof Village.

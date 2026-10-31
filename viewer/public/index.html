@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>3D gear viewer — Forever XP</title>
+<link rel="stylesheet" href="/viewer.css">
+<link rel="stylesheet" href="/zam/modelviewer/viewer/viewer.css">
+<script src="/config.js"></script>
+<script src="/vendor/jquery.min.js"></script>
+<!-- Wowhead's current classic viewer build, via the proxy (the un-versioned
+     classic/viewer/viewer.min.js is a stale build whose mo3 model files are gone).
+     If models stop loading, read the new build path off wowhead.com/classic/dressing-room. -->
+<script src="/zam/modelviewer/classic/deployment/viewer/35ee72d/viewer.min.js"></script>
+<script type="module" src="/app.js"></script>
+</head>
+<body>
+<div id="model" aria-label="3D character model"></div>
+<p id="note" hidden></p>
+<noscript><p>The 3D viewer needs JavaScript.</p></noscript>
+</body>
+</html>

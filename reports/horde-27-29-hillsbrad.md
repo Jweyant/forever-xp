@@ -2,7 +2,7 @@
 
 Estimated finish: level 26.85 after 118 minutes. Quests still in log: []
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
@@ -22,7 +22,7 @@ _none_
 | 528 Battle of Hillsbrad | 2000 | 7.5 | 268 |
 | 549 WANTED: Syndicate Personnel | 1750 | 7.6 | 230 |
 | 527 Battle of Hillsbrad | 1950 | 10.5 | 186 |
-| 546 Souvenirs of Death | 2550 | 19.5 | 131 |
+| 546 Souvenirs of Death | 2550 | 18.3 | 140 |
 | 496 Elixir of Suffering | 175 | 7.1 | 25 |
 
 ## Step by step
@@ -57,5 +57,6 @@ _none_
 | 26 | 26.50 | 86.2 | 4260 | turnin WANTED: Syndicate Personnel, The Rescue |
 | 27 | 26.57 | 93.0 | 2505 | complete Battle of Hillsbrad |
 | 28 | 26.65 | 96.6 | 2765 | turnin Battle of Hillsbrad |
-| 29 | 26.78 | 116.1 | 4775 | complete Souvenirs of Death |
-| 30 | 26.85 | 117.7 | 2705 | turnin Souvenirs of Death |
+| 29 | 26.65 | 98.1 | 155 | Finish the skulls on the Syndicate humans around Durnholde Keep. |
+| 30 | 26.78 | 116.4 | 4620 | complete Souvenirs of Death |
+| 31 | 26.85 | 118.1 | 2705 | turnin Souvenirs of Death |

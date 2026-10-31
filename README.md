@@ -96,11 +96,11 @@ that gap.
 - [ ] First in-game test on the live Forever client
 - [ ] CurseForge listing
 - [x] Route generator and XP-per-minute scorer (`tools/guidegen.py`)
-- [x] Horde Troll/Orc 1–12 guide (RestedXP format, `guides/ForeverXP_Guides`)
-- [x] Horde 22–30: southern Barrens, Stonetalon, Ashenvale, Hillsbrad, Thousand Needles
-- [ ] Horde 12–22 (RestedXP's free Barrens guide covers this for now)
+- [x] Horde 1–12 for every race (Durotar, Tirisfal, Mulgore, Zephras Isle; RestedXP format, `guides/ForeverXP_Guides`)
+- [x] Horde 12–30: the Barrens, southern Barrens, Stonetalon, Ashenvale, Hillsbrad, Thousand Needles
+- [x] Alliance 1–20 for every race (each starting zone, Westfall / Loch Modan / Darkshore, Redridge, Loch Modan)
+- [ ] Alliance 20–30 (Wetlands onward) and both factions 30–60
 - [ ] Calibrate time/XP estimates from ForeverScout logs
-- [ ] Alliance 1–30 guide
 - [x] forever-xp.com: guides, quest XP/min, skip list, talent calculator, Forever vs Classic changes
 - [ ] Deploy forever-xp.com on Cloudflare Pages
 

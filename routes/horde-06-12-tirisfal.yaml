@@ -1,0 +1,304 @@
+# ForeverXP — Undead 6-12, Tirisfal Glades. Ends at the Undercity zeppelin tower for Orgrimmar.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included: the Brill Executor quests (99134 Discipline,
+# 99141 Patience), Eleanor Shackleton's camp (96607, 86784), 99144 Seeking Refuge, 97558 Hides for
+# the Forsaken, 99142 Tomb Weed, 99156 Riptear, the Argent Dawn chain (96895 → 98545) and the
+# Shadowvale quests (95314, 95328, 99152, 99153), plus the Undead Paladin chain (91282 → 95803)
+# behind `only: Paladin`. No source has their XP yet, so the estimate uses
+# approximate values for them (marked ~ in the report).
+# Route choice: this goes Tirisfal → zeppelin → Barrens instead of Silverpine 10-14. Silverpine's
+# early quests are mostly breadcrumbs and long runs to Pyrewood/Fenris; with Forever's ~30 new
+# Tirisfal quests the zone alone carries you to 12+, and the Barrens has better density at 12-15.
+# Skipped on purpose: 590 A Rogue's Deal (fight Calvin back at Deathknell), 405/357/366/409/411
+# the Gunther/Bethor lich chain (several Undercity trips and the island), 372 Captain Melrache
+# (far north-east, bodyguards), 408 The Family Crypt (level 13 crypt with Dargol), 445 Delivery to
+# Silverpine (we don't go there), 1818+ / 1478+ / 1881+ / 1885+ the level 10 class quests
+# (Undercity/Silverpine detours, left to the player), the Camping 101 profession quests (96658+),
+# and the Paladin 94427 A Lesson in Divinity chain (linen, Undercity, Venomweb Vale round trips).
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 6-12 Tirisfal Glades
+  display: ForeverXP 6-12 Tirisfal Glades
+  next: 12-15 The Barrens
+  group: ForeverXP Horde
+  for: Undead
+  class: Warrior
+  version: 1
+
+steps:
+  # --- The road to Brill
+  - accept: 8
+    text: Calvin Montague is in the house just east of Deathknell. Take his letter; skip the duel.
+  - accept: 365
+    text: Deathguard Simmer guards the road further east.
+  - accept: 5481
+    text: Gordo is an abomination that wanders the road picking plants.
+  - turnin: 96656
+    accept: 96607
+    text: Eleanor Shackleton's camp is just south of the road before Brill.
+  - complete: 96607
+    text: Type /sit next to her campfire and wait for the Boosted Rest buff.
+  - turnin: 96607
+
+  # --- Brill
+  - turnin: 383
+    accept: [427, 99134, 99141]
+    town: true
+    text: Executor Zygand is by the town hall. Discipline gives you the Executor's Motivator.
+  - goto: [1420, 60.4, 52.2]
+    town: true
+    text: Use the Executor's Motivator on 5 Deathguards standing around Brill.
+  - accept: 398
+    town: true
+    text: The Wanted poster is next to Zygand.
+  - accept: 358
+    town: true
+  - turnin: 8
+    town: true
+  - home: Brill
+    town: true
+  - accept: 367
+    town: true
+    text: Apothecary Johaan is in the house west of the inn.
+  - turnin: 91209
+    only: Paladin
+    town: true
+    text: Shari Stilwell, the Paladin trainer, is in the courtyard behind the town hall.
+  - turnin: 5651
+    accept: 5650
+    only: Priest
+    town: true
+  - complete: 5650
+    only: Priest
+    text: Deathguard Kel is on the road north of Brill. Heal him with Lesser Heal (Rank 2), then buff Fortitude.
+  - turnin: 5650
+    only: Priest
+  - accept: 86784
+    town: true
+    text: Deathguard Bartholomew patrols the west edge of Brill.
+  - accept: 404
+    town: true
+    text: Deathguard Dillinger stands at the west gate. Talk to him for his report (Patience) too.
+
+  # --- Quick hop to Deathguard Linnea's camp (on the Undercity road)
+  - accept: 97558
+    text: Shelene Rhobart is at the camp south-east of Brill.
+  - goto: [1420, 65.25, 60.2]
+    text: Talk to Deathguard Kristof at the same camp for his report (Patience).
+
+  # --- West loop: Brill to the Scarlet outpost
+  - complete: [404, 86784]
+    text: Rotting Dead and Ravaged Corpses south-west of Brill drop the claws. Dry Branches lie under the trees.
+  - complete: 5481
+    text: Gloom Weed grows along the road. Talk to Gordo again for his report (Patience).
+  - complete: 367
+    text: Darkhounds roam the fields north of the road. They also drop Darkhound Hides for Shelene.
+  - complete: 365
+    text: Pumpkins are in the field at the farm north of Deathknell.
+  - complete: 427
+    text: Scarlet Warriors guard the Crusader's Outpost north of the farm.
+  - accept: 99144
+    text: Bareth Dawnstone is held inside the Crusader's Outpost.
+  - complete: 99144
+    where: [1420, 39.0, 48.75]
+    text: Escort Bareth east out of the outpost until the quest completes.
+
+  # --- Back to Brill
+  - turnin: 86784
+    text: Eleanor's camp is on your way back in.
+  - turnin: 5481
+    accept: 5482
+    text: Junior Apothecary Holland walks around the Brill graveyard.
+  - turnin: 427
+    accept: 370
+    town: true
+  - turnin: 99144
+    town: true
+  - turnin: 365
+    accept: 407
+    town: true
+  - turnin: 407
+    town: true
+    text: The Captured Scarlet Zealot is in the inn cellar.
+  - turnin: 367
+    accept: 368
+    town: true
+  - turnin: 404
+    accept: 426
+    town: true
+  - accept: 374
+    town: true
+    text: Deathguard Burgess is by the town hall.
+  - accept: [362, 354]
+    town: true
+    text: Coleman Farthing is upstairs in the inn.
+  - accept: 375
+    town: true
+    text: Gretchen Dedmar is upstairs in the inn.
+  - accept: 95314
+    town: true
+    text: Carolai Anise, alchemist, in the house west of the inn. You'll do this one at Shadowvale later.
+
+  # --- North loop: gnolls, Maggot Eye, the coast and Agamand Mills
+  - complete: [358, 5482]
+    text: Rot Hide gnolls are north of Brill; Doom Weed grows around their camp.
+  - complete: 398
+    text: Maggot Eye is in the small hut at the gnoll camp to the north.
+  - complete: 368
+    text: Vile Fin murlocs line the north coast. Oracles and Muckdwellers drop the murloc skin for Shelene.
+  - complete: 97558
+    text: Greater Duskbats over the hills drop the wing membranes and the Duskbat Pelts for Gretchen. Finish any hides or murloc skin you're missing on the way.
+  - complete: [426, 362, 354]
+    text: Agamand Mills. Skeletons drop the ribs and skulls. Devlin, Gregor, Nissa and Thurman wander the mill area.
+  - accept: 361
+    text: If a skeleton dropped A Letter to Yvette, start the quest from it.
+
+  # --- Brill
+  - complete: 375
+    where: [1420, 61.03, 52.37]
+    text: You should have the Duskbat Pelts from the bats killed for Shelene. Buy 1 Coarse Thread from Abigail Shiel, the trade goods vendor in Brill.
+  - turnin: 358
+    accept: 359
+    town: true
+  - turnin: 398
+    town: true
+  - turnin: 426
+    town: true
+  - turnin: [362, 354]
+    accept: 355
+    town: true
+  - turnin: 355
+    town: true
+  - turnin: 361
+    town: true
+    text: Yvette Farthing is in the inn. Skip this if no letter dropped.
+  - turnin: 375
+    town: true
+  - turnin: 368
+    accept: 369
+    town: true
+  - turnin: 5482
+    accept: 99142
+    town: true
+  - turnin: 99134
+    town: true
+  - accept: 96895
+    town: true
+    text: Deathguard Terrence is at the south edge of Brill. Needs level 10.
+
+  # --- Scarlets at the farm south of Brill
+  - complete: [370, 374]
+    text: Captain Perrine, Zealots and Missionaries are at the farm south of Brill. Any Scarlet drops the rings.
+  - turnin: 370
+    accept: 371
+    town: true
+  - turnin: 374
+    town: true
+
+  # --- East loop: Linnea's camp, the Cult, Venomweb Vale
+  - turnin: 359
+    accept: [360, 356]
+  - turnin: 96895
+    accept: [96897, 96898]
+    text: Hadric Harlson is just behind Linnea's camp.
+  - complete: [96897, 96898]
+    text: Dark Neophytes and Enforcers are in the cult camp right next to Hadric. Crystal fragments drop from them.
+  - complete: 356
+    text: Bleeding Horrors and Wandering Spirits are further east along the road.
+  - complete: 99142
+    text: Tomb Weed grows in the same area.
+  - complete: 371
+    text: Captain Vachon and the Scarlet Friars are at the Scarlet camp to the north-east.
+  - complete: 369
+    text: Vicious Night Web Spiders are in Venomweb Vale, east.
+  - turnin: 356
+    accept: 99156
+    text: Back to Deathguard Linnea.
+  - turnin: [96897, 96898]
+    accept: 96899
+    text: Hadric Harlson, just behind Linnea.
+  - complete: 99156
+    text: Riptear is in the north part of Venomweb Vale.
+  - turnin: 99156
+  - turnin: 97558
+  - turnin: 360
+    town: true
+  - turnin: 371
+    town: true
+  - turnin: 99141
+    town: true
+  - turnin: 99142
+    town: true
+  - turnin: 369
+    accept: 492
+    town: true
+  - turnin: 492
+    town: true
+    text: The Captured Mountaineer is in the inn cellar.
+
+  # --- West: Bandarion Keep and Shadowvale
+  - accept: 91282
+    only: Paladin
+    town: true
+    text: Shari Stilwell sends you to Bandarion Keep, where the rest of this zone's quests are.
+  - turnin: 96899
+    accept: 96896
+    text: Bandarion Keep is on the far west side of Tirisfal, past the Scarlet outpost.
+  - turnin: 91282
+    accept: 91285
+    only: Paladin
+  - complete: 96896
+    text: Stay nearby while Leonid and Danitha talk.
+  - turnin: 96896
+    accept: 98545
+  - accept: 99152
+    text: Hilda the Breaker is in the keep courtyard.
+  - accept: 99153
+    text: Ephram Barbaro is just west of Hilda.
+  - complete: 91285
+    only: Paladin
+    text: Vile Fin Attackers and Seers are on the shore west of the keep.
+  - turnin: 91285
+    accept: 91294
+    only: Paladin
+  - complete: 91294
+    only: Paladin
+    text: Talk to Hilda, Jorin and Danitha in the keep and Ander Solliden on the lookout south-east.
+  - turnin: 91294
+    accept: 91317
+    only: Paladin
+  - accept: 91316
+    only: Paladin
+    text: Jorin Croge, in the keep.
+  - complete: [95314, 99152, 99153]
+    text: Shadowvale is south-west of the keep. Elixir bottles are on the ground, the bones drop from Lurchers and Mystics, the crystal is at the back.
+  - accept: 95328
+    text: If a Whispering Horror dropped its residue, start the quest from it.
+  - complete: [91316, 91317]
+    only: Paladin
+    text: Sturdy Lumber and the Tarnished are in Shadowvale too. Commander Gelhardt is at the south end.
+  - turnin: 99152
+  - turnin: 99153
+  - turnin: 91316
+    only: Paladin
+  - turnin: 91317
+    accept: 95803
+    only: Paladin
+
+  # --- Brill, Undercity, zeppelin
+  - hs: Brill
+    hs_to: [1420, 61.72, 52.05]
+  - turnin: 95314
+    town: true
+  - turnin: 98545
+    text: Glix Xizzix is in the Undercity. The entrance is down the road south of Brill.
+  - turnin: 95328
+    text: Father Lankester is in the War Quarter. Skip this if no residue dropped.
+  - turnin: 95803
+    only: Paladin
+    text: Lady Sylvanas is in the Royal Quarter.
+  - goto: [1420, 60.74, 58.87]
+    text: Leave the Undercity and climb the zeppelin tower outside. Zapetta's zeppelin goes to Orgrimmar.
+  - travel: Take the zeppelin to Durotar, just outside Orgrimmar.
+    travel_seconds: 240
+    travel_to: [1411, 50.82, 13.54]

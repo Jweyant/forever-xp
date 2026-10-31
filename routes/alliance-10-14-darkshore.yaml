@@ -1,0 +1,147 @@
+# ForeverXP — Night Elf 10-14, Darkshore (Auberdine, Bashal'Aran, Ameth'Aran, the Cliffspring River).
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quest on the way: 98025 WANTED: Jai'vhanel. Its XP is an estimate (~ in the report),
+# so the level numbers after it are approximate.
+# Ends in Auberdine with Buzzbox 525 still in the log; 14-17 Darkshore carries on from there.
+# Skipped on purpose: 1579/1580 Gaffer Jacks and Electropellers (Questie has no drop data for the parts),
+# 4722/4723 and the other beached sea creatures (one-off turn-ins scattered along the coast; done in
+# 14-17 when they're on the way), 4763 The Blackwood Corrupted (needs level 15, in 14-17), 6122+
+# Druid-only cure chain, 5713 One Shot. One Kill. (escort at the Ashenvale border).
+guide:
+  name: 10-14 Darkshore
+  display: ForeverXP 10-14 Darkshore
+  next: 14-17 Darkshore
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: NightElf
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Rut'theran Village
+  - xp: 10
+    text: The flight quest to Auberdine needs level 10. Kill anything around Dolanaar if you're short.
+  - goto: [1438, 55.9, 89.7]
+    text: Run south-east to the edge of Teldrassil and down the pink portal path to Rut'theran Village.
+  - accept: 6341
+    text: Nessa Shadowsong is on the dock in Rut'theran Village.
+  - turnin: 6341
+    accept: 6342
+    text: Vesprystus, the hippogryph master, is at the top of the ramp.
+  - fly: Auberdine
+    fly_to: [1439, 36.3, 45.6]
+    fly_seconds: 120
+
+  # --- Auberdine
+  - turnin: 6342
+    accept: 6343
+    text: Laird is at the fish stand on the Auberdine dock. Keep Laird's Response; you'll take it back to Nessa at the end of this guide.
+  - fp: Auberdine
+  - home: Auberdine
+  - accept: 983
+    text: Wizbang Cranktoggle is at the bottom of the inn.
+  - accept: 2118
+    text: Tharnariun Treetender is on the hill east of the inn.
+  - accept: 984
+    text: Terenthis is in the building north of Tharnariun.
+  - accept: 98025
+    text: The wanted poster is by the inn door.
+  - accept: [954, 958]
+    text: Thundris Windweaver is at the north end of town.
+  - accept: 2178
+    text: Alanndarian Nightsong is next to him.
+
+  # --- The beach and the bears south of Auberdine
+  - complete: [983, 2118]
+    text: Tide crawlers along the beach south of Auberdine drop the legs. Use the trap on a Rabid Thistle Bear inland and lead it back to Tharnariun.
+  - turnin: 983
+    accept: 1001
+    text: Buzzbox 827 is on the beach south of the dock.
+  - turnin: 2118
+    accept: 2138
+  - complete: 1001
+    text: Darkshore Threshers swim in the deep water off the beach; they drop the eyes.
+
+  # --- North: Bashal'Aran
+  - turnin: 954
+    accept: 955
+    text: Asterion is in the ruins of Bashal'Aran, north-east of Auberdine.
+  - complete: 955
+    text: Vile Sprites and Wild Grells around Bashal'Aran drop the earrings.
+  - turnin: 955
+    accept: 956
+  - complete: 956
+    text: The Deth'ryll Satyr who carries the seal wanders the same ruins.
+  - turnin: 956
+    accept: 957
+    text: Keep the seal; you'll destroy it at Ameth'Aran.
+  - turnin: 1001
+    accept: 1002
+    text: Buzzbox 411 is on the coast north-west of Bashal'Aran.
+
+  # --- South: Ameth'Aran and the first furbolg camp
+  - accept: 953
+    text: Sentinel Tysha Moonblade is on the road west of Ameth'Aran.
+  - complete: [953, 958, 957, 98025]
+    text: Read the two tablets and kill Highborne ghosts in Ameth'Aran for the relics. The ancient flame is in the middle of the ruins. Jai'vhanel the black owl is just north of the ruins by the mountains.
+  - complete: [2138, 2178, 1002]
+    text: Rabid Thistle Bears, Foreststriders and Moonstalkers all roam the hills around Ameth'Aran.
+  - complete: 984
+    text: The Blackwood furbolg camp is south-west of Ameth'Aran, by the road.
+  - turnin: 953
+
+  # --- Auberdine turn-ins and the beached turtle
+  - turnin: [958, 2178]
+  - turnin: 2138
+  - turnin: 984
+    accept: [985, 4761]
+  - turnin: 98025
+    accept: 4811
+    text: Sentinel Glynda Nal'Shea is on the hill above the dock.
+  - turnin: 4761
+    accept: 4762
+  - accept: 3524
+    text: Gwennyth Bly'Leggonde is on the road just south of the inn.
+  - complete: 3524
+    text: The sea creature bones are on the beach just south of Auberdine.
+  - turnin: 3524
+    accept: 4681
+  - complete: 4681
+    text: The sea turtle remains are on the skeleton in the water west of Auberdine.
+  - turnin: 4681
+
+  # --- East: the red crystal, the Cliffspring River, back past Bashal'Aran
+  - complete: 4811
+    text: The red crystal is on the mountainside east of Auberdine.
+  - turnin: 4811
+    accept: 4812
+  - complete: 4812
+    text: Fill the tube at the Auberdine moonwell.
+  - turnin: 4812
+    accept: 4813
+    text: Back to the red crystal.
+  - complete: 4762
+    text: The sample is at the first waterfall up the Cliffspring River, north-east.
+  - turnin: 1002
+    accept: 1003
+    text: Buzzbox 323 is on the coast north of the river mouth.
+  - turnin: 957
+    text: Asterion at Bashal'Aran, on the way back.
+  - turnin: 4813
+  - turnin: 4762
+
+  # --- The furbolg camp south of Auberdine
+  - complete: 985
+    text: Blackwood Pathfinders and Windtalkers are at the furbolg camp south-west of Ameth'Aran, by the road.
+  - turnin: 985
+
+  # --- Quick trip back to Nessa
+  - fly: Rut'theran Village
+    fly_to: [1438, 58.4, 94.0]
+    fly_seconds: 120
+    text: Fly from Auberdine to Rut'theran Village.
+  - turnin: 6343
+    text: Nessa Shadowsong is on the dock.
+  - fly: Auberdine
+    fly_to: [1439, 36.3, 45.6]
+    fly_seconds: 120

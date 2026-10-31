@@ -3,63 +3,92 @@
 local ADDON, ns = ...
 
 local window
+local FLAT = "Interface\\Buttons\\WHITE8X8"
+local SIZES = { compact = { 400, 150 }, full = { 500, 320 } }
+
+local function flat(frame, r, g, b, a, br, bg, bb, ba)
+  if not frame.SetBackdrop then return end
+  frame:SetBackdrop({ bgFile = FLAT, edgeFile = FLAT, edgeSize = 1 })
+  frame:SetBackdropColor(r, g, b, a)
+  frame:SetBackdropBorderColor(br, bg, bb, ba)
+end
 
 local function getWindow()
   if window then return window end
   local f = CreateFrame("Frame", "ForeverScoutWindow", UIParent, "BackdropTemplate")
-  f:SetSize(560, 420)
-  f:SetPoint("CENTER")
+  f:SetPoint("CENTER", 0, 120)
   f:SetFrameStrata("DIALOG")
+  f:SetClampedToScreen(true)
   f:SetMovable(true)
   f:EnableMouse(true)
   f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart", f.StartMoving)
   f:SetScript("OnDragStop", f.StopMovingOrSizing)
-  if f.SetBackdrop then
-    f:SetBackdrop({
-      bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-      edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-      tile = true, tileSize = 32, edgeSize = 32,
-      insets = { left = 11, right = 12, top = 12, bottom = 11 },
-    })
-  end
+  flat(f, 0.05, 0.05, 0.07, 0.94, 0, 0, 0, 0.9)
 
-  f.title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-  f.title:SetPoint("TOP", 0, -18)
+  -- Thin gold accent along the top, like the site's cards.
+  local accent = f:CreateTexture(nil, "ARTWORK")
+  accent:SetTexture(FLAT)
+  accent:SetVertexColor(0.91, 0.72, 0.18, 0.9)
+  accent:SetPoint("TOPLEFT", 1, -1)
+  accent:SetPoint("TOPRIGHT", -1, -1)
+  accent:SetHeight(2)
 
-  f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-  f.hint:SetPoint("TOP", f.title, "BOTTOM", 0, -6)
-  f.hint:SetWidth(500)
+  f.title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  f.title:SetPoint("TOPLEFT", 12, -12)
+  f.title:SetJustifyH("LEFT")
 
   local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-  close:SetPoint("TOPRIGHT", -6, -6)
+  close:SetSize(22, 22)
+  close:SetPoint("TOPRIGHT", -4, -4)
 
-  local scroll = CreateFrame("ScrollFrame", "ForeverScoutWindowScroll", f, "UIPanelScrollFrameTemplate")
-  scroll:SetPoint("TOPLEFT", 22, -64)
-  scroll:SetPoint("BOTTOMRIGHT", -40, 22)
+  f.hint = f:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  f.hint:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -6)
+  f.hint:SetPoint("RIGHT", f, "RIGHT", -12, 0)
+  f.hint:SetJustifyH("LEFT")
+  f.hint:SetWordWrap(true)
+
+  -- Darker inset for the text, scrollable for long reports.
+  local box = CreateFrame("Frame", nil, f, "BackdropTemplate")
+  box:SetPoint("TOPLEFT", f.hint, "BOTTOMLEFT", 0, -8)
+  box:SetPoint("BOTTOMRIGHT", -12, 12)
+  flat(box, 0, 0, 0, 0.55, 1, 1, 1, 0.12)
+
+  local scroll = CreateFrame("ScrollFrame", "ForeverScoutWindowScroll", box, "UIPanelScrollFrameTemplate")
+  scroll:SetPoint("TOPLEFT", 6, -6)
+  scroll:SetPoint("BOTTOMRIGHT", -24, 6)
 
   local edit = CreateFrame("EditBox", nil, scroll)
   edit:SetMultiLine(true)
   edit:SetAutoFocus(false)
-  edit:SetFontObject(ChatFontNormal)
-  edit:SetWidth(490)
+  edit:SetFontObject(ChatFontSmall or ChatFontNormal)
+  edit:SetTextColor(0.9, 0.9, 0.9)
   edit:SetScript("OnEscapePressed", function() f:Hide() end)
+  edit:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
+  -- Read-only: typing puts the original text back, so the copy can't be broken by accident.
+  edit:SetScript("OnTextChanged", function(self, user) if user and f.text then self:SetText(f.text) self:HighlightText() end end)
   scroll:SetScrollChild(edit)
-  f.edit = edit
+  scroll:SetScript("OnSizeChanged", function(_, w) edit:SetWidth(w) end)
+  f.edit, f.scroll = edit, scroll
 
   tinsert(UISpecialFrames, "ForeverScoutWindow")
   window = f
   return f
 end
 
-function ns.ShowCopy(title, hint, text)
+--- Show text to copy. `compact` gives a small window for one-line strings like /fscout gear.
+function ns.ShowCopy(title, hint, text, compact)
   local f = getWindow()
+  local w, h = unpack(compact and SIZES.compact or SIZES.full)
+  f:SetSize(w, h)
+  f.edit:SetWidth(w - 54)
   f.title:SetText(title)
   f.hint:SetText(hint)
+  f.text = text
   f.edit:SetText(text)
-  f.edit:HighlightText()
-  f.edit:SetFocus()
   f:Show()
+  f.edit:SetFocus()
+  f.edit:HighlightText()
 end
 
 ------------------------------------------------------------------------------------------

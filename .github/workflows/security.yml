@@ -53,7 +53,13 @@ jobs:
           python3 tools/test/test_wago.py
           python3 tools/test/test_blizzard_notes.py
           python3 tools/test/test_build_talents.py
+          python3 tools/test/test_build_items.py
+          python3 -I tools/test/test_simconfigs.py
           python3 tools/test/test_indexnow.py
+          python3 tools/test/test_questxp.py
+          python3 tools/test/test_objective_areas.py
+          python3 tools/test/test_loot.py
+          python3 tools/test/test_scouts.py
 
   uploader:
     name: Uploader security
@@ -63,10 +69,11 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.27"
-      - name: Vet and vulnerability check
+      - name: Vet, tests and vulnerability check
         working-directory: uploader
         run: |
           go vet ./...
+          go test ./...
           go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
 
   server:
@@ -80,3 +87,18 @@ jobs:
       - name: Tests (size limits, rate limits, input validation)
         working-directory: server
         run: npm test
+
+  viewer:
+    name: 3D viewer tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: Tests (proxy allow-list, gear parameter validation)
+        working-directory: viewer
+        run: |
+          npm ci
+          npm audit --audit-level=high
+          npm test
