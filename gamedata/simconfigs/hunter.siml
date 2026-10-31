@@ -18,23 +18,23 @@ settings:
   pet_attack_speed faster_attack_ii
 
 gear:
-  head {"id": 22438}
-  neck {"id": 19377}
-  shoulder {"id": 22439}
-  back {"id": 21403}
-  chest {"id": 22436}
-  wrist {"id": 22443}
-  hands {"id": 22441}
-  waist {"id": 22442}
-  legs {"id": 22437}
-  feet {"id": 22440}
-  finger1 {"id": 21205}
-  finger2 {"id": 22961}
-  trinket1 {"id": 19120}
-  trinket2 {"id": 270275}
-  main_hand {"id": 17142}
-  off_hand {"id": 21244}
-  ranged {"id": 23557}
+  head `{"id": 22438}`
+  neck `{"id": 19377}`
+  shoulder `{"id": 22439}`
+  back `{"id": 21403}`
+  chest `{"id": 22436}`
+  wrist `{"id": 22443}`
+  hands `{"id": 22441}`
+  waist `{"id": 22442}`
+  legs `{"id": 22437}`
+  feet `{"id": 22440}`
+  finger1 `{"id": 21205}`
+  finger2 `{"id": 22961}`
+  trinket1 `{"id": 19120}`
+  trinket2 `{"id": 270275}`
+  main_hand `{"id": 17142}`
+  off_hand `{"id": 21244}`
+  ranged `{"id": 23557}`
 
 consumables:
   flask flask_of_natural_aggression

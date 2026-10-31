@@ -12,22 +12,22 @@ settings:
   in_front_of_target false
 
 gear:
-  head {"id": 12640}
-  neck {"id": 23053}
-  shoulder {"id": 21330}
-  back {"id": 21710}
-  chest {"id": 252484}
-  wrist {"id": 21602}
-  hands {"id": 21581}
-  waist {"id": 21586}
-  legs {"id": 16479}
-  feet {"id": 21613}
-  finger1 {"id": 23038}
-  finger2 {"id": 18821}
-  trinket1 {"id": 19406}
-  trinket2 {"id": 23001}
-  main_hand {"id": 21134}
-  ranged {"id": 23557}
+  head `{"id": 12640}`
+  neck `{"id": 23053}`
+  shoulder `{"id": 21330}`
+  back `{"id": 21710}`
+  chest `{"id": 252484}`
+  wrist `{"id": 21602}`
+  hands `{"id": 21581}`
+  waist `{"id": 21586}`
+  legs `{"id": 16479}`
+  feet `{"id": 21613}`
+  finger1 `{"id": 23038}`
+  finger2 `{"id": 18821}`
+  trinket1 `{"id": 19406}`
+  trinket2 `{"id": 23001}`
+  main_hand `{"id": 21134}`
+  ranged `{"id": 23557}`
 
 consumables:
   food smoked_desert_dumplings
