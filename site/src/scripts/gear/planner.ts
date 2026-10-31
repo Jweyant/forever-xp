@@ -342,7 +342,7 @@ function renderControls() {
     <input type="number" step="0.05" data-w="${k}" value="${+(w[k] || 0).toFixed(3)}"${st.goal === "custom" ? "" : " disabled"}></label>`).join("");
   const sim = simPresets(st.cls, st.spec)[0];
   $("#g-weights-note").textContent = st.goal === "custom" ? "Your weights. Changes apply to the next suggestion."
-    : sim ? `Measured by wowsims (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts at its value below the cap; the planner doesn't stop counting it past the cap yet. Pick Custom weights to edit them.`
+    : sim ? `Measured by our own sim runs (${sim.label}).${sim.note ? ` ${sim.note}` : ""} Stats the sim didn't weigh keep their starting weights, rescaled to the sim's units.${st.goal === "pve" ? "" : " Adjusted for your goal."} Hit counts at its value below the cap; the planner doesn't stop counting it past the cap yet. Pick Custom weights to edit them.`
     : "Starting weights for this spec and goal: there are no sim weights for this spec yet. Pick Custom weights to edit them.";
   renderWeightSource(sim?.label);
 }
@@ -355,7 +355,7 @@ function renderWeightSource(simLabel?: string) {
   if (!simLabel) { el.textContent = "Stat weights: starting estimates (no sim weights for this spec yet)."; return; }
   const a = document.createElement("a");
   a.href = SIM_SITE; a.textContent = "wowsims"; a.rel = "noopener"; a.target = "_blank";
-  el.append("Stat weights: measured by ", a, ` (${simLabel})${st.goal === "pve" ? "" : ", adjusted for your goal"}.`);
+  el.append("Stat weights: our own sim runs on the ", a, ` engine (${simLabel})${st.goal === "pve" ? "" : ", adjusted for your goal"}.`);
 }
 
 function render() {

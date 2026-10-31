@@ -1,8 +1,8 @@
 // Classes, specs, goals and stat weights for the BIS planner.
 // Weights are "value per point". Ratings use Forever's level-60 conversions from the client's combat
 // ratings table (14 crit rating and 10 hit rating per 1%, the values wowsims/forever reads).
-// Specs with weights measured by wowsims/forever (tools/build_simweights.py) use those; the others
-// keep the hand-set starting weights below.
+// Specs with weights measured by our own sim runs on the wowsims/forever engine (tools/simrunner,
+// configured by gamedata/simconfigs/) use those; the others keep the hand-set starting weights below.
 import simJson from "../../data/simweights.json";
 
 export type Stats = Record<string, number>;
@@ -74,8 +74,9 @@ const BASE: Record<Role, Stats> = {
   bear: { sta: 1.4, agi: 1.0, armor: 0.14, def: 1.2, dodge: 1.2, str: 0.6, hit: 0.7, ap: 0.25, crit: 0.4 },
 };
 
-// ---------- weights measured by wowsims/forever ----------
-// gamedata/simweights.json is built from a pinned wowsims commit, but it's still third-party data:
+// ---------- weights measured by our sim runs ----------
+// gamedata/simweights.json is written by our own sim runs on a pinned engine commit, but it's
+// treated as data all the same:
 // only known stat keys and finite numbers get through, labels and notes are short text (shown with
 // textContent).
 export const SIM_SITE = "https://wowsims.com/forever";
