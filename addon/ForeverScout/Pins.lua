@@ -125,7 +125,7 @@ function Pins.Show(plan, cur)
     local spot = spots[key]
     local w, mm = getPin("world"), getPin("mini")
     fill(w, spot) fill(mm, spot)
-    HBDPins:AddWorldMapIconMap(REF, w, spot.m, spot.x / 100, spot.y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT, 200)
+    HBDPins:AddWorldMapIconMap(REF, w, spot.m, spot.x / 100, spot.y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT)
     HBDPins:AddMinimapIconMap(REF, mm, spot.m, spot.x / 100, spot.y / 100, false, true)
     n = n + 1
   end
@@ -136,7 +136,7 @@ end
 -- Ping: open the world map on the right zone and pulse a big marker at the spot for a while,
 -- on the world map and at the minimap edge, so "Show on map" is unmistakable.
 ------------------------------------------------------------------------------------------
-local ping
+local ping, pingTimer
 
 local function makePing(size)
   local f = CreateFrame("Frame", nil, UIParent)
@@ -152,11 +152,14 @@ local function makePing(size)
   f.ring:SetVertexColor(0.31, 0.76, 0.97, 1)
   local ag = f.ring:CreateAnimationGroup()
   ag:SetLooping("REPEAT")
-  local grow = ag:CreateAnimation("Scale")
-  grow:SetDuration(1.0) grow:SetOrder(1)
-  if grow.SetScaleFrom then grow:SetScaleFrom(0.5, 0.5) grow:SetScaleTo(1.6, 1.6) else grow:SetScale(3, 3) end
-  local fade = ag:CreateAnimation("Alpha")
-  fade:SetDuration(1.0) fade:SetOrder(1) fade:SetFromAlpha(1) fade:SetToAlpha(0)
+  pcall(function()
+    local grow = ag:CreateAnimation("Scale")
+    grow:SetDuration(1.0) grow:SetOrder(1)
+    if grow.SetScaleFrom then grow:SetScaleFrom(0.5, 0.5) grow:SetScaleTo(1.6, 1.6) else grow:SetScale(3, 3) end
+    local fade = ag:CreateAnimation("Alpha")
+    fade:SetDuration(1.0) fade:SetOrder(1)
+    if fade.SetFromAlpha then fade:SetFromAlpha(1) fade:SetToAlpha(0) else fade:SetChange(-1) end
+  end)
   f.anim = ag
   f:Hide()
   return f
@@ -168,12 +171,21 @@ function Pins.ZoneName(m)
 end
 
 function Pins.Ping(m, x, y, title, seconds)
+  local ok, result = pcall(Pins.PingRaw, m, x, y, title, seconds)
+  if not ok then
+    if ns.debug then ns.Print("ping error: " .. tostring(result)) end
+    return false
+  end
+  return result
+end
+
+function Pins.PingRaw(m, x, y, title, seconds)
   if not Pins.Available() or not (m and x and y) then return false end
   ping = ping or { world = makePing(36), mini = makePing(22) }
   HBDPins:RemoveAllWorldMapIcons("ForeverScoutPing")
   HBDPins:RemoveAllMinimapIcons("ForeverScoutPing")
-  for _, f in pairs(ping) do f.title = title f:Show() f.anim:Play() end
-  HBDPins:AddWorldMapIconMap("ForeverScoutPing", ping.world, m, x / 100, y / 100, HBD_PINS_WORLDMAP_SHOW_CURRENT, 300)
+  for _, f in ipairs({ ping.world, ping.mini }) do f.title = title f:Show() f.anim:Play() end
+  HBDPins:AddWorldMapIconMap("ForeverScoutPing", ping.world, m, x / 100, y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT)
   HBDPins:AddMinimapIconMap("ForeverScoutPing", ping.mini, m, x / 100, y / 100, true, true)
   -- Open the map and put it on that zone. Set the zone a few times: the frame resets it as it opens.
   local function showZone()
@@ -188,11 +200,11 @@ function Pins.Ping(m, x, y, title, seconds)
     showZone()
     for _, t in ipairs({ 0.05, 0.2, 0.5 }) do C_Timer.After(t, showZone) end
   end
-  if ping.timer then ping.timer:Cancel() end
-  ping.timer = C_Timer.NewTimer(seconds or 20, function()
+  if pingTimer then pingTimer:Cancel() end
+  pingTimer = C_Timer.NewTimer(seconds or 20, function()
     HBDPins:RemoveAllWorldMapIcons("ForeverScoutPing")
     HBDPins:RemoveAllMinimapIcons("ForeverScoutPing")
-    for _, f in pairs(ping) do if f.anim then f.anim:Stop() f:Hide() end end
+    for _, f in ipairs({ ping.world, ping.mini }) do f.anim:Stop() f:Hide() end
   end)
   return true
 end
