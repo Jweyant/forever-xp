@@ -7,8 +7,8 @@ local ADDON, ns = ...
 local P = ns.Planner
 ns.BIS = {}
 
-local WIN_W, WIN_H = 940, 650
-local ROW_H, ROWS_W, ROWS_TOP = 26, 600, -126
+local WIN_W, WIN_H = 940, 672
+local ROW_H, ROWS_W, ROWS_TOP = 26, 600, -148
 local QUALITY_COLOR = { [0] = "9d9d9d", [1] = "ffffff", [2] = "1eff00", [3] = "0070dd", [4] = "a335ee", [5] = "ff8000" }
 local GOAL_NAME = { pve = "PvE", pvp = "PvP", level = "Leveling" }
 local QMARK = "Interface\\Icons\\INV_Misc_QuestionMark"
@@ -61,9 +61,13 @@ local function focusLabel(key)
   return P.STAT_LABEL[key] or key
 end
 
+-- Talent tab order -> spec key; Druids have four planner specs for three trees.
+local TAB_SPEC = { DRUID = { "balance", "cat", "resto" } }
+
 -- Default spec: the talent tree with the most points, if the client exposes it.
 local function guessSpec(cls)
   local specs = P.SPECS[cls] or {}
+  local tabs = TAB_SPEC[cls]
   if GetNumTalentTabs and GetTalentTabInfo then
     local bestTab, bestPts = nil, -1
     for tab = 1, GetNumTalentTabs() do
@@ -71,7 +75,10 @@ local function guessSpec(cls)
       local pts = ok and (type(c) == "number" and c or type(e) == "number" and e) or 0
       if pts > bestPts then bestTab, bestPts = tab, pts end
     end
-    if bestTab and bestPts > 0 and specs[bestTab] then return specs[bestTab].key end
+    if bestTab and bestPts > 0 then
+      if tabs then return tabs[bestTab] or specs[1].key end
+      if specs[bestTab] then return specs[bestTab].key end
+    end
   end
   return specs[1] and specs[1].key
 end
@@ -793,8 +800,10 @@ function ns.BIS.Refresh()
     f.next.text:SetText("|cffffd100Next step:|r nothing. You have the best item in every slot for this plan.")
   end
   local focusNote = state.focus and (", %d %s in the full set"):format(focusTotal, focusLabel(state.focus):lower()) or ""
-  f.foot:SetText(("%d upgrades at level %d%s. Same stat weights as forever-xp.com/bis (%s, %s). Forever build %s."):format(
-    upgrades, state.level, focusNote, spec and spec.name or "", GOAL_NAME[state.goal] or "", P.DataBuild()))
+  local hit = P.HitCtx(state.opts)
+  local hitNote = hit and (" Hit cap %d%% counted (gear and race; talents not yet)."):format(hit.cap) or ""
+  f.foot:SetText(("%d upgrades at level %d%s. Same weights as forever-xp.com/bis (%s, %s).%s Build %s."):format(
+    upgrades, state.level, focusNote, spec and spec.name or "", GOAL_NAME[state.goal] or "", hitNote, P.DataBuild()))
   ns.BIS.Layout()
   ns.BIS.UpdatePins()
   if not state.selected or not plan[state.selected] then state.selected = bestRow and bestRow.slot or P.PAPERDOLL[1] end
@@ -803,9 +812,9 @@ end
 
 function ns.BIS.UpdatePins()
   if not state or not state.plan then return end
-  ns.Pins.Remember(state.plan, state.cur)
+  local spots = ns.Pins.Remember(state.plan, state.cur)
   if ns.Pins.Enabled() then
-    local n = ns.Pins.Show(state.plan, state.cur)
+    local n = ns.Pins.ShowSpots(spots)
     win.pins.label:SetText(("Pins on map and minimap (%d)"):format(n))
   else
     ns.Pins.Clear()
@@ -907,11 +916,14 @@ function ns.BIS.UpdateDot()
   b.dot:SetTexture(ns.db.settings.paused and "Interface\\COMMON\\Indicator-Red" or "Interface\\COMMON\\Indicator-Green")
 end
 
+function ns.BIS.CreateMinimapButton()
+  if ns.BIS.button or not Minimap then return end
+  ns.BIS.button = minimapButton()
+  ns.BIS.UpdateDot()
+end
+
 ns:On("PLAYER_LOGIN", function()
-  if Minimap and not ns.db.settings.hideMinimap then
-    ns.BIS.button = minimapButton()
-    ns.BIS.UpdateDot()
-  end
+  if not ns.db.settings.hideMinimap then ns.BIS.CreateMinimapButton() end
 end)
 
 ns:On("PLAYER_EQUIPMENT_CHANGED", function()
