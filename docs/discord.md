@@ -57,12 +57,24 @@ permission. A member's name takes the color of their highest role.
 - If the token ever leaks: **Bot > Reset Token** in the developer portal (the old one stops
   working at once), then update the secret.
 
+## Welcome and rules text
+
+`discord/messages/welcome.md` and `discord/messages/rules.md` are posted by the bot in #welcome and
+#rules (the `message` key in `discord/server.json`). Edit the file and merge: the bot edits its own
+message in place rather than posting a new one. `{#channel-name}` becomes a clickable channel link.
+Messages go out with mentions disabled and link previews off, and only in read-only channels.
+
+## Private channels
+
+`private_channels` lists staff-only channels such as #moderator-only. The bot creates one if it's
+missing, hidden from @everyone. It never changes an existing one; the run only warns if @everyone
+can see it. Who else can see it is set by hand in the channel's Permissions.
+
 ## Still done by hand in Discord
 
 - **Rules screening** (new members accept the rules before they can post, react or DM):
   Server Settings > Safety Setup > DM and Spam Protection.
 - **Moderator permissions:** Server Settings > Roles > Moderator.
-- **Welcome and rules text:** post them yourself, or ask Claude to draft them.
 - **Two-factor sign-in** on your Discord account, then **Server Settings > Safety Setup >
   Require 2FA for moderator actions**.
 

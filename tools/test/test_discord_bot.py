@@ -322,5 +322,80 @@ class Tests(unittest.TestCase):
         self.assertEqual(d.calls, [])
 
 
+    # ---- welcome/rules messages and private channels ----
+    def _server(self, messages=(), private_visible=False):
+        chans = [{"id": "10", "type": 4, "name": "Start Here"},
+                 {"id": "20", "type": 0, "name": "welcome", "parent_id": "10"},
+                 {"id": "21", "type": 0, "name": "rules", "parent_id": "10"},
+                 {"id": "22", "type": 0, "name": "general"},
+                 {"id": "30", "type": 0, "name": "moderator-only", "parent_id": None,
+                  "permission_overwrites": [] if private_visible else [{"id": "1", "type": 0, "allow": "0", "deny": str(bot.VIEW)}]}]
+        roles = [{"id": "1", "name": "@everyone", "position": 0}, {"id": "50", "name": "forever-xp", "position": 9, "managed": True, "tags": {"bot_id": "42"}}]
+        return FakeDiscord(chans, roles, messages)
+
+    def test_welcome_and_rules_are_posted_without_pings_or_previews(self):
+        d = self._server()
+        bot.setup(CFG, d, "1")
+        sent = {p: b for m, p, b in d.calls if m == "POST" and p.endswith("/messages")}
+        self.assertEqual(set(sent), {"/channels/20/messages", "/channels/21/messages"})
+        for b in sent.values():
+            self.assertEqual(b["allowed_mentions"], {"parse": []})
+            self.assertTrue(b["flags"] & bot.SUPPRESS_EMBEDS)
+            self.assertLessEqual(len(b["content"]), 2000)
+            self.assertNotIn("{#", b["content"])
+        self.assertIn("<#21>", sent["/channels/20/messages"]["content"])   # {#rules} became a channel link
+        self.assertIn("<#22>", sent["/channels/20/messages"]["content"])
+
+    def test_bot_edits_its_own_message_and_ignores_others(self):
+        text = bot.render_message((bot.MESSAGES / "rules.md").read_text(), [{"id": "21", "type": 0, "name": "rules"}])
+        msgs = [{"id": "500", "author": {"id": "7"}, "content": "someone else"},
+                {"id": "300", "author": {"id": "42"}, "content": "old text"}]
+        d = FakeDiscord([], [], msgs)
+        bot.sync_message(d, {"id": "21", "name": "rules"}, text, {"id": "42"})
+        self.assertEqual([(m, p) for m, p, _ in d.calls if m != "GET"], [("PATCH", "/channels/21/messages/300")])
+        d = FakeDiscord([], [], [{"id": "300", "author": {"id": "42"}, "content": text}])
+        bot.sync_message(d, {"id": "21", "name": "rules"}, text, {"id": "42"})
+        self.assertEqual([m for m, _, _ in d.calls], ["GET"])     # unchanged: nothing posted or edited
+
+    def test_unknown_channel_links_stay_plain(self):
+        self.assertEqual(bot.render_message("see {#nope} and {#rules}", [{"id": "21", "type": 0, "name": "rules"}]), "see #nope and <#21>")
+
+    def test_message_validation(self):
+        def cfg(ch):
+            return {"categories": [{"name": "X", "channels": [ch]}]}
+        ok = {"name": "rules", "type": "text", "readonly": True, "message": "rules.md"}
+        self.assertEqual(bot.validate(cfg(ok)), [])
+        for bad in ({**ok, "readonly": False}, {**ok, "feed": True}, {**ok, "type": "announcement"},
+                    {**ok, "message": "../server.json"}, {**ok, "message": "missing.md"}, {**ok, "message": 5}):
+            self.assertTrue(bot.validate(cfg(bad)), bad)
+
+    def test_private_channel_is_checked_not_changed(self):
+        d = self._server(private_visible=True)
+        out = []
+        orig, bot.log = bot.log, out.append
+        try:
+            bot.setup(CFG, d, "1")
+        finally:
+            bot.log = orig
+        self.assertFalse(any("/channels/30" in p for m, p, _ in d.calls if m != "GET"))
+        self.assertTrue(any("moderator-only" in line and "@everyone can see it" in line for line in out))
+        self.assertNotIn("moderator-only", [b.get("name") for m, p, b in d.calls if m == "POST" and p.endswith("/channels")])
+
+    def test_missing_private_channel_is_created_hidden(self):
+        d = self._server()
+        d.channels = [c for c in d.channels if c["name"] != "moderator-only"]
+        bot.setup(CFG, d, "1")
+        made = next(b for m, p, b in d.calls if m == "POST" and p.endswith("/channels") and b["name"] == "moderator-only")
+        ow = {o["id"]: o for o in made["permission_overwrites"]}
+        self.assertTrue(int(ow["1"]["deny"]) & bot.VIEW)
+        self.assertTrue(int(ow["50"]["allow"]) & bot.VIEW)
+        self.assertNotIn("parent_id", made)
+
+    def test_private_channel_validation(self):
+        for bad in ([{"name": "Mods!", "type": "text"}], [{"name": "mods", "type": "voice"}], [{"name": "mods", "type": "text", "topic": "x"}],
+                    [{"name": "general", "type": "text"}], "mods"):
+            cfg = {"categories": [{"name": "X", "channels": [{"name": "general", "type": "text"}]}], "private_channels": bad}
+            self.assertTrue(bot.validate(cfg), bad)
+
 if __name__ == "__main__":
     unittest.main()

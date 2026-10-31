@@ -2,6 +2,7 @@
 
   python3 tools/discord_bot.py validate                 # check discord/server.json (no token needed)
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
+                                                         # (and post or update the welcome and rules text)
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
   python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
 
@@ -33,7 +34,13 @@ NAME_RE = re.compile(r"^[a-z0-9-]{1,90}$")
 ROLE_NAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9 &'-]{0,58}[A-Za-z0-9])?$")
 ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
-CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed"}
+CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "message"}
+PRIVATE_KEYS = {"name", "type"}
+MESSAGES = ROOT / "discord" / "messages"
+MESSAGE_FILE_RE = re.compile(r"^[a-z0-9-]{1,40}\.md$")
+CHANNEL_LINK_RE = re.compile(r"\{#([a-z0-9-]{1,90})\}")
+MAX_MESSAGE = 1900          # Discord's limit is 2000; leave room for channel links
+SUPPRESS_EMBEDS = 1 << 2    # message flag: no link previews
 # Links the feed may post: Blizzard's forum posts and news articles, nothing else.
 BLIZZARD_URL = re.compile(r"^https://(?:us\.forums\.blizzard\.com|worldofwarcraft\.blizzard\.com)/[A-Za-z0-9/_%.~-]{1,300}$")
 
@@ -72,6 +79,8 @@ def validate(cfg):
                 problems.append(f"{name}: feed must be true or left out")
             if len(ch.get("topic", "")) > 1024:
                 problems.append(f"{name}: topic over 1024 characters")
+            if "message" in ch:
+                problems += message_problems(ch)
             tags = ch.get("tags", [])
             if tags and kind != "forum":
                 problems.append(f"{name}: only forum channels have tags")
@@ -79,6 +88,18 @@ def validate(cfg):
                 problems.append(f"{name}: at most 20 tags of up to 20 characters")
     if len(feeds) > 1:
         problems.append(f"only one feed channel, not {', '.join(feeds)}")
+    private = cfg.get("private_channels", [])
+    if not isinstance(private, list) or len(private) > 10:
+        problems.append("private_channels must be a list of at most 10 channels")
+        private = []
+    for ch in private:
+        name = ch.get("name", "") if isinstance(ch, dict) else ""
+        if not isinstance(ch, dict) or set(ch) - PRIVATE_KEYS or ch.get("type") != "text" or not NAME_RE.match(str(name)):
+            problems.append(f"private channel {name!r}: needs only a lowercase name and type text")
+            continue
+        if name in seen:
+            problems.append(f"{name}: listed twice")
+        seen.add(name)
     roles = cfg.get("roles", [])
     if len(roles) > MAX_ROLES:
         problems.append(f"at most {MAX_ROLES} roles")
@@ -108,6 +129,65 @@ def validate(cfg):
             problems.append(f"role {name}: listed twice")
         seen_roles.add(name.lower())
     return problems
+
+
+def message_problems(ch):
+    """A channel's "message" names a file in discord/messages that the bot posts there. Only
+    read-only, non-feed text channels, so the bot's message is the only one in the channel."""
+    name, f = ch.get("name", ""), ch.get("message")
+    if not isinstance(f, str) or not MESSAGE_FILE_RE.match(f):
+        return [f"{name}: message must be a file name like welcome.md"]
+    if ch.get("type") != "text" or not ch.get("readonly") or ch.get("feed"):
+        return [f"{name}: a message can only go in a read-only text channel that isn't the feed"]
+    path = MESSAGES / f
+    if not path.is_file():
+        return [f"{name}: discord/messages/{f} not found"]
+    text = path.read_text(encoding="utf-8").strip()
+    if not text or len(text) > MAX_MESSAGE:
+        return [f"{name}: discord/messages/{f} must be 1-{MAX_MESSAGE} characters"]
+    return []
+
+
+def render_message(text, channels):
+    """{#channel-name} becomes a clickable channel link; unknown names stay as plain #name."""
+    ids = {c["name"]: c["id"] for c in channels if c.get("type") in (0, 5, 15) and not str(c.get("id", "")).startswith("new-")}
+    return CHANNEL_LINK_RE.sub(lambda m: f"<#{ids[m.group(1)]}>" if m.group(1) in ids else f"#{m.group(1)}", text.strip())
+
+
+def sync_message(d, channel, text, me):
+    """Post the text, or edit the bot's own earlier message in place if it changed. Never pings."""
+    if str(channel["id"]).startswith("new-"):
+        log(f"  [dry run] would post the {channel['name']} message")
+        return
+    mine = [m for m in d.call("GET", f"/channels/{channel['id']}/messages?limit=50") or []
+            if (m.get("author") or {}).get("id") == me["id"]]
+    body = {"content": text, "allowed_mentions": {"parse": []}, "flags": SUPPRESS_EMBEDS}
+    if not mine:
+        log(f"+ message in {channel['name']}")
+        d.call("POST", f"/channels/{channel['id']}/messages", body, write=True)
+        return
+    first = min(mine, key=lambda m: int(m["id"]))
+    if first.get("content") != text:
+        log(f"~ message in {channel['name']}")
+        d.call("PATCH", f"/channels/{channel['id']}/messages/{first['id']}", body, write=True)
+
+
+def check_private(cfg, d, guild, channels, bot_role):
+    """Private channels (staff only): create one if it's missing, with @everyone unable to see it.
+    An existing one is never changed, only checked; the run says if @everyone can see it."""
+    for ch in cfg.get("private_channels", []):
+        x = next((c for c in channels if c["type"] == 0 and c["name"] == ch["name"]), None)
+        if not x:
+            log(f"+ private channel {ch['name']}")
+            overwrites = [{"id": guild, "type": 0, "deny": VIEW}]
+            if bot_role:
+                overwrites.append({"id": bot_role["id"], "type": 0, "allow": BOT_ALLOW})
+            d.call("POST", f"/guilds/{guild}/channels",
+                   {"name": ch["name"], "type": 0, "permission_overwrites": merge_overwrites([], overwrites)}, write=True)
+            continue
+        everyone = next((o for o in x.get("permission_overwrites") or [] if o["id"] == guild), None)
+        if not everyone or not int(everyone.get("deny", "0")) & VIEW:
+            log(f"! {ch['name']} is listed as private but @everyone can see it. Fix it in the channel's Permissions.")
 
 
 # ---- Discord REST ------------------------------------------------------------------------------
@@ -166,7 +246,7 @@ def setup(cfg, d, guild):
                 return hit
         return None
 
-    order = []
+    order, messages = [], []
     for cat in cfg["categories"]:
         c = find(cat["name"], (4,), cat.get("aliases", ()))
         if not c:
@@ -211,13 +291,18 @@ def setup(cfg, d, guild):
                     log(f"~ {ch['name']}: {', '.join(sorted(changed))}")
                     d.call("PATCH", f"/channels/{x['id']}", body, write=True)
             order.append(x["id"])
+            if ch.get("message"):
+                messages.append(({"id": x["id"], "name": ch["name"]}, ch["message"]))
 
     positions = [{"id": cid, "position": i} for i, cid in enumerate(order) if not str(cid).startswith("new-")]
     if positions:
         log(f"~ order {len(positions)} channels as in discord/server.json")
         d.call("PATCH", f"/guilds/{guild}/channels", positions, write=True)
 
+    check_private(cfg, d, guild, channels, bot_role)
     sync_roles(cfg, d, guild, roles, me)
+    for channel, f in messages:
+        sync_message(d, channel, render_message((MESSAGES / f).read_text(encoding="utf-8"), channels), me)
     log("Done.")
 
 

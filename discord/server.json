@@ -1,11 +1,15 @@
 {
-  "_comment": "Layout of the Forever XP Discord server. tools/discord_bot.py setup applies it (adds and updates; the only deletes are roles listed in retired_roles). Channel types: text, voice, announcement, forum. readonly = members can read but not post (the bot and moderators still can). aliases = old names, so a renamed channel is renamed rather than duplicated. feed = the channel that gets Blizzard's new changes and news.",
+  "_comment": "Layout of the Forever XP Discord server. tools/discord_bot.py setup applies it (adds and updates; the only deletes are roles listed in retired_roles). Channel types: text, voice, announcement, forum. readonly = members can read but not post (the bot and moderators still can). aliases = old names, so a renamed channel is renamed rather than duplicated. feed = the channel that gets Blizzard's new changes and news. message = a file in discord/messages that the bot posts in that read-only channel and edits when the file changes ({#channel-name} becomes a channel link).",
+  "_private_channels": "Staff-only channels. The bot creates one if it's missing (hidden from @everyone); an existing one is only checked, never changed.",
+  "private_channels": [
+    { "name": "moderator-only", "type": "text" }
+  ],
   "categories": [
     {
       "name": "Start Here",
       "channels": [
-        { "name": "welcome", "type": "text", "readonly": true, "topic": "Start here: what Forever XP is and where the tools are. Accept the rules to start posting." },
-        { "name": "rules", "type": "text", "readonly": true, "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
+        { "name": "welcome", "type": "text", "readonly": true, "message": "welcome.md", "topic": "Start here: what Forever XP is and where the tools are. Accept the rules to start posting." },
+        { "name": "rules", "type": "text", "readonly": true, "message": "rules.md", "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
         { "name": "announcements", "type": "announcement", "readonly": true, "topic": "Forever XP news: new tools, guides and data updates from forever-xp.com. Follow this channel to get them in your own server." },
         { "name": "forever-announcements", "aliases": ["patch-notes"], "type": "announcement", "readonly": true, "feed": true, "topic": "WoW Forever updates as Blizzard posts them: class and racial changes, development notes and news. Posted automatically. Search every change at https://forever-xp.com/changes/" }
       ]
