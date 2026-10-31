@@ -95,3 +95,5 @@ func (a *App) uninstall() {
 	_ = exec.Command("launchctl", "unload", a.agentPath()).Run()
 	_ = os.Remove(a.agentPath())
 }
+
+func openURL(u string) error { return exec.Command("open", u).Start() }

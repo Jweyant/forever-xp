@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: ForeverScout Data
+## Notes: Item data for the ForeverScout BIS planner. Loaded only when the planner opens.
+## Author: ForeverScout contributors
+## Version: 0.2.1
+## LoadOnDemand: 1
+## Dependencies: ForeverScout
+
+Data.lua

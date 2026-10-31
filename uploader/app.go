@@ -39,6 +39,43 @@ func scoutName(installID string) string {
 	return "Scout " + hex.EncodeToString(h[:])[:6]
 }
 
+// claimSite is where a player links this install to their forever-xp.com account so the
+// leaderboard shows their Discord name instead of "Scout a1b2c3". The install id is the claim
+// code: a 128-bit random value only this computer has (see docs: scout identity flow).
+const claimSite = "https://forever-xp.com/account/"
+
+func (a *App) claimURL() string {
+	return claimSite + "?claim=" + a.state.InstallID
+}
+
+// writeClaimFile keeps the claim link next to the log, for players who want to copy it by hand.
+func (a *App) writeClaimFile() {
+	text := "ForeverScout Uploader\n\n" +
+		"Your name on the Scout leaderboard is " + scoutName(a.state.InstallID) + ".\n" +
+		"To show your Discord name instead, open this link, sign in with Discord and confirm:\n\n" +
+		a.claimURL() + "\n\n" +
+		"Keep this link to yourself: anyone with it can claim your scout name.\n"
+	_ = os.WriteFile(filepath.Join(a.dir, "claim.txt"), []byte(text), 0o600)
+}
+
+// offerClaim asks once per install whether to open the claim page now.
+func (a *App) offerClaim() {
+	a.writeClaimFile()
+	if a.state.ClaimOffered {
+		return
+	}
+	a.state.ClaimOffered = true
+	a.saveState()
+	if ask(appName, "Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n\n"+
+		"Want it to show your Discord name instead? This opens forever-xp.com in your browser, "+
+		"where you sign in with Discord and confirm.\n\nYou can do it later: the link is in "+
+		filepath.Join(a.dir, "claim.txt")+".") {
+		if err := openURL(a.claimURL()); err != nil {
+			say(appName, "Couldn't open your browser. Open this link yourself:\n\n"+a.claimURL())
+		}
+	}
+}
+
 type fileState struct {
 	Hash       string    `json:"hash"`
 	ModTime    time.Time `json:"modTime"`
@@ -47,9 +84,10 @@ type fileState struct {
 }
 
 type persisted struct {
-	InstallID string                `json:"installId"`
-	WowDirs   []string              `json:"wowDirs,omitempty"` // optional manual roots
-	Files     map[string]*fileState `json:"files"`
+	InstallID    string                `json:"installId"`
+	ClaimOffered bool                  `json:"claimOffered,omitempty"`
+	WowDirs      []string              `json:"wowDirs,omitempty"` // optional manual roots
+	Files        map[string]*fileState `json:"files"`
 }
 
 type App struct {

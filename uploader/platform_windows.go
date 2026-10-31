@@ -148,3 +148,8 @@ func copyFile(src, dst string) error {
 	_ = os.Remove(dst)
 	return os.Rename(tmp, dst)
 }
+
+// openURL opens the player's default browser. The URL is built from constants and the install id.
+func openURL(u string) error {
+	return hidden("rundll32", "url.dll,FileProtocolHandler", u).Start()
+}

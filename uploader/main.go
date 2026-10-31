@@ -64,9 +64,11 @@ func fatal(err error) {
 // interactive is the double-click flow.
 func (a *App) interactive() {
 	if a.isInstalled() {
+		a.writeClaimFile()
 		if ask(appName, "The ForeverScout Uploader is already set up and runs in the background.\n\n"+
-			"Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n\n"+
-		"Do you want to STOP it and remove it from startup?") {
+			"Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n"+
+			"To show your Discord name there instead, open the link in "+filepath.Join(a.dir, "claim.txt")+".\n\n"+
+			"Do you want to STOP it and remove it from startup?") {
 			a.uninstall()
 			say(appName, "Stopped and removed. Your recorded data stays on your computer.")
 		}
@@ -94,6 +96,6 @@ func (a *App) interactive() {
 		fatal(err)
 	}
 	say(appName, "All set. The uploader is running in the background and will start with your computer.\n\n"+
-		"Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n\n"+
 		"Log file: "+filepath.Join(a.dir, "uploader.log")+"\n\nRun this app again to stop it.")
+	a.offerClaim()
 }

@@ -44,10 +44,11 @@ jobs:
           if ! [[ "$version" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(-(alpha|beta)(\.?[0-9]{1,3})?)?$ ]]; then
             echo "::error::The tag is not a version like v1.2.3 or v1.2.3-beta"; exit 1
           fi
-          sed -i "s/^## Version: .*/## Version: ${version}/" "addon/${ADDON}/${ADDON}.toc"
+          sed -i "s/^## Version: .*/## Version: ${version}/" "addon/${ADDON}/${ADDON}.toc" "addon/${ADDON}_Data/${ADDON}_Data.toc"
           sed -i "s/^ns.VERSION = .*/ns.VERSION = \"${version}\"/" "addon/${ADDON}/Core.lua"
+          python3 tools/build_addon_data.py
           zip="${ADDON}-${version}.zip"
-          (cd addon && zip -qr "../${zip}" "${ADDON}" -x "${ADDON}/README.md")
+          (cd addon && zip -qr "../${zip}" "${ADDON}" "${ADDON}_Data" -x "${ADDON}/README.md")
           echo "zip=${zip}" >> "$GITHUB_OUTPUT"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 

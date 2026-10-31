@@ -9,7 +9,7 @@
 --         crumbs = { "t,map,x,y,flags", ... } },
 --     } },
 --   },
---   settings = { paused = false, crumbSeconds = 10, share = true|false|nil, shareAsked },
+--   settings = { paused = false, crumbSeconds = 10, share = true|false|nil, shareAsked, minimapAngle, hideMinimap },
 -- ForeverScoutCharDB = { charId }   -- per character, never uploaded
 -- }
 
@@ -193,9 +193,11 @@ SlashCmdList.FOREVERSCOUT = function(input)
   if cmd == "pause" then
     ns.db.settings.paused = true
     ns.Print("Recording paused. /fscout resume to continue.")
+    if ns.BIS and ns.BIS.UpdateDot then ns.BIS.UpdateDot() end
   elseif cmd == "resume" then
     ns.db.settings.paused = false
     ns.Print("Recording resumed.")
+    if ns.BIS and ns.BIS.UpdateDot then ns.BIS.UpdateDot() end
   elseif cmd == "share" then
     local v = rest:lower()
     if v == "on" or v == "off" then
@@ -213,6 +215,15 @@ SlashCmdList.FOREVERSCOUT = function(input)
     ns.ShowExport()
   elseif cmd == "gear" then
     ns.ShowGear()
+  elseif cmd == "bis" or cmd == "plan" then
+    ns.BIS.Toggle()
+  elseif cmd == "pins" then
+    ns.Pins.SetEnabled(not ns.Pins.Enabled())
+    ns.Print("Map pins " .. (ns.Pins.Enabled() and "on" or "off") .. ".")
+  elseif cmd == "minimap" then
+    ns.db.settings.hideMinimap = not ns.db.settings.hideMinimap
+    if ns.BIS.button then ns.BIS.button:SetShown(not ns.db.settings.hideMinimap) end
+    ns.Print("Minimap button " .. (ns.db.settings.hideMinimap and "hidden" or "shown") .. ".")
   elseif cmd == "debug" then
     ns.debug = not ns.debug
     ns.Print("Debug " .. (ns.debug and "on" or "off"))
@@ -235,7 +246,7 @@ SlashCmdList.FOREVERSCOUT = function(input)
     else
       ns.Print("Automatic sharing is |cffff5555off|r. Turn it on with /fscout share on.")
     end
-    ns.Print("Commands: /fscout pause | resume | share on|off | note <text> | gear | report | export | wipe")
+    ns.Print("Commands: /fscout bis | pins | pause | resume | share on|off | note <text> | gear | report | export | minimap | wipe")
   end
 end
 
