@@ -29,7 +29,7 @@ const (
 
 var shareOn = regexp.MustCompile(`\["share"\]\s*=\s*true`)
 
-// scoutSalt must match SCOUT_SALT in tools/ingest_logs.py: the leaderboard on forever-xp.com/scouts/
+// scoutSalt must match SCOUT_SALT in tools/ingest_logs.py: the leaderboard on forever-xp.com/leaderboard/
 // shows this same name, made from a one-way hash so the install id itself is never shown.
 const scoutSalt = "forever-xp scout|"
 

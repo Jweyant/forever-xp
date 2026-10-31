@@ -31,18 +31,22 @@ never needs Administrator.
 
 After that, the #forever-announcements feed starts on its own with the next new Blizzard post.
 
-## Weekly Scout report
+## #leaderboard
 
-The channel marked `"report": true` in `discord/server.json` (#announcements) gets the Scout
-leaderboard every Monday from the **Scout report** workflow: this week's totals, the week's top 10
-and the all-time top 5, linked to forever-xp.com/scouts/. It's published, so servers following
-#announcements get it too. Nothing is posted until someone has sent a log.
+The channel marked `"report": true` in `discord/server.json` is the read-only #leaderboard. The
+**Scout report** workflow keeps it current from `gamedata/players/scouts.json` (built by the
+player-data workflow from shared ForeverScout logs):
 
-The board comes from `gamedata/players/scouts.json`, built by the player-data workflow from shared
-ForeverScout logs. Players appear only under anonymous names like `Scout 97800d` (a one-way hash of
-the uploader's random install id, which the uploader shows the player). The bot posts only names in
-that shape and whole numbers. To preview: **Actions > Scout report > Run workflow** with "Only show
-what would be posted" ticked.
+- **Every six hours**, just after the player-data refresh, `update-scouts` edits one "Scout
+  standings" message (all-time top 10, this week's top 3) in place. It's never published, so
+  servers following the channel aren't sent every refresh.
+- **Mondays**, `post-scouts` posts the weekly Scout report and publishes it to followers.
+
+Nothing is posted until someone has sent a log. Players appear only under anonymous names like
+`Scout 97800d` (a one-way hash of the uploader's random install id, which the uploader shows the
+player). The bot posts only names in that shape and whole numbers, with mentions off. To preview:
+**Actions > Scout report > Run workflow**, pick standings or report, with "Only show what would be
+posted" ticked.
 
 ## Roles
 

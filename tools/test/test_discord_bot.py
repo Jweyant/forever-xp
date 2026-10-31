@@ -414,7 +414,7 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = Path(tmp) / "scouts.json"
             f.write_text(json.dumps(doc))
-            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "leaderboard"}], [])
             bot.post_scouts(CFG, f, d, "1")
         sent = posts(d)
         self.assertEqual(len(sent), 1)
@@ -429,10 +429,38 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = Path(tmp) / "scouts.json"
             f.write_text(json.dumps({"board": [], "totals": {}}))
-            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "leaderboard"}], [])
             bot.post_scouts(CFG, f, d, "1")
             bot.post_scouts(CFG, Path(tmp) / "missing.json", d, "1")
         self.assertEqual(posts(d), [])
+
+
+    def test_leaderboard_is_the_report_channel(self):
+        self.assertEqual(bot.feed_channel(CFG, "report")[0], "leaderboard")
+
+    def test_standings_edit_the_bots_own_message(self):
+        doc = {"updated": 1761930000, "totals": {"scouts": 1}, "board": [{"handle": "Scout 97800d", "score": 1, "quests": 1}]}
+        mine = {"id": "s1", "author": {"id": "42"}, "embeds": [{"title": "Scout standings"}]}
+        report = {"id": "r1", "author": {"id": "42"}, "embeds": [{"title": "Scout report, week of Nov 9"}]}
+        someone = {"id": "x1", "author": {"id": "9"}, "embeds": [{"title": "Scout standings"}]}
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "scouts.json"
+            f.write_text(json.dumps(doc))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "leaderboard"}], [], [report, someone, mine])
+            bot.update_scouts(CFG, f, d, "1")
+            edits = [(m, p, b) for m, p, b in d.calls if m == "PATCH"]
+            self.assertEqual([p for m, p, b in edits], ["/channels/7/messages/s1"])
+            self.assertIn("1 pt (1 quest", shown(edits[0][2]))
+            self.assertEqual(edits[0][2]["allowed_mentions"], {"parse": []})
+            self.assertEqual(posts(d), [])
+            fresh = FakeDiscord([{"id": "7", "type": 5, "name": "leaderboard"}], [], [report])
+            bot.update_scouts(CFG, f, fresh, "1")
+            self.assertEqual(len(posts(fresh)), 1)
+            self.assertFalse(any(p.endswith("/crosspost") for m, p, b in fresh.calls))  # standings aren't published
+            empty = FakeDiscord([{"id": "7", "type": 5, "name": "leaderboard"}], [])
+            f.write_text("{}")
+            bot.update_scouts(CFG, f, empty, "1")
+            self.assertEqual([c for c in empty.calls if c[0] != "GET"], [])
 
 
 if __name__ == "__main__":
