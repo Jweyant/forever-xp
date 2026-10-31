@@ -217,6 +217,9 @@ SlashCmdList.FOREVERSCOUT = function(input)
     ns.ShowGear()
   elseif cmd == "bis" or cmd == "plan" then
     ns.BIS.Toggle()
+  elseif cmd == "pins" then
+    ns.Pins.SetEnabled(not ns.Pins.Enabled())
+    ns.Print("Map pins " .. (ns.Pins.Enabled() and "on" or "off") .. ".")
   elseif cmd == "minimap" then
     ns.db.settings.hideMinimap = not ns.db.settings.hideMinimap
     if ns.BIS.button then ns.BIS.button:SetShown(not ns.db.settings.hideMinimap) end
@@ -243,7 +246,7 @@ SlashCmdList.FOREVERSCOUT = function(input)
     else
       ns.Print("Automatic sharing is |cffff5555off|r. Turn it on with /fscout share on.")
     end
-    ns.Print("Commands: /fscout bis | pause | resume | share on|off | note <text> | gear | report | export | minimap | wipe")
+    ns.Print("Commands: /fscout bis | pins | pause | resume | share on|off | note <text> | gear | report | export | minimap | wipe")
   end
 end
 

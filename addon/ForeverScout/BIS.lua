@@ -402,6 +402,12 @@ local function build()
   f.upgrades = makeCheck(f, "Upgrades only", function(on) state.upgradesOnly = on ns.BIS.Layout() end)
   f.upgrades:SetPoint("TOPLEFT", 10, -72)
 
+  f.pins = makeCheck(f, "Pins on map and minimap", function(on) ns.Pins.SetEnabled(on) ns.BIS.UpdatePins() end)
+  f.pins:SetPoint("LEFT", f.upgrades, "RIGHT", 120, 0)
+  tip(f.pins, "Show every planned item's location", "Quest givers, vendors and chests with known positions get a pin on the world map "
+    .. "and minimap. Click a pin for a waypoint. Pins stay after you close this window.")
+  if not ns.Pins.Available() then f.pins:Disable() f.pins.label:SetText("|cff9d9d9dPins (map library missing)|r") end
+
   -- Next-step line (click to select that slot)
   local nextBtn = CreateFrame("Button", nil, f, "BackdropTemplate")
   nextBtn:SetPoint("TOPLEFT", 12, -98)
@@ -755,8 +761,21 @@ function ns.BIS.Refresh()
   f.foot:SetText(("%d upgrades at level %d%s. Same stat weights as forever-xp.com/bis (%s, %s). Forever build %s."):format(
     upgrades, state.level, focusNote, spec and spec.name or "", GOAL_NAME[state.goal] or "", P.DataBuild()))
   ns.BIS.Layout()
+  ns.BIS.UpdatePins()
   if not state.selected or not plan[state.selected] then state.selected = bestRow and bestRow.slot or P.PAPERDOLL[1] end
   ns.BIS.RenderDetail()
+end
+
+function ns.BIS.UpdatePins()
+  if not state or not state.plan then return end
+  ns.Pins.Remember(state.plan, state.cur)
+  if ns.Pins.Enabled() then
+    local n = ns.Pins.Show(state.plan, state.cur)
+    win.pins.label:SetText(("Pins on map and minimap (%d)"):format(n))
+  else
+    ns.Pins.Clear()
+    win.pins.label:SetText("Pins on map and minimap")
+  end
 end
 
 function ns.BIS.Toggle()
@@ -777,6 +796,7 @@ function ns.BIS.Show()
   win:Show()
   win.level:SetValue(state.level)
   win.upgrades:SetChecked(state.upgradesOnly)
+  win.pins:SetChecked(ns.Pins.Enabled())
   ns.BIS.Refresh()
 end
 
