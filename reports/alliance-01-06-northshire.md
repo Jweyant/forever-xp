@@ -12,24 +12,26 @@ _none_
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 3905 Grape Manifest | 355 | 0.0 | 710 |
-| 6 Bounty on Garrick Padfoot | 335 | 0.9 | 357 |
-| 92479 A Scribbled Letter | ~170 | 0.0 | 340 |
-| 5261 Eagan Peltskinner | 85 | 0.0 | 170 |
-| 21 Skirmish at Echo Ridge | 450 | 4.3 | 105 |
-| 3904 Milly's Harvest | 180 | 1.8 | 98 |
-| 783 A Threat Within | 40 | 0.0 | 80 |
-| 3100 Simple Letter | 40 | 0.0 | 80 |
-| 3101 Consecrated Letter | 40 | 0.0 | 80 |
-| 3102 Encrypted Letter | 40 | 0.0 | 80 |
-| 3103 Hallowed Letter | 40 | 0.0 | 80 |
-| 3104 Glyphic Letter | 40 | 0.0 | 80 |
-| 3105 Tainted Letter | 40 | 0.0 | 80 |
-| 15 Investigate Echo Ridge | 250 | 3.1 | 80 |
-| 3903 Milly Osworth | 35 | 0.0 | 70 |
-| 7 Kobold Camp Cleanup | 170 | 3.2 | 54 |
-| 18 Brotherhood of Thieves | 355 | 7.6 | 47 |
-| 33 Wolves Across the Border | 170 | 4.8 | 35 |
+| 3905 Grape Manifest | 355 | 0.2 | 710 |
+| 92479 A Scribbled Letter | ~170 | 0.2 | 340 |
+| 6 Bounty on Garrick Padfoot | 335 | 1.1 | 294 |
+| 5261 Eagan Peltskinner | 85 | 0.2 | 170 |
+| 21 Skirmish at Echo Ridge | 450 | 4.5 | 100 |
+| 3904 Milly's Harvest | 180 | 2.0 | 88 |
+| 783 A Threat Within | 40 | 0.2 | 80 |
+| 3100 Simple Letter | 40 | 0.2 | 80 |
+| 3101 Consecrated Letter | 40 | 0.2 | 80 |
+| 3102 Encrypted Letter | 40 | 0.2 | 80 |
+| 3103 Hallowed Letter | 40 | 0.2 | 80 |
+| 3104 Glyphic Letter | 40 | 0.2 | 80 |
+| 3105 Tainted Letter | 40 | 0.2 | 80 |
+| 15 Investigate Echo Ridge | 250 | 3.3 | 75 |
+| 3903 Milly Osworth | 35 | 0.2 | 70 |
+| 7 Kobold Camp Cleanup | 170 | 3.4 | 50 |
+| 18 Brotherhood of Thieves | 355 | 7.8 | 45 |
+| 33 Wolves Across the Border | 170 | 5.0 | 34 |
+| 54 Report to Goldshire | 0 | 0.1 | 0 |
+| 2158 Rest and Relaxation | 0 | 0.1 | 0 |
 
 ## Step by step
 

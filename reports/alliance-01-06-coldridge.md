@@ -12,28 +12,30 @@ _none_
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 3365 Bring Back the Mug | 450 | 0.0 | 900 |
-| 282 Senir's Observations | 335 | 0.0 | 670 |
-| 234 Coldridge Valley Mail Delivery | 270 | 0.0 | 540 |
-| 3364 Scalding Mornbrew Delivery | 225 | 0.0 | 450 |
-| 218 The Stolen Journal | 560 | 1.3 | 424 |
-| 233 Coldridge Valley Mail Delivery | 190 | 0.0 | 380 |
-| 98581 Archaic Rune | ~170 | 0.0 | 340 |
-| 98574 Hallowed Memorandum | ~170 | 0.0 | 340 |
-| 3361 A Refugee's Quandary | 250 | 1.9 | 129 |
-| 3106 Simple Rune | 40 | 0.0 | 80 |
-| 3107 Consecrated Rune | 40 | 0.0 | 80 |
-| 3108 Etched Rune | 40 | 0.0 | 80 |
-| 3109 Encrypted Rune | 40 | 0.0 | 80 |
-| 3110 Hallowed Rune | 40 | 0.0 | 80 |
-| 3112 Simple Memorandum | 40 | 0.0 | 80 |
-| 3113 Encrypted Memorandum | 40 | 0.0 | 80 |
-| 3114 Glyphic Memorandum | 40 | 0.0 | 80 |
-| 3115 Tainted Memorandum | 40 | 0.0 | 80 |
-| 182 The Troll Cave | 355 | 4.5 | 80 |
-| 183 The Boar Hunter | 250 | 3.6 | 69 |
-| 170 A New Threat | 170 | 4.3 | 40 |
-| 179 Dwarven Outfitters | 80 | 4.9 | 16 |
+| 3365 Bring Back the Mug | 450 | 0.2 | 900 |
+| 282 Senir's Observations | 335 | 0.2 | 670 |
+| 234 Coldridge Valley Mail Delivery | 270 | 0.2 | 540 |
+| 3364 Scalding Mornbrew Delivery | 225 | 0.2 | 450 |
+| 233 Coldridge Valley Mail Delivery | 190 | 0.2 | 380 |
+| 218 The Stolen Journal | 560 | 1.5 | 368 |
+| 98581 Archaic Rune | ~170 | 0.2 | 340 |
+| 98574 Hallowed Memorandum | ~170 | 0.2 | 340 |
+| 3361 A Refugee's Quandary | 250 | 2.1 | 117 |
+| 3106 Simple Rune | 40 | 0.2 | 80 |
+| 3107 Consecrated Rune | 40 | 0.2 | 80 |
+| 3108 Etched Rune | 40 | 0.2 | 80 |
+| 3109 Encrypted Rune | 40 | 0.2 | 80 |
+| 3110 Hallowed Rune | 40 | 0.2 | 80 |
+| 3112 Simple Memorandum | 40 | 0.2 | 80 |
+| 3113 Encrypted Memorandum | 40 | 0.2 | 80 |
+| 3114 Glyphic Memorandum | 40 | 0.2 | 80 |
+| 3115 Tainted Memorandum | 40 | 0.2 | 80 |
+| 182 The Troll Cave | 355 | 4.7 | 76 |
+| 183 The Boar Hunter | 250 | 3.8 | 65 |
+| 170 A New Threat | 170 | 4.5 | 38 |
+| 179 Dwarven Outfitters | 80 | 5.1 | 16 |
+| 2160 Supplies to Tannok | 0 | 0.1 | 0 |
+| 420 Senir's Observations | 0 | 0.1 | 0 |
 
 ## Step by step
 

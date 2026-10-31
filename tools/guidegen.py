@@ -53,6 +53,8 @@ RUN_YPS = 7.0            # run speed, yards per second
 DIALOG_SEC = 6           # per accept / turn-in
 KILL_SEC = 18            # per kill including finding the next mob (low level ranged)
 LOOT_OBJECT_SEC = 10     # per world object
+ESCORT_SEC = 300         # per escort/defend event (the NPC walks, waves spawn)
+MIN_OBJECTIVE_SEC = 30   # no quest's objectives are faster than this
 DEFAULT_DROP_RATE = 0.5  # unknown drop rates
 QUEST_LOG_MAX = 20
 # Mobs killed while running between objectives (outside towns). An assumption to be replaced
@@ -96,6 +98,18 @@ def as_list(t):
     return t
 
 
+def settle_counts(objectives, text):
+    """Resolve objectives whose needed count is still 0 (unknown): a lone small number in the
+    objective text ("Wake up 5 peons") settles a lone unknown; the rest count as 1.
+    "level 10" and ids never count."""
+    unknown = [i for i, o in enumerate(objectives) if o[4] == 0]
+    nums = {int(m.group(1)) for m in re.finditer(r"(?<!level )\b(\d\d?)\b", text) if 2 <= int(m.group(1)) <= 25}
+    if len(unknown) == 1 and len(nums) == 1:
+        i = unknown[0]
+        objectives[i] = objectives[i][:4] + (nums.pop(),) + objectives[i][5:]
+    return [o[:4] + (o[4] or 1,) + o[5:] for o in objectives]
+
+
 class Data:
     def __init__(self):
         self.db = sqlite3.connect(DATA / "forever_questdb.sqlite")
@@ -106,6 +120,10 @@ class Data:
         sizes = json.loads((ROOT / "tools/zone_sizes.json").read_text())
         self.size = {int(k): (v["width_yd"], v["height_yd"]) for k, v in sizes.items()}
         self.bounds = {int(k): (v["map_id"], v["bounds"]) for k, v in sizes.items()}
+        # How many of each objective a quest needs, from cmangos classic-db
+        # (tools/quest_counts.py). Only counts above 1 are stored.
+        counts_file = ROOT / "tools/quest_counts.json"
+        self.counts = json.loads(counts_file.read_text()) if counts_file.exists() else {}
         self._npc, self._obj, self._item = {}, {}, {}
 
     def _estimate_missing_xp(self):
@@ -301,14 +319,19 @@ class Generator:
         """Where to do each objective: [(kind, id, name, points, count_guess, mob_level)]."""
         q = self.q(qid)
         text = " ".join(as_list(q.get("objectivesText")))
+        counts = self.d.counts.get(str(qid)) or {}
         out = []
 
-        def count_for(name):
+        def count_for(key, name):
+            """How many the quest needs: cmangos knows classic quests; the objective text is the
+            fallback for Forever's new ones; 0 = unknown, resolved below."""
+            if key in counts:
+                return counts[key]
             if name:
                 m = re.search(r"(\d+)\s+(?:\w+\s+){0,3}?" + re.escape(name.split()[0]), text)
                 if m:
                     return int(m.group(1))
-            return 1
+            return 0
 
         def first(entry):
             if isinstance(entry, dict):
@@ -329,11 +352,11 @@ class Generator:
         for e in creature:
             nid = first(e)
             n = self.d.npc(nid) or {}
-            out.append(("kill", nid, n.get("name"), self.d.spawns(n), count_for(n.get("name")), n.get("maxLevel") or 1))
+            out.append(("kill", nid, n.get("name"), self.d.spawns(n), count_for(f"npc:{nid}", n.get("name")), n.get("maxLevel") or 1))
         for e in obj:
             oid = first(e)
             o = self.d.obj(oid) or {}
-            out.append(("object", oid, o.get("name"), self.d.spawns(o), count_for(o.get("name")), 0))
+            out.append(("object", oid, o.get("name"), self.d.spawns(o), count_for(f"obj:{oid}", o.get("name")), 0))
         for e in items:
             iid = first(e)
             it = self.d.item(iid) or {}
@@ -348,10 +371,11 @@ class Generator:
             for oid in as_list(it.get("objectDrops")):
                 pts += self.d.spawns(self.d.obj(oid))
                 kind = "object" if not it.get("npcDrops") else kind
-            out.append((kind, iid, iname, pts, count_for(iname), lvl))
-        return out
+            out.append((kind, iid, iname, pts, count_for(f"item:{iid}", iname), lvl))
+        return settle_counts(out, text)
 
     # ------------------------------------------------------------------ steps
+
     def applies(self, tag):
         """Same rules as RXP's applies(): '/' = or, space = and, '!' = not."""
         if not tag:
@@ -429,6 +453,7 @@ class Generator:
                     self.lines.append(f"    .turnin {qid} >> Turn in {self.name(qid)}")
                     self.quest_stats.setdefault(qid, {"xp": 0, "seconds": 0})["xp"] += gained
                 self.s.seconds += DIALOG_SEC
+                self.quest_stats.setdefault(qid, {"xp": 0, "seconds": 0})["seconds"] += DIALOG_SEC
 
         if "complete" in st:
             ids = st["complete"] if isinstance(st["complete"], list) else [st["complete"]]
@@ -439,6 +464,11 @@ class Generator:
                 objectives = self.objective_points(qid)
                 if not objectives:
                     self.lines.append(f"    .complete {qid},1")
+                    # Questie lists no countable objective: an escort or other scripted event
+                    # still takes real time (the NPC walks, waves spawn).
+                    txt = " ".join(as_list(self.q(qid).get("objectivesText"))).lower()
+                    if re.search(r"\bescort\b|\bprotect\b|\bto safety\b|\baccompany\b", txt):
+                        self.s.seconds += ESCORT_SEC
                 for idx, (kind, oid, oname, pts, count, mlvl) in enumerate(objectives, 1):
                     where = self.nearest(pts)
                     if not where and st.get("where"):
@@ -467,6 +497,8 @@ class Generator:
                     for _ in range(kills):
                         self.s.add_xp(mob_xp(self.s.level, mlvl or self.s.level))
                     self.s.seconds += kills * KILL_SEC + (count * LOOT_OBJECT_SEC if kind == "object" else 0)
+                if objectives and self.s.seconds - start_t < MIN_OBJECTIVE_SEC:
+                    self.s.seconds += MIN_OBJECTIVE_SEC - (self.s.seconds - start_t)
                 self.quest_stats.setdefault(qid, {"xp": 0, "seconds": 0})["seconds"] += self.s.seconds - start_t
 
         if "travel" in st:

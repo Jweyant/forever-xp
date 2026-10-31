@@ -1,112 +1,113 @@
 # 6-12 Durotar
 
-Estimated finish: level 11.38 after 109 minutes. Quests still in log: [840]
+Estimated finish: level 11.58 after 115 minutes. Quests still in log: [840]
 
 Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
-- step 12: 815 Break a Few Eggs needs level 6, estimated level here 5.9
+_none_
 
 ## Quests by XP per minute of objective time
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 812 Need for a Cure | 980 | 0.0 | 1960 |
-| 6062 Taming the Beast | 840 | 0.4 | 1680 |
-| 830 The Admiral's Orders | 630 | 0.0 | 1260 |
-| 831 The Admiral's Orders | 630 | 0.0 | 1260 |
-| 6082 Taming the Beast | 840 | 0.9 | 977 |
-| 829 Neeru Fireblade | 455 | 0.0 | 910 |
-| 6081 Training the Beast | 420 | 0.0 | 840 |
-| 806 Dark Storms | 910 | 1.2 | 746 |
-| 827 Skull Rock | 910 | 1.3 | 714 |
-| 823 Report to Orgnil | 315 | 0.0 | 630 |
-| 6083 Taming the Beast | 840 | 1.4 | 621 |
-| 834 Winds in the Desert | 780 | 1.3 | 610 |
-| 816 Lost But Not Forgotten | 880 | 1.8 | 501 |
-| 808 Minshina's Skull | 780 | 1.7 | 459 |
-| 805 Report to Sen'jin Village | 225 | 0.0 | 450 |
-| 825 From The Wreckage.... | 1400 | 4.1 | 345 |
-| 815 Break a Few Eggs | 700 | 2.1 | 331 |
-| 817 Practical Prey | 700 | 2.5 | 276 |
-| 786 Thwarting Kolkar Aggression | 700 | 3.2 | 222 |
-| 2161 A Peon's Burden | 110 | 0.0 | 220 |
-| 828 Margoz | 90 | 0.0 | 180 |
-| 791 Carry Your Weight | 630 | 4.8 | 131 |
-| 826 Zalazane | 840 | 7.9 | 106 |
-| 835 Securing the Lines | 880 | 8.7 | 101 |
-| 837 Encroachment | 630 | 6.5 | 96 |
-| 818 A Solvent Spirit | 630 | 7.8 | 81 |
-| 784 Vanquish the Betrayers | 630 | 8.2 | 77 |
-| 813 Finding the Antidote | 0 | 3.8 | 0 |
+| 812 Need for a Cure | 980 | 0.2 | 1960 |
+| 830 The Admiral's Orders | 630 | 0.2 | 1260 |
+| 831 The Admiral's Orders | 630 | 0.2 | 1260 |
+| 6062 Taming the Beast | 840 | 0.7 | 1200 |
+| 829 Neeru Fireblade | 455 | 0.2 | 910 |
+| 6081 Training the Beast | 420 | 0.2 | 840 |
+| 6082 Taming the Beast | 840 | 1.1 | 792 |
+| 806 Dark Storms | 910 | 1.4 | 641 |
+| 823 Report to Orgnil | 315 | 0.2 | 630 |
+| 6083 Taming the Beast | 840 | 1.6 | 541 |
+| 834 Winds in the Desert | 780 | 1.5 | 528 |
+| 805 Report to Sen'jin Village | 225 | 0.1 | 450 |
+| 816 Lost But Not Forgotten | 880 | 2.0 | 450 |
+| 808 Minshina's Skull | 780 | 1.9 | 411 |
+| 825 From The Wreckage.... | 1400 | 4.4 | 321 |
+| 815 Break a Few Eggs | 700 | 2.3 | 302 |
+| 817 Practical Prey | 700 | 2.7 | 256 |
+| 2161 A Peon's Burden | 110 | 0.2 | 220 |
+| 786 Thwarting Kolkar Aggression | 700 | 3.4 | 209 |
+| 827 Skull Rock | 910 | 4.5 | 203 |
+| 828 Margoz | 90 | 0.2 | 180 |
+| 791 Carry Your Weight | 630 | 5.0 | 126 |
+| 835 Securing the Lines | 880 | 7.7 | 114 |
+| 837 Encroachment | 630 | 6.7 | 93 |
+| 784 Vanquish the Betrayers | 630 | 7.8 | 81 |
+| 818 A Solvent Spirit | 630 | 8.0 | 79 |
+| 826 Zalazane | 840 | 12.3 | 68 |
+| 840 Conscript of the Horde | 0 | 0.1 | 0 |
+| 813 Finding the Antidote | 0 | 4.0 | 0 |
 
 ## Step by step
 
 | # | level | minutes | xp | step |
 |---|---|---|---|---|
-| 1 | 5.62 | 1.4 | 56 | accept A Peon's Burden |
-| 2 | 5.70 | 2.5 | 225 | accept Report to Orgnil, Minshina's Skull; turnin Report to Sen'jin Village |
-| 3 | 5.70 | 2.6 | 0 | accept A Solvent Spirit |
-| 4 | 5.70 | 2.7 | 0 | accept Practical Prey |
-| 5 | 5.70 | 3.0 | 0 | accept Thwarting Kolkar Aggression |
-| 6 | 5.72 | 6.2 | 56 | complete Thwarting Kolkar Aggression |
-| 7 | 5.84 | 10.2 | 334 | turnin A Peon's Burden |
-| 8 | 5.84 | 10.2 | 0 | home Razor Hill |
-| 9 | 5.95 | 10.6 | 315 | accept Dark Storms; turnin Report to Orgnil |
-| 10 | 5.95 | 10.7 | 0 | accept Vanquish the Betrayers |
-| 11 | 5.95 | 11.2 | 0 | accept Carry Your Weight |
-| 12 | 5.95 | 11.5 | 0 | accept Break a Few Eggs |
-| 13 | 6.76 | 24.5 | 2864 | complete Vanquish the Betrayers, Carry Your Weight |
-| 14 | 6.76 | 24.6 | 0 | accept The Admiral's Orders |
-| 15 | 7.18 | 32.4 | 1692 | complete A Solvent Spirit |
-| 16 | 7.19 | 34.5 | 64 | complete Break a Few Eggs |
-| 17 | 7.34 | 37.1 | 672 | complete Practical Prey |
-| 18 | 7.36 | 38.8 | 64 | complete Minshina's Skull |
-| 19 | 7.53 | 41.0 | 758 | turnin A Solvent Spirit |
-| 20 | 7.68 | 41.2 | 700 | turnin Practical Prey |
-| 21 | 7.86 | 41.5 | 780 | accept Zalazane; turnin Minshina's Skull |
-| 22 | 8.01 | 41.7 | 700 | turnin Thwarting Kolkar Aggression |
-| 23 | 8.33 | 49.6 | 1750 | complete Zalazane |
-| 24 | 8.52 | 51.9 | 980 | turnin Zalazane |
-| 25 | 8.52 | 52.2 | 0 | hs Razor Hill |
-| 26 | 8.63 | 52.5 | 630 | accept From The Wreckage....; turnin Vanquish the Betrayers |
-| 27 | 8.75 | 53.0 | 630 | turnin Carry Your Weight |
-| 28 | 8.88 | 53.3 | 700 | turnin Break a Few Eggs |
-| 29 | 8.99 | 53.7 | 630 | accept The Admiral's Orders; turnin The Admiral's Orders |
-| 30 | 8.99 | 53.8 | 0 | accept Encroachment |
-| 31 | 9.20 | 60.3 | 1361 | complete Encroachment |
-| 32 | 9.22 | 62.1 | 75 | accept Winds in the Desert |
-| 33 | 9.22 | 63.4 | 0 | complete Winds in the Desert |
-| 34 | 9.34 | 64.0 | 780 | accept Securing the Lines; turnin Winds in the Desert |
-| 35 | 9.37 | 65.3 | 206 | complete Dark Storms |
-| 36 | 9.74 | 74.0 | 2391 | complete Securing the Lines |
-| 37 | 9.87 | 74.9 | 880 | turnin Securing the Lines |
-| 38 | 9.87 | 75.7 | 0 | accept Lost But Not Forgotten |
-| 39 | 9.91 | 77.5 | 273 | complete Lost But Not Forgotten |
-| 40 | 10.05 | 78.7 | 955 | turnin Lost But Not Forgotten |
-| 41 | 10.15 | 80.6 | 711 | turnin Encroachment |
-| 42 | 10.26 | 80.8 | 910 | accept Margoz; turnin Dark Storms |
-| 43 | 10.26 | 81.1 | 0 | accept Conscript of the Horde |
-| 44 | 10.26 | 81.1 | 0 | xp 10 |
-| 45 | 10.26 | 81.3 | 0 | accept Taming the Beast |
-| 46 | 10.27 | 81.8 | 54 | complete Taming the Beast |
-| 47 | 10.38 | 82.1 | 840 | accept Taming the Beast; turnin Taming the Beast |
-| 48 | 10.41 | 85.4 | 229 | complete From The Wreckage...., Taming the Beast |
-| 49 | 10.52 | 87.1 | 781 | turnin From The Wreckage.... |
-| 50 | 10.63 | 87.3 | 840 | accept Taming the Beast; turnin Taming the Beast |
-| 51 | 10.63 | 88.1 | 67 | complete Taming the Beast |
-| 52 | 10.75 | 88.9 | 840 | accept Training the Beast; turnin Taming the Beast |
-| 53 | 10.75 | 89.1 | 0 | Tame your real pet now. A Dire Mottled Boar right outside Razor Hill is fine for 1-20. |
-| 56 | 10.78 | 91.8 | 252 | accept Skull Rock; turnin Margoz |
-| 57 | 10.80 | 93.1 | 162 | complete Skull Rock |
-| 58 | 10.92 | 94.0 | 910 | accept Neeru Fireblade; turnin Skull Rock |
-| 59 | 10.94 | 96.3 | 162 | accept Need for a Cure |
-| 60 | 11.04 | 98.7 | 792 | turnin The Admiral's Orders |
-| 61 | 11.09 | 99.4 | 455 | turnin Neeru Fireblade |
-| 62 | 11.15 | 100.6 | 505 | turnin Training the Beast |
-| 63 | 11.15 | 100.9 | 0 | train Ormak Grimshot |
-| 64 | 11.16 | 102.2 | 85 | accept Finding the Antidote |
-| 65 | 11.24 | 106.0 | 765 | complete Finding the Antidote |
-| 66 | 11.25 | 107.5 | 85 | turnin Finding the Antidote |
-| 67 | 11.38 | 109.4 | 1065 | turnin Need for a Cure |
+| 1 | 5.71 | 1.4 | 56 | accept A Peon's Burden |
+| 2 | 5.79 | 2.5 | 225 | accept Report to Orgnil, Minshina's Skull; turnin Report to Sen'jin Village |
+| 3 | 5.79 | 2.6 | 0 | accept A Solvent Spirit |
+| 4 | 5.79 | 2.7 | 0 | accept Practical Prey |
+| 5 | 5.79 | 3.0 | 0 | accept Thwarting Kolkar Aggression |
+| 6 | 5.81 | 6.2 | 56 | complete Thwarting Kolkar Aggression |
+| 7 | 5.93 | 10.2 | 334 | turnin A Peon's Burden |
+| 8 | 5.93 | 10.2 | 0 | home Razor Hill |
+| 9 | 6.03 | 10.6 | 315 | accept Dark Storms; turnin Report to Orgnil |
+| 10 | 6.03 | 10.7 | 0 | accept Vanquish the Betrayers |
+| 11 | 6.03 | 11.2 | 0 | accept Carry Your Weight |
+| 12 | 6.03 | 11.5 | 0 | accept Break a Few Eggs |
+| 13 | 6.79 | 23.9 | 2716 | complete Vanquish the Betrayers, Carry Your Weight |
+| 14 | 6.79 | 24.0 | 0 | accept The Admiral's Orders |
+| 15 | 7.20 | 31.8 | 1670 | complete A Solvent Spirit |
+| 16 | 7.21 | 33.9 | 64 | complete Break a Few Eggs |
+| 17 | 7.36 | 36.5 | 672 | complete Practical Prey |
+| 18 | 7.38 | 38.2 | 64 | complete Minshina's Skull |
+| 19 | 7.55 | 40.4 | 758 | turnin A Solvent Spirit |
+| 20 | 7.70 | 40.6 | 700 | turnin Practical Prey |
+| 21 | 7.87 | 40.9 | 780 | accept Zalazane; turnin Minshina's Skull |
+| 22 | 8.03 | 41.1 | 700 | turnin Thwarting Kolkar Aggression |
+| 23 | 8.59 | 53.2 | 3052 | complete Zalazane |
+| 24 | 8.77 | 55.5 | 980 | turnin Zalazane |
+| 25 | 8.77 | 55.8 | 0 | hs Razor Hill |
+| 26 | 8.89 | 56.1 | 630 | accept From The Wreckage....; turnin Vanquish the Betrayers |
+| 27 | 9.00 | 56.6 | 630 | turnin Carry Your Weight |
+| 28 | 9.11 | 56.9 | 700 | turnin Break a Few Eggs |
+| 29 | 9.21 | 57.3 | 630 | accept The Admiral's Orders; turnin The Admiral's Orders |
+| 30 | 9.21 | 57.4 | 0 | accept Encroachment |
+| 31 | 9.42 | 63.9 | 1351 | complete Encroachment |
+| 32 | 9.43 | 65.7 | 75 | accept Winds in the Desert |
+| 33 | 9.43 | 67.0 | 0 | complete Winds in the Desert |
+| 34 | 9.55 | 67.6 | 780 | accept Securing the Lines; turnin Winds in the Desert |
+| 35 | 9.58 | 68.9 | 206 | complete Dark Storms |
+| 36 | 9.89 | 76.4 | 1995 | complete Securing the Lines |
+| 37 | 10.02 | 77.3 | 880 | turnin Securing the Lines |
+| 38 | 10.02 | 78.1 | 0 | accept Lost But Not Forgotten |
+| 39 | 10.06 | 79.9 | 279 | complete Lost But Not Forgotten |
+| 40 | 10.18 | 81.1 | 961 | turnin Lost But Not Forgotten |
+| 41 | 10.28 | 83.0 | 711 | turnin Encroachment |
+| 42 | 10.40 | 83.2 | 910 | accept Margoz; turnin Dark Storms |
+| 43 | 10.40 | 83.5 | 0 | accept Conscript of the Horde |
+| 44 | 10.40 | 83.5 | 0 | xp 10 |
+| 45 | 10.40 | 83.7 | 0 | accept Taming the Beast |
+| 46 | 10.40 | 84.2 | 54 | complete Taming the Beast |
+| 47 | 10.51 | 84.6 | 840 | accept Taming the Beast; turnin Taming the Beast |
+| 48 | 10.54 | 87.9 | 229 | complete From The Wreckage...., Taming the Beast |
+| 49 | 10.65 | 89.5 | 781 | turnin From The Wreckage.... |
+| 50 | 10.76 | 89.7 | 840 | accept Taming the Beast; turnin Taming the Beast |
+| 51 | 10.77 | 90.6 | 67 | complete Taming the Beast |
+| 52 | 10.88 | 91.4 | 840 | accept Training the Beast; turnin Taming the Beast |
+| 53 | 10.88 | 91.5 | 0 | Tame your real pet now. A Dire Mottled Boar right outside Razor Hill is fine for 1-20. |
+| 56 | 10.91 | 94.3 | 252 | accept Skull Rock; turnin Margoz |
+| 57 | 11.03 | 98.6 | 942 | complete Skull Rock |
+| 58 | 11.13 | 99.4 | 910 | accept Neeru Fireblade; turnin Skull Rock |
+| 59 | 11.15 | 101.8 | 170 | accept Need for a Cure |
+| 60 | 11.24 | 104.1 | 800 | turnin The Admiral's Orders |
+| 61 | 11.29 | 104.9 | 455 | turnin Neeru Fireblade |
+| 62 | 11.35 | 106.1 | 505 | turnin Training the Beast |
+| 63 | 11.35 | 106.4 | 0 | train Ormak Grimshot |
+| 64 | 11.36 | 107.7 | 85 | accept Finding the Antidote |
+| 65 | 11.45 | 111.5 | 765 | complete Finding the Antidote |
+| 66 | 11.46 | 113.0 | 85 | turnin Finding the Antidote |
+| 67 | 11.58 | 114.8 | 1065 | turnin Need for a Cure |

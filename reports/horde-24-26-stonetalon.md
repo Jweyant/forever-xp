@@ -12,16 +12,16 @@ _none_
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 1090 Gerenzo's Orders | 2200 | 0.8 | 2846 |
-| 1092 Gerenzo's Orders | 1300 | 0.0 | 2600 |
-| 1093 Super Reaper 6000 | 1650 | 1.1 | 1538 |
-| 6381 New Life | 2000 | 1.7 | 1156 |
-| 6284 Arachnophobia | 1650 | 1.7 | 951 |
-| 6283 Bloodfury Bloodline | 2100 | 2.9 | 731 |
-| 6301 Cycle of Rebirth | 1400 | 3.2 | 432 |
-| 6393 Elemental War | 2000 | 7.4 | 269 |
-| 6282 Harpies Threaten | 2100 | 10.2 | 206 |
-| 1087 Cenarius' Legacy | 1500 | 8.4 | 179 |
+| 1092 Gerenzo's Orders | 1300 | 0.2 | 2600 |
+| 1090 Gerenzo's Orders | 2200 | 1.0 | 2261 |
+| 1093 Super Reaper 6000 | 1650 | 1.3 | 1296 |
+| 6381 New Life | 2000 | 1.9 | 1036 |
+| 6284 Arachnophobia | 1650 | 1.9 | 853 |
+| 6283 Bloodfury Bloodline | 2100 | 3.1 | 683 |
+| 6301 Cycle of Rebirth | 1400 | 3.4 | 407 |
+| 6393 Elemental War | 2000 | 7.6 | 262 |
+| 6282 Harpies Threaten | 2100 | 10.4 | 202 |
+| 1087 Cenarius' Legacy | 1500 | 8.6 | 175 |
 
 ## Step by step
 
@@ -46,8 +46,8 @@ _none_
 | 17 | 23.66 | 19.3 | 142 | complete Cycle of Rebirth |
 | 18 | 23.71 | 20.9 | 1542 | accept New Life; turnin Cycle of Rebirth |
 | 19 | 24.00 | 40.2 | 8430 | complete Elemental War, Harpies Threaten, New Life |
-| 20 | 24.13 | 43.0 | 4388 | accept Bloodfury Bloodline; turnin New Life, Harpies Threaten |
-| 21 | 24.15 | 45.8 | 654 | complete Bloodfury Bloodline |
+| 20 | 24.14 | 43.0 | 4388 | accept Bloodfury Bloodline; turnin New Life, Harpies Threaten |
+| 21 | 24.16 | 45.8 | 654 | complete Bloodfury Bloodline |
 | 22 | 24.29 | 48.3 | 4392 | turnin Bloodfury Bloodline, Elemental War |
 | 23 | 24.38 | 56.7 | 2628 | complete Cenarius' Legacy |
 | 24 | 24.44 | 61.3 | 2084 | turnin Cenarius' Legacy |

@@ -1,6 +1,6 @@
 # 1-6 Deathknell
 
-Estimated finish: level 6.11 after 41 minutes. Quests still in log: [383, 96656]
+Estimated finish: level 6.15 after 42 minutes. Quests still in log: [383, 96656]
 
 Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
@@ -12,24 +12,28 @@ _none_
 
 | quest | xp | minutes spent on objectives | xp/min |
 |---|---|---|---|
-| 98389 A Light in the Darkness | ~355 | 0.4 | 710 |
-| 6395 Marla's Last Wish | 450 | 0.7 | 604 |
-| 382 The Red Messenger | 670 | 1.1 | 604 |
-| 98601 A Difficult Path | ~170 | 0.0 | 340 |
-| 3902 Scavenging Deathknell | 315 | 1.1 | 278 |
-| 91208 Coming to Terms | ~180 | 0.7 | 243 |
-| 90902 Rediscovering the Light | ~170 | 1.5 | 111 |
-| 363 Rude Awakening | 40 | 0.0 | 80 |
-| 3095 Simple Scroll | 40 | 0.0 | 80 |
-| 3096 Encrypted Scroll | 40 | 0.0 | 80 |
-| 3097 Hallowed Scroll | 40 | 0.0 | 80 |
-| 3098 Glyphic Scroll | 40 | 0.0 | 80 |
-| 3099 Tainted Scroll | 40 | 0.0 | 80 |
-| 3901 Rattling the Rattlecages | 250 | 3.9 | 63 |
-| 380 Night Web's Hollow | 355 | 6.8 | 52 |
-| 381 The Scarlet Crusade | 355 | 7.8 | 46 |
-| 364 The Mindless Ones | 170 | 5.1 | 34 |
-| 376 The Damned | 170 | 7.4 | 23 |
+| 382 The Red Messenger | 670 | 1.3 | 512 |
+| 6395 Marla's Last Wish | 450 | 0.9 | 476 |
+| 98601 A Difficult Path | ~170 | 0.2 | 340 |
+| 3902 Scavenging Deathknell | 315 | 1.3 | 236 |
+| 91208 Coming to Terms | ~180 | 0.9 | 191 |
+| 98389 A Light in the Darkness | ~355 | 2.1 | 170 |
+| 90902 Rediscovering the Light | ~170 | 1.7 | 98 |
+| 363 Rude Awakening | 40 | 0.2 | 80 |
+| 3095 Simple Scroll | 40 | 0.2 | 80 |
+| 3096 Encrypted Scroll | 40 | 0.2 | 80 |
+| 3097 Hallowed Scroll | 40 | 0.2 | 80 |
+| 3098 Glyphic Scroll | 40 | 0.2 | 80 |
+| 3099 Tainted Scroll | 40 | 0.2 | 80 |
+| 3901 Rattling the Rattlecages | 250 | 4.1 | 60 |
+| 380 Night Web's Hollow | 355 | 6.4 | 55 |
+| 381 The Scarlet Crusade | 355 | 8.0 | 45 |
+| 364 The Mindless Ones | 170 | 5.3 | 32 |
+| 376 The Damned | 170 | 7.6 | 22 |
+| 91209 Continue Your Training | ~0 | 0.1 | 0 |
+| 383 Vital Intelligence | 0 | 0.1 | 0 |
+| 96656 The Adventurer | ~0 | 0.1 | 0 |
+| 5651 In Favor of Darkness | 0 | 0.1 | 0 |
 
 ## Step by step
 
@@ -50,13 +54,13 @@ _none_
 | 25 | 4.18 | 19.6 | 0 | accept Night Web's Hollow |
 | 26 | 4.18 | 20.8 | 0 | complete Scavenging Deathknell |
 | 27 | 4.33 | 21.0 | 315 | turnin Scavenging Deathknell |
-| 30 | 4.91 | 28.2 | 1222 | complete Night Web's Hollow, A Light in the Darkness |
-| 31 | 5.08 | 29.5 | 407 | accept The Scarlet Crusade; turnin Night Web's Hollow |
-| 32 | 5.21 | 29.7 | 355 | turnin A Light in the Darkness |
-| 34 | 5.57 | 37.5 | 1008 | complete The Scarlet Crusade |
-| 35 | 5.57 | 38.2 | 0 | complete Marla's Last Wish |
-| 36 | 5.73 | 38.4 | 450 | turnin Marla's Last Wish |
-| 37 | 5.86 | 38.7 | 355 | accept The Red Messenger; turnin The Scarlet Crusade |
-| 38 | 5.91 | 39.8 | 140 | complete The Red Messenger |
-| 39 | 6.11 | 40.6 | 670 | accept Vital Intelligence, The Adventurer; turnin The Red Messenger |
-| 41 | 6.11 | 41.0 | 0 | train Deathknell |
+| 30 | 4.98 | 29.1 | 1352 | complete Night Web's Hollow, A Light in the Darkness |
+| 31 | 5.13 | 30.4 | 407 | accept The Scarlet Crusade; turnin Night Web's Hollow |
+| 32 | 5.25 | 30.6 | 355 | turnin A Light in the Darkness |
+| 34 | 5.61 | 38.4 | 1008 | complete The Scarlet Crusade |
+| 35 | 5.61 | 39.1 | 0 | complete Marla's Last Wish |
+| 36 | 5.77 | 39.3 | 450 | turnin Marla's Last Wish |
+| 37 | 5.90 | 39.6 | 355 | accept The Red Messenger; turnin The Scarlet Crusade |
+| 38 | 5.95 | 40.7 | 140 | complete The Red Messenger |
+| 39 | 6.15 | 41.5 | 670 | accept Vital Intelligence, The Adventurer; turnin The Red Messenger |
+| 41 | 6.15 | 41.9 | 0 | train Deathknell |
