@@ -134,6 +134,7 @@ end
 -- Put a pin on the map: TomTom when installed, else the game's own map pin, else print it.
 function ns.BIS.Waypoint(m, x, y, title)
   if not (m and x and y) then return end
+  local pinged = ns.Pins and ns.Pins.Ping and ns.Pins.Ping(m, x, y, title)
   if TomTom and TomTom.AddWaypoint then
     local ok = pcall(TomTom.AddWaypoint, TomTom, m, x / 100, y / 100, { title = title, persistent = false, minimap = true, world = true })
     if ok then ns.Print(("Waypoint set: %s (%.1f, %.1f)"):format(title or "", x, y)) return end
@@ -145,7 +146,8 @@ function ns.BIS.Waypoint(m, x, y, title)
     end)
     if ok then ns.Print(("Map pin set: %s (%.1f, %.1f). Open the map to see it."):format(title or "", x, y)) return end
   end
-  ns.Print(("%s is at %.1f, %.1f. Install TomTom for an arrow."):format(title or "Target", x, y))
+  if pinged then ns.Print(("%s: %.1f, %.1f, marked on your map for 20 seconds."):format(title or "Target", x, y))
+  else ns.Print(("%s is at %.1f, %.1f. Install TomTom for an arrow."):format(title or "Target", x, y)) end
 end
 
 ------------------------------------------------------------------------------------------

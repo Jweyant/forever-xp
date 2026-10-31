@@ -115,6 +115,65 @@ function Pins.Show(plan, cur)
   return n
 end
 
+------------------------------------------------------------------------------------------
+-- Ping: open the world map on the right zone and pulse a big marker at the spot for a while,
+-- on the world map and at the minimap edge, so "Show on map" is unmistakable.
+------------------------------------------------------------------------------------------
+local ping
+
+local function makePing(size)
+  local f = CreateFrame("Frame", nil, UIParent)
+  f:SetSize(size, size)
+  f.ring = f:CreateTexture(nil, "OVERLAY")
+  f.ring:SetAllPoints()
+  f.ring:SetTexture("Interface\\Cooldown\\star4")
+  f.ring:SetBlendMode("ADD")
+  f.ring:SetVertexColor(0.31, 0.76, 0.97, 1)
+  f.dot = f:CreateTexture(nil, "OVERLAY", nil, 1)
+  f.dot:SetSize(size / 4, size / 4)
+  f.dot:SetPoint("CENTER")
+  f.dot:SetTexture(WHITE)
+  f.dot:SetVertexColor(1, 0.85, 0.2, 1)
+  local ag = f:CreateAnimationGroup()
+  ag:SetLooping("REPEAT")
+  local grow = ag:CreateAnimation("Scale")
+  grow:SetDuration(0.6) grow:SetOrder(1)
+  if grow.SetScaleFrom then grow:SetScaleFrom(0.6, 0.6) grow:SetScaleTo(1.3, 1.3) else grow:SetScale(1.8, 1.8) end
+  local fade = ag:CreateAnimation("Alpha")
+  fade:SetDuration(0.6) fade:SetOrder(1) fade:SetFromAlpha(1) fade:SetToAlpha(0.2)
+  local shrink = ag:CreateAnimation("Scale")
+  shrink:SetDuration(0.6) shrink:SetOrder(2)
+  if shrink.SetScaleFrom then shrink:SetScaleFrom(1.3, 1.3) shrink:SetScaleTo(0.6, 0.6) else shrink:SetScale(1 / 1.8, 1 / 1.8) end
+  local unfade = ag:CreateAnimation("Alpha")
+  unfade:SetDuration(0.6) unfade:SetOrder(2) unfade:SetFromAlpha(0.2) unfade:SetToAlpha(1)
+  f.anim = ag
+  f:Hide()
+  return f
+end
+
+function Pins.Ping(m, x, y, title, seconds)
+  if not Pins.Available() or not (m and x and y) then return false end
+  ping = ping or { world = makePing(48), mini = makePing(28) }
+  HBDPins:RemoveAllWorldMapIcons("ForeverScoutPing")
+  HBDPins:RemoveAllMinimapIcons("ForeverScoutPing")
+  for _, f in pairs(ping) do f.title = title f:Show() f.anim:Play() end
+  HBDPins:AddWorldMapIconMap("ForeverScoutPing", ping.world, m, x / 100, y / 100, HBD_PINS_WORLDMAP_SHOW_PARENT, 100)
+  HBDPins:AddMinimapIconMap("ForeverScoutPing", ping.mini, m, x / 100, y / 100, true, true)
+  -- Open the map on that zone.
+  if not InCombatLockdown() then
+    if OpenWorldMap then pcall(OpenWorldMap, m)
+    elseif WorldMapFrame then pcall(ShowUIPanel, WorldMapFrame) end
+    if WorldMapFrame and WorldMapFrame.SetMapID then pcall(WorldMapFrame.SetMapID, WorldMapFrame, m) end
+  end
+  if ping.timer then ping.timer:Cancel() end
+  ping.timer = C_Timer.NewTimer(seconds or 20, function()
+    HBDPins:RemoveAllWorldMapIcons("ForeverScoutPing")
+    HBDPins:RemoveAllMinimapIcons("ForeverScoutPing")
+    for _, f in pairs(ping) do if f.anim then f.anim:Stop() f:Hide() end end
+  end)
+  return true
+end
+
 -- Remember the plan so pins come back at the next login.
 function Pins.Remember(plan, cur)
   local saved = {}
