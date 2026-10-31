@@ -49,6 +49,11 @@ P.GOALS = {
   { key = "level", name = "Leveling" },
 }
 
+-- Stats a player can focus a plan on (resistance sets, haste builds, stamina for PvP...).
+P.FOCUS_STATS = { "sta", "haste", "hit", "crit", "ap", "sp", "heal", "mp5", "spi", "int", "def", "dodge", "armor",
+  "fire_res", "frost_res", "nature_res", "shadow_res", "arcane_res" }
+P.FOCUS_WEIGHT = 1000 -- per point of the focused stat, so it outranks everything else; normal score breaks ties
+
 P.STAT_LABEL = {
   str = "Strength", agi = "Agility", sta = "Stamina", int = "Intellect", spi = "Spirit", armor = "Armor",
   ap = "Attack power", rap = "Ranged attack power", crit = "Crit rating", hit = "Hit rating", haste = "Haste rating",
@@ -241,21 +246,38 @@ local function slotWeights(opts, w, doll, it)
   return w2
 end
 
+-- The focused stat on an item, counting the percent and spell forms of hit and crit.
+function P.FocusAmount(it, focus)
+  if not it or not focus then return 0 end
+  local st = it.st
+  local v = st[focus] or 0
+  if focus == "crit" then v = v + (st.spellcrit or 0) + ((st.crit_pct or 0) + (st.spellcrit_pct or 0)) * P.CRIT_RATING
+  elseif focus == "hit" then v = v + (st.spellhit or 0) + ((st.hit_pct or 0) + (st.spellhit_pct or 0)) * P.HIT_RATING
+  elseif focus == "sp" then
+    for _, k in ipairs({ "sp_fire", "sp_frost", "sp_shadow", "sp_nature", "sp_arcane" }) do v = math.max(v, st[k] or 0) end
+  end
+  return v
+end
+
 function P.Value(opts, w, doll, it)
   if not it then return 0 end
-  return P.Score(it, slotWeights(opts, w, doll, it))
+  local v = P.Score(it, slotWeights(opts, w, doll, it))
+  if opts.focus then v = v + P.FocusAmount(it, opts.focus) * P.FOCUS_WEIGHT end
+  return v
 end
 
 local function candidates(opts, doll)
-  local out = {}
+  local out, focused = {}, {}
   for id, it in pairs(ITEMS) do
     if it.q >= 1 and it.lv <= opts.level and (not it.sd or it.sd == opts.side)
       and (not opts.sources or opts.sources[P.SourceKind(it)])
       and P.CanUse(it, opts.cls, opts.level) and P.Fits(doll, it, opts.cls) then
       it.id = id
       out[#out + 1] = it
+      if opts.focus and P.FocusAmount(it, opts.focus) > 0 then focused[#focused + 1] = it end
     end
   end
+  if opts.focus and #focused > 0 then return focused end
   return out
 end
 
