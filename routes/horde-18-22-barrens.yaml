@@ -1,0 +1,135 @@
+# ForeverXP — Horde 18-22, central Barrens (the Crossroads, Camp Taurajo, Ratchet and Northwatch Hold).
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# 899 Consumed by Hatred (60 tusks) is kept on purpose: you need the kills to reach 20-22 anyway,
+# and the tusks drop from the same quilboar as Olgra and Lost in Battle.
+# Forever-only quest on the way: 95774 Her Name Is Olgra (Mankrik's memorial). Questie has no XP for
+# it yet; guidegen uses a same-level estimate (marked ~ in the report).
+# Ends back at the Crossroads so 22-24 Southern Barrens picks up from there. You'll already have the
+# Camp Taurajo flight path, so skip that step in 22-24.
+# Route choice: Barrens plus a short Stonetalon leg (1062/1068 Goblin Invaders chain, 6461 Blood
+# Feeders, 1069 Deepmoss Spider Eggs, 1483 Ziz Fizziks): all three sit in the south-east corner of Stonetalon, just over the
+# Barrens border, and 24-26 skips them as gray. Makaba's 6548/6629 are left to 22-24.
+# Silverpine is a zeppelin round trip and was not used.
+# Skipped on purpose: 1060 Letter to Jin'Zil and 3923 Rilli Greasygob (deliveries to Stonetalon
+# and Orgrimmar), 4021 Counterattack! (Warlord Krom'zar event, waves of Kolkar plus an elite),
+92706 WANTED: Bruuz and 97003 Chol'aruk the Ravener
+# (elite), 874 Mahren Skyseer (level 27 chain), 868 Egg Hunt / 862 Dig Rat Stew (low drop rates),
+# 6523 Protect Kaya (long escort), and the Wailing Caverns dungeon quests
+# (959, 1486, 1487, 1491, 914, 962, 3366, 6981).
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 18-22 The Barrens
+  display: ForeverXP 18-22 The Barrens
+  next: 22-24 Southern Barrens
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  # --- The Crossroads
+  - accept: 875
+    text: Darsok Swiftdagger, on the tower.
+
+  # --- North loop: Wenikee, Nugget Slugs, the Witchwing harpies
+  - turnin: 3921
+    accept: 3922
+    text: Wenikee Boltbucket is on the road north of the Crossroads, near the Sludge Fen.
+  - complete: 3922
+    text: Nugget Slugs lie on the ground around the Sludge Fen camps to the north-east.
+  - turnin: 3922
+    text: Skip Rilli Greasygob, the follow-up (an Orgrimmar delivery).
+  - complete: 875
+    text: Witchwing Slayers in the harpy camps west of the Dry Hills road drop the rings.
+  - turnin: 875
+    accept: 876
+  - complete: 876
+    text: Serena Bloodfeather sits at the top of the northernmost Witchwing camp. Clear her guards first.
+  - turnin: 876
+    text: Skip Letter to Jin'Zil; its follow-up is a long collection quest.
+
+  # --- Short Stonetalon leg: Malaka'jin and Windshear Crag
+  - accept: 1062
+    text: Seereth Stonebreak camps at the west edge of the Barrens, where the road climbs into Stonetalon.
+  - accept: 6461
+    text: Follow the road into Stonetalon. Xen'Zilla is in Malaka'jin, the troll village at the bottom of the zone.
+  - complete: 6461
+    text: Deepmoss Creepers are on the slopes north of Malaka'jin; Venomspitters are further north in the Deepmoss spider nests.
+  - complete: 1069
+    text: The eggs lie in the same Deepmoss nests. Spiders hatch from some; kill them for Blood Feeders.
+  - complete: 1062
+    text: Venture Co. Loggers cut trees around Windshear Crag, east of the nests. Leave Piznik and Ziz Fizziks for 24-26.
+  - turnin: 1483
+    text: Ziz Fizziks stands in the hut on the hill above Windshear Crag. Don't take Super Reaper 6000 yet; 24-26 does it.
+  - turnin: 6461
+  - turnin: 1062
+    accept: 1068
+  - complete: 1068
+    text: XT:4 and XT:9 are shredders working the Venture Co. camps around Windshear Crag. They're level 23; pull them away from the loggers.
+  - turnin: 1068
+
+  # --- South: Hezrul, Mankrik's wife, Razormane raiders, quilboar tusks
+  - accept: [4921, 95774, 899]
+    text: Back at the Crossroads, Mankrik is by the inn.
+  - complete: 852
+    text: Hezrul Bloodmark walks with Kolkar guards at the camp south-west of the Crossroads, by the Stagnant Oasis.
+  - complete: 95774
+    text: Razormane Raiders camp south of the Stagnant Oasis, on both sides of the Gold Road.
+  - complete: 4921
+    text: Mankrik's wife is the Beaten Corpse in the quilboar camp just south of there.
+  - complete: 899
+    text: Bristleback quilboar and Razormane Raiders fill this stretch of the Gold Road. Every one drops tusks; this is your grind to 20, so stay until you have 60.
+  - xp: 21
+    text: Keep killing quilboar here until level 21 if you aren't there yet. Bristleback kills also drop Blood Shards, which 22-24 turns in at Camp Taurajo.
+
+  # --- Camp Taurajo
+  - goto: [1413, 44.4, 59.1]
+    text: Follow the Gold Road south to Camp Taurajo.
+  - fp: Camp Taurajo
+  - turnin: 3261
+    accept: 882
+    text: Jorn Skyseer is by the inn. Kill any zhevra on your way back north and loot a Fresh Zhevra Carcass.
+
+  # --- North-east: Ishamuhale, then Ratchet and Northwatch Hold
+  - complete: 882
+    text: Put the Fresh Zhevra Carcass down at the hill north-east of the Stagnant Oasis and Ishamuhale comes to eat it.
+  - goto: [1413, 62.5, 37.5]
+    text: Run east to Ratchet.
+  - turnin: [865, 1069]
+    town: true
+  - accept: 891
+    town: true
+    text: Captain Thalo'thas Brightsun is by the bank.
+  - complete: 891
+    text: Northwatch Hold, south of Ratchet. Theramore marines drop medals; the captain and the two cannoneers are on the towers.
+  - accept: 898
+    text: Gilthares Firebough is locked up in the fort's tower.
+  - complete: 898
+    text: Escort Gilthares out of the fort and north along the coast to Ratchet.
+  - turnin: [898, 891]
+    town: true
+
+  # --- Thunder lizards and thunderhawks around Camp Taurajo
+  - fly: Camp Taurajo
+    fly_to: [1413, 44.4, 59.1]
+    fly_seconds: 120
+  - turnin: 882
+    accept: 907
+  - complete: 907
+    text: Stormsnouts and Thunderheads graze east and south of Camp Taurajo.
+  - turnin: 907
+    accept: 913
+  - complete: 913
+    text: Thunderhawk Hatchlings fly over the plains north-east of Camp Taurajo.
+  - turnin: 913
+    text: Skip Mahren Skyseer, the follow-up. It's a level 27 chain.
+
+  # --- Back to the Crossroads
+  - hs: Crossroads
+    hs_to: [1413, 51.99, 29.89]
+  - turnin: [4921, 95774, 899]
+  - turnin: 852
+    text: Skip Counterattack!, the follow-up (an event with an elite warlord).
+  - xp: 22
+    text: The next guide expects level 22. If you're short, kill quilboar and thunder lizards on the way south to Camp Taurajo.

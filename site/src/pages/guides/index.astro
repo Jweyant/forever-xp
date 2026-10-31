@@ -1,40 +1,64 @@
 ---
 import Base from "../../layouts/Base.astro";
 import XpBar from "../../components/XpBar.astro";
-import { guides, fmtMinutes } from "../../lib/data";
-const horde = guides.filter((g) => g.faction === "Horde");
-// Alliance has three starting tracks; show each as its own row group, in chain order.
-const alliance = guides.filter((g) => g.faction === "Alliance");
-const RACE_NAME: Record<string, string> = { Human: "Human", "Dwarf/Gnome": "Dwarf and Gnome", NightElf: "Night Elf" };
-const tracks = [...new Set(alliance.map((g) => g.for || ""))].map((f) => ({
-  name: RACE_NAME[f] || f,
-  list: alliance.filter((g) => (g.for || "") === f).sort((a, b) => a.from - b.from),
-}));
----
-<Base image="/og/guides.jpg" title="Leveling guides" description="Free WoW Forever leveling guides for Horde and Alliance, with estimated time and XP for every step.">
-  <h1>Leveling guides</h1>
-  <p class="lede">Horde and Alliance routes, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step.</p>
-  <XpBar guides={guides} />
+import { guides, fmtMinutes, type Guide } from "../../lib/data";
 
-  <h2>Horde</h2>
-  <div class="table-scroll">
-    <table>
-      <thead><tr><th>Levels</th><th>Zone</th><th class="num">Est. time</th><th class="num">Ends at</th><th class="num">Quests</th><th>Checks</th></tr></thead>
-      <tbody>
-        {horde.map((g) => (
-          <tr>
-            <td><b>{g.from}–{g.to}</b></td>
-            <td><a href={`/guides/${g.slug}/`}>{g.zone}</a></td>
-            <td class="num">{fmtMinutes(g.minutes)}</td>
-            <td class="num">{g.end_level?.toFixed(1) ?? "–"}</td>
-            <td class="num">{g.quest_ids.length}</td>
-            <td>{g.issues.length ? <span class="verdict skip">{g.issues.length} to check</span> : <span class="verdict do">Clean</span>}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-  <p class="muted small">Levels 12–22 aren't written yet. RestedXP's free Barrens guide covers that range for now.</p>
+// Each faction has several starting tracks (one per race) that join shared routes later.
+// Group the guides by who they're for, in the order a player meets them.
+const RACE_NAME: Record<string, string> = {
+  "Orc/Troll": "Orc and Troll", Undead: "Undead", Tauren: "Tauren", Skyborne: "Skyborne",
+  Human: "Human", "Dwarf/Gnome": "Dwarf and Gnome", NightElf: "Night Elf",
+  "Human/Dwarf/Gnome": "Human, Dwarf and Gnome", Horde: "Every Horde race", Alliance: "Every Alliance race",
+};
+const ORDER = ["Orc/Troll", "Undead", "Tauren", "Human", "Dwarf/Gnome", "NightElf", "Skyborne", "Human/Dwarf/Gnome", "Horde", "Alliance"];
+function tracks(faction: string) {
+  const list = guides.filter((g) => g.faction === faction);
+  const keys = [...new Set(list.map((g) => g.for || faction))];
+  keys.sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99));
+  return keys.map((k) => ({
+    name: RACE_NAME[k] || k,
+    list: list.filter((g) => (g.for || faction) === k).sort((a, b) => (a.from ?? 0) - (b.from ?? 0)),
+  }));
+}
+const factions = [
+  { name: "Horde", cap: 30, tracks: tracks("Horde"), main: ["Orc/Troll", "Horde"],
+    intro: "Every Horde starting zone, then one shared route through the Barrens, Stonetalon, Ashenvale, Hillsbrad and Thousand Needles to level 30. Orcs and Trolls start in Durotar, Undead in Tirisfal Glades, Tauren in Mulgore and Skyborne on Zephras Isle; all of them meet at the Crossroads around level 12." },
+  { name: "Alliance", cap: 20, tracks: tracks("Alliance"), main: ["Human", "Human/Dwarf/Gnome", "Alliance"],
+    intro: "Every Alliance starting zone, then each race's own 10–14 zone (Westfall, Loch Modan or Darkshore), Redridge or Darkshore to 17, and a shared Loch Modan finish at 20 by the Wetlands road. Skyborne start on Zephras Isle and join the Human route in Westfall." },
+];
+const mainLine = (f: { name: string; main: string[] }) => guides.filter((g) => g.faction === f.name && f.main.includes(g.for || f.name));
+---
+<Base image="/og/guides.jpg" title="Leveling guides" description="Free WoW Forever leveling guides for every Horde and Alliance race, with estimated time and XP for every step.">
+  <h1>Leveling guides</h1>
+  <p class="lede">Routes for every race, written for the RestedXP Guides addon. Each one shows its estimated time, where it ends and every step, and picks up Forever's new quests on the way.</p>
+
+  {factions.map((f) => (
+    <section>
+      <h2>{f.name}</h2>
+      <XpBar guides={mainLine(f)} faction={f.name} cap={f.cap} />
+      <p>{f.intro}</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Levels</th><th>Zone</th><th>For</th><th class="num">Est. time</th><th class="num">Ends at</th><th class="num">Quests</th><th>Checks</th></tr></thead>
+          {f.tracks.map((t) => (
+            <tbody>
+              {t.list.map((g: Guide) => (
+                <tr>
+                  <td><b>{g.from}–{g.to}</b></td>
+                  <td><a href={`/guides/${g.slug}/`}>{g.zone}</a></td>
+                  <td>{t.name}</td>
+                  <td class="num">{fmtMinutes(g.minutes)}</td>
+                  <td class="num">{g.end_level?.toFixed(1) ?? "–"}</td>
+                  <td class="num">{g.quest_ids.length}</td>
+                  <td>{g.issues?.length ? <span class="verdict skip">{g.issues.length} to check</span> : <span class="verdict do">Clean</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          ))}
+        </table>
+      </div>
+    </section>
+  ))}
 
   <h2>Install the guides</h2>
   <ol>
@@ -42,28 +66,5 @@ const tracks = [...new Set(alliance.map((g) => g.for || ""))].map((f) => ({
     <li>Copy the <code>ForeverXP_Guides</code> folder from the <a href="https://github.com/Jweyant/forever-xp/tree/main/guides/ForeverXP_Guides">repository</a> into <code>Interface\AddOns\</code>.</li>
     <li>In game, open the RestedXP guide list and pick the <b>ForeverXP Horde</b> or <b>ForeverXP Alliance</b> group.</li>
   </ol>
-
-  <h2>Alliance</h2>
-  <p>Every starting zone to level 10: Northshire and Elwynn Forest for Humans, Coldridge Valley and Dun Morogh for Dwarves and Gnomes, Shadowglen and Teldrassil for Night Elves. They pick up Forever's new quests along the way.</p>
-  <div class="table-scroll">
-    <table>
-      <thead><tr><th>Levels</th><th>Zone</th><th>For</th><th class="num">Est. time</th><th class="num">Ends at</th><th class="num">Quests</th><th>Checks</th></tr></thead>
-      {tracks.map((t) => (
-        <tbody>
-          {t.list.map((g) => (
-            <tr>
-              <td><b>{g.from}–{g.to}</b></td>
-              <td><a href={`/guides/${g.slug}/`}>{g.zone}</a></td>
-              <td>{t.name}</td>
-              <td class="num">{fmtMinutes(g.minutes)}</td>
-              <td class="num">{g.end_level?.toFixed(1) ?? "–"}</td>
-              <td class="num">{g.quest_ids.length}</td>
-              <td>{g.issues.length ? <span class="verdict skip">{g.issues.length} to check</span> : <span class="verdict do">Clean</span>}</td>
-            </tr>
-          ))}
-        </tbody>
-      ))}
-    </table>
-  </div>
-  <p class="muted small">Forever's new quests have no XP numbers in the game data yet, so "Ends at" leaves them out and you'll usually finish a little higher. Levels 10 and up come next; ForeverScout logs from Alliance players make them better. <a href="/contribute/">Help with a log</a></p>
+  <p class="muted small">Forever's new quests don't have XP numbers in any open data yet, so the estimates use the usual XP for a quest of the same level and kind. "Ends at" can be off by a level either way until ForeverScout logs measure the real numbers. <a href="/contribute/">Help with a log</a></p>
 </Base>

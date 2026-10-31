@@ -6,6 +6,7 @@ RXPGuides.RegisterGuide([[
 << Alliance
 #defaultfor NightElf
 #name 6-10 Teldrassil
+#next 10-14 Darkshore
 #displayname ForeverXP 6-10 Teldrassil
 step
     .goto 1438,56.14,61.71

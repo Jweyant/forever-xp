@@ -1,0 +1,313 @@
+# ForeverXP — Skyborne (Horde) 1-13, Zephras Isle.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0),
+# Guides/Leveling/Skyborne/02.lua.
+# Every quest on the isle is Forever-only and no source has their XP yet, so the estimate uses
+# approximate values (~ in the report) and may run high: expect to finish around level 12-13.
+# Skipped on purpose: the Camping 101 profession quests (97963-97972, 96646, 98284, 98285; they need a
+# profession and are only a recipe), 93318 WANTED: Vulgara (elite), 93459 More Al'Aketh Ears
+# (repeatable), 94490/94491 Ripped Missive (only if the item drops), 94484 Unnerving Silence (same
+# step as 94493, which is on the way), the Hunter pet chain (94007, 94978, 94979, 94013, 94050: three
+# trips back to Valanaar; do it at 10 with the trainer's directions), the Druid bear chain (94006,
+# 94638: a detour to the falls north-east of Valanaar) and the rest of the Shaman fire chain after
+# 97243 (97244, 97245: an elite-strength boss and a spirit duel; come back for them if you want the
+# totem now).
+guide:
+  name: 1-13 Zephras Isle
+  display: ForeverXP 1-13 Zephras Isle
+  next: 12-15 The Barrens
+  group: ForeverXP Horde
+  faction: Horde
+  for: Skyborne
+  class: Warrior
+  start_level: 1
+  start: [2521, 42.81, 23.37]   # Ailee Farheart, where Skyborne spawn
+  version: 1
+
+steps:
+  # --- Thendal Grove
+  - accept: 92460
+    text: Ailee Farheart is right in front of you.
+  - turnin: 92460
+    accept: 92461
+  - accept: 92462
+  - complete: [92461, 92462]
+    text: Vuldren Juveniles and Pesky Cirrusflies are all around the grove.
+  - turnin: 92461
+    accept: 92464
+  - accept: 93552
+  - accept: 94414
+  - complete: 94414
+    text: Talk to Halaan and use his gift to look at the anchor pylon.
+  - turnin: 94414
+  - accept: 92474
+  - complete: 92474
+    text: Climb the watchtower, jump off and use Walk on Air to slow your fall.
+  - turnin: 92474
+  - turnin: 92462
+    accept: 92463
+  - accept: 92598
+  - complete: [93552, 92463]
+    text: Pick up Raw Windstones as you go. The Cirrusfly Queen is on the east side of the grove.
+  - turnin: 92464
+    accept: 92465
+  - complete: 92465
+    text: Roiling Winds and Al'Aketh Converts are north of Yala.
+  - complete: 92598
+    text: Use Skysight at the Elemental Convergence, just east of the converts.
+  - turnin: 92465
+    accept: 92469
+
+  # --- Back to the grove, then the west side
+  - turnin: 92463
+  - turnin: 92598
+  - turnin: 93552
+  - turnin: 92469
+    accept: 92471
+    text: Aetheen's quest needs level 4. The isle quests give more XP than the estimate counts, so you should have it; if not, kill a few Converts first.
+  - accept: 92466
+    only: Shaman
+    text: Windshaper Boro. The Signet of Akir drops from the Al'Aketh cultists by Hanaa.
+  - turnin: 92471
+    accept: 92470
+  - accept: 92473
+  - accept: 92544
+    text: Hanaa Nightwind is on the road south-west of the grove.
+  - complete: [92473, 92544]
+    text: Scrawny Ursera are around Hanaa. The Al'Aketh camp with Malduko Cloudcrush is just south-west of her.
+  - turnin: 92544
+  - complete: 92470
+    text: Ursera Scavengers and Urs'anah are in the den north-west of Hanaa.
+  - turnin: 92470
+    accept: [92472, 96638]
+  - turnin: 92473
+  - turnin: 92466
+    accept: 92467
+    only: Shaman
+  - goto: [2521, 49.67, 23.8]
+    only: Shaman
+    text: Drink the Earth Sapta at the Rise of Spirits, east of Yala, and talk to the Minor Manifestation of Earth.
+  - turnin: 92467
+    accept: 92468
+    only: Shaman
+  - turnin: 92468
+    only: Shaman
+
+  # --- Shen'dar Village
+  - turnin: 96638
+    accept: 96101
+    text: Raan Wildwind is on the west edge of Shen'dar Village.
+  - complete: 96101
+    where: [2521, 41.66, 44.8]
+    text: Type /sit next to Raan's campfire until you get Boosted Rest.
+  - turnin: 96101
+  - turnin: 92472
+    accept: 92514
+  - accept: 92595
+  - complete: [92595, 92514]
+    text: Listen to Illaya, then talk to Coriella the innkeeper.
+  - home: Shen'dar Village
+  - turnin: 92595
+    accept: 94411
+  - turnin: 92514
+    accept: 92517
+  - accept: 92515
+  - accept: [92516, 93319]
+  - accept: 92553
+  - accept: 93951
+
+  # --- Shen'dar Highlands loop
+  - complete: [92517, 93319, 94411]
+    text: Highlands Bandits are north-east of the village; "Badwind" Bennic is at the north end of their camp. High Order Apprentices are just south of the bandits.
+  - complete: 92515
+    text: Prideclaws roam all over the highlands; start just north-east of the village.
+  - complete: [92516, 93951, 92553]
+    text: Hippogryphs nest south-west of the village; the down feathers are on the ground there. Eggs and Strider Meat drop from the animals all over the highlands.
+  - turnin: 92515
+  - turnin: [92516, 93319]
+  - turnin: 92553
+  - turnin: 93951
+  - turnin: 94411
+  - turnin: 92517
+    accept: 93036
+  - turnin: 93036
+    accept: 92529
+
+  # --- Falaath Village and the western watch
+  - turnin: 92529
+    accept: 92528
+    text: Missionary Jasaan is at the entrance to Falaath Village, south of Shen'dar.
+  - complete: 92528
+    text: Look around the village; the wardrobe in the house gives the credit.
+  - turnin: 92528
+    accept: [92550, 93926]
+  - accept: 92551
+  - complete: [92550, 92551]
+    text: Stormcallers and Living Lightning are in Falaath; Commander Cyclas is at the south-east end. Loot the supply packs as you go.
+  - turnin: 93926
+    accept: 93927
+    text: The western watchtower is south-west of Falaath.
+  - complete: 93927
+    text: Kill Skypriest Aanders by the tower and pick up the note, the feather and the signet.
+  - turnin: 92550
+  - turnin: 93927
+    accept: [93948, 92579]
+  - turnin: 92551
+
+  # --- On the road to Valanaar
+  - accept: 98512
+    text: Fendaal Windstone is on the road east toward Valanaar.
+  - complete: 98512
+  - turnin: 98512
+
+  # --- Valanaar
+  - turnin: 93948
+  - turnin: 92579
+    accept: [92700, 93949]
+  - turnin: 92700
+    accept: [92708, 93735]
+  - complete: 92708
+    text: Listen to Ayessa.
+  - turnin: 92708
+  - accept: 93736
+  - accept: [94896, 94897]
+  - accept: 93317
+  - accept: 92679
+  - accept: 97243
+    only: Shaman
+    text: Sessaria Skystride. Needs level 10; with the isle's quest XP you are usually there by now. If not, take it when you come back from Shadowgale and turn it in on a later trip south.
+  - turnin: 93735
+    accept: 93737
+  - home: Valanaar
+  - complete: 93949
+    text: Enchanted Skyhoppers hop around Valanaar itself.
+
+  # --- West: the broken construct, crabs, Windfield Orchard
+  - complete: 93737
+    text: Crystallized Lightning is by the Shriekling Den west of Valanaar, the Enchanted Gyrozephyr up the road north toward Shen'dar, and the Air Construct Core north-west of the Windfield Orchard.
+  - complete: 93317
+    text: Windsong Crawlers line the water to the west.
+  - turnin: 92679
+    accept: [92682, 92683, 92684]
+  - accept: 92698
+    text: The Malfunctioning Cyclone Construct is just north of the orchard.
+  - complete: [92682, 92683, 92684]
+    text: Stormapples and Hungry Bandits are in the orchard; Flutterflies and Ornery Galestriders all around it.
+  - turnin: [92682, 92683, 92684]
+    accept: 92685
+  - turnin: 92698
+  - turnin: 97243
+    only: Shaman
+    text: Olariaan Swiftburn is at the Shrine of Flames, south-east of the orchard.
+  - complete: 92685
+    text: Highwayman Bandits are north of the orchard.
+  - turnin: 92685
+    accept: 92693
+  - complete: 92693
+    text: Talk to Aamelia when ready, then kill Ferauu the Bludgeon.
+  - turnin: 92693
+    accept: 92703
+
+  # --- Shadowgale Forest
+  - accept: 93159
+  - complete: 93159
+  - turnin: 93159
+    accept: [93160, 93172]
+  - accept: 94493
+    text: Elegael Thornpaw is in the north-east of the forest.
+  - turnin: 94493
+    accept: [94485, 94486, 94487]
+  - accept: 93165
+  - complete: [94485, 94487, 93165]
+    text: Lady's Tear Moss grows by Elegael. Al'Aketh Footsoldiers and Stormchasers drop the heirlooms and ears.
+  - turnin: [94485, 94487]
+  - complete: [94896, 94897, 93172, 93736, 93160]
+    text: The ruins of Ban'aethal are north-east of the hermit; Resaan is there. Wind Hollows (kill them for the essences too) and Zephyrseeds are on the way back.
+  - complete: 94486
+    text: Any Shriekling drops feathers; they are in the south of the forest.
+  - turnin: 94486
+    accept: [94488, 94489]
+  - complete: [94488, 94489]
+    text: Commander Haalien is east of Elegael. The Nightfang Den is just north-west of him; heal the druids inside.
+  - turnin: [94488, 94489]
+  - turnin: 93165
+  - turnin: [93160, 93172]
+
+  # --- Valanaar turn-ins
+  - hs: Valanaar
+    hs_to: [2521, 62.19, 72.61]
+  - turnin: 92703
+  - turnin: 93317
+  - turnin: 93949
+  - turnin: [94896, 94897]
+  - turnin: 93737
+    accept: 93738
+  - turnin: 93738
+    accept: 93746
+  - turnin: 93736
+  - complete: 93746
+    text: Belathaan Brightwish is on the road north to the Shrine of Akir.
+  - turnin: 93746
+    accept: [92871, 93740]
+  - turnin: 92871
+    accept: 93320
+
+  # --- Eastern watchtower and the cult's plans
+  - turnin: 93320
+    accept: [92642, 92645]
+  - complete: [92642, 92645]
+    text: Healers and Brawlers are around the tower; Commander Belguilos is to the north-west.
+  - turnin: [92642, 92645]
+    accept: 92880
+  - turnin: 92880
+    accept: 92881
+  - turnin: 92881
+    accept: 92643
+  - complete: 92643
+    text: The turncoat is in the house just inside the highlands north-west of Valanaar.
+  - turnin: 92643
+    accept: 92644
+  - turnin: 92644
+    accept: 94568
+  - complete: 94568
+    text: Stay for the conversation.
+  - turnin: 94568
+    accept: 92640
+  - complete: 92640
+    text: Talk to Valennia, Ayessa and Elaadrin.
+  - turnin: 92640
+    accept: 93065
+  - turnin: 93065
+    accept: 92947
+    text: Valennia waits on the road north-west of Valanaar.
+  - accept: 94003
+    only: Warrior
+    text: Seena Skybreaker, the warrior trainer, is just south of Valennia. Needs level 10, which you should have by now.
+
+  # --- Shrine of Akir
+  - complete: [92947, 93740]
+    text: Guardians, Spiritcallers and Blademasters fill the Shrine of Akir. They also drop the Windstone Charms.
+  - complete: 94003
+    only: Warrior
+    text: Zaal Stormshield is at the west side of the shrine.
+  - turnin: 92947
+    accept: 93958
+  - turnin: 93958
+    accept: 92646
+  - complete: 92646
+    text: Take the portal up to the Rohashi Spires and help defeat High Priestess Lorthuna.
+
+  # --- Valanaar, then leave the isle
+  - turnin: [92646, 93740]
+    accept: 93836
+  - turnin: 94003
+    only: Warrior
+  - turnin: 93836
+    accept: 93090
+  - turnin: 93090
+    accept: 95349
+  - travel: Take the skycutter ship from Valanaar to Mulgore.
+    travel_to: [1412, 33.4, 22.6]
+    travel_seconds: 120
+  - turnin: 95349
+    text: Alaana Stormwalker is where the skycutter lands. Then head east to the Crossroads in The Barrens.

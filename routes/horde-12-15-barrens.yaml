@@ -1,0 +1,210 @@
+# ForeverXP — Horde 12-15, Orgrimmar and the northern Barrens (Far Watch Post, the Crossroads, Ratchet).
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Orcs and Trolls (and Undead off the zeppelin) start outside Orgrimmar's gate at about 11.4.
+# Tauren and Skyborne arrive at the Crossroads at about 12: skip to the "Crossroads" section; the
+# Orgrimmar and Far Watch steps are tagged so RestedXP hides the ones you can't do.
+# Forever-only quests on the way are included: Orgrimmar's 97246 Meal Appeal, 97249 Favorite Food,
+# 97242 Yelmak's Medley, 97275 Whuut's the Rush, 97326 Rocks to Rests, and Ratchet's 97253 Parts and
+# Pieces. Questie has no XP for them yet; guidegen uses a same-level estimate (marked ~ in the report).
+# Route choice: pure Barrens. Silverpine 12-15 is a zeppelin round trip for Orcs/Trolls/Tauren and its
+# quests sit far apart (Pyrewood, Fenris, Ambermill); the Barrens is denser and is where 22-24 starts.
+# Skipped on purpose: 96874 This Is Spinal Axe and 96875 Beasts of Thunder Ridge (need crafted
+# Cured Light Hides / Rough Grinding Stones and a Thunder Ridge trip, ~10 min each),
+# 5728 Hidden Enemies part 3 (Ragefire Chasm dungeon), 1061 The Spirits of Stonetalon (breadcrumb;
+# 22-24 skips the Goblin Invaders follow-up), 853 Apothecary Zamah (Thunder Bluff trip),
+# 899 Consumed by Hatred (60 tusks, ~40 min), 6541 Report to Kadrak / 6543 The Warsong Reports
+# (Mor'shan and Ashenvale runs), the Camping 101 profession quests.
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 12-15 The Barrens
+  display: ForeverXP 12-15 The Barrens
+  next: 15-18 The Barrens
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  # --- Orgrimmar (Orc/Troll/Undead; Tauren and Skyborne skip to the Crossroads)
+  - goto: [1454, 49.0, 92.0]
+    only: Orc/Troll/Undead
+    text: Go in through Orgrimmar's front gate.
+  - accept: 97246
+    only: Orc/Troll/Undead
+    town: true
+    text: Thatog is just inside the gate, in the Valley of Strength.
+  - fp: Orgrimmar
+    only: Orc/Troll/Undead
+    town: true
+    text: Doras is on the tower by the bank in the Valley of Strength.
+  - turnin: 97246
+    accept: 97249
+    only: Orc/Troll/Undead
+    town: true
+  - accept: 809
+    only: Orc/Troll
+    town: true
+    text: Neeru Fireblade is in the Cleft of Shadow (the ramp down from the Valley of Strength).
+  - accept: 5726
+    only: Orc/Troll/Undead
+    town: true
+    text: Thrall is in Grommash Hold.
+  - accept: 97242
+    only: Orc/Troll/Undead
+    town: true
+    text: Kor'geld is in Yelmak's Alchemy in the Drag.
+  - complete: 97242
+    only: Orc/Troll/Undead
+    town: true
+    text: Cattails and Speargrass grow along the water in the Valley of Honor.
+  - turnin: 97242
+    only: Orc/Troll/Undead
+    town: true
+  - accept: 97275
+    only: Orc/Troll/Undead
+    town: true
+  - turnin: 97275
+    only: Orc/Troll/Undead
+    town: true
+    text: Whuut is in the same shop.
+  - turnin: 97249
+    only: Orc/Troll/Undead
+    town: true
+    text: Migi is behind Grommash Hold.
+  - accept: 97326
+    only: Orc/Troll/Undead
+    town: true
+  - complete: 97326
+    only: Orc/Troll/Undead
+    town: true
+    text: Smooth Boulders lie on the ground around the back of Grommash Hold.
+  - turnin: 97326
+    only: Orc/Troll/Undead
+    town: true
+
+  - complete: 5726
+    only: Orc/Troll/Undead
+    text: Leave by the front gate. Burning Blade Fanatics and Apprentices in Skull Rock, just east of the gate, drop the insignia.
+  - turnin: 5726
+    accept: 5727
+    only: Orc/Troll/Undead
+    town: true
+  - complete: 5727
+    only: Orc/Troll/Undead
+    town: true
+    text: Show the insignia to Neeru Fireblade in the Cleft of Shadow and talk to him.
+  - turnin: 5727
+    only: Orc/Troll/Undead
+    town: true
+    text: Back to Thrall. Skip the next part, Hidden Enemies, which is in Ragefire Chasm.
+
+  # --- Far Watch Post and the Altar of Fire
+  - hs: Razor Hill
+    hs_to: [1411, 51.51, 41.64]
+    only: Orc/Troll
+    text: Hearth to Razor Hill, then run west over the bridge into the Barrens. Undead walk out of Orgrimmar and follow the road south-west.
+  - turnin: 840
+    accept: 842
+    only: Orc/Troll
+    text: Kargal Battlescar at Far Watch Post, just over the bridge.
+  - turnin: 809
+    accept: 924
+    only: Orc/Troll
+    text: Ak'Zeloth stands next to the Far Watch tower.
+  - complete: 924
+    only: Orc/Troll
+    text: Take a Flawed Power Stone from the pile by Ak'Zeloth and run it west to the Altar of Fire on Dreadmist Peak before it expires. Don't stop to fight on the way.
+  - turnin: 924
+    only: Orc/Troll
+    text: Back to Ak'Zeloth, then follow the road south-west to the Crossroads.
+
+  # --- The Crossroads (Tauren and Skyborne start here)
+  - fp: Crossroads
+    text: Tauren and Skyborne start here. Get the flight path from Devrak.
+  - home: Crossroads
+  - turnin: 842
+    accept: 844
+    only: Orc/Troll
+  - accept: 844
+    only: "!Orc !Troll"
+    text: Sergra Darkthorn, by the gate. Undead, Tauren and Skyborne take it here.
+  - accept: 869
+  - accept: 870
+  - accept: 871
+  - accept: 848
+  - accept: 1492
+
+  # --- North loop: Razormane, plainstriders, raptors, the Forgotten Pools
+  - complete: 871
+    text: Razormane Water Seekers, Thornweavers and Hunters at the camp north-east of the Crossroads.
+  - complete: [844, 869]
+    text: Plainstriders and Sunscale raptors are everywhere north of the Crossroads. Kill them as you go.
+  - goto: [1413, 45.0, 22.5]
+    text: Walk into the Forgotten Pools north-west of the Crossroads.
+  - complete: 870
+  - complete: 848
+    text: Fungal Spores grow around the pools.
+  - turnin: 871
+    accept: [872, 5041]
+  - turnin: 844
+    accept: 845
+  - turnin: 870
+    accept: 877
+  - turnin: 848
+    text: Skip Apothecary Zamah, the follow-up; it's a Thunder Bluff trip.
+
+  # --- East: Razormane camp, the Stagnant Oasis, then Ratchet
+  - complete: [872, 5041]
+    text: Kreenig Snarlsnout and the supply crates are in the Razormane camp east of the Crossroads, by the Lushwater Oasis.
+  - complete: 845
+    text: Zhevra Runners graze all over the plains between the Crossroads and Ratchet.
+  - complete: 877
+    text: Use the Dried Seeds at the Bubbling Fissure in the Stagnant Oasis, south-east of the Crossroads.
+  - goto: [1413, 62.5, 37.5]
+    text: Follow the road east to Ratchet.
+  - fp: Ratchet
+    town: true
+  - turnin: 1492
+    accept: 896
+    town: true
+  - accept: 887
+    town: true
+  - accept: 895
+    town: true
+    text: The WANTED poster is outside Gazlowe's house.
+  - accept: 97253
+    town: true
+  - accept: 894
+    town: true
+  - accept: 866
+    town: true
+
+  # --- Southsea pirates on the coast south of Ratchet
+  - complete: [887, 97253]
+    text: Southsea Brigands and Cannoneers camp on the beach south of Ratchet. The Complicated Parts are in the upper camp.
+  - complete: 895
+    text: Baron Longshore is in the same pirate camp; pull his guards one at a time.
+  - turnin: [887, 895]
+    accept: 890
+  - turnin: 890
+    accept: 892
+  - turnin: 892
+    accept: 888
+  - turnin: 97253
+  - complete: 888
+    text: The Shipment of Boots and the Telescopic Lens are in the lower pirate camp on the beach.
+  - turnin: 888
+  - fly: The Crossroads
+    fly_to: [1413, 51.5, 30.3]
+    fly_seconds: 90
+
+  # --- Crossroads turn-ins
+  - turnin: [872, 5041]
+  - turnin: 845
+    accept: 903
+  - turnin: 877
+    accept: 880
+  - turnin: 869
+    accept: 3281
+    text: Gazrog, by the inn.

@@ -1,0 +1,119 @@
+# ForeverXP — Night Elf 14-17, Darkshore (the north furbolg camps, the Tower of Althalaxx, the
+# Grove of the Ancients, the Master's Glaive), then the boat to Menethil Harbor for 17-20 Loch Modan.
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# No Forever-only quest sits on this path (see the skips); estimates use Classic XP.
+# Skipped on purpose: 1579/1580 Gaffer Jacks and Electropellers (Questie has no drop data),
+# 1141 The Family and the Fishing Pole (fishing), 2098/2078 Gyromast (key pieces drop all over the
+# zone, then an escort), 5321 The Sleeper Has Awakened and 945 Therylune's Escape (escorts), 994
+# Escape Through Force (escort), 951 Mathystra Relics and Forever's 98013 Swelling Forces (level 19-21
+# naga in the far north-east; Loch Modan is faster at 17), Forever's 97914/97926 Expanding Horizons
+# and 97894 (Stormwind boat trips), 98042 It's All Fun and Games Until... and 98028 Baron Marinous
+# (random drop / level 21 boss), 967/970 Tower of Althalaxx part 3+ (Ashenvale), 741/942 the fossil
+# (Darnassus), 4725/4727/4731-4733 and Forever's 87760 Holy Diver (beached sea creatures far off the
+# path; 87760 needs all nine).
+guide:
+  name: 14-17 Darkshore
+  display: ForeverXP 14-17 Darkshore
+  next: 17-20 Loch Modan
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: NightElf
+  class: Warrior
+  version: 1
+
+steps:
+  # --- Auberdine
+  - accept: 963
+    text: Cerellean Whiteclaw is on the dock.
+  - accept: 982
+    text: Gorbold Steelhand is at the north end of town.
+  - accept: 947
+    text: Barithras Moonshade is by the inn.
+  - accept: 2139
+    text: Tharnariun Treetender, on the hill.
+  - accept: 965
+    text: Sentinel Elissa Starbreeze is by Terenthis.
+  - accept: 986
+    text: Terenthis, in the building on the hill.
+
+  # --- North coast: the lockboxes and crabs
+  - complete: 982
+    text: Both lockboxes are on the shipwrecks in the water north of Auberdine.
+  - accept: 4723
+    text: A beached sea creature lies on the beach north of Auberdine; click it.
+
+  # --- North-east: the furbolg camps, the Den, the tower
+  - complete: 947
+    text: Scaber Stalks and Death Caps are inside the Cliffspring Falls cave.
+  - complete: 2139
+    text: The Den Mother is in the bear den in the hills south of the river.
+  - turnin: 965
+    accept: 966
+    text: Balthule Shadowstrike is by the Tower of Althalaxx in the north-east.
+  - complete: 966
+    text: Dark Strand cultists around the tower drop the parchments.
+  - turnin: 966
+
+  # --- Back to Auberdine
+  - hs: Auberdine
+    hs_to: [1439, 37.0, 44.1]
+  - turnin: 982
+  - turnin: 4723
+  - turnin: 2139
+  - turnin: 947
+    accept: 948
+
+  # --- South: Ameth'Aran, the Grove, the Master's Glaive, Volcor
+  - complete: 963
+    text: Anaya Dawnrunner's ghost wanders the ruins of Ameth'Aran.
+  - turnin: 948
+    accept: 944
+    text: Onu is at the Grove of the Ancients in the south.
+  - complete: [1003, 986]
+    text: Grizzled Thistle Bears in the hills around the Grove drop the scalps; Moonstalker Sires drop the fine pelts.
+  - turnin: 1003
+    text: Buzzbox 525 is on the coast west of the Grove.
+  - complete: 944
+    text: Read the clues at the Master's Glaive, then use the phial to make the Scrying Bowl.
+  - turnin: 944
+    accept: 949
+  - turnin: 949
+    accept: 950
+  - turnin: 950
+    text: Back to Onu.
+  - hs: Auberdine
+    hs_to: [1439, 37.0, 44.1]
+  - turnin: 963
+  - turnin: 986
+    accept: 993
+
+  # --- Level 15 quests: north again, then south once more
+  - xp: 15
+    text: The next quests need level 15. Kill bears or crabs around Auberdine if you're short.
+  - accept: [1138, 4740]
+    text: Gubber Blump is at the end of the dock; the Murkdeep poster is by the inn door.
+  - accept: 4763
+    text: Thundris Windweaver. Fill the bowl at the Auberdine moonwell.
+  - accept: 729
+    text: Archaeologist Hollee is next to Thundris.
+  - complete: [4763, 1138]
+    text: Reef Crawlers on the beach drop the crab chunks. Loot fruit, nut and grain from the northern Blackwood camp by the Cliffspring River, place the bowl by the bonfire nearest the river and kill the satyr it summons.
+  - turnin: [1138, 4763]
+    text: Run back to Auberdine.
+  - complete: 4740
+    text: Murkdeep is at the murloc huts on the coast south of Auberdine, near the Grove. Kill the murlocs that come first.
+  - turnin: 729
+    accept: 731
+    text: Prospector Remtravel is at the dig in the south-west, near the murloc huts.
+  - complete: 731
+    text: Escort Remtravel while he searches the dig. It's short.
+  - turnin: 993
+    accept: 995
+    text: Volcor is in the furbolg cave east of the Grove of the Ancients.
+  - complete: 995
+    text: Sneak out of the cave.
+  - hs: Auberdine
+    hs_to: [1439, 37.0, 44.1]
+  - turnin: [4740, 731, 995]
+  - goto: [1439, 32.4, 43.8]
+    text: Walk to the end of the south dock for the boat to Menethil Harbor. The next guide starts on the boat.

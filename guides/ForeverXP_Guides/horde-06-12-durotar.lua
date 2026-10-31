@@ -96,8 +96,9 @@ step
     .complete 815,1
     >>Taillasher eggs are on the south coast beaches.
 step
-    .goto 1411,68.93,73.36
+    .goto 1411,68.5,71.78
     .complete 817,1
+    .mob Shal'ma
     .mob Durotar Tiger
 step
     .goto 1411,67.45,87.82

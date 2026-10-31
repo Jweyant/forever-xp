@@ -1,0 +1,137 @@
+# ForeverXP — Horde 15-18, northern Barrens (the Crossroads, the Dry Hills, the Sludge Fen, Ratchet).
+# Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
+# Forever-only quests on the way are included: Vrang Wildgore and Walton in the Dry Hills
+# (95494 Bruised Pride and Lion Hides, 95507 Vrang's Game, 95495 The Hermit Tanner, 95508 Unwelcome
+# Guests, 95621 Trouble in the Valley). Questie has no XP for them yet; guidegen uses a same-level
+# estimate (marked ~ in the report), so treat the finish level as rough.
+# Route choice: pure Barrens at this level; turn-ins stay a short run from the Crossroads or Ratchet.
+# The Stonetalon leg comes in 18-22, once its spiders and loggers aren't red.
+# Picked up here and finished in 18-22: 3921 Wenikee Boltbucket, 1483 Ziz Fizziks, 1069 Deepmoss Spider Eggs.
+# Skipped on purpose:
+# 92706 WANTED: Bruuz and 97003 Chol'aruk the Ravener (elite), 819/821 Chen's Empty Keg (the keg is a
+# random ground find and the horn comes from level 19-23 lizards),
+# 6541 Report to Kadrak / 6543 The Warsong Reports (Mor'shan and Ashenvale runs), and the Wailing
+# Caverns quests (959, 1486, 1487, 1491, 914, 962: dungeon).
+# Quest order sanity-checked against the Ding! guide (moust4ki/DingGuideWoWForever, GPL-3.0).
+guide:
+  name: 15-18 The Barrens
+  display: ForeverXP 15-18 The Barrens
+  next: 18-22 The Barrens
+  group: ForeverXP Horde
+  for: Horde
+  sim_race: Troll
+  class: Hunter
+  version: 1
+
+steps:
+  # --- The Crossroads
+  - accept: 867
+    text: Darsok Swiftdagger is on the tower in the Crossroads.
+  - accept: [850, 855]
+    text: Regthar Deathgate stands just west of the Crossroads.
+
+  # --- West: Kolkar, prowlers and Barak Kodobane
+  - complete: 903
+    text: Savannah Prowlers roam the plains west and north-west of the Crossroads.
+  - complete: 855
+    text: Kolkar centaurs camp all around the Forgotten Pools. Any of them can drop bracers.
+  - complete: 850
+    text: Barak Kodobane is in the Kolkar camp north-west of the Forgotten Pools.
+  - complete: 866
+    text: Root Samples are small plants all over the Barrens. Pick them up as you pass.
+
+  # --- The Dry Hills: Vrang Wildgore and Walton
+  - accept: [95494, 95507, 95495]
+    text: Vrang Wildgore's camp is on the road north to the Dry Hills.
+  - complete: 95507
+    text: The sprung traps are scattered around Vrang's camp.
+  - complete: 95494
+    text: Savannah Patriarchs hunt around the camp too.
+  - turnin: 95495
+    accept: [95508, 95621]
+    text: Walton is the hermit on the ridge just west of Vrang.
+  - complete: 95508
+    where: [1413, 42.02, 11.45]
+    text: Stay by Walton and help him fight off Terry Longdrink and the Kul Tiras marines.
+  - complete: 95621
+    text: Corporal Adamore at the wrecked caravan south of Walton carries Benedict's Orders.
+  - complete: 867
+    text: Witchwing harpies nest on the hills just west of the caravan.
+  - turnin: [95508, 95621]
+  - turnin: [95494, 95507]
+
+  # --- Back to the Crossroads
+  - hs: Crossroads
+    hs_to: [1413, 51.99, 29.89]
+  - turnin: 903
+    accept: 881
+  - turnin: 867
+  - turnin: [850, 855]
+    accept: 851
+
+  # --- North-east: Echeyakee, the Sludge Fen, the Venture Co. mine
+  - complete: 881
+    text: Use the Horn of Echeyakee in the lion area north-east of the Crossroads to call him out.
+  - turnin: 894
+    accept: 900
+    text: The Control Console is on the Sludge Fen oil platform.
+  - complete: 900
+    text: The three valves are on the platform next to the console.
+  - turnin: 900
+    accept: 901
+  - complete: 901
+    text: A goblin on the platform carries the Console Key.
+  - turnin: 901
+    accept: 902
+  - accept: 858
+    text: Wizzlecrank's Shredder sits at the north-east corner of the Sludge Fen.
+  - complete: 858
+    text: Supervisor Lugwizzle walks the top of the oil tower.
+  - turnin: 858
+  - complete: 896
+    text: Venture Co. Overseers and Enforcers in the Boulder Lode Mine, north-east, drop the Cats Eye Emerald.
+  - accept: 863
+    text: Back at the shredder, start the escort.
+  - complete: 863
+    text: Wizzlecrank drives the shredder to Ratchet. Stay close and kill whatever attacks him.
+
+  # --- Ratchet
+  - turnin: [863, 902]
+    accept: [3921, 1483]
+    town: true
+    text: Sputtervalve is by the bank. Keep Wenikee Boltbucket and Ziz Fizziks in your log for the next guide.
+  - turnin: 896
+    town: true
+  - turnin: 866
+    accept: 865
+    town: true
+    text: Mebok Mizzyrix. Skip Smart Drinks after Raptor Horns; its essence drops in Wailing Caverns.
+  - accept: 1069
+    town: true
+    text: Deepmoss Spider Eggs is done in Stonetalon in the next guide.
+  - fly: The Crossroads
+    fly_to: [1413, 51.5, 30.3]
+    fly_seconds: 90
+  - turnin: 881
+    accept: 905
+
+  # --- South of the Crossroads: the Stagnant Oasis, Verog, raptor nests, the Fray Island ridge
+  - complete: 880
+    text: Oasis Snapjaws in the Stagnant Oasis south of the Crossroads drop the shells.
+  - complete: 851
+    text: Verog the Dervish shows up after you kill a few Kolkar at the camp east of the Stagnant Oasis.
+  - complete: 905
+    text: The three raptor nests are on the ridge south of the Stagnant Oasis. Scytheclaws guard them.
+  - complete: 865
+    text: Sunscale Scytheclaws further south-east, toward the Southern Gold Road, drop the horns.
+  - complete: 3281
+    text: The Stolen Silver is in the raptor nest area south of the road to Ratchet.
+  - goto: [1413, 51.5, 30.3]
+    text: Run back north to the Crossroads.
+  - turnin: 880
+    text: Skip the Hamuul and Mura Runetotem follow-ups (Thunder Bluff and Silverpine trips).
+  - turnin: 3281
+  - turnin: 851
+    accept: 852
+  - turnin: 905
+    accept: 3261

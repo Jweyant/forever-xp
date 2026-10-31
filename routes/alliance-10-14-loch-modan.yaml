@@ -1,0 +1,103 @@
+guide:
+  name: 10-14 Loch Modan
+  display: ForeverXP 10-14 Loch Modan
+  next: 14-17 Redridge Mountains
+  group: ForeverXP Alliance
+  faction: Alliance
+  for: Dwarf/Gnome
+  sim_race: Dwarf
+  class: Warrior
+  version: 1
+
+steps:
+  # --- East Dun Morogh on the way out
+  - accept: 95212
+    text: Rudra Amberstill is at the Amberstill Ranch on the road east.
+  - accept: 433
+    text: Senator Mehr Stonehallow is at Gol'Bolar Quarry.
+  - accept: 432
+    text: Foreman Stonebrow is next to him.
+  - complete: [432, 433, 95212]
+    text: Rockjaw troggs fill the quarry. Snow leopards around it drop the pelts.
+  - turnin: [432, 433]
+  - accept: 419
+    text: Pilot Hammerfoot is at the camp further east, by the road to the gate.
+  - turnin: 419
+    accept: 417
+    text: The dead pilot is north-west of Hammerfoot's camp.
+  - complete: 417
+    text: Mangeclaw is near the body.
+  - turnin: 417
+  - turnin: 95212
+    text: Back to Rudra at the ranch, or skip this if it's too far back.
+
+  # --- Through the gate to Loch Modan
+  - accept: [224, 267]
+    text: Go east through the tunnel. Mountaineer Cobbleflint and Captain Rugelfuss are in the southern guard tower.
+  - accept: [416, 1339]
+    text: Mountaineer Kadrell walks around Thelsamar.
+  - accept: 418
+    text: Vidra Hearthstove is in the house by the inn.
+  - home: Thelsamar
+  - accept: 6387
+    text: Brock Stoneseeker is in Thelsamar.
+  - turnin: 6387
+    accept: 6391
+    text: Thorgrum Borrelson, the gryphon master.
+  - fp: Thelsamar
+
+  # --- Quick Ironforge trip
+  - fly: Ironforge
+    fly_to: [1455, 55.5, 47.7]
+    fly_seconds: 150
+  - turnin: 6391
+    accept: 6388
+    text: Golnir Bouldertoe is in the Mystic Ward.
+  - turnin: 291
+    text: Senator Barin Redstone is in the High Seat.
+  - turnin: 6388
+    accept: 6392
+    text: Back to Gryth Thurden, the gryphon master.
+  - fly: Thelsamar
+    fly_to: [1432, 33.9, 51.0]
+    fly_seconds: 150
+  - turnin: 6392
+
+  # --- South: troggs by the guard tower
+  - complete: [224, 267, 418]
+    text: Stonesplinter Troggs and Scouts are in the hills south of Thelsamar; they drop the stone teeth. Mountain Boars, Elder Black Bears and Forest Lurkers nearby drop the sausage parts.
+  - turnin: 224
+    accept: 237
+  - turnin: 267
+  - complete: 237
+    text: Stonesplinter Skullthumpers and Seers are further east and south, toward the Stonesplinter Valley.
+  - turnin: 237
+
+  # --- North: the Silver Stream Mine
+  - complete: 416
+    text: Tunnel Rats are all over the north of the loch.
+  - turnin: 1339
+    accept: [307, 1338]
+    text: Mountaineer Stormpike is at the Algaz checkpoint in the north. Keep Stormpike's Order; you'll hand it in in Stormwind.
+  - complete: 307
+    text: The miners' gear is inside the Silver Stream Mine.
+  - turnin: 307
+  - turnin: [416, 418]
+
+  # --- East: Bingles and the crocolisks along the shore
+  - accept: 2038
+    text: Bingles Blastenheimer camps on the east shore of the loch.
+  - accept: [385, 86758]
+    text: Marek Ironheart is at the Farstrider Lodge on the east side.
+  - accept: 257
+    text: Daryl the Youngling is in the lodge too.
+  - complete: 257
+    text: Mountain Buzzards circle south of the lodge. You have 15 minutes.
+  - turnin: 257
+  - complete: [385, 86758]
+    text: Loch Crocolisks along the east shore drop meat and skins. Daggerfang is a named crocolisk on the same shore.
+  - complete: 2038
+    text: Bingles' four tools are on the ground in the hills north of his camp.
+  - turnin: 2038
+  - turnin: [385, 86758]
+    text: Back to Marek at the lodge.

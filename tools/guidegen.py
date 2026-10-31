@@ -43,6 +43,9 @@ XP_TO_NEXT = {1: 400, 2: 900, 3: 1400, 4: 2100, 5: 2800, 6: 3600, 7: 4500, 8: 54
               24: 31700, 25: 34000, 26: 36400, 27: 38900, 28: 41400, 29: 44300, 30: 47400}
 RACE_BITS = {"Human": 1, "Orc": 2, "Dwarf": 4, "NightElf": 8, "Undead": 16, "Tauren": 32,
              "Gnome": 64, "Troll": 128}
+# Forever's Skyborne play on both sides, one requiredRaces bit per faction (tools/build_sqlite.py).
+# RXP/Ding name the race "Skyborne" (UnitRace file name; unconfirmed in game).
+SKYBORNE_BITS = {"Alliance": 1 << 32, "Horde": 1 << 33}
 CLASS_BITS = {"WARRIOR": 1, "PALADIN": 2, "HUNTER": 4, "ROGUE": 8, "PRIEST": 16,
               "SHAMAN": 64, "MAGE": 128, "WARLOCK": 256, "DRUID": 1024}
 
@@ -98,11 +101,34 @@ class Data:
         self.db = sqlite3.connect(DATA / "forever_questdb.sqlite")
         self.quests = {r[0]: json.loads(r[1]) for r in self.db.execute("SELECT id, json FROM quests")}
         self.xp = {int(k): v for k, v in json.loads((DATA / "questiedb/questXP.json").read_text()).items()}
+        self.xp_estimated = self._estimate_missing_xp()
         self.area_to_ui = {int(k): v for k, v in json.loads((DATA / "questiedb/areaIdToUiMapId.json").read_text()).items()}
         sizes = json.loads((ROOT / "tools/zone_sizes.json").read_text())
         self.size = {int(k): (v["width_yd"], v["height_yd"]) for k, v in sizes.items()}
         self.bounds = {int(k): (v["map_id"], v["bounds"]) for k, v in sizes.items()}
         self._npc, self._obj, self._item = {}, {}, {}
+
+    def _estimate_missing_xp(self):
+        """Forever's new quests have no XP in Questie yet: use a same-level, same-kind estimate
+        (tools/questxp.py) so route level estimates don't undercount. Returns the estimated ids."""
+        sys.path.insert(0, str(ROOT / "tools"))
+        import questxp
+        def talk(q):
+            objs = q.get("objectives") or []
+            return not any(o for o in objs if o) if isinstance(objs, list) else not objs
+        known = [(q.get("questLevel") or 0, (self.xp.get(qid) or [0, 0])[1], talk(q))
+                 for qid, q in self.quests.items() if (self.xp.get(qid) or [0, 0])[1]]
+        est = questxp.Estimator(known)
+        done = set()
+        for qid, q in self.quests.items():
+            if (self.xp.get(qid) or [0, 0])[1] or q.get("specialFlags", 0) & 1:
+                continue
+            text = " ".join(t for t in (q.get("objectivesText") or []) if isinstance(t, str))
+            xp = est(q.get("questLevel") or 0, questxp.is_talk(text) if text else talk(q))
+            if xp:
+                self.xp[qid] = [q.get("questLevel") or 0, xp]
+                done.add(qid)
+        return done
 
     def _load(self, table, cache, i):
         if i not in cache:
@@ -164,10 +190,10 @@ class Generator:
         self.d = data
         self.spec = spec
         g = spec["guide"]
-        self.races = [r for r in re.split(r"[/ ]", g.get("for", "")) if r in RACE_BITS]
-        self.race_mask = sum(RACE_BITS[r] for r in self.races)
         self.class_name = g.get("class", "HUNTER").upper()
         self.faction = g.get("faction", "Horde")
+        self.races = [r for r in re.split(r"[/ ]", g.get("for", "")) if r in RACE_BITS or r == "Skyborne"]
+        self.race_mask = sum(RACE_BITS.get(r) or SKYBORNE_BITS.get(self.faction, 0) for r in self.races)
         self.sim_race = g.get("sim_race", self.races[-1] if self.races else "")
         self.s = State(level=g.get("start_level", 1), xp=g.get("start_xp", 0))
         self.lines = []
@@ -253,7 +279,8 @@ class Generator:
     def check_eligible(self, qid):
         q = self.q(qid)
         races = q.get("requiredRaces") or 0
-        legacy = races & 0xFF
+        sky = SKYBORNE_BITS["Alliance"] | SKYBORNE_BITS["Horde"]
+        legacy = races & (0xFF | (sky if self.race_mask & sky else 0))
         if legacy and self.race_mask and not (legacy & self.race_mask):
             self.warn(f"{qid} {self.name(qid)} is not available to {'/'.join(self.races)}")
         classes = q.get("requiredClasses") or 0
@@ -563,14 +590,16 @@ def main():
         qrows = ["| quest | xp | minutes spent on objectives | xp/min |", "|---|---|---|---|"]
         for qid, st in sorted(gen.quest_stats.items(), key=lambda kv: -(kv[1]['xp'] / max(kv[1]['seconds'], 30))):
             mins = st["seconds"] / 60
-            qrows.append(f"| {qid} {gen.name(qid)} | {st['xp']} | {mins:.1f} | {st['xp'] / max(mins, 0.5):.0f} |")
+            mark = "~" if qid in data.xp_estimated else ""
+            qrows.append(f"| {qid} {gen.name(qid)} | {mark}{st['xp']} | {mins:.1f} | {st['xp'] / max(mins, 0.5):.0f} |")
         issues = gen.s.issues
         total_issues += len(issues)
         (rep_dir / f"{stem}.md").write_text(
             f"# {spec['guide']['name']}\n\nEstimated finish: level {gen.s.level_float:.2f} after "
             f"{gen.s.seconds / 60:.0f} minutes. Quests still in log: {sorted(gen.s.log)}\n\n"
             "Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs "
-            "replace them with measured values.\n\n"
+            "replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever "
+            "and no source has its XP yet.\n\n"
             "## Issues\n\n" + ("\n".join(f"- {i}" for i in issues) or "_none_") +
             "\n\n## Quests by XP per minute of objective time\n\n" + "\n".join(qrows) +
             "\n\n## Step by step\n\n" + "\n".join(rows) + "\n")

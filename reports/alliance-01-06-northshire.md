@@ -2,7 +2,7 @@
 
 Estimated finish: level 5.62 after 32 minutes. Quests still in log: [54, 2158]
 
-Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values.
+Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever and no source has its XP yet.
 
 ## Issues
 
@@ -14,6 +14,7 @@ _none_
 |---|---|---|---|
 | 3905 Grape Manifest | 355 | 0.0 | 710 |
 | 6 Bounty on Garrick Padfoot | 335 | 0.9 | 357 |
+| 92479 A Scribbled Letter | ~170 | 0.0 | 340 |
 | 5261 Eagan Peltskinner | 85 | 0.0 | 170 |
 | 21 Skirmish at Echo Ridge | 450 | 4.3 | 105 |
 | 3904 Milly's Harvest | 180 | 1.8 | 98 |
@@ -29,7 +30,6 @@ _none_
 | 7 Kobold Camp Cleanup | 170 | 3.2 | 54 |
 | 18 Brotherhood of Thieves | 355 | 7.6 | 47 |
 | 33 Wolves Across the Border | 170 | 4.8 | 35 |
-| 92479 A Scribbled Letter | 0 | 0.0 | 0 |
 
 ## Step by step
 

@@ -167,10 +167,13 @@ step
     .target High Executor Darthalia
     .turnin 539 >> Turn in Battle of Hillsbrad
 step
-    .goto 1424,69.28,43.63
+    .goto 1424,69.3,43.6 >> Finish the skulls on the Syndicate humans around Durnholde Keep.
+    >>Finish the skulls on the Syndicate humans around Durnholde Keep.
+step
+    .goto 1424,66.72,46.88
     .complete 546,1
-    .mob Syndicate Shadow Mage
     .mob Syndicate Watchman
+    .mob Syndicate Shadow Mage
     .mob Syndicate Rogue
 step
     .goto 1424,62.11,19.7
