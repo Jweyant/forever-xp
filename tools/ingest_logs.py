@@ -335,6 +335,34 @@ def write_loot(db, out_dir):
     (out_dir / "loot.csv").write_text("\n".join(out) + "\n")
 
 
+def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
+    """Where players actually progress each quest objective, as coarse grid cells.
+
+    Output objective_areas.json: {quest: {objective: {"map": uiMapId, "cells": [[x, y, players], ...]}}}.
+    Positions are snapped to `cell`-percent squares and a square is only published once at least
+    `min_players` different characters progressed there, so no single player's path is exposed.
+    """
+    hits = defaultdict(set)  # (quest, objective, map, cx, cy) -> characters
+    for char, q, raw, m, x, y in db.execute("""SELECT s.char_id, e.q, e.json, e.map, e.x, e.y FROM events e
+                                               JOIN sessions s ON s.id = e.session_id WHERE e.k = 'obj'"""):
+        try:
+            oi = int(json.loads(raw).get("oi") or 0)
+            q, m, x, y = int(q or 0), int(m or 0), float(x), float(y)
+        except (TypeError, ValueError):
+            continue
+        if q <= 0 or not 0 < oi <= 10 or m <= 0 or not (0 <= x <= 100 and 0 <= y <= 100):
+            continue
+        hits[(q, oi, m, int(x // cell), int(y // cell))].add(char)
+    areas = {}
+    for (q, oi, m, cx, cy), chars in sorted(hits.items()):
+        if len(chars) < min_players:
+            continue
+        slot = areas.setdefault(str(q), {}).setdefault(str(oi), {"map": m, "cells": []})
+        if slot["map"] == m:  # keep the objective's main map only
+            slot["cells"].append([round((cx + 0.5) * cell, 1), round((cy + 0.5) * cell, 1), len(chars)])
+    (out_dir / "objective_areas.json").write_text(json.dumps(areas, separators=(",", ":"), sort_keys=True))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questie", required=True)
@@ -350,7 +378,8 @@ def main():
     print(f"sessions added: {added}, already present: {skipped}")
     analyze(db, Questie(a.questie, a.maps), out)
     write_loot(db, out)
-    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv"):
+    write_objective_areas(db, out)
+    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json"):
         print("wrote", out / name)
 
 

@@ -143,6 +143,9 @@ def main():
             q["obj"] = " ".join(t for t in text if isinstance(t, str) and t)[:600]
         objs = raw.get("objectives") or []
         talk[r["id"]] = not any(o for o in objs if o) if isinstance(objs, list) else not objs
+        where = objective_spawns(db, objs, zones)
+        if where:
+            q["objs"] = where
         pre = (json.loads(r["pre_quest_single"] or "[]") or []) + (json.loads(r["pre_quest_group"] or "[]") or [])
         if pre:
             q["pre"] = pre[:6]
@@ -179,6 +182,73 @@ def main():
           f"{sum(1 for q in out if (q.get('start') or {}).get('src'))} quest givers from opendata")
     print(f"{len(out)} quests ({new} new to Forever, {sum(1 for q in out if q.get('chg'))} changed), "
           f"{len({q['z'] for q in out})} zones -> {a.out}")
+
+
+def _seq(v):
+    """Questie's Lua arrays arrive either as lists or as {"1": .., "2": ..} maps."""
+    if isinstance(v, dict):
+        return [v[k] for k in sorted(v, key=lambda k: int(k) if str(k).isdigit() else 0)]
+    return v if isinstance(v, list) else []
+
+
+def _spawns(db, table, eid):
+    row = db.execute(f"SELECT name, json FROM {table} WHERE id = ?", (eid,)).fetchone()
+    if not row:
+        return None, {}
+    sp = json.loads(row["json"]).get("spawns") or {}
+    if isinstance(sp, str):  # some exports keep the Lua table as a Python-literal string
+        try:
+            import ast
+            sp = ast.literal_eval(sp)
+        except (ValueError, SyntaxError):
+            sp = {}
+    return row["name"], sp if isinstance(sp, dict) else {}
+
+
+def objective_spawns(db, objs, zones, max_points=60, max_sources=4):
+    """Where each objective can be done: [{"n", "t", "z", "a": [[x, y], ...]}], from Questie spawns.
+
+    Kill/talk targets use the NPC's spawns, objects their spawns, items the spawns of up to
+    `max_sources` NPCs or objects that drop them. Points are snapped to a 1% grid and kept to the
+    zone with the most spawns, so pages stay small."""
+    out = []
+    groups = _seq(objs) if not isinstance(objs, dict) else [objs.get(k) for k in ("1", "2", "3")]
+    for kind, group in zip(("npc", "object", "item"), groups[:3]):
+        for entry in _seq(group):
+            e = _seq(entry)
+            try:
+                eid = int(e[0])
+            except (IndexError, TypeError, ValueError):
+                continue
+            name, pts = None, defaultdict(set)
+            if kind in ("npc", "object"):
+                name, sp = _spawns(db, "npcs" if kind == "npc" else "objects", eid)
+                srcs = [sp]
+            else:
+                row = db.execute("SELECT name, json FROM items WHERE id = ?", (eid,)).fetchone()
+                if not row:
+                    continue
+                name, it = row["name"], json.loads(row["json"])
+                srcs = []
+                for table, key in (("npcs", "npcDrops"), ("objects", "objectDrops")):
+                    for sid in _seq(it.get(key) or [])[:max_sources]:
+                        srcs.append(_spawns(db, table, int(sid))[1])
+                    if srcs:
+                        break
+            for sp in srcs:
+                for zid, coords in sp.items():
+                    for c in _seq(coords):
+                        c = _seq(c)
+                        if len(c) >= 2 and all(isinstance(v, (int, float)) for v in c[:2]) and 0 <= c[0] <= 100 and 0 <= c[1] <= 100:
+                            pts[int(zid)].add((round(c[0]), round(c[1])))
+            if not name or not pts:
+                continue
+            zid = max(pts, key=lambda z: len(pts[z]))
+            a = sorted(pts[zid])
+            if len(a) > max_points:
+                a = a[:: -(-len(a) // max_points)]
+            out.append({"n": name, "t": kind, "z": cap(zones.get(zid) or f"Zone {zid}"), "a": [list(p) for p in a]})
+    return out[:6]
 
 
 # Zone or category names whose quests get no XP estimate (professions, events, PvP, raids):

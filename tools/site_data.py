@@ -155,7 +155,20 @@ def write_questdb(gear):
     if gear.exists():
         g = json.loads(gear.read_text())
         items = {i["id"]: i for i in (g["items"] if isinstance(g, dict) else g)}
+    # Where ForeverScout players actually progressed each objective (aggregated by tools/ingest_logs.py).
+    seen = {}
+    for p in (ROOT / "gamedata" / "players" / "objective_areas.json", ROOT / "out" / "objective_areas.json"):
+        if p.exists():
+            seen = json.loads(p.read_text())
+            break
     for q in qdb:
+        s = seen.get(str(q["id"])) if isinstance(seen, dict) else None
+        if isinstance(s, dict):
+            cells = [[num(c[0]), num(c[1]), num(c[2], int)] for o in s.values() if isinstance(o, dict)
+                     for c in (o.get("cells") or []) if isinstance(c, list) and len(c) == 3]
+            cells = [c for c in cells if None not in c and 0 <= c[0] <= 100 and 0 <= c[1] <= 100]
+            if cells:
+                q["seen"] = cells[:200]
         for r in q.get("rew", []):
             it = items.get(r["id"])
             if it:
@@ -216,6 +229,8 @@ def main():
     # Measured timings, once ForeverScout logs have been ingested.
     measured = {}
     timing = ROOT / "out" / "quest_timing.csv"
+    if not timing.exists():  # published aggregate from the player-data workflow
+        timing = ROOT / "gamedata" / "players" / "quest_timing.csv"
     if timing.exists():
         with timing.open() as f:
             for r in csv.DictReader(f):

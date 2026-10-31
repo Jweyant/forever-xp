@@ -186,6 +186,33 @@ end)
 ------------------------------------------------------------------------------------------
 -- Objective progress ("Mottled Boar slain: 3/10", "Cactus Apple: 4/10")
 ------------------------------------------------------------------------------------------
+-- Which active quest (and which of its objectives) a progress message belongs to.
+-- Matches the objective text against the quest log; returns nil when unsure.
+local function objectiveOwner(text)
+  if C_QuestLog and C_QuestLog.GetNumQuestLogEntries and C_QuestLog.GetInfo and C_QuestLog.GetQuestObjectives then
+    local okN, n = pcall(C_QuestLog.GetNumQuestLogEntries)
+    for i = 1, (okN and n or 0) do
+      local ok, info = pcall(C_QuestLog.GetInfo, i)
+      if ok and info and not info.isHeader and info.questID then
+        local ok2, objs = pcall(C_QuestLog.GetQuestObjectives, info.questID)
+        for oi, o in ipairs(ok2 and objs or {}) do
+          if type(o.text) == "string" and o.text:find(text, 1, true) == 1 then return info.questID, oi end
+        end
+      end
+    end
+  elseif GetNumQuestLogEntries and GetQuestLogTitle and GetNumQuestLeaderBoards and GetQuestLogLeaderBoard then
+    for i = 1, (GetNumQuestLogEntries() or 0) do
+      local _, _, _, isHeader, _, _, _, id = GetQuestLogTitle(i)
+      if not isHeader and id then
+        for oi = 1, (GetNumQuestLeaderBoards(i) or 0) do
+          local t = GetQuestLogLeaderBoard(oi, i)
+          if type(t) == "string" and t:find(text, 1, true) == 1 then return id, oi end
+        end
+      end
+    end
+  end
+end
+
 ns:On("UI_INFO_MESSAGE", function(...)
   local msg
   for i = 1, select("#", ...) do
@@ -196,8 +223,9 @@ ns:On("UI_INFO_MESSAGE", function(...)
   local text, n, of = msg:match("^(.-):%s*(%d+)%s*/%s*(%d+)$")
   if not text then return end
   local kind, id = ns.UnitNpcId("target")
+  local q, oi = objectiveOwner(text)
   ns:Log("obj", { text = text:sub(1, 120), n = tonumber(n), of = tonumber(of),
-                  mob = kind == "npc" and id or nil })
+                  mob = kind == "npc" and id or nil, q = q, oi = oi })
 end)
 
 ------------------------------------------------------------------------------------------
