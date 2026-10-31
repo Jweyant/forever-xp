@@ -67,8 +67,21 @@ jobs:
           go-version: "1.25"
           cache-dependency-path: tools/simrunner/go.mod
 
-      # go mod tidy resolves the pinned pseudo-version and verifies it against the Go checksum
-      # database; the sums are not committed, so the build never drifts from the pin silently.
+      # The engine's generated protobuf Go files aren't committed there; generate them with a
+      # protoc release pinned by version and checksum, and the protoc-gen-go the engine uses.
+      - name: Generate the engine's proto code
+        run: |
+          curl -fsSL --retry 5 -o "$RUNNER_TEMP/protoc.zip" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-x86_64.zip"
+          echo "121f6c7afe1d4d0e3ea6aab9432038599250134cbf4474cb1167d2c7decd4278  $RUNNER_TEMP/protoc.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/protoc.zip" -d "$RUNNER_TEMP/protoc"
+          echo "$RUNNER_TEMP/protoc/bin" >> "$GITHUB_PATH"
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.10
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          make -C ext/wowsims sim/core/proto/api.pb.go
+
+      # go mod tidy resolves the engine against the pinned checkout (the replace in go.mod), so the
+      # build never drifts from the pin silently.
       - name: Run our stat-weight sims
         working-directory: tools/simrunner
         run: |
