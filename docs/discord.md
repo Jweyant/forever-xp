@@ -31,6 +31,19 @@ never needs Administrator.
 
 After that, the #forever-announcements feed starts on its own with the next new Blizzard post.
 
+## Weekly Scout report
+
+The channel marked `"report": true` in `discord/server.json` (#announcements) gets the Scout
+leaderboard every Monday from the **Scout report** workflow: this week's totals, the week's top 10
+and the all-time top 5, linked to forever-xp.com/scouts/. It's published, so servers following
+#announcements get it too. Nothing is posted until someone has sent a log.
+
+The board comes from `gamedata/players/scouts.json`, built by the player-data workflow from shared
+ForeverScout logs. Players appear only under anonymous names like `Scout 97800d` (a one-way hash of
+the uploader's random install id, which the uploader shows the player). The bot posts only names in
+that shape and whole numbers. To preview: **Actions > Scout report > Run workflow** with "Only show
+what would be posted" ticked.
+
 ## Roles
 
 `roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,

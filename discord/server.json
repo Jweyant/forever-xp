@@ -10,7 +10,7 @@
       "channels": [
         { "name": "welcome", "type": "text", "readonly": true, "message": "welcome.md", "topic": "Start here: what Forever XP is and where the tools are. Accept the rules to start posting." },
         { "name": "rules", "type": "text", "readonly": true, "message": "rules.md", "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
-        { "name": "announcements", "type": "announcement", "readonly": true, "topic": "Forever XP news: new tools, guides and data updates from forever-xp.com. Follow this channel to get them in your own server." },
+        { "name": "announcements", "type": "announcement", "readonly": true, "report": true, "topic": "Forever XP news: new tools, guides, data updates and the weekly Scout report from forever-xp.com. Follow this channel to get them in your own server." },
         { "name": "forever-announcements", "aliases": ["patch-notes"], "type": "announcement", "readonly": true, "feed": true, "topic": "WoW Forever updates as Blizzard posts them: class and racial changes, development notes and news. Posted automatically. Search every change at https://forever-xp.com/changes/" }
       ]
     },

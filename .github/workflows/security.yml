@@ -59,6 +59,7 @@ jobs:
           python3 tools/test/test_questxp.py
           python3 tools/test/test_objective_areas.py
           python3 tools/test/test_loot.py
+          python3 tools/test/test_scouts.py
 
   uploader:
     name: Uploader security
@@ -68,10 +69,11 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.27"
-      - name: Vet and vulnerability check
+      - name: Vet, tests and vulnerability check
         working-directory: uploader
         run: |
           go vet ./...
+          go test ./...
           go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
 
   server:

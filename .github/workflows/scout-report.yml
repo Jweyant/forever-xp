@@ -1,0 +1,48 @@
+# Weekly Scout report: posts the contributor leaderboard (gamedata/players/scouts.json, built by
+# the player-data workflow) to the Discord channel marked "report" in discord/server.json, and
+# publishes it to servers that follow that channel. Posts nothing until someone has sent a log.
+# Needs the DISCORD_BOT_TOKEN secret and DISCORD_GUILD_ID variable (see docs/discord.md).
+name: Scout report
+
+on:
+  schedule:
+    - cron: "23 15 * * 1"   # Mondays, late morning US Eastern
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would be posted"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scout-report
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      # Player data lands on the `data` branch; use it when it's newer than main's copy.
+      - name: Get the leaderboard
+        run: |
+          f=gamedata/players/scouts.json
+          if git fetch -q --depth 1 origin data 2>/dev/null && git show "FETCH_HEAD:$f" > "$RUNNER_TEMP/scouts.json" 2>/dev/null; then
+            echo "Using $f from the data branch"
+          elif [ -f "$f" ]; then
+            cp "$f" "$RUNNER_TEMP/scouts.json"
+          fi
+      - name: Post the Scout report
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
+          python3 tools/discord_bot.py post-scouts "$RUNNER_TEMP/scouts.json" $DRY

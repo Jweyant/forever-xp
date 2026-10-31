@@ -14,11 +14,13 @@ Outputs in --out:
   quest_timing.csv         per-quest time-to-complete and XP per minute, for routing
 """
 import argparse
+import hashlib
 import json
 import math
 import re
 import sqlite3
 import sys
+import time
 import statistics
 from collections import defaultdict
 from pathlib import Path
@@ -358,6 +360,116 @@ def write_loot(db, out_dir):
     (out_dir / "loot.csv").write_text("\n".join(out) + "\n")
 
 
+# The uploader shows players the same name (uploader/app.go scoutName); keep the two in step.
+SCOUT_SALT = "forever-xp scout|"
+WEEK = 7 * 86400
+BOARD_SIZE = 50
+WEEK_BOARD_SIZE = 10
+
+
+def scout_handle(key):
+    """Public name for a player key: "Scout" plus 6 hex digits of a one-way hash of the install id
+    (or the character id for hand-sent logs), so the board never shows the id itself."""
+    ident = key.split(":", 1)[1] if ":" in key else key
+    return "Scout " + hashlib.sha256((SCOUT_SALT + ident).encode()).hexdigest()[:6]
+
+
+def write_scouts(db, out_dir, now=None):
+    """Contributor leaderboard, scouts.json.
+
+    Per player (install): quests timed (accept -> turn-in), drops logged (distinct item, source
+    and zone), discoveries (first to loot a drop that another player then confirmed), zones and
+    sessions. Points: 1 per quest timed, 1 per drop, 3 per discovery. `week` counts only events
+    in the last seven days. Nothing per character, no install ids, no map ids: handles and counts.
+    """
+    now = int(now if now is not None else time.time())
+    since = now - WEEK
+    starts, owner = {}, {}
+    sessions = defaultdict(int)
+    for sid, char, source, start in db.execute("SELECT id, char_id, source, start FROM sessions"):
+        key = player_key(char, source)
+        owner[sid], starts[sid] = key, int(start or 0)
+        sessions[key] += 1
+
+    quests, week_quests = defaultdict(set), defaultdict(set)
+    zones = defaultdict(set)
+    accepted = {}
+    drops, week_drops = defaultdict(set), defaultdict(set)
+    first = {}  # drop -> (time, player) of its earliest loot
+    looters = defaultdict(set)
+    rows = db.execute("SELECT session_id, k, t, q, map, json FROM events WHERE k IN ('accept','turnin','loot')"
+                      " ORDER BY session_id, t")
+    for sid, k, t, q, m, raw in rows:
+        key = owner.get(sid)
+        if key is None:
+            continue
+        try:
+            when = starts[sid] + int(t or 0)
+        except (TypeError, ValueError):
+            continue
+        if isinstance(m, int) and m > 0:
+            zones[key].add(m)
+        if k in ("accept", "turnin"):
+            try:
+                q = int(q or 0)
+            except (TypeError, ValueError):
+                continue
+            if q <= 0:
+                continue
+            if k == "accept":
+                accepted[(sid, q)] = when
+            elif accepted.pop((sid, q), None) is not None:
+                quests[key].add(q)
+                if when >= since:
+                    week_quests[key].add(q)
+            continue
+        try:
+            e = json.loads(raw or "{}")
+            drop = (int(e.get("item") or 0), str(e.get("src") or ""), int(m or 0))
+        except (TypeError, ValueError, AttributeError):
+            continue
+        if drop[0] <= 0:
+            continue
+        drops[key].add(drop)
+        looters[drop].add(key)
+        if when >= since:
+            week_drops[key].add(drop)
+        if drop not in first or when < first[drop][0]:
+            first[drop] = (when, key)
+
+    found, week_found = defaultdict(int), defaultdict(int)
+    for drop, (when, key) in first.items():
+        if len(looters[drop]) >= 2:  # confirmed by someone else
+            found[key] += 1
+            if when >= since:
+                week_found[key] += 1
+
+    def score(q, d, f):
+        return q + d + 3 * f
+
+    players = set(sessions)
+    board = [{"handle": scout_handle(k), "quests": len(quests[k]), "drops": len(drops[k]), "discoveries": found[k],
+              "zones": len(zones[k]), "sessions": sessions[k],
+              "score": score(len(quests[k]), len(drops[k]), found[k])} for k in players]
+    board = [r for r in board if r["score"] > 0 or r["sessions"] > 0]
+    board.sort(key=lambda r: (-r["score"], -r["quests"], r["handle"]))
+    active = {k for k in players if week_quests[k] or week_drops[k]}
+    week_board = [{"handle": scout_handle(k), "quests": len(week_quests[k]), "drops": len(week_drops[k]),
+                   "score": score(len(week_quests[k]), len(week_drops[k]), week_found[k])} for k in active]
+    week_board.sort(key=lambda r: (-r["score"], -r["quests"], r["handle"]))
+    out = {
+        "updated": now,
+        "totals": {"scouts": len(players), "sessions": sum(sessions.values()),
+                   "quests": len(set().union(*quests.values())), "drops": len(first),
+                   "discoveries": sum(found.values())},
+        "week": {"scouts": len(active), "quests": len(set().union(*week_quests.values())),
+                 "drops": len(set().union(*week_drops.values()))},
+        "board": board[:BOARD_SIZE],
+        "week_board": week_board[:WEEK_BOARD_SIZE],
+    }
+    (out_dir / "scouts.json").write_text(json.dumps(out, separators=(",", ":"), sort_keys=True))
+
+
 def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
     """Where players actually progress each quest objective, as coarse grid cells.
 
@@ -402,7 +514,8 @@ def main():
     analyze(db, Questie(a.questie, a.maps), out)
     write_loot(db, out)
     write_objective_areas(db, out)
-    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json"):
+    write_scouts(db, out)
+    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json"):
         print("wrote", out / name)
 
 
