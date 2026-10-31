@@ -464,7 +464,7 @@ def effective_level(rec, sources):
     Many items (quest rewards especially) have no required level in the client, so use the
     easiest way to get it: the quest's minimum level, the dungeon's level range, or a raid at 60.
     """
-    if rec["req"]:
+    if rec["req"] and rec["req"] > 1:  # Forever's new items often carry 1 as "unset"
         return rec["req"]
     best = None
     for s in sources or []:
