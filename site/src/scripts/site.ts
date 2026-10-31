@@ -1,6 +1,6 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
-import { loadGear, tooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
+import { loadGear, loadOther, tooltipHtml, otherTooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
 import { accountsOn, me, startSignIn, afterSignIn } from "./account";
 
 const root = document.documentElement;
@@ -79,8 +79,12 @@ async function showItemTip(el: HTMLElement) {
     const db = await loadGear();
     if (tipFor !== el) return;
     const it = db.byId.get(id);
-    if (!it) return;
-    tip.innerHTML = tooltipHtml(it, db.sets, el.dataset.tipHint ? [`<p class="tt-hint">${esc(el.dataset.tipHint)}</p>`] : []);
+    if (it) tip.innerHTML = tooltipHtml(it, db.sets, el.dataset.tipHint ? [`<p class="tt-hint">${esc(el.dataset.tipHint)}</p>`] : []);
+    else {
+      const o = (await loadOther()).byId.get(id);
+      if (!o || tipFor !== el) return;
+      tip.innerHTML = otherTooltipHtml(o);
+    }
     placeTip(tip, el);
   } catch { /* gear data unavailable: no tooltip */ }
 }

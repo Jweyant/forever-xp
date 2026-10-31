@@ -93,3 +93,46 @@ export function placeTip(tip: HTMLElement, anchor: Element) {
 
 /** JSON for a <script type="application/json"> block: no "</script>" or HTML comment can break out. */
 export const jsonForHtml = (v: unknown) => JSON.stringify(v).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
+
+// ---------- Non-gear items (consumables, trade goods, recipes, quest items...) ----------
+/** A non-gear item from /data/other-items.json (tools/build_items.py). No page of its own. */
+export interface OtherItem {
+  id: number; n: string; q: number; c: string; rl?: number; icon?: string;
+  ds?: string; u?: string[]; st?: number; b?: number; sp?: number; il?: number;
+  d?: [string, string][]; v?: string[]; o?: string[]; qs?: [number, string]; qr?: [number, string][]; qu?: [number, string][];
+}
+let otherPromise: Promise<{ list: OtherItem[]; byId: Map<number, OtherItem> }> | null = null;
+/** Load and validate the non-gear items once per page. */
+export function loadOther() {
+  otherPromise ??= fetch("/data/other-items.json").then((r) => (r.ok ? r.json() : [])).catch(() => [])
+    .then((l: unknown) => {
+      const list = (Array.isArray(l) ? l : []).filter((o): o is OtherItem =>
+        !!o && typeof o === "object" && num((o as OtherItem).id) > 0 && typeof (o as OtherItem).n === "string" && typeof (o as OtherItem).c === "string");
+      return { list, byId: new Map(list.map((o) => [num(o.id), o])) };
+    });
+  return otherPromise;
+}
+const txt = (v: unknown) => (typeof v === "string" ? v : "");
+const money = (c: number) => {
+  const g = Math.floor(c / 10000), s = Math.floor((c % 10000) / 100), cu = c % 100;
+  return [g && `${g}g`, s && `${s}s`, cu && `${cu}c`].filter(Boolean).join(" ");
+};
+/** Tooltip for a non-gear item, in the same style as gear. Every value is escaped or numeric. */
+export function otherTooltipHtml(o: OtherItem) {
+  const q = QUALITY[num(o.q)] || "common";
+  const L: string[] = [];
+  L.push(`<div class="tt-head"><span class="ico qb-${q}">${txt(o.icon) ? `<img src="${esc(ICON(txt(o.icon)))}" alt="">` : ""}</span>
+    <div><p class="tt-name q-${q}">${esc(txt(o.n))}</p><p class="tt-muted">${esc(txt(o.c))}${num(o.il) > 1 ? `, item level ${num(o.il)}` : ""}</p></div></div>`);
+  if (num(o.b) === 1) L.push(`<p>Binds when picked up</p>`);
+  else if (num(o.b) === 2) L.push(`<p>Binds when equipped</p>`);
+  if (o.c === "Quest item") L.push(`<p>Quest Item</p>`);
+  for (const u of (Array.isArray(o.u) ? o.u : []).slice(0, 3)) if (txt(u)) L.push(`<p class="tt-green">${o.c === "Recipe" ? "Use: Teaches" : "Use:"} ${esc(cleanFx(txt(u)))}</p>`);
+  if (txt(o.ds)) L.push(`<p class="tt-gold">"${esc(cleanFx(txt(o.ds)))}"</p>`);
+  if (num(o.st) > 1) L.push(`<p class="tt-muted">Stacks to ${num(o.st)}</p>`);
+  if (num(o.rl) > 1) L.push(`<p>Requires Level ${num(o.rl)}</p>`);
+  if (num(o.sp) > 0) L.push(`<p class="tt-muted">Sell price: ${esc(money(num(o.sp)))}</p>`);
+  const where = Array.isArray(o.d) && Array.isArray(o.d[0]) ? `Drops from ${txt(o.d[0][0])}` : Array.isArray(o.v) && txt(o.v[0]) ? `Sold by ${txt(o.v[0])}`
+    : Array.isArray(o.o) && txt(o.o[0]) ? `Found in ${txt(o.o[0])}` : Array.isArray(o.qr) && Array.isArray(o.qr[0]) ? `Reward from ${txt(o.qr[0][1])}` : "";
+  if (where) L.push(`<p class="tt-src">${esc(where)}</p>`);
+  return L.join("");
+}

@@ -150,6 +150,22 @@ class LoggedSources(unittest.TestCase):
         self.assertEqual(got[724], ("inv_misc_food_10", 0))  # icon from the appearance; poor quality kept
         self.assertEqual(got[999], ("inv_misc_gem_01", None))  # wowsims fallback; out-of-range quality dropped
 
+    def test_client_item_text(self):
+        with tempfile.TemporaryDirectory() as cache:
+            d = Path(cache) / build_items.FOREVER_BUILD
+            d.mkdir(parents=True)
+            (d / "ItemSparse.csv").write_text("ID,Description_lang,Stackable,Bonding,SellPrice,ItemLevel\n"
+                                              "118,,5,0,1,5\n2589,Woven from $s1 threads,20,0,13,5\n9999,,1,7,0,0\n")
+            (d / "ItemEffect.csv").write_text("ID,TriggerType,SpellID\n1,0,439\n2,1,500\n")
+            (d / "ItemXItemEffect.csv").write_text("ID,ItemEffectID,ItemID\n1,1,118\n2,2,118\n")
+            (d / "Spell.csv").write_text("ID,Description_lang\n439,Restores $s1 health.\n500,Equip text\n")
+            (d / "SpellName.csv").write_text("ID,Name_lang\n439,Healing Potion\n500,Equip\n")
+            got = build_items.client_item_text(cache, False)
+        self.assertEqual(got[118], {"u": ["Restores health."], "st": 5, "sp": 1, "il": 5})  # equip effects skipped
+        self.assertEqual(got[2589]["ds"], "Woven from threads")
+        self.assertNotIn(9999, got)  # stack 1, unknown binding, no price: nothing to show
+        self.assertEqual(build_items.client_item_text(Path(cache) / "missing", False), {})
+
 
 if __name__ == "__main__":
     unittest.main()

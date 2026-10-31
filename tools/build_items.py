@@ -180,6 +180,56 @@ def client_icons_and_quality(cache, download, wowsims=None):
     return {k: tuple(v) for k, v in out.items()}
 
 
+def client_item_text(cache, download):
+    """ItemID -> tooltip fields for non-gear items, from the client: ds flavor text, u "Use:" texts,
+    st stack size, b binding (1 picked up, 2 equipped), sp sell price in copper, il item level.
+    Missing tables or columns just leave fields out."""
+    try:
+        sparse = load_csv(cache, "ItemSparse", download)
+        effect = {r["ID"]: r for r in load_csv(cache, "ItemEffect", download)}
+        links = load_csv(cache, "ItemXItemEffect", download)
+        spell_desc = {r["ID"]: r.get("Description_lang", "") for r in load_csv(cache, "Spell", download)}
+        spell_name = {r["ID"]: r.get("Name_lang", "") for r in load_csv(cache, "SpellName", download)}
+    except (SystemExit, OSError, KeyError):
+        return {}
+    uses = defaultdict(list)
+    for x in links:
+        e = effect.get(x.get("ItemEffectID"))
+        if not e or num(e.get("TriggerType"), int) not in (0, 5):  # 0 on use, 5 learn (recipes)
+            continue
+        sid = e.get("SpellID")
+        text = cleanup_spell_text(spell_desc.get(sid, "") or spell_name.get(sid, ""))
+        iid = num(x.get("ItemID"), int)
+        if text and iid and text not in uses[iid]:
+            uses[iid].append(text[:220])
+    out = {}
+    for s in sparse:
+        iid = num(s.get("ID"), int)
+        if not iid:
+            continue
+        rec = {}
+        desc = cleanup_spell_text(s.get("Description_lang") or "")
+        if desc:
+            rec["ds"] = desc[:200]
+        if uses.get(iid):
+            rec["u"] = uses[iid][:3]
+        for key, col, lo, hi in (("st", "Stackable", 2, 1000), ("b", "Bonding", 1, 2), ("sp", "SellPrice", 1, 10**8),
+                                 ("il", "ItemLevel", 1, 400)):
+            v = num(s.get(col), int)
+            if v is not None and lo <= v <= hi:
+                rec[key] = v
+        if rec:
+            out[iid] = rec
+    return out
+
+
+def cleanup_spell_text(s):
+    """Client text holds unresolved spell variables ($s1, $d, $/1000;s1) and markup; drop them."""
+    s = re.sub(r"\$\/?\d*;?[a-zA-Z]+\d*", "", str(s or ""))
+    s = re.sub(r"\|c[0-9a-fA-F]{8}|\|r|\|n", " ", s)
+    return re.sub(r"\s{2,}", " ", s).strip()
+
+
 def client_items(cache, download):
     T = {t: load_csv(cache, t, download) for t in TABLES}
     icons = icon_names(cache, download)
@@ -764,12 +814,14 @@ def main():
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     other = other_items(a.questie_sqlite, set(items), classic)
     client = client_icons_and_quality(a.cache, a.download, ws) if other else {}
+    text = client_item_text(a.cache, a.download) if other else {}
     for rec in other:
         icon, q = client.get(rec["id"], (None, None))
         if icon:
             rec["icon"] = icon
         if q is not None:
             rec["q"] = q
+        rec.update(text.get(rec["id"], {}))
     if other:
         Path(a.other_out).write_text(json.dumps(other, separators=(",", ":"), ensure_ascii=False))
     by_q = defaultdict(int)
