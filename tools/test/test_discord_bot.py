@@ -463,5 +463,60 @@ class Tests(unittest.TestCase):
             self.assertEqual([c for c in empty.calls if c[0] != "GET"], [])
 
 
+    # ---- founding members ----
+    def _founders(self, members, count=50, no_intent=False):
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "50", "name": "forever-xp", "position": 9, "managed": True, "tags": {"bot_id": "42"}},
+                 {"id": "60", "name": "Founding Member", "position": 2}]
+
+        class Fake(FakeDiscord):
+            def call(self, method, path, body=None, *, write=False, soft=()):
+                if "/members?" in path:
+                    self.calls.append((method, path, body))
+                    return None if no_intent else members
+                return super().call(method, path, body, write=write)
+        d = Fake([], roles)
+        cfg = {**CFG, "founding_members": {"role": "Founding Member", "count": count}}
+        out = []
+        orig, bot.log = bot.log, out.append
+        try:
+            bot.founding_members(cfg, d, "1")
+        finally:
+            bot.log = orig
+        given = [p.split("/")[4] for m, p, _ in d.calls if m == "PUT"]
+        return given, out, d
+
+    @staticmethod
+    def _m(uid, day, roles=(), bot_=False, pending=False):
+        return {"user": {"id": uid, "username": f"user{uid}", "bot": bot_}, "joined_at": f"2026-10-{day:02d}T12:00:00+00:00",
+                "roles": list(roles), "pending": pending}
+
+    def test_founding_role_goes_to_earliest_people_only(self):
+        ms = [self._m("105", 29), self._m("101", 25), self._m("102", 26, bot_=True), self._m("103", 27, pending=True), self._m("104", 28)]
+        given, out, d = self._founders(ms, count=2)
+        self.assertEqual(given, ["101", "104"])             # join order; bot and unaccepted member skipped
+        self.assertTrue(all(p.endswith("/roles/60") for m, p, _ in d.calls if m == "PUT"))
+        self.assertFalse(any(m in ("DELETE", "PATCH") for m, _, _ in d.calls))
+        log_text = " ".join(out)
+        self.assertFalse(any(x in log_text for x in ("user10", "101", "104")))   # no names or IDs in the public log
+
+    def test_founding_role_stops_at_the_count(self):
+        ms = [self._m(str(200 + i), 1 + i % 28, roles=["60"]) for i in range(50)] + [self._m("999", 30)]
+        given, out, _ = self._founders(ms)
+        self.assertEqual(given, [])
+        self.assertTrue(any("full" in line for line in out))
+
+    def test_founding_role_without_member_intent_is_a_notice(self):
+        given, out, _ = self._founders([], no_intent=True)
+        self.assertEqual(given, [])
+        self.assertTrue(any("Server Members Intent" in line for line in out))
+
+    def test_founding_members_validation(self):
+        base = {"categories": [], "roles": [{"name": "Founding Member"}, {"name": "Admin"}]}
+        self.assertEqual(bot.validate({**base, "founding_members": {"role": "Founding Member", "count": 50}}), [])
+        for bad in ({"role": "Nope", "count": 50}, {"role": "Admin", "count": 50}, {"role": "Founding Member", "count": 0},
+                    {"role": "Founding Member", "count": "50"}, {"role": "Founding Member", "count": 50, "x": 1}, "Founding Member"):
+            self.assertTrue(bot.validate({**base, "founding_members": bad}), bad)
+
 if __name__ == "__main__":
     unittest.main()

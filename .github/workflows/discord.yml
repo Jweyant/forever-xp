@@ -3,6 +3,7 @@
 #  - main (or run by hand): apply discord/server.json to the server. Adds and updates channels,
 #    topics, forum tags, read-only settings and roles; deletes only roles listed in retired_roles.
 #  - Run by hand with a date: also post that day's Blizzard changes to the feed channel.
+#  - Hourly: give the founding role to the first members to join (founding_members in server.json).
 # Needs the DISCORD_BOT_TOKEN secret and DISCORD_GUILD_ID variable (see docs/discord.md).
 name: Discord
 
@@ -12,6 +13,8 @@ on:
   push:
     branches: [main]
     paths: ["discord/**", "tools/discord_bot.py", ".github/workflows/discord.yml"]
+  schedule:
+    - cron: "37 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -53,6 +56,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Apply discord/server.json
+        if: github.event_name != 'schedule'
         env:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
@@ -60,6 +64,14 @@ jobs:
         run: |
           if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
           python3 tools/discord_bot.py setup $DRY
+      - name: Give the founding role to the first members
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
+          python3 tools/discord_bot.py founding-members $DRY
       # The date is passed through the environment, never pasted into the script, and checked by the bot.
       - name: Post one day's changes
         if: github.event_name == 'workflow_dispatch' && inputs.post_date != ''
