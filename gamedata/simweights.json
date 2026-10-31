@@ -1,12 +1,49 @@
 {
- "source": {
-  "name": "forever-xp sim runs",
-  "engine": "wowsims/forever (MIT)",
-  "url": "https://github.com/wowsims/forever",
-  "site": "https://wowsims.com/forever",
-  "commit": "",
-  "license": "MIT"
+ "report": {
+  "skipped_stats": null,
+  "specs": 2
  },
- "specs": {},
- "report": {"note": "Written by the Sim weights workflow (tools/simrunner); empty until it runs."}
+ "source": {
+  "commit": "376a6aa2886b",
+  "engine": "wowsims/forever (MIT)",
+  "license": "MIT",
+  "name": "forever-xp sim runs",
+  "site": "https://wowsims.com/forever",
+  "url": "https://github.com/wowsims/forever"
+ },
+ "specs": {
+  "HUNTER.sv": [
+   {
+    "label": "Planner BIS · weave build",
+    "w": {
+     "agi": 4.4911,
+     "ap": 0.7524,
+     "crit": 3.8812,
+     "dps": 8.9836,
+     "expertise": 2.7989,
+     "haste": 2.4911,
+     "hit": 1.293,
+     "int": 1.949,
+     "rap": 1,
+     "str": 0.8277
+    },
+    "note": "Our own sim run: the planner's suggested gear on the default weave build, full raid buffs, a 180 s raid boss. Ranged weapon DPS stands in for all weapon DPS."
+   }
+  ],
+  "WARRIOR.arms": [
+   {
+    "label": "Planner BIS · Arms",
+    "w": {
+     "agi": 2.4052,
+     "ap": 1,
+     "crit": 3.1717,
+     "dps": 19.2122,
+     "expertise": 5.7415,
+     "haste": 2.6186,
+     "str": 2.2
+    },
+    "note": "Our own sim run: the planner's suggested gear (a two-hander, so the Arms build) with full raid buffs on a 180 s raid boss."
+   }
+  ]
+ }
 }
