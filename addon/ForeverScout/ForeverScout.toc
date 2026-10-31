@@ -12,3 +12,5 @@ Core.lua
 Recorder.lua
 Windows.lua
 Gear.lua
+Planner.lua
+BIS.lua
