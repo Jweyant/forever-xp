@@ -69,7 +69,8 @@ jobs:
           (d / "old.json").write_text(json.dumps(old))
           print(f"{len(rows)} changes, {len(articles)} articles and {len(news or {})} announcements already known")
           PY
-          cp tools/discord_bot.py "$RUNNER_TEMP/bot/tools/" && cp discord/server.json "$RUNNER_TEMP/bot/discord/"
+          # The whole discord/ folder: server.json names message files under discord/messages/.
+          cp tools/discord_bot.py "$RUNNER_TEMP/bot/tools/" && cp -R discord/. "$RUNNER_TEMP/bot/discord/"
 
       - name: Collect notes
         id: collect
