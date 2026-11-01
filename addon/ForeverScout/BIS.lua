@@ -890,14 +890,8 @@ local function minimapButton()
     end)
   end)
   b:SetScript("OnDragStop", function(self) self:SetScript("OnUpdate", nil) end)
-  b:SetScript("OnClick", function(_, button)
-    if button == "RightButton" then
-      ns.db.settings.paused = not ns.db.settings.paused
-      ns.Print(ns.db.settings.paused and "Recording paused. Right-click the minimap button or /fscout resume to continue." or "Recording resumed.")
-      ns.BIS.UpdateDot()
-    else
-      ns.BIS.Toggle()
-    end
+  b:SetScript("OnClick", function(self, button)
+    if button == "RightButton" then ns.BIS.ToggleMenu(self) else ns.BIS.Toggle() end
   end)
   b:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_LEFT")
@@ -905,13 +899,52 @@ local function minimapButton()
     GameTooltip:AddLine(ns.db.settings.paused and "|cffff5555Recording paused|r" or "|cff55ff55Recording|r", 1, 1, 1)
     GameTooltip:AddLine(ns.db.settings.share and "Sharing on" or "Sharing off (local only)", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Left-click: best in slot planner", 0.8, 0.8, 0.8)
-    GameTooltip:AddLine("Right-click: pause or resume recording", 0.8, 0.8, 0.8)
+    GameTooltip:AddLine("Right-click: menu (pause, sharing, pins)", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Drag to move", 0.6, 0.6, 0.6)
     GameTooltip:Show()
   end)
   b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   place()
   return b
+end
+
+-- Right-click menu on the minimap button. Pausing is a labeled row here rather than a bare
+-- right-click, so a slip of the mouse can't silently stop recording.
+local menu
+function ns.BIS.ToggleMenu(anchor)
+  if menu and menu:IsShown() then menu:Hide() return end
+  if not menu then
+    local rows = {
+      { "pause", "" }, { "bis", "Best in slot planner" }, { "pins", "" }, { "share", "" }, { "status", "Status in chat" },
+    }
+    menu = makePopup(UIParent, anchor, "Forever|cFF4FC3F7Scout|r", rows, function(key)
+      if key == "pause" then
+        ns.db.settings.paused = not ns.db.settings.paused
+        ns.Print(ns.db.settings.paused and "Recording paused. /fscout resume or the minimap menu to continue." or "Recording resumed.")
+        ns.BIS.UpdateDot()
+      elseif key == "bis" then ns.BIS.Toggle()
+      elseif key == "pins" then ns.Pins.SetEnabled(not ns.Pins.Enabled()) ns.Print("Map pins " .. (ns.Pins.Enabled() and "on" or "off") .. ".")
+      elseif key == "share" then ns.SetShare(not ns.db.settings.share)
+      elseif key == "status" then SlashCmdList.FOREVERSCOUT("") end
+      menu:Hide()
+    end, 220)
+    menu:ClearAllPoints()
+    menu:SetPoint("TOPRIGHT", anchor, "BOTTOMLEFT", 0, 0)
+    menu:SetFrameStrata("TOOLTIP")
+    menu.watch = CreateFrame("Frame")
+    menu.watch:RegisterEvent("GLOBAL_MOUSE_DOWN")
+    menu.watch:SetScript("OnEvent", function()
+      if menu:IsShown() and not menu:IsMouseOver() and not anchor:IsMouseOver() then menu:Hide() end
+    end)
+  end
+  -- Row labels reflect the current state each time the menu opens.
+  for _, r in ipairs(menu.rows) do
+    if r.key == "pause" then r.label:SetText(ns.db.settings.paused and "|cff55ff55Resume recording|r" or "|cffff5555Pause recording|r")
+    elseif r.key == "pins" then r.label:SetText(ns.Pins.Enabled() and "Hide map pins" or "Show map pins")
+    elseif r.key == "share" then r.label:SetText(ns.db.settings.share and "Turn automatic sharing off" or "Turn automatic sharing on") end
+  end
+  menu:Mark(function() return false end)
+  menu:Show()
 end
 
 function ns.BIS.UpdateDot()
