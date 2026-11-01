@@ -65,8 +65,11 @@ class Popularity(unittest.TestCase):
              ("b", 10, {"b": "255-1"}),
              ("c", 10, {"b": "255-1"}), ("d", 10, {"b": "111"})],              # d's build is alone: not shown
             encs=[("b", 20), ("c", 20)])
-        self.assertEqual(out, {"hunter": {"players": 4, "all": [["255-1", 3]], "pve": [["255-1", 2]]}})
-        # "pvp" absent: only one battleground character; "111" absent: below two characters.
+        self.assertEqual(out, {"hunter": {"players": 4, "groups": {
+            "all": {"n": 4, "builds": [["255-1", 3]]},       # "111" stays out: below two characters
+            "pve": {"n": 2, "builds": [["255-1", 2]]},
+        }}})
+        # "pvp" group absent entirely: its only build is one character's.
 
     def test_bad_rows_stay_out(self):
         out = self.run_builds([("a", 1, {"b": "<img>"}), ("b", 1, {"b": "9" * 40}),

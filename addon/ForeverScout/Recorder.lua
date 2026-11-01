@@ -239,9 +239,13 @@ local function instanceInfo()
   return instanceType, instanceMapID
 end
 local sawBattleground = false
+local talentsSoon -- defined with the talent logging below
 ns:On("ZONE_CHANGED_NEW_AREA", function()
   ns:Log("zone", { name = GetZoneText and GetZoneText() or nil })
-  if select(1, instanceInfo()) == "pvp" then sawBattleground = true end
+  if select(1, instanceInfo()) == "pvp" and not sawBattleground then
+    sawBattleground = true
+    if talentsSoon then talentsSoon(5) end -- re-log the build so it counts as a battleground player's
+  end
 end)
 
 ns:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
@@ -310,15 +314,17 @@ end
 local lastBuild, talentPending
 local function logTalents()
   talentPending = nil
+  if select(1, instanceInfo()) == "pvp" then sawBattleground = true end -- logged in inside one
   local s = encodeTalents()
-  if s and s ~= lastBuild then
-    lastBuild = s
+  local key = s and (s .. (sawBattleground and "|bg" or ""))
+  if key and key ~= lastBuild then
+    lastBuild = key
     ns:Log("talents", { b = s, bg = sawBattleground or nil })
   end
 end
 -- Once shortly after login (talents load late), then on changes, at most once per 30 s so
 -- levelling with a few points in a row logs one event, not one per click.
-local function talentsSoon(delay)
+function talentsSoon(delay)
   if talentPending or not (C_Timer and C_Timer.After) then return end
   talentPending = true
   C_Timer.After(delay, logTalents)

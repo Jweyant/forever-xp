@@ -170,7 +170,8 @@ local function killBoar(n, of)
   P.target = nil
 end
 
-GetInstanceInfo = function() return "Ragefire Chasm", "party", 1, "Normal", 5, 0, false, 389 end
+local instanceType, instanceMap = "party", 389
+GetInstanceInfo = function() return "Instance", instanceType, 1, "Normal", 5, 0, false, instanceMap end
 
 -- Talents: two tabs, listed out of row order to prove the addon sorts by (tier, column).
 local talentRanks = { [1] = { 2, 5, 0 }, [2] = { 1 } } -- tab 1: ranks by index; index 1 sits on row 2
@@ -220,6 +221,11 @@ fire("CHARACTER_POINTS_CHANGED")
 advance(35)
 bossFight(false, 40)
 bossFight(true, 95)
+-- Into Warsong Gulch: the addon re-logs the same build flagged as a battleground player's.
+instanceType, instanceMap = "pvp", 489
+fire("ZONE_CHANGED_NEW_AREA")
+advance(10)
+instanceType, instanceMap = "party", 389
 fire("PLAYER_LOGOUT")
 
 -- Write SavedVariables ---------------------------------------------------------------

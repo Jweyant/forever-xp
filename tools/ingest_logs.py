@@ -544,13 +544,14 @@ def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
 BUILD_RE = re.compile(r"^[0-5]{0,30}(-[0-5]{0,30}){0,2}$")
 
 
-def write_talent_builds(db, out_dir, min_players=2, top=8):
-    """Most-used talent builds per class, as talent_builds.json:
-    {class: {"players": N, "all"/"pve"/"pvp": [[build string, characters], ...]}}.
+def write_talent_builds(db, out_dir, min_players=2):
+    """Every talent build players use, per class, as talent_builds.json:
+    {class: {"players": N, "groups": {"all"/"pve"/"pvp": {"n": characters, "builds": [[string, characters], ...]}}}}.
 
     A character counts once, with the last build they logged. "pve" is characters who logged a
-    dungeon or raid boss, "pvp" characters who entered a battleground. A build is only published
-    once `min_players` different characters use it, so nobody's build is shown alone."""
+    dungeon or raid boss, "pvp" characters who entered a battleground. All builds are published,
+    most used first — except a build stays out until `min_players` different characters use it,
+    so nobody's build is shown alone."""
     latest = {}   # char -> (when, class, build)
     flags = defaultdict(lambda: {"pvp": False, "pve": False})
     for char, cls, start, t, k, raw in db.execute("""SELECT s.char_id, s.class, s.start, e.t, e.k, e.json
@@ -583,13 +584,13 @@ def write_talent_builds(db, out_dir, min_players=2, top=8):
                 c[group][b] += 1
     out = {}
     for cls, c in sorted(counts.items()):
-        rec = {"players": c["players"]}
+        groups = {}
         for group in ("all", "pve", "pvp"):
-            rows = [[b, n] for b, n in c[group].most_common(top) if n >= min_players]
+            rows = [[b, n] for b, n in c[group].most_common() if n >= min_players]
             if rows:
-                rec[group] = rows
-        if len(rec) > 1:
-            out[cls] = rec
+                groups[group] = {"n": sum(c[group].values()), "builds": rows}
+        if groups:
+            out[cls] = {"players": c["players"], "groups": groups}
     (out_dir / "talent_builds.json").write_text(json.dumps(out, separators=(",", ":"), sort_keys=True))
 
 

@@ -21,16 +21,21 @@ const okBuild = (b: unknown): b is { n: string; t: string; note?: string; spec?:
 const groups = (buildsJson as { classes: Record<string, Record<string, unknown[]>> }).classes?.[c.slug] ?? {};
 const oursBuilds = (Array.isArray(groups.ours) ? groups.ours : []).filter(okBuild);
 const wowsimsBuilds = (Array.isArray(groups.wowsims) ? groups.wowsims : []).filter(okBuild);
-// What players actually run, from ForeverScout logs (aggregates only; a build shows at 2+ characters).
-const pl = (playersJson as Record<string, { players?: number; all?: unknown; pve?: unknown; pvp?: unknown }>)[c.slug];
+// What players actually run, from ForeverScout logs: every build, most used first (aggregates
+// only; a build is listed once two or more characters use it, so nobody's shows alone).
+type PlayerGroups = { players?: number; groups?: Record<string, { n?: number; builds?: unknown }> };
+const pl = (playersJson as Record<string, PlayerGroups>)[c.slug];
 const plRows = (v: unknown): [string, number][] => (Array.isArray(v) ? v : [])
   .filter((r): r is [string, number] => Array.isArray(r) && typeof r[0] === "string" && BUILD_RE.test(r[0]) && Number(r[1]) > 0)
   .map((r) => [r[0], Math.floor(Number(r[1]))]);
-const popular: { name: string; note: string; rows: [string, number][] }[] = [
-  { name: "Everyone", note: "every character that shared logs", rows: plRows(pl?.all) },
-  { name: "PvE players", note: "characters that fought dungeon or raid bosses", rows: plRows(pl?.pve) },
-  { name: "Battleground players", note: "characters that entered a battleground", rows: plRows(pl?.pvp) },
-].filter((g) => g.rows.length > 0);
+const popular = ([
+  ["all", "Everyone", "every character that shared logs"],
+  ["pve", "PvE — dungeon and raid players", "characters that fought dungeon or raid bosses"],
+  ["pvp", "PvP — battleground players", "characters that entered a battleground"],
+] as const).map(([key, name, note]) => {
+  const g = pl?.groups?.[key];
+  return { name, note, n: Math.max(0, Math.floor(Number(g?.n) || 0)), rows: plRows(g?.builds) };
+}).filter((g) => g.rows.length > 0);
 // "0 / 31 / 20" from a build string, so each row names its spec without loading it.
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
@@ -76,16 +81,17 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
       <p class="small muted">What {c.name}s running <a href="/scout/">ForeverScout</a> actually play. A build is listed once two or more characters use it; counts are characters, not accounts.</p>
       {popular.map((g) => (
         <div class="bgroup">
-          <h4>{g.name} <span class="muted small">({g.note})</span></h4>
+          <h4>{g.name} <span class="muted small">({g.note}{g.n > 0 ? `, ${g.n} in all` : ""})</span></h4>
           <ul class="builds">
             {g.rows.map(([b, n]) => (
-              <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b> <span class="split">{split(b)}</span></a><span class="muted small">{n} character{n === 1 ? "" : "s"}</span></li>
+              <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b> <span class="split">{split(b)}</span></a><span class="muted small">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
             ))}
           </ul>
         </div>
       ))}
+      <p class="small muted">No open data source publishes Forever PvP builds yet, so the PvP list is measured from battleground players' own logs rather than copied from a guide.</p>
     </>)}
-    {popular.length === 0 && <><h3>Popular with players</h3><p class="muted small">No {c.name} builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and the builds players actually use show up here, split into PvE and battleground players.</p></>}
+    {popular.length === 0 && <><h3>Popular with players</h3><p class="muted small">No {c.name} builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and every build players actually use shows up here — most used first, split into everyone, PvE (dungeon and raid) and PvP (battleground) players. No open data source publishes Forever PvP builds, so this is where the PvP picture will come from.</p></>}
 
     {oursBuilds.length > 0 && (<>
       <h3>From our sim runs <span class="muted small">(PvE)</span></h3>
