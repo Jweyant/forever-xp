@@ -23,7 +23,7 @@ fast leveling guides and fill in quest data that Questie doesn't have yet.
 | `/fscout note <text>` | Drop a note at your current spot ("cave is packed", "skip this, elite") |
 | `/fscout bis` | Best-in-slot planner window: the best item for every slot for your class, a spec and goal (leveling, PvE, PvP) at your level or any level up to 60, what you have equipped, and where each item comes from. Same picks as forever-xp.com/bis. Also on the minimap button. |
 | `/fscout pins` | Show or hide the plan's gear locations on the world map and minimap |
-| `/fscout minimap` | Show or hide the minimap button (left-click opens the planner, right-click pauses recording) |
+| `/fscout minimap` | Show or hide the minimap button (left-click opens the planner, right-click a menu: pause, sharing, pins) |
 | `/fscout gear` | Copyable string of your equipped gear, class, level, race and body type for the forever-xp.com BIS planner (forever-xp.com/bis) |
 | `/fscout report` | Copyable list of quests/NPCs Questie is missing — share it on Questie's Discord |
 | `/fscout export` | Copyable export string of your recorded sessions |
