@@ -68,6 +68,7 @@ jobs:
           python3 -I tools/test/test_talent_builds.py
           python3 tools/test/test_loot.py
           python3 tools/test/test_scouts.py
+          python3 tools/test/test_quest_timing.py
       - name: Addon data matches the site
         # The in-game BIS planner is a Lua port of the site's; both must read the same data and
         # pick the same items. lupa runs the addon's Lua 5.1 code here. (site data was generated above.)

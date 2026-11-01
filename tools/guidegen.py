@@ -373,6 +373,14 @@ class Generator:
                 pts += self.d.spawns(self.d.obj(oid))
                 kind = "object" if not it.get("npcDrops") else kind
             out.append((kind, iid, iname, pts, count_for(f"item:{iid}", iname), lvl))
+        if not out:
+            # Exploration quests ("Scout through the Fargodeep Mine"): Questie keeps the spot
+            # as triggerEnd = [text, {areaId: [[x, y], ...]}]. Getting there is the objective.
+            trig = q.get("triggerEnd")
+            if isinstance(trig, list) and len(trig) == 2 and isinstance(trig[1], dict):
+                pts = self.d.spawns({"spawns": trig[1]})
+                if pts:
+                    out.append(("explore", None, trig[0] if isinstance(trig[0], str) else None, pts, 1, 0))
         return settle_counts(out, text)
 
     # ------------------------------------------------------------------ steps
