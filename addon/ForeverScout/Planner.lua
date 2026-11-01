@@ -242,7 +242,7 @@ function P.EndgameOnly(it)
   for _, s in ipairs(it.src or {}) do
     if s.t == "raid" or s.t == "pvp" then return true end
   end
-  return it.q >= 4 and (it.il or 0) >= P.ENDGAME_ILVL
+  return it.q >= 3 and (it.il or 0) >= P.ENDGAME_ILVL
 end
 
 function P.SourceKind(it)

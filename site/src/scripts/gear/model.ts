@@ -248,15 +248,16 @@ export const SOURCE_KINDS = [
 export const DEFAULT_SOURCES = SOURCE_KINDS.map((s) => s.key).filter((k) => k !== "unknown");
 
 // Item level 66 and up is raid tier: Molten Core starts there, while dungeon, quest and crafted
-// pre-raid gear tops out at 65. Quest rewards for raid tokens (tier 2.5 and 3, Qiraji armaments,
-// the C'Thun eye) are quests in the data, so item level is what tells them apart.
+// pre-raid gear (rare or epic) tops out at 65. Quest rewards for raid tokens or raid reputation (tier
+// 2.5 and 3, Qiraji armaments, the C'Thun eye, Zul'Gurub's head quests) are quests in the data, so
+// item level is what tells them apart.
 export const ENDGAME_ILVL = 66;
 /** Gear you only get at the level cap from raids, PvP ranks or raid-token quests, which a leveling
  *  plan leaves out. */
 export function endgameOnly(it: Item): boolean {
   if (it.pvprank || Number(it.q) >= 5) return true;
   if ((it.src || []).some((s) => s.t === "raid" || s.t === "pvp")) return true;
-  return Number(it.q) >= 4 && Number(it.ilvl) >= ENDGAME_ILVL;
+  return Number(it.q) >= 3 && Number(it.ilvl) >= ENDGAME_ILVL;
 }
 
 export function sourceKind(it: Item): string {

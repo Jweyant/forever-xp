@@ -35,7 +35,7 @@ const FOREIGN = {
   H: /^(Private|Corporal|Master Sergeant|Sergeant Major|Knight|Knight-Lieutenant|Knight-Captain|Knight-Champion|Lieutenant Commander|Commander|Marshal|Field Marshal|Grand Marshal)'s |Stormpike|Highlander's|of Arathor|Insignia of the Alliance/,
   A: /^(Scout|Grunt|Senior Sergeant|First Sergeant|Stone Guard|Blood Guard|Legionnaire|Centurion|Champion|Lieutenant General|General|Warlord|High Warlord)'s |Frostwolf|Defiler's|Outrider's|Insignia of the Horde/,
 };
-const endgame = (it) => it.pvprank || it.q >= 5 || (it.src || []).some((s) => s.t === "raid" || s.t === "pvp") || (it.q >= 4 && it.ilvl >= 66);
+const endgame = (it) => it.pvprank || it.q >= 5 || (it.src || []).some((s) => s.t === "raid" || s.t === "pvp") || (it.q >= 3 && it.ilvl >= 66);
 
 const jobs = [];
 for (const [c, ss] of Object.entries(SPECS)) for (const s of ss) {
