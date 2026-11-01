@@ -81,6 +81,16 @@ permission. A member's name takes the color of their highest role.
 message in place rather than posting a new one. `{#channel-name}` becomes a clickable channel link.
 Messages go out with mentions disabled and link previews off, and only in read-only channels.
 
+## Founding members
+
+`founding_members` in `discord/server.json` names a role and a count (Founding Member, 50). Every
+hour the bot gives that role to the earliest members to join who don't have it yet, until the count
+is reached. Bots and members who haven't accepted the rules are skipped. It never removes the role;
+if a holder leaves, the next-earliest member gets it. The run log shows counts only.
+
+Listing members needs **Server Members Intent** turned on for the bot (Discord developer portal >
+Bot > Privileged Gateway Intents). Without it the run just says so.
+
 ## Private channels
 
 `private_channels` lists staff-only channels such as #moderator-only. The bot creates one if it's

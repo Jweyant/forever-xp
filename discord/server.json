@@ -58,8 +58,11 @@
     { "name": "Admin", "color": "#E74C3C", "hoist": true },
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
-    { "name": "ForeverScout tester", "color": "#6B3FC4", "hoist": true }
+    { "name": "ForeverScout tester", "color": "#6B3FC4", "hoist": true },
+    { "name": "Founding Member", "color": "#1ABC9C", "hoist": true }
   ],
+  "_founding_members": "The bot gives this role to the earliest members to join (bots and anyone who hasn't accepted the rules are skipped), up to count. Checked hourly. It never removes the role.",
+  "founding_members": { "role": "Founding Member", "count": 50 },
   "_retired_roles": "Roles the bot removes from the server if they exist. Only names listed here are ever deleted.",
   "retired_roles": [
     "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",
