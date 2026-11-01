@@ -97,6 +97,86 @@ def num(s, cast=float):
         return None
 
 
+def quest_chains(all_rows, shown):
+    """Group quests into chains: linked by next-in-chain, or by a single prerequisite when both
+    parts share a name (Elixir of Agony parts 1-5).
+
+    all_rows: the full quest export (gamedata/quests.json: id, n, lv, pre, next).
+    shown: {qid: site quest row} with xp, minutes and measured values.
+    Returns {qid: {"name", "part", "parts", "xp", "minutes", "xp_per_min"}} for shown quests
+    whose chain has two or more scored parts. part/parts count the whole storyline; xp, minutes
+    and the rate sum only the scored parts.
+    """
+    byid = {r["id"]: r for r in all_rows if isinstance(r, dict) and isinstance(r.get("id"), int)}
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        if a in byid and b in byid:
+            ra, rb = find(a), find(b)
+            if ra != rb:
+                parent[rb] = ra
+
+    followers = {}
+    for r in byid.values():
+        for p in r.get("pre") or []:
+            if isinstance(p, int):
+                followers[p] = followers.get(p, 0) + 1
+    for r in byid.values():
+        if isinstance(r.get("next"), int):
+            union(r["id"], r["next"])
+        pre = [p for p in (r.get("pre") or []) if isinstance(p, int)]
+        if len(pre) == 1:
+            same_name = (byid.get(pre[0]) or {}).get("n") == r.get("n")
+            # A prerequisite with exactly one follower is a linear continuation ("The Hunt
+            # Continues" -> "The Hunt Completed"); a hub quest many others require is not.
+            if same_name or followers.get(pre[0], 0) == 1:
+                union(r["id"], pre[0])
+        else:
+            # A group prerequisite (bring all three trophies to the finale) bundles the finale
+            # with the members that feed nothing else.
+            for p in pre:
+                if followers.get(p, 0) == 1:
+                    union(r["id"], p)
+
+    groups = {}
+    for qid in parent:
+        groups.setdefault(find(qid), []).append(qid)
+    out = {}
+    for members in groups.values():
+        if len(members) < 2:
+            continue
+        # Order by the next pointers; parts no pointer reaches start a run.
+        pointed = {byid[m].get("next") for m in members}
+        order = []
+        for start in sorted((m for m in members if m not in pointed), key=lambda i: (byid[i].get("lv") or 0, i)):
+            m = start
+            while m in byid and m not in order and find(m) == find(members[0]):
+                order.append(m)
+                m = byid[m].get("next")
+                if not isinstance(m, int):
+                    break
+        order += sorted((m for m in members if m not in order), key=lambda i: (byid[i].get("lv") or 0, i))
+        rows = [shown[m] for m in order if m in shown]
+        if len(rows) < 2:
+            continue
+        xp = sum(r.get("xp") or 0 for r in rows)
+        mins = round(sum((r.get("measured") or {}).get("minutes") or r.get("minutes") or 0 for r in rows), 1)
+        rate = int(xp / mins) if mins else None
+        name = byid[order[0]].get("n") or rows[0].get("name")
+        for i, m in enumerate(order, 1):
+            if m in shown:
+                out[m] = {"name": name, "part": i, "parts": len(order), "xp": xp,
+                          "minutes": mins, "xp_per_min": rate}
+    return out
+
+
 def parse_report(path):
     text = path.read_text()
     title = text.splitlines()[0].lstrip("# ").strip()
@@ -283,7 +363,17 @@ def main():
             q["skip_note"] = skip_notes[qid]
         if qid in measured:
             q["measured"] = measured[qid]
+
+    # A chained quest is judged by its whole chain: part 4 of Elixir of Agony is pointless
+    # alone and misleading alone (a 20-second turn-in looks like 7,000 XP/min).
+    qdb_file = ROOT / "gamedata" / "quests.json"
+    chains = quest_chains(json.loads(qdb_file.read_text()), quests) if qdb_file.exists() else {}
+
+    for qid, q in quests.items():
+        if qid in chains:
+            q["chain"] = chains[qid]
         rate = (q.get("measured") or {}).get("xp_per_min") or q.get("xp_per_min")
+        rate = (q.get("chain") or {}).get("xp_per_min", rate)
         if q["in_route"]:
             q["verdict"] = "do"
         elif q.get("unlocated"):

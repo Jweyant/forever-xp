@@ -9,8 +9,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from guidegen import (CLASS_BITS, DIALOG_SEC, KILL_SEC, LOOT_OBJECT_SEC, DEFAULT_DROP_RATE,
-                      RACE_BITS, RUN_YPS, Data, Generator, as_list, mob_xp)
+from guidegen import (CLASS_BITS, DIALOG_SEC, ESCORT_SEC, EVENT_RE, KILL_SEC, LOOT_OBJECT_SEC,
+                      DEFAULT_DROP_RATE, MIN_OBJECTIVE_SEC, RACE_BITS, RUN_YPS,
+                      Data, Generator, as_list, mob_xp)
 
 
 def main():
@@ -47,18 +48,26 @@ def main():
         g.s.pos = start
         level = max(ql - 1, 1)
         seconds, kill_xp, notes = 2 * DIALOG_SEC, 0, []
-        for kind, oid, oname, pts, count, mlvl in g.objective_points(qid):
+        objectives = g.objective_points(qid)
+        if EVENT_RE.search(" ".join(as_list(q.get("objectivesText")))):
+            seconds += ESCORT_SEC  # escort/defend event beside whatever is countable
+        for kind, oid, oname, pts, count, mlvl in objectives:
+            # Doing the objective costs time wherever it is; only travel needs a location.
+            kills = count if kind == "kill" else (count / DEFAULT_DROP_RATE if kind == "loot" else 0)
+            seconds += kills * KILL_SEC + (count * LOOT_OBJECT_SEC if kind == "object" else 0)
+            kill_xp += int(kills * mob_xp(level, mlvl or level))
             where = g.nearest(pts)
             if not where:
                 notes.append(f"no location: {oname}")
                 continue
             seconds += g.distance(g.s.pos, where) / RUN_YPS
             g.s.pos = where
-            kills = count if kind == "kill" else (count / DEFAULT_DROP_RATE if kind == "loot" else 0)
-            seconds += kills * KILL_SEC + (count * LOOT_OBJECT_SEC if kind == "object" else 0)
-            kill_xp += int(kills * mob_xp(level, mlvl or level))
             if mlvl and mlvl >= ql + 3:
                 notes.append(f"{oname} level {mlvl}")
+        if objectives and seconds - 2 * DIALOG_SEC < MIN_OBJECTIVE_SEC:
+            # Objectives whose spawns Questie can't place (dungeon interiors above all) still
+            # cost real time; never price a quest's objectives below the floor.
+            seconds += MIN_OBJECTIVE_SEC - (seconds - 2 * DIALOG_SEC)
         end, ender, _ = g.endpoint(qid, "finishedBy")
         if end:
             seconds += g.distance(g.s.pos, end) / RUN_YPS

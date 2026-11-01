@@ -29,10 +29,10 @@ const total = byZone.reduce((s, z) => s + z.list.length, 0);
           <tbody>
             {z.list.map((q) => (
               <tr>
-                <td><a href={`/quests/${q.id}/`}>{q.name}</a></td>
+                <td><a href={`/quests/${q.id}/`}>{q.name}</a>{q.chain && <span class="muted small"> (part {q.chain.part} of {q.chain.parts})</span>}</td>
                 <td class="num opt">{q.level ?? "–"}</td>
-                <td class="num">{rateOf(q) ?? "–"}</td>
-                <td>{q.skip_note?.reason ? q.skip_note.reason.charAt(0).toUpperCase() + q.skip_note.reason.slice(1) : "Slow for the XP"}</td>
+                <td class="num">{q.chain?.xp_per_min ?? rateOf(q) ?? "–"}</td>
+                <td>{q.skip_note?.reason ? q.skip_note.reason.charAt(0).toUpperCase() + q.skip_note.reason.slice(1) : q.chain ? "Whole chain is slow for the XP" : "Slow for the XP"}</td>
               </tr>
             ))}
           </tbody>
