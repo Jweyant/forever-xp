@@ -54,6 +54,7 @@ DIALOG_SEC = 6           # per accept / turn-in
 KILL_SEC = 18            # per kill including finding the next mob (low level ranged)
 LOOT_OBJECT_SEC = 10     # per world object
 ESCORT_SEC = 300         # per escort/defend event (the NPC walks, waves spawn)
+EVENT_RE = re.compile(r"\bescorts?\b|\bprotect\b|\bto safety\b|\baccompany\b|\bkeep\b.{0,30}\bsafe\b|\bdefend\b", re.I)
 MIN_OBJECTIVE_SEC = 30   # no quest's objectives are faster than this
 DEFAULT_DROP_RATE = 0.5  # unknown drop rates
 QUEST_LOG_MAX = 20
@@ -464,11 +465,10 @@ class Generator:
                 objectives = self.objective_points(qid)
                 if not objectives:
                     self.lines.append(f"    .complete {qid},1")
-                    # Questie lists no countable objective: an escort or other scripted event
-                    # still takes real time (the NPC walks, waves spawn).
-                    txt = " ".join(as_list(self.q(qid).get("objectivesText"))).lower()
-                    if re.search(r"\bescort\b|\bprotect\b|\bto safety\b|\baccompany\b", txt):
-                        self.s.seconds += ESCORT_SEC
+                # An escort or defend event takes real time (the NPC walks, waves spawn)
+                # whether or not Questie lists a countable objective beside it.
+                if EVENT_RE.search(" ".join(as_list(self.q(qid).get("objectivesText")))):
+                    self.s.seconds += ESCORT_SEC
                 for idx, (kind, oid, oname, pts, count, mlvl) in enumerate(objectives, 1):
                     where = self.nearest(pts)
                     if not where and st.get("where"):

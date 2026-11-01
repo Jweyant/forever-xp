@@ -19,9 +19,14 @@ const objs = (q.objs || []).filter((o) => o && typeof o.n === "string" && Array.
 const seen = Array.isArray(q.seen) ? q.seen : [];
 const why = !s ? null :
   s.verdict === "do" ? "Part of a Forever XP route." :
-  s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` : `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
+  s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` :
+    s.chain ? `Its whole ${s.chain.parts}-part chain scores below ${meta.skip_threshold} XP per minute once travel is counted.` :
+    `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
   s.verdict === "unknown" ? "Some objectives have no known location yet, so it can't be scored." :
   "Worth doing if you're nearby, but it isn't in a route.";
+const chainScore = s?.chain && (s.verdict === "optional" || s.verdict === "skip")
+  ? `Scored with its chain: ${s.chain.parts} parts give ${s.chain.xp.toLocaleString("en-US")} XP in about ${Math.round(s.chain.minutes)} minutes (${s.chain.xp_per_min ?? "–"} XP/min together).`
+  : null;
 const desc = `${q.n}${q.lv ? ` (level ${q.lv})` : ""}, a WoW Forever quest in ${q.z}${q.start ? `. Starts with ${q.start.n}` : ""}${q.xp && !q.xpe ? `, ${q.xp} XP` : ""}.`;
 const fromOpendata = q.xps === "opendata" || q.start?.src === "opendata" || q.end?.src === "opendata";
 const places = [q.start && { role: "Start", p: q.start }, q.end && { role: "Turn in", p: q.end }].filter(Boolean) as { role: string; p: Place }[];
@@ -37,6 +42,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     {s && <span class={`verdict ${s.verdict}`}>{VERDICT_LABEL[s.verdict]}</span>}
   </p>
   {why && <p class="lede">{why}</p>}
+  {chainScore && <p class="muted small">{chainScore}</p>}
   {q.new && <p class="lede">This quest is new in WoW Forever. It isn't in Classic Era.</p>}
   {q.chg && <p class="changed">Changed from Classic Era: {q.chg.join("; ")}.</p>}
 

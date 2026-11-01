@@ -13,6 +13,7 @@ export interface Quest {
   guides: string[]; in_route: boolean; verdict: Verdict;
   skip_note?: { note: string; reason: string; guide: string };
   measured?: { minutes: number | null; xp_per_min: number | null; players: number | null };
+  chain?: { name: string; part: number; parts: number; xp: number; minutes: number; xp_per_min: number | null };
 }
 export interface Guide {
   slug: string; name: string; zone: string; from: number; to: number; faction: string;
