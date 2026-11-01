@@ -40,6 +40,27 @@ const popular = ([
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
 const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0;
+// The quick strip above the calculator: the most-used player builds, then the recommended ones.
+const popAll = popular.find((g) => g.name === "Everyone");
+const popPvp = popular.find((g) => g.name.startsWith("PvP"));
+const share = (g: { n: number }, n: number) => (g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : "");
+// What a preset stands for, in plain words: wowsims' name shorthands, and the role its spec
+// folder names. The dominant tree comes from the build string itself.
+const WORDS: Record<string, string> = {
+  BM: "Beast Mastery", MM: "Marksmanship", SV: "Survival", Aff: "Affliction", Demo: "Demonology",
+  Destro: "Destruction", Sm: "Shadow Mastery", FFB: "Frostfire Bolt", Muti: "Mutilate", Asn: "Assassination",
+  SS: "Sinister Strike", BS: "Backstab", Hemo: "Hemorrhage", Disc: "Discipline", Weave: "Weave (melee between Auto Shots)",
+};
+const ROLE: Record<string, string> = {
+  protection: "tank", feralbear: "tank (bear form)", healer: "healer", restoration: "healer", holy: "healer",
+  feralcat: "melee DPS (cat form)", balance: "caster DPS", retribution: "melee DPS",
+};
+const expand = (n: string) => n.split(" ").map((w) => WORDS[w] || w).join(" ");
+const what = (b: { n: string; spec?: string }) => {
+  const role = `raid ${ROLE[b.spec || ""] || "DPS"}`;
+  const full = expand(b.n);
+  return full === b.n ? role : `${full} — ${role}`;
+};
 const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og/talents-${c.slug}.jpg` : "/og/talents.jpg";
 ---
 <Base image={ogImage} title={`${c.name} talent calculator`} description={`WoW Forever ${c.name} talent calculator: ${treeNames}. Built from the Forever game client, with shareable build links.`}>
@@ -69,51 +90,58 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
     </div>
     <div class="layout">
       <div class="trees" data-trees></div>
-      <aside class="detail" data-detail aria-live="polite"></aside>
+      <aside class="side" aria-label={`Builds for ${c.name}`}>
+        <h2>{c.name} builds</h2>
+        <p class="small muted">Click one to load it, then change what you like.</p>
+
+        {popular.map((g) => (
+          <section>
+            <h3>{g.name.split(" — ")[0]} <span class="muted">· {g.n} character{g.n === 1 ? "" : "s"}</span></h3>
+            <p class="gnote">{g.note}</p>
+            <ul class="b">
+              {g.rows.slice(0, 5).map(([b, n]) => (
+                <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
+              ))}
+            </ul>
+            {g.rows.length > 5 && (
+              <details><summary class="small">All {g.rows.length} builds</summary><ul class="b">
+                {g.rows.slice(5).map(([b, n]) => (
+                  <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
+                ))}
+              </ul></details>
+            )}
+          </section>
+        ))}
+        {popular.length === 0 && <p class="gnote">No player builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and the builds {c.name}s actually use show up here, split into everyone, PvE and PvP (battleground) players — a build is listed once two or more characters use it.</p>}
+        {popular.length > 0 && <p class="gnote">A build is listed once two or more characters use it. No open source publishes Forever PvP builds, so the PvP list is measured from battleground players' own logs.</p>}
+
+        {oursBuilds.length > 0 && (
+          <section>
+            <h3>Our sim runs <span class="muted">· PvE</span></h3>
+            <p class="gnote">The builds our own <a href="/bis/">stat-weight simulations</a> run.</p>
+            <ul class="b">
+              {oursBuilds.map((b) => (
+                <li><a class="load" href={`#${b.t}`} title={b.note || undefined}><b>{b.n}</b><span class="split">{split(b.t)}</span></a><span class="sub">{dominant(b.t) && !what(b).startsWith(dominant(b.t)) ? `${dominant(b.t)} · ` : ""}{what(b)}</span></li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {wowsimsBuilds.length > 0 && (
+          <section>
+            <h3>wowsims presets <span class="muted">· PvE</span></h3>
+            <ul class="b">
+              {wowsimsBuilds.map((b) => (
+                <li><a class="load" href={`#${b.t}`}><b>{b.n}</b><span class="split">{split(b.t)}</span></a><span class="sub">{dominant(b.t) && !what(b).startsWith(dominant(b.t)) ? `${dominant(b.t)} · ` : ""}{what(b)}</span></li>
+              ))}
+            </ul>
+            <p class="gnote">From <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator — raid setups; it doesn't model PvP.</p>
+          </section>
+        )}
+      </aside>
     </div>
+    <div id="tal-tip" class="wowtip tal-tip" hidden role="tooltip"></div>
   </div>
-  {hasBuilds && (<section id="builds">
-    <h2>Builds for {c.name}</h2>
-    <p class="small muted">Click a build to load it into the calculator above, then change whatever you like.</p>
-
-    {popular.length > 0 && (<>
-      <h3>Popular with players</h3>
-      <p class="small muted">What {c.name}s running <a href="/scout/">ForeverScout</a> actually play. A build is listed once two or more characters use it; counts are characters, not accounts.</p>
-      {popular.map((g) => (
-        <div class="bgroup">
-          <h4>{g.name} <span class="muted small">({g.note}{g.n > 0 ? `, ${g.n} in all` : ""})</span></h4>
-          <ul class="builds">
-            {g.rows.map(([b, n]) => (
-              <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b> <span class="split">{split(b)}</span></a><span class="muted small">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      <p class="small muted">No open data source publishes Forever PvP builds yet, so the PvP list is measured from battleground players' own logs rather than copied from a guide.</p>
-    </>)}
-    {popular.length === 0 && <><h3>Popular with players</h3><p class="muted small">No {c.name} builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and every build players actually use shows up here — most used first, split into everyone, PvE (dungeon and raid) and PvP (battleground) players. No open data source publishes Forever PvP builds, so this is where the PvP picture will come from.</p></>}
-
-    {oursBuilds.length > 0 && (<>
-      <h3>From our sim runs <span class="muted small">(PvE)</span></h3>
-      <p class="small muted">The builds our own <a href="/bis/">stat-weight simulations</a> run: measured, not guessed.</p>
-      <ul class="builds">
-        {oursBuilds.map((b) => (
-          <li><a class="load" href={`#${b.t}`}><b>{b.n}</b> <span class="split">{split(b.t)}</span></a>{b.note && <span class="muted small">{b.note}</span>}</li>
-        ))}
-      </ul>
-    </>)}
-
-    {wowsimsBuilds.length > 0 && (<>
-      <h3>wowsims presets <span class="muted small">(PvE)</span></h3>
-      <p class="small muted">The preset builds from <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator, read from the same pinned version our sims run on.</p>
-      <ul class="builds">
-        {wowsimsBuilds.map((b) => (
-          <li><a class="load" href={`#${b.t}`}><b>{b.n}</b> <span class="split">{split(b.t)}</span></a>{b.spec && <span class="muted small">{b.spec}</span>}</li>
-        ))}
-      </ul>
-    </>)}
-  </section>)}
-
   <p class="small muted">Read from the WoW Forever game client's talent trees (build {data.build}){data.hotfixes ? " with Blizzard's latest hotfixes" : ""}, refreshed daily. Talents tagged NEW aren't in Classic Era. Click or tap to add a point, right-click or long-press to remove.</p>
   <script type="application/json" id="talent-data" set:html={jsonForHtml(c)} />
 </Base>
@@ -137,7 +165,24 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
   #calc .save-plan { grid-column: 1 / -1; }
   #calc .share input { font: inherit; font-size: 0.85rem; width: 100%; background: var(--surface); color: var(--muted); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.35rem 0.5rem; }
   #calc .layout { display: grid; gap: 1.2rem; }
-  @media (min-width: 1000px) { #calc .layout { grid-template-columns: 1fr 300px; align-items: start; } #calc .detail { position: sticky; top: 1rem; } }
+  @media (min-width: 1000px) { #calc .layout { grid-template-columns: 1fr 310px; align-items: start; }
+    #calc .side { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow: auto; } }
+  #calc .side { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); padding: 0.9rem 1rem; }
+  #calc .side h2 { margin: 0 0 0.2rem; font-size: var(--step-1); }
+  #calc .side h3 { margin: 1rem 0 0.1rem; font-size: 0.95rem; }
+  #calc .side h3 .muted { font-weight: 400; font-size: 0.8rem; }
+  #calc .side .gnote { margin: 0.1rem 0 0.3rem; font-size: 0.78rem; color: var(--muted); }
+  #calc .side .b { list-style: none; padding: 0; margin: 0; }
+  #calc .side .b li { padding: 0.35rem 0; border-bottom: 1px solid var(--line); display: grid; gap: 0.05rem; }
+  #calc .side .load { display: flex; gap: 0.6rem; align-items: baseline; justify-content: space-between; text-decoration: none; }
+  #calc .side .load b { text-decoration: underline; text-decoration-color: var(--xp); text-underline-offset: 3px; }
+  #calc .side .split { color: var(--muted); font-size: 0.82rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #calc .side .sub { color: var(--muted); font-size: 0.78rem; }
+  #calc .side details { margin-top: 0.2rem; } #calc .side summary { cursor: pointer; color: var(--muted); }
+  /* The game-style talent tooltip (shares the item tooltips' .wowtip skin). */
+  .tal-tip { position: fixed; }
+  .tal-tip .tt-red { color: #ff5a5a; }
+  .tal-tip .tt-hint { color: #9aa0ad; margin-top: 5px; font-size: 0.8rem; }
   #calc .trees { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
   #calc .tree { position: relative; isolation: isolate; overflow: hidden; background: #0d1018; color: #e6e8f0; border: 1px solid #2c3249; border-radius: var(--radius); padding: 0.6rem 0.7rem 0.9rem; }
   /* the tree's own icon, blown up and darkened, stands in for the game's painted tree backgrounds */
@@ -150,7 +195,6 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
   #calc .grid { display: grid; grid-template-columns: repeat(4, 48px); gap: 14px 6px; justify-content: space-between; }
   #calc .tal { z-index: 1; }
   #calc .tal .new { position: absolute; left: -5px; top: -7px; font-style: normal; font-size: 0.6rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; line-height: 1; padding: 2px 3px; border-radius: 3px; background: var(--quest-bright); color: #1a1405; }
-  #calc .detail .new-note { color: var(--quest); font-weight: 600; }
   /* prerequisite arrows, grey until the earlier talent is learned, then gold like in the game */
   #calc .arr { position: relative; z-index: 0; pointer-events: none; --c: #565c72; }
   #calc .arr[data-on] { --c: #e8b92e; }
@@ -182,17 +226,4 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
   #calc .tal[data-state="some"] b { color: var(--do); border-color: var(--do); }
   #calc .tal[data-state="max"] { border-color: var(--quest-bright); }
   #calc .tal[data-state="max"] b { color: var(--quest); border-color: var(--quest-bright); }
-  @media (max-width: 999px) { #calc .detail { position: sticky; bottom: 0; z-index: 2; max-height: 42vh; overflow: auto; box-shadow: 0 -6px 16px rgba(0,0,0,.18); } }
-  #calc .detail { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: var(--radius); padding: 0.8rem 1rem; min-height: 8rem; }
-  #calc .detail h3 { margin: 0 0 0.4rem; font-size: var(--step-1); }
-  #calc .detail p { margin-bottom: 0.5rem; white-space: pre-line; }
-  #calc .detail .est { color: var(--quest); }
-  #builds { margin-top: 2rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; }
-  #builds h3 { margin: 1.2rem 0 0.2rem; }
-  #builds h4 { margin: 0.8rem 0 0.2rem; font-size: 1rem; }
-  #builds .builds { list-style: none; padding: 0; margin: 0.3rem 0 0; }
-  #builds .builds li { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; align-items: baseline; padding: 0.4rem 0.2rem; border-bottom: 1px solid var(--line); }
-  #builds .load { text-decoration: none; }
-  #builds .load b { text-decoration: underline; text-decoration-color: var(--xp); text-underline-offset: 3px; }
-  #builds .split { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 0.3rem; }
 </style>
