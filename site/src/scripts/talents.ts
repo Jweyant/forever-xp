@@ -1,6 +1,7 @@
 // Talent calculator. Reads the class data embedded in #talent-data, renders three trees,
 // and keeps the build in the URL hash (one digit per talent, trees separated by "-").
 import { afterSignIn } from "./account";
+import { placeTip } from "./items";
 afterSignIn(); // put back a build the sign-in round trip dropped from the address
 type Desc = [string, 0 | number[][]] | [string[]];
 interface T { id: number; row: number; col: number; name: string; ranks: number; req: number | null; reqRank: number | null; icon: string | null; desc: Desc; est: boolean; need?: number; new?: boolean }
@@ -64,6 +65,7 @@ function decode(h: string) {
 }
 
 let selected: { i: number; k: number } | null = null;
+let tipAnchor: HTMLElement | null = null;
 
 function render() {
   const spent = total();
@@ -90,7 +92,7 @@ function render() {
   history.replaceState(null, "", h ? `#${h}` : location.pathname);
   const share = root.querySelector<HTMLInputElement>("[data-share]")!;
   share.value = location.href;
-  showDetail();
+  if (tipAnchor && selected) showTip(tipAnchor); // a click changed a rank: redraw the open tooltip
 }
 
 // Built from DOM nodes with textContent: talent names and tooltips come from the game client.
@@ -101,21 +103,36 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, ..
   return e;
 }
 
-function showDetail() {
-  const box = root.querySelector<HTMLElement>("[data-detail]")!;
-  if (!selected) { box.replaceChildren(el("p", "muted", "Pick a talent to see what each rank does. Click or tap to add a point; right-click or long-press to remove one.")); return; }
+// The game-style tooltip, next to the hovered talent (same skin as item tooltips).
+const tip = document.getElementById("tal-tip")!;
+function showTip(anchor: HTMLElement) {
+  if (!selected) return;
+  tipAnchor = anchor;
   const { i, k } = selected; const t = cls.trees[i].talents[k]; const r = Number(pts[i][k]) || 0;
   const ranks = Number(t.ranks) || 0, reqRank = Number(t.reqRank) || 1;
   const reqT = t.req ? byId.get(t.req)?.t : null;
-  const out: Node[] = [el("h3", "", `${t.name} `, el("span", "muted", `${r}/${ranks}`))];
-  if (t.new) out.push(el("p", "small new-note", "New in WoW Forever"));
-  if (need(t)) out.push(el("p", "small muted", `Needs ${need(t)} points in ${cls.trees[i].name}.${reqT ? ` Needs ${reqRank} in ${reqT.name}.` : ""}`));
-  else if (reqT) out.push(el("p", "small muted", `Needs ${reqRank} in ${reqT.name}.`));
-  if (r > 0) out.push(el("p", "", el("b", "", `Rank ${r}:`), ` ${text(t.desc, r)}`));
-  if (r < ranks) out.push(el("p", r ? "muted" : "", el("b", "", r ? "Next rank:" : "Rank 1:"), ` ${text(t.desc, r + 1)}`));
-  if (t.est && ranks > 1) out.push(el("p", "small est", "The Forever client only lists the first rank's numbers for this talent. Later ranks are scaled from Classic Era and may be off."));
-  box.replaceChildren(...out);
+  const out: Node[] = [el("p", "tt-name", `${t.name} `, el("span", "tt-muted", `${r}/${ranks}`))];
+  if (t.new) out.push(el("p", "tt-gold", "New in WoW Forever"));
+  const tierOk = spentBelow(i, t.row) >= need(t), reqOk = !reqT || rankOf(t.req!) >= reqRank;
+  if (need(t)) out.push(el("p", tierOk ? "tt-muted" : "tt-red", `Requires ${need(t)} points in ${cls.trees[i].name}`));
+  if (reqT) out.push(el("p", reqOk ? "tt-muted" : "tt-red", `Requires ${reqRank} point${reqRank === 1 ? "" : "s"} in ${reqT.name}`));
+  if (r > 0) out.push(el("p", "", text(t.desc, r)));
+  if (r < ranks) out.push(el("p", "tt-gold", `${r ? "Next rank: " : ""}${text(t.desc, r + 1)}`));
+  if (t.est && ranks > 1) out.push(el("p", "tt-muted", "The Forever client only lists the first rank's numbers; later ranks are scaled from Classic Era and may be off."));
+  if (canAdd(i, k)) out.push(el("p", "tt-green", "Click to add a point"));
+  else if (r > 0) out.push(el("p", "tt-hint", "Right-click or long-press to remove"));
+  tip.replaceChildren(...out);
+  placeTip(tip, anchor);
 }
+function hideTip() { tipAnchor = null; tip.hidden = true; }
+// A tap fires a synthetic mouseleave right after its click, which would hide the tooltip the tap
+// just opened. Ignore mouse leaves right after a touch; a tap anywhere else closes the tip instead.
+let lastTouch = 0;
+const mouseGone = () => { if (Date.now() - lastTouch > 700) hideTip(); };
+document.addEventListener("touchstart", (e) => {
+  lastTouch = Date.now();
+  if (tipAnchor && !(e.target as Element).closest(".tal")) hideTip();
+}, { passive: true });
 
 // Arrow from a prerequisite to the talent that needs it, placed on the same grid as the icons.
 function arrow(tr: Tree, k: number) {
@@ -150,15 +167,17 @@ function build() {
     const i = +sec.dataset.tree!;
     sec.querySelectorAll<HTMLButtonElement>(".tal").forEach((b) => {
       const k = +b.dataset.k!;
-      const add = () => { selected = { i, k }; if (canAdd(i, k)) pts[i][k]++; render(); };
-      const remove = () => { selected = { i, k }; if (canRemove(i, k)) pts[i][k]--; render(); };
+      const add = () => { selected = { i, k }; tipAnchor = b; if (canAdd(i, k)) pts[i][k]++; render(); };
+      const remove = () => { selected = { i, k }; tipAnchor = b; if (canRemove(i, k)) pts[i][k]--; render(); };
       b.addEventListener("click", (e) => { if (e.shiftKey) remove(); else add(); });
       b.addEventListener("contextmenu", (e) => { e.preventDefault(); remove(); });
       let timer: number | undefined;
       b.addEventListener("touchstart", () => { timer = window.setTimeout(() => { timer = undefined; remove(); }, 450); }, { passive: true });
       b.addEventListener("touchend", (e) => { if (timer === undefined) e.preventDefault(); clearTimeout(timer); });
-      b.addEventListener("focus", () => { selected = { i, k }; showDetail(); });
-      b.addEventListener("mouseenter", () => { selected = { i, k }; showDetail(); });
+      b.addEventListener("focus", () => { selected = { i, k }; showTip(b); });
+      b.addEventListener("mouseenter", () => { selected = { i, k }; showTip(b); });
+      b.addEventListener("mouseleave", mouseGone);
+      b.addEventListener("blur", mouseGone);
       b.addEventListener("keydown", (e) => { if (e.key === "-" || e.key === "Backspace" || e.key === "Delete") { e.preventDefault(); remove(); } });
     });
   });
@@ -175,10 +194,12 @@ build();
 if (location.hash) decode(location.hash);
 render();
 // Build links under the calculator (and pasted links) load without a page reload.
+window.addEventListener("scroll", () => { if (tipAnchor) hideTip(); }, { passive: true });
 window.addEventListener("hashchange", () => {
   if (!BUILD_HASH.test(location.hash)) return; // plain anchors scroll as usual
   decode(location.hash);
   selected = null;
+  hideTip();
   render();
-  root.scrollIntoView({ behavior: "smooth", block: "start" });
+  root.querySelector<HTMLElement>("[data-trees]")!.scrollIntoView({ behavior: "smooth", block: "start" });
 });
