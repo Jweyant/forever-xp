@@ -40,6 +40,27 @@ const popular = ([
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
 const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0;
+// The quick strip above the calculator: the most-used player builds, then the recommended ones.
+const popAll = popular.find((g) => g.name === "Everyone");
+const popPvp = popular.find((g) => g.name.startsWith("PvP"));
+const share = (g: { n: number }, n: number) => (g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : "");
+// What a preset stands for, in plain words: wowsims' name shorthands, and the role its spec
+// folder names. The dominant tree comes from the build string itself.
+const WORDS: Record<string, string> = {
+  BM: "Beast Mastery", MM: "Marksmanship", SV: "Survival", Aff: "Affliction", Demo: "Demonology",
+  Destro: "Destruction", Sm: "Shadow Mastery", FFB: "Frostfire Bolt", Muti: "Mutilate", Asn: "Assassination",
+  SS: "Sinister Strike", BS: "Backstab", Hemo: "Hemorrhage", Disc: "Discipline", Weave: "Weave (melee between Auto Shots)",
+};
+const ROLE: Record<string, string> = {
+  protection: "tank", feralbear: "tank (bear form)", healer: "healer", restoration: "healer", holy: "healer",
+  feralcat: "melee DPS (cat form)", balance: "caster DPS", retribution: "melee DPS",
+};
+const expand = (n: string) => n.split(" ").map((w) => WORDS[w] || w).join(" ");
+const what = (b: { n: string; spec?: string }) => {
+  const role = `raid ${ROLE[b.spec || ""] || "DPS"}`;
+  const full = expand(b.n);
+  return full === b.n ? role : `${full} — ${role}`;
+};
 const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og/talents-${c.slug}.jpg` : "/og/talents.jpg";
 ---
 <Base image={ogImage} title={`${c.name} talent calculator`} description={`WoW Forever ${c.name} talent calculator: ${treeNames}. Built from the Forever game client, with shareable build links.`}>
@@ -49,6 +70,24 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
     {data.classes.map((o) => <a href={`/talents/${o.slug}/`} aria-current={o.slug === c.slug ? "page" : undefined}>{o.name}</a>)}
   </nav>
   <p class="small"><a href={`/changes/${c.slug}/`}>Every {c.name} change in Forever</a></p>
+
+  {hasBuilds && (
+    <div id="quick-builds">
+      <p class="qhead">Start from a build <span class="muted small">— click one to load it, then change what you like. <a href="#builds">Details below</a>.</span></p>
+      {popAll && <div class="qrow"><span class="qlab">Players</span>{popAll.rows.slice(0, 5).map(([b, n]) => (
+        <a class="pill" href={`#${b}`} title={`${n} of ${popAll.n} characters`}>{dominant(b) || "Build"}<span class="psub">{split(b)}{share(popAll, n)}</span></a>
+      ))}</div>}
+      {popPvp && <div class="qrow"><span class="qlab">PvP players</span>{popPvp.rows.slice(0, 5).map(([b, n]) => (
+        <a class="pill" href={`#${b}`} title={`${n} of ${popPvp.n} battleground characters`}>{dominant(b) || "Build"}<span class="psub">{split(b)}{share(popPvp, n)}</span></a>
+      ))}</div>}
+      {oursBuilds.length > 0 && <div class="qrow"><span class="qlab">Our sims · PvE</span>{oursBuilds.slice(0, 6).map((b) => (
+        <a class="pill" href={`#${b.t}`} title={b.note || b.n}>{b.n}<span class="psub">{split(b.t)}</span></a>
+      ))}</div>}
+      {wowsimsBuilds.length > 0 && <div class="qrow"><span class="qlab">wowsims · PvE</span>{wowsimsBuilds.slice(0, 8).map((b) => (
+        <a class="pill" href={`#${b.t}`} title={what(b)}>{b.n}<span class="psub">{dominant(b.t) || split(b.t)}</span></a>
+      ))}</div>}
+    </div>
+  )}
 
   <div id="calc">
     <div class="bar">
@@ -105,10 +144,10 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
 
     {wowsimsBuilds.length > 0 && (<>
       <h3>wowsims presets <span class="muted small">(PvE)</span></h3>
-      <p class="small muted">The preset builds from <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator, read from the same pinned version our sims run on.</p>
+      <p class="small muted">The preset builds from <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator, read from the same pinned version our sims run on. Every preset is a raid setup — PvE damage, tanking or healing; the simulator doesn't model PvP.</p>
       <ul class="builds">
         {wowsimsBuilds.map((b) => (
-          <li><a class="load" href={`#${b.t}`}><b>{b.n}</b> <span class="split">{split(b.t)}</span></a>{b.spec && <span class="muted small">{b.spec}</span>}</li>
+          <li><a class="load" href={`#${b.t}`}><b>{b.n}</b> <span class="split">{split(b.t)}</span></a><span class="muted small">{dominant(b.t) && !what(b).startsWith(dominant(b.t)) ? `${dominant(b.t)} · ` : ""}{what(b)}</span></li>
         ))}
       </ul>
     </>)}
@@ -187,6 +226,14 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
   #calc .detail h3 { margin: 0 0 0.4rem; font-size: var(--step-1); }
   #calc .detail p { margin-bottom: 0.5rem; white-space: pre-line; }
   #calc .detail .est { color: var(--quest); }
+  #quick-builds { margin: 0.2rem 0 1.1rem; display: grid; gap: 0.4rem; }
+  #quick-builds .qhead { margin: 0 0 0.1rem; font-weight: 600; }
+  #quick-builds .qrow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  #quick-builds .qlab { font: 600 0.74rem var(--font-body); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; flex: 0 0 7.2rem; }
+  #quick-builds .pill { display: inline-flex; align-items: baseline; gap: 0.45rem; padding: 0.3rem 0.7rem; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); text-decoration: none; color: var(--ink); font-size: 0.88rem; font-weight: 600; }
+  #quick-builds .pill .psub { font-weight: 400; font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #quick-builds .pill:hover, #quick-builds .pill:focus-visible { border-color: var(--xp); }
+  @media (max-width: 560px) { #quick-builds .qlab { flex-basis: 100%; } }
   #builds { margin-top: 2rem; border-top: 2px solid var(--ink); padding-top: 0.8rem; }
   #builds h3 { margin: 1.2rem 0 0.2rem; }
   #builds h4 { margin: 0.8rem 0 0.2rem; font-size: 1rem; }

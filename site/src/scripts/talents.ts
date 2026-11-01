@@ -56,9 +56,11 @@ function canRemove(i: number, k: number) {
 }
 
 function encode() { return pts.map((p) => p.join("").replace(/0+$/, "")).join("-").replace(/-+$/, ""); }
+const BUILD_HASH = /^#?[0-5]{0,30}(-[0-5]{0,30}){0,2}$/;
 function decode(h: string) {
+  if (!BUILD_HASH.test(h)) return; // an anchor like #builds, or junk: leave the trees alone
   const parts = h.replace(/^#/, "").split("-");
-  pts.forEach((p, i) => p.forEach((_, k) => { const n = +(parts[i]?.[k] || 0); p[k] = Math.min(n, cls.trees[i].talents[k].ranks); }));
+  pts.forEach((p, i) => p.forEach((_, k) => { const n = +(parts[i]?.[k] || 0); p[k] = Math.min(Number.isFinite(n) ? n : 0, cls.trees[i].talents[k].ranks); }));
 }
 
 let selected: { i: number; k: number } | null = null;
@@ -174,6 +176,7 @@ if (location.hash) decode(location.hash);
 render();
 // Build links under the calculator (and pasted links) load without a page reload.
 window.addEventListener("hashchange", () => {
+  if (!BUILD_HASH.test(location.hash)) return; // plain anchors scroll as usual
   decode(location.hash);
   selected = null;
   render();
