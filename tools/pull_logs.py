@@ -11,15 +11,28 @@ import gzip
 import json
 import os
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 
+UA = "forever-xp player data (github.com/Jweyant/forever-xp)"
+
+
 def call(server, path, token):
-    req = urllib.request.Request(server.rstrip("/") + path, headers={"Authorization": f"Bearer {token}"})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return resp.read()
+    req = urllib.request.Request(server.rstrip("/") + path,
+                                 headers={"Authorization": f"Bearer {token}", "User-Agent": UA})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as e:
+        # Say who refused: the Worker answers JSON; Cloudflare's bot checks answer with cf-mitigated or
+        # an HTML page. Headers and a short, printable start of the body only (no request headers).
+        h = {k: e.headers.get(k) for k in ("server", "cf-mitigated", "cf-ray", "content-type") if e.headers.get(k)}
+        body = e.read(300).decode("utf-8", "replace")
+        body = "".join(c if c.isprintable() else " " for c in body)
+        sys.exit(f"{e.code} from {path.split('?')[0]}: {h} {body!r}")
 
 
 def main():
