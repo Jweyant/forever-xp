@@ -2,7 +2,7 @@
 // State lives in the URL hash (shareable) and in localStorage (comes back next visit).
 import {
   CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
-  weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE,
+  weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE, DEFAULT_SOURCES, endgameOnly,
   hitCaps, hitRating, RACE_HIT, DW_MISS,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
@@ -53,7 +53,7 @@ function canBe(race: string, cls: string, side: "H" | "A"): boolean {
 }
 const st: State = {
   cls: "WARRIOR", spec: "fury", goal: "pve", level: 60, side: "H", race: "orc", body: "M",
-  sources: new Set(ALL_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null, build: null,
+  sources: new Set(DEFAULT_SOURCES), cur: {}, plan: {}, owned: new Set(), custom: null, build: null,
 };
 let view: "plan" | "cur" = "plan";
 let items: Item[] = [];
@@ -92,7 +92,8 @@ function encode(): string {
   const p = new URLSearchParams();
   p.set("c", st.cls); p.set("s", st.spec); p.set("g", st.goal); p.set("l", String(st.level)); p.set("f", st.side);
   p.set("r", `${st.race}.${st.body}`);
-  if (st.sources.size !== ALL_SOURCES.length) p.set("src", [...st.sources].join("."));
+  const sameSources = st.sources.size === DEFAULT_SOURCES.length && DEFAULT_SOURCES.every((k) => st.sources.has(k));
+  if (!sameSources) p.set("src", [...st.sources].join(".") || "none");
   const slots = (o: State["cur"]) => PAPERDOLL.filter((d) => o[d]).map((d) => `${PAPERDOLL.indexOf(d)}-${o[d]}`).join(".");
   if (Object.keys(st.cur).length) p.set("cur", slots(st.cur));
   if (Object.keys(st.plan).length) p.set("plan", slots(st.plan));
@@ -165,7 +166,8 @@ function importGear(text: string): string {
 // ---------- suggestions ----------
 function candidates(doll: DollSlot): Item[] {
   return items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side)
-    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && st.sources.has(sourceKind(it)));
+    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && st.sources.has(sourceKind(it))
+    && !(st.goal === "level" && endgameOnly(it)));
 }
 /** The best plan once the hit cap is applied: a plain greedy pick stacks hit past the cap, so try a few
  *  lower hit weights too and keep whichever plan scores best with hit counted only up to the cap. */

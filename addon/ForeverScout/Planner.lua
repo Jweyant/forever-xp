@@ -229,6 +229,22 @@ P.SRC_LABEL = {
   vendor = "Vendor", drop = "Drop", world = "World drop", logged = "Seen in Forever",
 }
 
+-- Sources a plan uses unless the player picks others (site model.ts DEFAULT_SOURCES): items with no
+-- known source are left out, since some are test items no one can get.
+P.DEFAULT_SOURCES = {}
+for _, k in ipairs(P.SOURCE_KINDS) do P.DEFAULT_SOURCES[k.key] = k.key ~= "unknown" end
+
+-- Gear only raids, PvP ranks or raid-token quests hand out at the level cap (site model.ts
+-- endgameOnly), which a Leveling plan leaves out: item level 66 and up is raid tier.
+P.ENDGAME_ILVL = 66
+function P.EndgameOnly(it)
+  if it.pr or it.q >= 5 then return true end
+  for _, s in ipairs(it.src or {}) do
+    if s.t == "raid" or s.t == "pvp" then return true end
+  end
+  return it.q >= 4 and (it.il or 0) >= P.ENDGAME_ILVL
+end
+
 function P.SourceKind(it)
   local s = it.src and it.src[1]
   if not s then return "unknown" end
@@ -348,7 +364,8 @@ local function scan(opts, doll)
   local out, focused = {}, {}
   for id, it in pairs(ITEMS) do
     if it.q >= 1 and it.lv <= opts.level and (not it.sd or it.sd == opts.side)
-      and (not opts.sources or opts.sources[P.SourceKind(it)])
+      and (opts.sources or P.DEFAULT_SOURCES)[P.SourceKind(it)]
+      and not (opts.goal == "level" and P.EndgameOnly(it))
       and P.CanUse(it, opts.cls, opts.level) and P.Fits(doll, it, opts.cls) then
       it.id = id
       out[#out + 1] = it
