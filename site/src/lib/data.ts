@@ -13,6 +13,9 @@ export interface Quest {
   guides: string[]; in_route: boolean; verdict: Verdict;
   skip_note?: { note: string; reason: string; guide: string };
   measured?: { minutes: number | null; xp_per_min: number | null; players: number | null };
+  /** Fewer players than the site needs to trust it: shown, but the model still scores the quest. */
+  skip_below?: number | null;
+  early?: { minutes: number | null; xp_per_min: number | null; players: number | null };
   chain?: { name: string; part: number; parts: number; xp: number; minutes: number; xp_per_min: number | null };
 }
 export interface Guide {
@@ -26,7 +29,7 @@ export interface Guide {
 export const guides = guidesJson as Guide[];
 export const quests = questsJson as Quest[];
 export const zones = zonesJson as { name: string; slug: string; quests: number; do: number; skip: number; optional: number; unknown: number; median_xp_per_min: number | null }[];
-export const meta = metaJson as { built: string; skip_threshold: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
+export const meta = metaJson as { built: string; skip_fraction: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
 export interface ScoutRow { handle: string; score: number; quests: number; drops: number; discoveries: number; zones: number; sessions: number }
 /** Contributor leaderboard (tools/site_data.py write_scouts): anonymous handles and counts only. */
 export const scouts = scoutsJson as {

@@ -1,7 +1,12 @@
-"""Score every quest in a level band on its own: XP per minute including travel.
+"""Score every quest on its own: minutes and XP per minute, travel included.
 
-Usage: python3 tools/score_quests.py --min 18 --max 31 --race Troll --class Hunter \
-          --zones 1413,1442,1440,1441,1424 --out reports/quest-scores-18-31.csv
+A quest's time is: talk to the giver, run to each objective and do it (kills, loot, objects),
+then run to whoever takes it back, even in another zone. Quest XP is the game's own number;
+time is a model (run speed, seconds per kill, drop rates) until ForeverScout logs measure it.
+
+Usage (every quest in the game, both factions):
+  python3 tools/score_quests.py --out reports/quest-scores-1-60.csv
+Narrower: --min 18 --max 31 --race Troll --class Hunter --zones 1413,1442
 """
 import argparse
 import csv
@@ -16,34 +21,36 @@ from guidegen import (CLASS_BITS, DIALOG_SEC, ESCORT_SEC, EVENT_RE, KILL_SEC, LO
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--min", type=int, default=18)
-    ap.add_argument("--max", type=int, default=31)
-    ap.add_argument("--race", default="Troll")
-    ap.add_argument("--class", dest="cls", default="Hunter")
-    ap.add_argument("--zones", default="1413,1442,1440,1441,1424")
-    ap.add_argument("--out", default="reports/quest-scores.csv")
+    ap.add_argument("--min", type=int, default=1)
+    ap.add_argument("--max", type=int, default=60)
+    ap.add_argument("--race", default="any", help="only quests this race can take (default: any)")
+    ap.add_argument("--class", dest="cls", default="any", help="only quests this class can take (default: any)")
+    ap.add_argument("--zones", default="all", help="comma-separated UiMap ids of quest givers (default: all)")
+    ap.add_argument("--out", default="reports/quest-scores-1-60.csv")
     a = ap.parse_args()
-    zones = {int(z) for z in a.zones.split(",")}
+    zones = None if a.zones == "all" else {int(z) for z in a.zones.split(",")}
     d = Data()
-    g = Generator(d, {"guide": {"name": "score", "for": a.race, "class": a.cls}, "steps": []})
+    g = Generator(d, {"guide": {"name": "score", "for": "" if a.race == "any" else a.race,
+                                "class": "HUNTER" if a.cls == "any" else a.cls}, "steps": []})
     g.step_no, g.step_only = 0, None
-    race_bit, class_bit = RACE_BITS[a.race], CLASS_BITS[a.cls.upper()]
+    race_bit = 0 if a.race == "any" else RACE_BITS[a.race]
+    class_bit = 0 if a.cls == "any" else CLASS_BITS[a.cls.upper()]
     rows = []
     for qid, q in d.quests.items():
         ql = q.get("questLevel") or 0
         if not (a.min <= ql <= a.max):
             continue
         races = (q.get("requiredRaces") or 0) & 0xFF
-        if races and not races & race_bit:
+        if race_bit and races and not races & race_bit:
             continue
         classes = q.get("requiredClasses") or 0
-        if classes and not classes & class_bit:
+        if class_bit and classes and not classes & class_bit:
             continue
         if (q.get("specialFlags") or 0) & 1:
             continue  # repeatable
         g.s.pos = None
         start, giver, _ = g.endpoint(qid, "startedBy")
-        if not start or start[0] not in zones:
+        if not start or (zones is not None and start[0] not in zones):
             continue
         g.s.pos = start
         level = max(ql - 1, 1)

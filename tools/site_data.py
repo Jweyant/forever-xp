@@ -23,8 +23,12 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "site" / "src" / "data"
 
-# Below this many XP per minute (quest on its own, travel included) a quest is a skip candidate.
-SKIP_XP_PER_MIN = 250
+# A quest is a skip candidate when it earns less than this share of the typical XP per minute
+# (travel included) of quests within two levels of it. A flat number can't work: a level 3 quest
+# can't reach what a level 30 quest does.
+SKIP_FRACTION = 0.6
+# Characters that must have logged a quest before its measured time replaces the model.
+MIN_PLAYERS = 3
 
 ACTION_KEYS = ("accept", "turnin", "complete")
 
@@ -325,10 +329,10 @@ def main():
             for r in csv.DictReader(f):
                 q = num(r.get("quest_id") or r.get("quest"), int)
                 secs = num(r.get("median_seconds"))
-                if q and secs:
+                if q and secs and secs > 0:
                     measured[q] = {"minutes": round(secs / 60, 1),
                                    "xp_per_min": num(r.get("xp_per_minute"), lambda v: int(float(v))),
-                                   "players": num(r.get("players"), int)}
+                                   "players": num(r.get("players"), int) or 0}
 
     quests = {}
     for sp in sorted((ROOT / "reports").glob("quest-scores-*.csv")):
@@ -361,24 +365,39 @@ def main():
         q["in_route"] = bool(q["guides"])
         if qid in skip_notes:
             q["skip_note"] = skip_notes[qid]
+        # One player's log is a sample, not a measurement: it's shown, but the model's
+        # minutes and XP/min stay in charge until MIN_PLAYERS characters have logged the quest.
         if qid in measured:
-            q["measured"] = measured[qid]
+            key = "measured" if measured[qid]["players"] >= MIN_PLAYERS else "early"
+            q[key] = measured[qid]
 
     # A chained quest is judged by its whole chain: part 4 of Elixir of Agony is pointless
     # alone and misleading alone (a 20-second turn-in looks like 7,000 XP/min).
     qdb_file = ROOT / "gamedata" / "quests.json"
     chains = quest_chains(json.loads(qdb_file.read_text()), quests) if qdb_file.exists() else {}
 
+    by_level = {}
+    for q in quests.values():
+        if q.get("xp_per_min") and q.get("level"):
+            by_level.setdefault(q["level"], []).append(q["xp_per_min"])
+
+    def skip_below(level):
+        if not level:
+            return None
+        rates = [r for lv in range(level - 2, level + 3) for r in by_level.get(lv, [])]
+        return int(statistics.median(rates) * SKIP_FRACTION) if len(rates) >= 10 else None
+
     for qid, q in quests.items():
         if qid in chains:
             q["chain"] = chains[qid]
+        q["skip_below"] = skip_below(q.get("level"))
         rate = (q.get("measured") or {}).get("xp_per_min") or q.get("xp_per_min")
         rate = (q.get("chain") or {}).get("xp_per_min", rate)
         if q["in_route"]:
             q["verdict"] = "do"
         elif q.get("unlocated"):
             q["verdict"] = "unknown"
-        elif qid in skip_notes or (rate is not None and rate < SKIP_XP_PER_MIN):
+        elif qid in skip_notes or (rate is not None and q["skip_below"] and rate < q["skip_below"]):
             q["verdict"] = "skip"
         else:
             q["verdict"] = "optional"
@@ -427,8 +446,8 @@ def main():
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))
     (OUT / "meta.json").write_text(json.dumps({
         "built": datetime.now(timezone.utc).isoformat(timespec="minutes"),
-        "skip_threshold": SKIP_XP_PER_MIN,
-        "measured_quests": len(measured),
+        "skip_fraction": SKIP_FRACTION,
+        "measured_quests": sum(1 for m in measured.values() if m["players"] >= MIN_PLAYERS),
         "confirmed_items": confirmed_items,
         "quests": len(quests),
         "guides": len(guides),

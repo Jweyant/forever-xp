@@ -20,8 +20,8 @@ const seen = Array.isArray(q.seen) ? q.seen : [];
 const why = !s ? null :
   s.verdict === "do" ? "Part of a Forever XP route." :
   s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` :
-    s.chain ? `Its whole ${s.chain.parts}-part chain scores below ${meta.skip_threshold} XP per minute once travel is counted.` :
-    `Below ${meta.skip_threshold} XP per minute once travel is counted.`) :
+    s.chain ? `Its whole ${s.chain.parts}-part chain scores below ${s.skip_below} XP per minute (${Math.round(meta.skip_fraction * 100)}% of the usual rate at this level) once travel is counted.` :
+    `Below ${s.skip_below} XP per minute (${Math.round(meta.skip_fraction * 100)}% of the usual rate at this level) once travel is counted.`) :
   s.verdict === "unknown" ? "Some objectives have no known location yet, so it can't be scored." :
   "Worth doing if you're nearby, but it isn't in a route.";
 const chainScore = s?.chain && (s.verdict === "optional" || s.verdict === "skip")
@@ -50,7 +50,9 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
     <div><dt>Quest level</dt><dd>{q.lv > 0 ? q.lv : "–"}</dd></div>
     <div><dt>Required level</dt><dd>{q.req || "–"}</dd></div>
     <div><dt>Quest XP</dt><dd>{s?.xp && !q.xpe ? s.xp : xpText(q)}{q.xpe && <span class="muted small" title="No source has this quest's XP yet. This is the usual XP for a quest of its level and kind; ForeverScout logs will replace it."> estimate</span>}</dd></div>
-    {s && <div><dt>Estimated minutes</dt><dd>{s.minutes ?? "–"}</dd></div>}
+    {s && (s.measured
+      ? <div><dt>Minutes (measured)</dt><dd>{s.measured.minutes ?? "–"}</dd></div>
+      : <div><dt>Estimated minutes</dt><dd title="Talking, travel from the giver to the objectives and back to the turn-in, kills and loot, at Classic run speed. Player logs replace it.">{s.minutes ?? "–"}</dd></div>)}
     {s && <div><dt>XP per minute</dt><dd>{s.unlocated || rate == null ? "–" : rate}</dd></div>}
     {q.repu ? <div><dt>Reputation rewards</dt><dd>{q.repu}</dd></div> : null}
   </dl>
@@ -136,8 +138,10 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
 
   <div class="callout">
     {s?.measured
-      ? <p>Measured from {s.measured.players} player logs: median {s.measured.minutes} minutes.</p>
-      : <p>No player has logged this quest yet. If you do it with <a href="/scout/">ForeverScout</a> running, your time helps score it. <a href={SUBMIT_LOG}>Send a log</a></p>}
+      ? <p>Measured from {s.measured.players} players' logs: a median of {s.measured.minutes} minutes of play between accepting and turning it in.</p>
+      : s?.early
+      ? <p>{s.early.players === 1 ? "One player has" : `${s.early.players} players have`} logged this quest so far ({s.early.minutes} minutes). The estimate above stays until three have. If you do it with <a href="/scout/">ForeverScout</a> running, your time counts. <a href={SUBMIT_LOG}>Send a log</a></p>
+      : <p>No player has logged this quest yet, so the minutes are an estimate: talking, running from the giver to the objectives and on to the turn-in, kills and loot. If you do it with <a href="/scout/">ForeverScout</a> running, your time replaces it. <a href={SUBMIT_LOG}>Send a log</a></p>}
   </div>
   <p class="small muted">Quest ID {q.id}. Quest data from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3){fromOpendata && <>, with gaps filled from <a href={OPENDATA}>opendata</a> (CC BY 4.0)</>}.</p>
   <Comments />

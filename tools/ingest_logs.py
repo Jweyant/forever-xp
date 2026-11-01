@@ -290,24 +290,73 @@ def write_candidates(out_dir, new_quests, new_npcs, findings, questie):
     (out_dir / "questie_candidates.lua").write_text("\n".join(lines) + "\n")
 
 
+# Gaps longer than this with no event or breadcrumb count as away from keyboard, not questing.
+IDLE_CAP = 120
+# Samples longer than this many hours of attributed play are dropped as broken logs.
+MAX_SAMPLE_SECONDS = 4 * 3600
+
+
 def write_timing(db, out_dir):
-    """Accept -> turn-in time and XP per minute for each quest, per character."""
-    rows = db.execute("""SELECT s.char_id, e.session_id, e.k, e.q, e.t, e.xp FROM events e
-                         JOIN sessions s ON s.id = e.session_id
-                         WHERE e.k IN ('accept','turnin') ORDER BY e.session_id, e.t""").fetchall()
-    accepted = {}
+    """Time each quest really cost, per character, from accept to turn-in.
+
+    Wall time from accept to turn-in overstates a quest: players carry several quests at once,
+    stop for a meal, or log out and finish it the next evening. So time is attributed:
+      - each character's sessions are joined on one clock (session start + event time), so a
+        quest accepted one evening and handed in the next still counts, but the time logged out
+        doesn't;
+      - the time between two activity marks (any event or position breadcrumb) is capped at
+        IDLE_CAP seconds, so standing still for an hour adds two minutes, not sixty;
+      - a stretch that ends in objective progress or a turn-in for a quest goes to that quest;
+        any other stretch (running, flying, killing) is split evenly between the quests in the log.
+    Kill XP is attributed the same way, so XP per minute counts quest and kill XP, like the
+    route model. Only accept -> turn-in pairs count; abandoned quests and quests already in the
+    log when recording began are left out. `wall_seconds` keeps the raw accept -> turn-in median."""
+    sessions = db.execute("SELECT id, char_id, start FROM sessions WHERE start IS NOT NULL").fetchall()
+    by_char = defaultdict(list)
+    for sid, char, start in sessions:
+        if isinstance(start, (int, float)):
+            by_char[char].append((start, sid))
     per_quest = defaultdict(list)
-    for char, sid, k, q, t, xp in rows:
-        if k == "accept":
-            accepted[(sid, q)] = t
-        elif (sid, q) in accepted:
-            per_quest[q].append((t - accepted.pop((sid, q)), xp or 0, char))
-    out = ["quest_id,players,median_seconds,median_xp,xp_per_minute"]
+    for char, sess in by_char.items():
+        marks = []  # (absolute time, session id, kind, quest, xp, src)
+        for start, sid in sess:
+            for t, k, q, xp, src in db.execute("SELECT t, k, q, xp, src FROM events WHERE session_id = ?", (sid,)):
+                if isinstance(t, (int, float)) and t >= 0:
+                    marks.append((start + t, sid, k, q if isinstance(q, int) else None,
+                                  xp if isinstance(xp, int) and xp > 0 else 0, src))
+            for (t,) in db.execute("SELECT t FROM crumbs WHERE session_id = ?", (sid,)):
+                if isinstance(t, (int, float)) and t >= 0:
+                    marks.append((start + t, sid, "crumb", None, 0, None))
+        marks.sort(key=lambda m: (m[0], m[2] != "accept"))
+        active = {}  # quest -> {"t0", "secs", "kxp"}
+        prev = None
+        for when, sid, k, q, xp, src in marks:
+            if prev is not None and prev[1] == sid and active:
+                dt = min(max(when - prev[0], 0), IDLE_CAP)
+                own = q if q in active and k in ("obj", "turnin") else None
+                share = [own] if own else list(active)
+                for aq in share:
+                    active[aq]["secs"] += dt / len(share)
+            if k == "xp" and src == "k" and active and xp:
+                for aq in active:
+                    active[aq]["kxp"] += xp / len(active)
+            if k == "accept" and q:
+                active[q] = {"t0": when, "secs": 0.0, "kxp": 0.0}
+            elif k == "abandon" and q in active:
+                del active[q]
+            elif k == "turnin" and q in active:
+                a = active.pop(q)
+                if 0 < a["secs"] <= MAX_SAMPLE_SECONDS:
+                    per_quest[q].append((a["secs"], when - a["t0"], xp, a["kxp"], char))
+            prev = (when, sid)
+    out = ["quest_id,players,median_seconds,median_xp,xp_per_minute,wall_seconds,samples"]
     for q, samples in sorted(per_quest.items()):
         secs = statistics.median(s[0] for s in samples)
-        xp = statistics.median(s[1] for s in samples)
-        xpm = round(xp / (secs / 60), 1) if secs > 0 else ""
-        out.append(f"{q},{len({s[2] for s in samples})},{secs},{xp},{xpm}")
+        wall = statistics.median(s[1] for s in samples)
+        xp = statistics.median(s[2] for s in samples)
+        kxp = statistics.median(s[3] for s in samples)
+        xpm = round((xp + kxp) / (secs / 60), 1) if secs > 0 else ""
+        out.append(f"{q},{len({s[4] for s in samples})},{round(secs)},{xp},{xpm},{round(wall)},{len(samples)}")
     (out_dir / "quest_timing.csv").write_text("\n".join(out) + "\n")
 
 
