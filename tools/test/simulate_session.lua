@@ -172,6 +172,17 @@ end
 
 GetInstanceInfo = function() return "Ragefire Chasm", "party", 1, "Normal", 5, 0, false, 389 end
 
+-- Talents: two tabs, listed out of row order to prove the addon sorts by (tier, column).
+local talentRanks = { [1] = { 2, 5, 0 }, [2] = { 1 } } -- tab 1: ranks by index; index 1 sits on row 2
+GetNumTalentTabs = function() return 2 end
+GetNumTalents = function(tab) return tab == 1 and 3 or 1 end
+GetTalentInfo = function(tab, i)
+  -- tab 1: index 1 -> (tier 2, col 1), index 2 -> (tier 1, col 1), index 3 -> (tier 1, col 2)
+  local tier, column = 1, 1
+  if tab == 1 and i == 1 then tier = 2 elseif tab == 1 and i == 3 then column = 2 end
+  return "Talent " .. tab .. "." .. i, "icon", tier, column, talentRanks[tab][i] or 0, 5
+end
+
 local function bossFight(ok, seconds)
   fire("ENCOUNTER_START", 1443, "Taragaman the Hungerer", 1, 5)
   advance(seconds)
@@ -201,6 +212,12 @@ advance(5)
 fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-1", 8690)
 advance(10)
 SlashCmdList.FOREVERSCOUT("")
+-- Spend a point, then the debounced talent log fires: "502-1", then "522-1" after the extra point.
+fire("CHARACTER_POINTS_CHANGED")
+advance(35)
+talentRanks[1][3] = 2
+fire("CHARACTER_POINTS_CHANGED")
+advance(35)
 bossFight(false, 40)
 bossFight(true, 95)
 fire("PLAYER_LOGOUT")
