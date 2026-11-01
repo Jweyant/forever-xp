@@ -4,12 +4,15 @@ import { RELEASES, SUBMIT_LOG, REPO } from "../lib/data";
 import { SITE } from "../config";
 const commands = [
   ["/fscout", "Status: sessions, events, route points, items missing from Questie"],
+  ["/fscout bis", "Best-in-slot planner in game: your gear next to the best item per slot, where to get it, map pins (also on the minimap button)"],
+  ["/fscout pins", "Show or hide the plan's gear locations on the world map and minimap"],
   ["/fscout pause", "Stop recording (resume with /fscout resume)"],
   ["/fscout share on", "Allow automatic uploads by the uploader app (off to stop)"],
   ["/fscout note <text>", "Drop a note at your spot, like \"cave is packed\" or \"skip, elite\""],
   ["/fscout gear", "Copy your equipped gear into the BIS planner on this site"],
   ["/fscout report", "Copyable list of quests and NPCs Questie is missing"],
   ["/fscout export", "Copyable export string of your recorded sessions"],
+  ["/fscout minimap", "Show or hide the minimap button (left-click opens the planner, right-click pauses recording)"],
   ["/fscout wipe confirm", "Erase everything recorded"],
 ];
 ---
@@ -116,8 +119,9 @@ const commands = [
   </ul>
 
   <h2>ForeverScout and best in slot</h2>
-  <p><b>Today:</b> <code>/fscout gear</code> copies the gear you're wearing into the <a href="/bis/">BIS planner</a>, so it starts from your character and shows which slots to upgrade first. It's a copy and paste: your gear isn't uploaded. Loot logs fill in where each Forever item drops.</p>
-  <p><b>What we're changing:</b> the planner's stat weights are set by hand per role today, so talents, race and hit caps don't change the result. Next, weights will come from simulations of each spec using <a href="https://github.com/wowsims/forever">wowsims/forever</a>, an open-source Forever simulator, and then take your talents, race and caps into account.</p>
+  <p><b>In game:</b> <code>/fscout bis</code> (or the minimap button) opens the same planner inside WoW: what you're wearing next to the best item for every slot for your spec and goal, at your level or any level up to 60, with a stat focus (resistances, haste, stamina...), a filter for where you're willing to farm, and where each item comes from: quest giver, zone and coordinates, with pins on the world map and minimap. It reads your equipped gear from the game, so nothing is pasted or uploaded.</p>
+  <p><b>On the site:</b> <code>/fscout gear</code> copies the gear you're wearing into the <a href="/bis/">BIS planner</a> here, where you can edit the stat weights, add your talent build and share the plan. The game and the site pick the same items from the same data; a test checks every class, spec, goal and level before each release.</p>
+  <p><b>Stat weights</b> come from simulations of each spec with <a href="https://github.com/wowsims/forever">wowsims/forever</a> where we have them (more specs are being run), and from per-role starting weights otherwise; hit caps, set bonuses and racial hit are counted in both places.</p>
   <p><b>After launch, if you choose to share:</b> ForeverScout will be able to record a snapshot of the gear you have equipped, so the planner can show what players of each spec actually wear. That would only appear once at least 10 accounts share for a spec, with one count per character per day. It will be listed on this page before it's turned on, and it stays off if sharing is off.</p>
 
   <h2>Commands</h2>

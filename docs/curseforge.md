@@ -18,6 +18,9 @@ beta or alpha files.
 > sources on **[forever-xp.com](https://forever-xp.com)**, and missing quests get sent back to
 > Questie.
 >
+> - `/fscout bis` (or the minimap button) opens a best-in-slot planner in game: your gear next to
+>   the best item for every slot for your spec, goal and level, where each item comes from, and
+>   pins on the world map and minimap. Same picks as forever-xp.com/bis.
 > - `/fscout` shows what's been recorded and whether sharing is on
 > - `/fscout gear` copies your equipped gear into the forever-xp.com BIS planner
 > - `/fscout report` lists quests and NPCs missing from Questie

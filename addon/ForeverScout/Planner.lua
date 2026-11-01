@@ -91,10 +91,6 @@ function P.SimPresets(cls, specKey)
   local list = sim and sim.specs and sim.specs[cls .. "." .. specKey]
   return list or {}
 end
-function P.SimCommit()
-  local sim = ForeverScoutData and ForeverScoutData.SIM
-  return sim and sim.commit or ""
-end
 
 -- Weights for a spec and goal: the sim's where it has them, else the starting weights.
 -- Same arithmetic as the site's weightsFor (site/src/scripts/gear/model.ts).
@@ -341,7 +337,14 @@ function P.Value(opts, w, doll, it)
   return v
 end
 
-local function candidates(opts, doll)
+-- Items that could go in a slot: eligible for the class, level, side and source filter. With a
+-- focus stat, only items carrying the stat compete; when none (or none left after `exclude`)
+-- the normal pool is used so a slot never stays empty for the focus's sake.
+-- Scans are cached per slot for the duration of one Suggest (opts._cache), since the cap-aware
+-- search runs the same scans several times.
+local function scan(opts, doll)
+  local cache = opts._cache
+  if cache and cache[doll] then return cache[doll][1], cache[doll][2] end
   local out, focused = {}, {}
   for id, it in pairs(ITEMS) do
     if it.q >= 1 and it.lv <= opts.level and (not it.sd or it.sd == opts.side)
@@ -352,13 +355,23 @@ local function candidates(opts, doll)
       if opts.focus and P.FocusAmount(it, opts.focus) > 0 then focused[#focused + 1] = it end
     end
   end
-  if opts.focus and #focused > 0 then return focused end
+  if cache then cache[doll] = { out, focused } end
+  return out, focused
+end
+
+local function candidates(opts, doll, exclude)
+  local out, focused = scan(opts, doll)
+  if opts.focus then
+    local n = #focused
+    if exclude then for _, it in ipairs(focused) do if it.id == exclude then n = n - 1 end end end
+    if n > 0 then return focused end
+  end
   return out
 end
 
 local function best(opts, w, doll, exclude)
   local top, topV = nil, 0
-  for _, it in ipairs(candidates(opts, doll)) do
+  for _, it in ipairs(candidates(opts, doll, exclude)) do
     if it.id ~= exclude then
       local v = P.Value(opts, w, doll, it)
       -- Ties go to the lower item ID so results are stable between runs and match the site.
@@ -421,7 +434,12 @@ end
 -- weightings and keeps the plan that scores best once hit past the cap stops counting.
 function P.Suggest(opts)
   local w = opts.weights or P.WeightsFor(opts.cls, opts.spec, opts.goal)
-  if not P.HitCtx(opts) or not w.hit or w.hit == 0 then return P.SuggestOnce(opts, w), w end
+  opts._cache = {}
+  if not P.HitCtx(opts) or not w.hit or w.hit == 0 then
+    local p = P.SuggestOnce(opts, w)
+    opts._cache = nil
+    return p, w
+  end
   local best, bestV = {}, -math.huge
   for _, m in ipairs({ 1, 0.8, 0.6, 0.45, 0.3, 0.15, 0 }) do
     opts.hitScale = m
@@ -431,6 +449,7 @@ function P.Suggest(opts)
     if v > bestV then best, bestV = p, v end
   end
   opts.hitScale = nil
+  opts._cache = nil
   return best, w
 end
 
@@ -450,7 +469,7 @@ function P.SuggestOnce(opts, w)
   for _, it in ipairs(mains) do if it.s == "twohand" then twos[#twos + 1] = it else ones[#ones + 1] = it end end
   local twoH, oneH = bestOf(twos, opts, w, "mainhand"), bestOf(ones, opts, w, "mainhand")
   local offs = {}
-  for _, it in ipairs(candidates(opts, "offhand")) do
+  for _, it in ipairs(candidates(opts, "offhand", oneH and oneH.id)) do
     if not oneH or it.id ~= oneH.id then offs[#offs + 1] = it end
   end
   local off = bestOf(offs, opts, w, "offhand")
@@ -477,18 +496,6 @@ function P.Equipped()
 end
 
 function P.Item(id) return ITEMS[id] end
-
--- Upgrade list: for each slot, the BIS pick, the current item and the score difference.
-function P.Compare(opts, plan, cur, w)
-  local rows = {}
-  for _, d in ipairs(P.PAPERDOLL) do
-    local pid, cid = plan[d], cur[d]
-    local pit, cit = pid and ITEMS[pid], cid and ITEMS[cid]
-    local pv, cv = P.Value(opts, w, d, pit), P.Value(opts, w, d, cit)
-    rows[#rows + 1] = { slot = d, plan = pid, cur = cid, planV = pv, curV = cv, gain = pv - cv }
-  end
-  return rows
-end
 
 -- Detailed lines for one source, and the map point (uiMapID, x, y, title) to pin, if any.
 function P.SourceLines(s)

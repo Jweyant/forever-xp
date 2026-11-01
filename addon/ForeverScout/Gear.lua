@@ -43,11 +43,6 @@ end
 ------------------------------------------------------------------------------------------
 -- Loot logging: item ID, where it came from (NPC or object ID) and the map position.
 
-local function sourceOf(guid)
-  if not guid then return nil end
-  local kind, _, _, _, _, id = strsplit("-", guid)
-  return kind, tonumber(id)
-end
 
 ns:On("LOOT_OPENED", function()
   if not GetNumLootItems then return end
@@ -60,7 +55,10 @@ ns:On("LOOT_OPENED", function()
       local _, _, _, _, quality = GetLootSlotInfo(slot)
       if (quality or 0) >= 2 or (C_Item and C_Item.GetItemInventoryTypeByID and (C_Item.GetItemInventoryTypeByID(item) or 0) > 0) then
         local kind, id
-        if GetLootSourceInfo then kind, id = sourceOf((GetLootSourceInfo(slot))) end
+        if GetLootSourceInfo then
+          local ok, guid = pcall(GetLootSourceInfo, slot)
+          if ok then kind, id = ns.ParseGUID(guid) end
+        end
         ns:Log("loot", { item = item, q = quality, src = id, kind = kind })
       end
     end
