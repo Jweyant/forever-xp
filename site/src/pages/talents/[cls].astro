@@ -21,6 +21,7 @@ const okBuild = (b: unknown): b is { n: string; t: string; note?: string; spec?:
 const groups = (buildsJson as { classes: Record<string, Record<string, unknown[]>> }).classes?.[c.slug] ?? {};
 const oursBuilds = (Array.isArray(groups.ours) ? groups.ours : []).filter(okBuild);
 const wowsimsBuilds = (Array.isArray(groups.wowsims) ? groups.wowsims : []).filter(okBuild);
+const communityBuilds = (Array.isArray(groups.community) ? groups.community : []).filter(okBuild);
 // What players actually run, from ForeverScout logs: every build, most used first (aggregates
 // only; a build is listed once two or more characters use it, so nobody's shows alone).
 type PlayerGroups = { players?: number; groups?: Record<string, { n?: number; builds?: unknown }> };
@@ -39,7 +40,7 @@ const popular = ([
 // "0 / 31 / 20" from a build string, so each row names its spec without loading it.
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
-const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0;
+const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0 || communityBuilds.length > 0;
 // The quick strip above the calculator: the most-used player builds, then the recommended ones.
 const popAll = popular.find((g) => g.name === "Everyone");
 const popPvp = popular.find((g) => g.name.startsWith("PvP"));
@@ -115,10 +116,22 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
         {popular.length === 0 && <p class="gnote">No player builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and the builds {c.name}s actually use show up here, split into everyone, PvE and PvP (battleground) players — a build is listed once two or more characters use it.</p>}
         {popular.length > 0 && <p class="gnote">A build is listed once two or more characters use it. No open source publishes Forever PvP builds, so the PvP list is measured from battleground players' own logs.</p>}
 
+        {communityBuilds.length > 0 && (
+          <section>
+            <h3>Community PvP <span class="muted">· battlegrounds</span></h3>
+            <ul class="b">
+              {communityBuilds.map((b) => (
+                <li><a class="load" href={`#${b.t}`}><b>{b.n}</b><span class="split">{split(b.t)}</span></a>{b.note && <span class="sub">{b.note}</span>}</li>
+              ))}
+            </ul>
+            <p class="gnote">Hand-written battleground builds from the open-source <a href="https://github.com/Boco10/WoWForeverBuilds-Addon" rel="noopener">WoW Forever Builds</a> addon (MIT) — its authors' picks, not measured. A class is imported only while the addon's talent data matches the game client's exactly.</p>
+          </section>
+        )}
+
         {oursBuilds.length > 0 && (
           <section>
-            <h3>Our sim runs <span class="muted">· PvE</span></h3>
-            <p class="gnote">The builds our own <a href="/bis/">stat-weight simulations</a> run.</p>
+            <h3>Our sim runs</h3>
+            <p class="gnote">The builds our own <a href="/bis/">stat-weight simulations</a> run — raid fights, plus a 20-second burst against a player-like target for PvP gearing.</p>
             <ul class="b">
               {oursBuilds.map((b) => (
                 <li><a class="load" href={`#${b.t}`} title={b.note || undefined}><b>{b.n}</b><span class="split">{split(b.t)}</span></a><span class="sub">{dominant(b.t) && !what(b).startsWith(dominant(b.t)) ? `${dominant(b.t)} · ` : ""}{what(b)}</span></li>

@@ -1,16 +1,31 @@
 [
  {
   "key": "HUNTER.sv",
-  "label": "Planner BIS · weave build",
+  "label": "Planner BIS \u00b7 weave build",
   "note": "Our own sim run: the planner's suggested gear on the default weave build, full raid buffs, a 180 s raid boss. Ranged weapon DPS stands in for all weapon DPS.",
   "file": "hunter.siml",
   "specDir": "hunter/dps"
  },
  {
   "key": "WARRIOR.arms",
-  "label": "Planner BIS · Arms",
+  "label": "Planner BIS \u00b7 Arms",
   "note": "Our own sim run: the planner's suggested gear (a two-hander, so the Arms build) with full raid buffs on a 180 s raid boss.",
   "file": "warrior_arms.siml",
+  "specDir": "warrior/dps",
+  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"
+ },
+ {
+  "key": "HUNTER.sv",
+  "label": "Community PvP \u00b7 20 s burst",
+  "note": "Our own sim run: the community Survival PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
+  "file": "hunter_pvp.siml",
+  "specDir": "hunter/dps"
+ },
+ {
+  "key": "WARRIOR.arms",
+  "label": "Community PvP \u00b7 20 s burst",
+  "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
+  "file": "warrior_pvp.siml",
   "specDir": "warrior/dps",
   "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"
  }

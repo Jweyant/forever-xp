@@ -77,6 +77,54 @@ class Popularity(unittest.TestCase):
         # the last two share a valid 72-point... no: 2+70=72 > 60, so out too.
         self.assertEqual(out, {})
 
+GUIDES_LUA = """
+local _, ns = ...
+ns.talents = {
+  WARRIOR = {
+    { name = "Arms", { "Improved Heroic Strike", 0, 0, 3 }, { "Deflection", 0, 1, 5 }, { "Mortal Strike", 6, 1, 1 } },
+    { name = "Fury", { "Cruelty", 0, 2, 5 } },
+    { name = "Protection", { "Shield Specialization", 0, 1, 5 } },
+  },
+  MAGE = {
+    { name = "Arcane", { "Arcane Subtlety", 0, 0, 2 } },
+    { name = "Fire", { "Improved Fireball", 0, 1, 5 } },
+    { name = "Frost", { "Frost Warding", 0, 0, 2 } },
+  },
+}
+ns.guides = {
+  WARRIOR = {
+    { id = "arms-warrior-pvp-guide", title = "Arms Warrior PvP guide: Mortal Strike burst", spec = "Arms", kind = "Endgame PvP", from = 10, to = 60, order = "000000010101010102" },
+    { id = "arms-warrior-leveling", title = "Arms leveling", spec = "Arms", kind = "Leveling", from = 10, to = 60, order = "0000" },
+    { id = "fury-warrior-pvp-guide", title = "Fury PvP: too many points", spec = "Fury", kind = "Endgame PvP", from = 10, to = 60, order = "101010101010" },
+  },
+  MAGE = {
+    { id = "frost-mage-pvp-guide", title = "Frost PvP", spec = "Frost", kind = "Endgame PvP", from = 10, to = 60, order = "2020" },
+  },
+}
+"""
+OUR_TALENTS = {"talents": [
+    [1, "Warrior", [[161, "Arms", 0, [[1, 0, 0, "Improved Heroic Strike", 3, None, None, "i", ["d"], 0, 0, 1],
+                                      [2, 0, 1, "Deflection", 5, None, None, "i", ["d"], 0, 0, 2],
+                                      [3, 6, 1, "Mortal Strike", 1, None, None, "i", ["d"], 0, 0, 3]]],
+                    [164, "Fury", 0, [[4, 0, 2, "Cruelty", 5, None, None, "i", ["d"], 0, 0, 4]]],
+                    [163, "Protection", 0, [[5, 0, 1, "Shield Specialization", 5, None, None, "i", ["d"], 0, 0, 5]]]]],
+    [8, "Mage", [[81, "Arcane", 0, [[6, 0, 0, "Arcane Subtlety", 2, None, None, "i", ["d"], 0, 0, 6]]],
+                 [41, "Fire", 0, [[7, 0, 1, "Improved Fireball", 5, None, None, "i", ["d"], 0, 0, 7]]],
+                 [61, "Frost", 0, [[8, 0, 0, "Frost Warding", 3, None, None, "i", ["d"], 0, 0, 8]]]]],  # rank drifted: 3 vs their 2
+]}
+
+
+class Community(unittest.TestCase):
+    def test_imports_only_matching_classes_and_valid_orders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "Guides.lua").write_text(GUIDES_LUA)
+            talents = Path(tmp) / "talents.json"
+            talents.write_text(json.dumps(OUR_TALENTS))
+            out = build_talent_builds.community(tmp, talents)
+        # Arms PvP: 3 points in talent 0, 5 in talent 1, 1 in talent 2 (index 2 = Mortal Strike) -> "351"
+        self.assertEqual(out, {"warrior": [{"n": "Arms PvP", "t": "351", "note": "Mortal Strike burst"}]})
+        # The leveling guide is skipped (kind), Fury PvP is skipped (6 points into a 5-rank talent),
+        # and Mage is skipped entirely: Frost Warding's rank drifted, so the whole class fails the gate.
 
 if __name__ == "__main__":
     unittest.main()

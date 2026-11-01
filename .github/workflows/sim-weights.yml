@@ -26,6 +26,7 @@ permissions:
 
 env:
   WOWSIMS_COMMIT: 376a6aa2886bddbd66784bfe3ba691e99abb9496  # wowsims/forever, 2026-10-31
+  FOREVER_BUILDS_COMMIT: ec3549104ef74c0b1ebcf55f1db9d3a6692bc0f4  # Boco10/WoWForeverBuilds-Addon (MIT), 2026-10-24
 
 concurrency:
   group: sim-weights-${{ github.ref }}
@@ -99,10 +100,20 @@ jobs:
             -configs "$GITHUB_WORKSPACE/gamedata/simconfigs" \
             -out "$GITHUB_WORKSPACE/gamedata/simweights.json" -iterations 5000
 
-      # The same pinned checkout also carries wowsims' preset builds; collect them with ours for
-      # the talent pages' Builds section.
+      # The same pinned checkout also carries wowsims' preset builds; collect them with ours and
+      # with the community addon's PvP builds for the talent pages' Builds section. A class's
+      # community builds are imported only while the addon's talent tables match our client data
+      # exactly (tools/build_talent_builds.py), so a drifted tree can't mislabel talents.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Boco10/WoWForeverBuilds-Addon
+          ref: ${{ env.FOREVER_BUILDS_COMMIT }}
+          path: ext/forever-builds
+          persist-credentials: false
       - name: Collect talent builds
-        run: python3 -I tools/build_talent_builds.py --simconfigs gamedata/simconfigs --wowsims ext/wowsims --out gamedata/talent-builds.json
+        run: |
+          python3 -I tools/build_talent_builds.py --simconfigs gamedata/simconfigs --wowsims ext/wowsims \
+            --community ext/forever-builds --talents gamedata/talents.json --out gamedata/talent-builds.json
 
       - name: Commit if changed
         id: commit
