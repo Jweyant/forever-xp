@@ -285,6 +285,8 @@ func (a *App) send(path string, data []byte) error {
 	req.Header.Set("X-FScout-Install", a.state.InstallID)
 	req.Header.Set("X-FScout-Slot", a.slot(path))
 	req.Header.Set("X-FScout-Version", version)
+	// A named agent: Cloudflare's bot checks refuse generic library agents such as Go-http-client.
+	req.Header.Set("User-Agent", "ForeverScout-Uploader/"+version+" (+https://forever-xp.com/scout/)")
 	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
