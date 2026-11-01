@@ -200,6 +200,5 @@ window.addEventListener("hashchange", () => {
   decode(location.hash);
   selected = null;
   hideTip();
-  render();
-  root.querySelector<HTMLElement>("[data-trees]")!.scrollIntoView({ behavior: "smooth", block: "start" });
+  render(); // the builds panel sits beside the trees, so loading one never scrolls the page
 });
