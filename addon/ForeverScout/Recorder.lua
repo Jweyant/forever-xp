@@ -232,8 +232,20 @@ end)
 ------------------------------------------------------------------------------------------
 -- Travel, zones, deaths
 ------------------------------------------------------------------------------------------
+-- GetInstanceInfo returns many values; "f and f()" would keep only the first, so unpack it here.
+local function instanceInfo()
+  if not GetInstanceInfo then return nil, nil end
+  local _, instanceType, _, _, _, _, _, instanceMapID = GetInstanceInfo()
+  return instanceType, instanceMapID
+end
+local sawBattleground = false
+local talentsSoon -- defined with the talent logging below
 ns:On("ZONE_CHANGED_NEW_AREA", function()
   ns:Log("zone", { name = GetZoneText and GetZoneText() or nil })
+  if select(1, instanceInfo()) == "pvp" and not sawBattleground then
+    sawBattleground = true
+    if talentsSoon then talentsSoon(5) end -- re-log the build so it counts as a battleground player's
+  end
 end)
 
 ns:On("UNIT_SPELLCAST_SUCCEEDED", function(unit, _, spellID)
@@ -267,16 +279,66 @@ ns:On("PLAYER_UNGHOST", revived)
 ns:On("PLAYER_ALIVE", revived)
 
 ------------------------------------------------------------------------------------------
+-- Talent builds: the points in each tree, as the site's build string (one digit per talent in
+-- row-then-column order, trees joined by "-"). Just the points: no name, realm or anything else.
+-- bg marks a character that entered a battleground this session, so the site can split
+-- popularity between battleground players and everyone.
+------------------------------------------------------------------------------------------
+local function encodeTalents()
+  if not (GetNumTalentTabs and GetNumTalents and GetTalentInfo) then return nil end
+  local okTabs, tabs = pcall(GetNumTalentTabs)
+  if not okTabs or not tabs or tabs < 1 then return nil end
+  local parts = {}
+  for tab = 1, math.min(tabs, 3) do
+    local rows = {}
+    local okN, n = pcall(GetNumTalents, tab)
+    for i = 1, math.min(okN and n or 0, 30) do
+      local ok, _, _, tier, column, rank = pcall(GetTalentInfo, tab, i)
+      if ok and type(tier) == "number" and type(column) == "number" then
+        rows[#rows + 1] = { tier, column, math.min(tonumber(rank) or 0, 5) }
+      end
+    end
+    table.sort(rows, function(a, b)
+      if a[1] ~= b[1] then return a[1] < b[1] end
+      return a[2] < b[2]
+    end)
+    local s = ""
+    for _, r in ipairs(rows) do s = s .. r[3] end
+    parts[#parts + 1] = (s:gsub("0+$", ""))
+  end
+  local str = table.concat(parts, "-"):gsub("%-+$", "")
+  if str == "" or #str > 100 then return nil end
+  return str
+end
+
+local lastBuild, talentPending
+local function logTalents()
+  talentPending = nil
+  if select(1, instanceInfo()) == "pvp" then sawBattleground = true end -- logged in inside one
+  local s = encodeTalents()
+  local key = s and (s .. (sawBattleground and "|bg" or ""))
+  if key and key ~= lastBuild then
+    lastBuild = key
+    ns:Log("talents", { b = s, bg = sawBattleground or nil })
+  end
+end
+-- Once shortly after login (talents load late), then on changes, at most once per 30 s so
+-- levelling with a few points in a row logs one event, not one per click.
+function talentsSoon(delay)
+  if talentPending or not (C_Timer and C_Timer.After) then return end
+  talentPending = true
+  C_Timer.After(delay, logTalents)
+end
+ns:On("PLAYER_LOGIN", function() talentsSoon(10) end)
+ns:On("PLAYER_ENTERING_WORLD", function() talentsSoon(10) end)
+ns:On("CHARACTER_POINTS_CHANGED", function() talentsSoon(30) end)
+ns:On("ACTIVE_TALENT_GROUP_CHANGED", function() talentsSoon(5) end) -- dual spec swaps, if Forever ships them
+
+------------------------------------------------------------------------------------------
 -- Boss fights in dungeons and raids: which boss, group size, kill or wipe, how long.
 -- Only the boss and the outcome are recorded, never who was in the group.
 ------------------------------------------------------------------------------------------
 local encStart = {}
--- GetInstanceInfo returns many values; "f and f()" would keep only the first, so unpack it here.
-local function instanceInfo()
-  if not GetInstanceInfo then return nil, nil end
-  local _, instanceType, _, _, _, _, _, instanceMapID = GetInstanceInfo()
-  return instanceType, instanceMapID
-end
 ns:On("ENCOUNTER_START", function(encounterID, name, difficultyID, groupSize)
   if type(encounterID) ~= "number" then return end
   encStart[encounterID] = GetTime()

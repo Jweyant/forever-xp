@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", "tools/check_talent_order.py", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", "tools/check_talent_order.py", "tools/build_talent_builds.py", ".github/workflows/sim-weights.yml"]
   pull_request:
     paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", "tools/check_talent_order.py",
       "tools/test/test_talent_order.py", ".github/workflows/sim-weights.yml"]
@@ -99,9 +99,14 @@ jobs:
             -configs "$GITHUB_WORKSPACE/gamedata/simconfigs" \
             -out "$GITHUB_WORKSPACE/gamedata/simweights.json" -iterations 5000
 
+      # The same pinned checkout also carries wowsims' preset builds; collect them with ours for
+      # the talent pages' Builds section.
+      - name: Collect talent builds
+        run: python3 -I tools/build_talent_builds.py --simconfigs gamedata/simconfigs --wowsims ext/wowsims --out gamedata/talent-builds.json
+
       - name: Commit if changed
         id: commit
-        run: bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json
+        run: bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json gamedata/talent-builds.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
       - name: Deploy the site with the new data

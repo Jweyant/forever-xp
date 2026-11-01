@@ -45,6 +45,9 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npm run test:security
+      - name: Suggested plans test
+        working-directory: site
+        run: npm run test:plans
       - name: Accounts API tests
         working-directory: site
         run: npm run test:api
@@ -62,6 +65,7 @@ jobs:
           python3 tools/test/test_quest_chains.py
           python3 tools/test/test_objective_areas.py
           python3 tools/test/test_raids.py
+          python3 -I tools/test/test_talent_builds.py
           python3 tools/test/test_loot.py
           python3 tools/test/test_scouts.py
           python3 tools/test/test_quest_timing.py
