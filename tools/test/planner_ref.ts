@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import {
   CLASSES, SPECS, PAPERDOLL, HIT_RATING, DW_MISS, RACE_HIT, hitCaps, hitRating,
-  weightsFor, canUse, fits, score, canDualWield,
+  weightsFor, canUse, fits, score, canDualWield, DEFAULT_SOURCES, endgameOnly, sourceKind,
 } from "../../site/src/scripts/gear/model.ts";
 import type { Item, Stats, DollSlot } from "../../site/src/scripts/gear/model.ts";
 
@@ -29,8 +29,9 @@ function run(cls: string, spec: string, goal: "pve" | "pvp" | "level", level: nu
     return k === 1 ? w : { ...w, dps: (w.dps || 0) * k };
   };
   const val = (doll: DollSlot, it: Item | undefined) => (it ? score(it, slotWeights(doll, it)) : 0);
+  const sources = new Set(DEFAULT_SOURCES);
   const candidates = (doll: DollSlot) => items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= level && (!it.side || it.side === side)
-    && canUse(it, cls, level) && fits(doll, it, cls));
+    && canUse(it, cls, level) && fits(doll, it, cls) && sources.has(sourceKind(it)) && !(goal === "level" && endgameOnly(it)));
   type Plan = Partial<Record<DollSlot, number>>;
   const specObj = SPECS[cls].find((s) => s.key === spec);
   const hitCtx = () => {

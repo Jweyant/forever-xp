@@ -26,6 +26,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import build_talents  # noqa: E402  (its tooltip formatter fills in item effect text)
 import mysqldump  # noqa: E402
 import wago  # noqa: E402
 
@@ -35,6 +36,9 @@ TABLES = ["ItemSparse", "Item", "RandPropPoints", "ItemArmorQuality", "ItemArmor
           "ItemDamageTwoHandCaster", "ItemDamageRanged", "ItemDamageThrown", "ItemDamageWand",
           "ItemEffect", "ItemXItemEffect", "ItemSet", "ItemSetSpell", "Spell", "SpellName", "SpellEffect",
           "AreaTable"]  # AreaTable: zone names for tools/build_quests.py
+# What item effect text needs to fill in its numbers (durations, radius, proc chance) with
+# tools/build_talents.py's tooltip formatter.
+TEXT_TABLES = ["SpellMisc", "SpellDuration", "SpellRadius", "SpellAuraOptions"]
 
 # Modern item stat ids used by the Forever client -> our stat keys.
 STAT = {3: "agi", 4: "str", 5: "int", 6: "spi", 7: "sta", 12: "def", 13: "dodge", 14: "parry", 15: "block",
@@ -189,17 +193,20 @@ def client_item_text(cache, download):
         sparse = load_csv(cache, "ItemSparse", download)
         effect = {r["ID"]: r for r in load_csv(cache, "ItemEffect", download)}
         links = load_csv(cache, "ItemXItemEffect", download)
-        spell_desc = {r["ID"]: r.get("Description_lang", "") for r in load_csv(cache, "Spell", download)}
-        spell_name = {r["ID"]: r.get("Name_lang", "") for r in load_csv(cache, "SpellName", download)}
+        spell_rows = load_csv(cache, "Spell", download)
+        name_rows = load_csv(cache, "SpellName", download)
+        spell_desc = {r["ID"]: r.get("Description_lang", "") for r in spell_rows}
+        spell_name = {r["ID"]: r.get("Name_lang", "") for r in name_rows}
     except (SystemExit, OSError, KeyError):
         return {}
+    spells = spell_texts({"Spell": spell_rows, "SpellName": name_rows}, cache, download)
     uses = defaultdict(list)
     for x in links:
         e = effect.get(x.get("ItemEffectID"))
         if not e or num(e.get("TriggerType"), int) not in (0, 5):  # 0 on use, 5 learn (recipes)
             continue
         sid = e.get("SpellID")
-        text = cleanup_spell_text(spell_desc.get(sid, "") or spell_name.get(sid, ""))
+        text = cleanup_spell_text(spell_text(spells, sid, spell_desc, spell_name))
         iid = num(x.get("ItemID"), int)
         if text and iid and text not in uses[iid]:
             uses[iid].append(text[:220])
@@ -224,6 +231,36 @@ def client_item_text(cache, download):
     return out
 
 
+def spell_texts(T, cache=None, download=False):
+    """build_talents' tooltip formatter for this build's spells, or None if a table is missing.
+    T needs Spell, SpellName and SpellEffect; the TEXT_TABLES are loaded here when not in T."""
+    try:
+        tables = dict(T)
+        for t in ["SpellEffect"] + TEXT_TABLES:
+            if t not in tables:
+                tables[t] = load_csv(cache, t, download)
+        return build_talents.Spells(tables)
+    except (SystemExit, OSError, KeyError, urllib.error.URLError):
+        return None
+
+
+def spell_text(spells, sid, desc, name=None):
+    """An item effect's tooltip text with its numbers filled in ("slowing movement speed by 50% for
+    8 sec"). Values that depend on the player, such as spell power, show as "?". If the formatter
+    can't read the text it falls back to the text with the variables dropped."""
+    raw = desc.get(sid, "") or ""
+    if not raw:
+        return (name or {}).get(sid, "") or ""
+    if spells is not None:
+        try:
+            text = spells.render(sid)
+        except (KeyError, ValueError, TypeError, IndexError, RecursionError, ZeroDivisionError):
+            text = ""
+        if text and "$" not in text:
+            return text
+    return cleanup_spell_text(raw)
+
+
 def cleanup_spell_text(s):
     """Client text holds unresolved spell variables ($s1, $d, $/1000;s1) and markup; drop them."""
     s = re.sub(r"\$\/?\d*;?[a-zA-Z]+\d*", "", str(s or ""))
@@ -245,6 +282,7 @@ def client_items(cache, download):
     dmg = {k: by_level(T[k]) for k in TABLES if k.startswith("ItemDamage")}
     spell_desc = {r["ID"]: r.get("Description_lang", "") for r in T["Spell"]}
     spell_name = {r["ID"]: r["Name_lang"] for r in T["SpellName"]}
+    spells = spell_texts(T, cache, download)
     spell_eff = defaultdict(list)
     for e in T["SpellEffect"]:
         if e.get("DifficultyID", "0") == "0":
@@ -348,7 +386,7 @@ def client_items(cache, download):
                     stats[k] = stats.get(k, 0) + v
                 if spell_stats(sid):
                     continue
-            text = re.sub(r"\$\w+", "", spell_desc.get(sid, "") or spell_name.get(sid, "")).strip()
+            text = spell_text(spells, sid, spell_desc, spell_name)
             if text:
                 effects.append({"on": ["use", "equip", "hit"][trig] if trig < 3 else "other", "text": text[:220]})
         rec = {"id": int(iid), "name": name, "q": q, "ilvl": ilvl, "req": req, "slot": SLOTS[inv], "inv": inv,
@@ -384,7 +422,7 @@ def client_items(cache, download):
                 for b in sorted(set_bonus.get(set_id, []), key=lambda r: num(r["Threshold"], int)):
                     st = spell_stats(b["SpellID"])
                     bonuses.append({"n": num(b["Threshold"], int), "stats": st,
-                                    "text": "" if st else re.sub(r"\$\w+", "", spell_desc.get(b["SpellID"], ""))[:200]})
+                                    "text": "" if st else spell_text(spells, b["SpellID"], spell_desc)[:200]})
                 sets_out[set_id] = {"name": sets[set_id], "bonuses": bonuses}
         items[int(iid)] = rec
     return items, sets_out
@@ -430,6 +468,13 @@ def atlasloot(path):
                 for m in re.finditer(r"\{\s*\d+,\s*(\d{3,6})\s*[,}]", sub.group(2)):
                     src[int(m.group(1))].append({"t": kind, "z": label, "n": sub.group(1)})
     return src
+
+
+def internal_spell(name):
+    """Spells players never cast: scripts that hand out an item ("Conjure Stormpike Rank 1 Insignia
+    DND", DND = do not display) and retired ones ("zzOLD..."). They aren't crafting recipes."""
+    n = str(name or "")
+    return bool(re.search(r"\bDND\b", n)) or n.lower().startswith("zzold")
 
 
 def cmangos_sources(sql, keep):
@@ -515,7 +560,7 @@ def cmangos_sources(sql, keep):
                 src[item].append(rec)
     for sp in d["spell_template"]:
         for i in (1, 2, 3):
-            if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep:
+            if sp.get(f"Effect{i}") == 24 and sp.get(f"EffectItemType{i}") in keep and not internal_spell(sp.get("SpellName")):
                 src[sp[f"EffectItemType{i}"]].append({"t": "craft", "n": sp["SpellName"]})
     classic = {r["entry"]: r for r in d["item_template"] if isinstance(r.get("entry"), int)}
     return src, display, classic
@@ -613,6 +658,57 @@ PVP_RANKS = {1: ("Private", "Scout"), 2: ("Corporal", "Grunt"), 3: ("Sergeant", 
              9: ("Knight-Champion", "Centurion"), 10: ("Lieutenant Commander", "Champion"),
              11: ("Commander", "Lieutenant General"), 12: ("Marshal", "General"),
              13: ("Field Marshal", "Warlord"), 14: ("Grand Marshal", "High Warlord")}
+
+
+def pvp_rank_side(rec):
+    """A PvP rank reward's faction, from the rank title its name starts with ("Marshal's ..." is
+    Alliance, "General's ..." Horde). The client marks none of them by side. Sergeant's items
+    (both sides share the title) and names without a title stay unmarked."""
+    if not rec.get("pvprank") or rec.get("side"):
+        return None
+    name = rec.get("name", "")
+    titles = sorted(((t, "A" if k == 0 else "H") for pair in PVP_RANKS.values() for k, t in enumerate(pair)
+                     if pair[0] != pair[1]), key=lambda x: -len(x[0]))
+    for title, side in titles:
+        if name.startswith(f"{title}'s "):
+            return side
+    return None
+
+
+# Battleground reputation quartermasters (Warsong Gulch, Arathi Basin, Alterac Valley) and their side.
+# An item only these vendors of one side sell is that side's reward; one sold by both sides'
+# quartermasters (Don Julio's Band, say) or by anyone else stays open to both.
+QUARTERMASTERS = {"Illiyana Moonblaze": "A", "Samuel Hawke": "A", "Thanthaldis Snowgleam": "A",
+                  "Gaelden Hammersmith": "A", "Kelm Hargunth": "H", "Rutherford Twing": "H",
+                  "Grunnda Wolfheart": "H", "Jekyll Flandring": "H"}
+# Alterac Valley rewards that come from quests, not a vendor, carry their side in the name.
+NAME_FACTION = [("Stormpike", "A"), ("Frostwolf", "H"), ("Insignia of the Alliance", "A"),
+                ("Insignia of the Horde", "H")]
+
+
+def reward_side(rec):
+    """The side of a one-faction battleground or Alterac Valley reward, or None."""
+    vendors = {s.get("n") for s in rec.get("src") or [] if s.get("t") in ("vendor", "rep")}
+    if vendors:
+        sides = {QUARTERMASTERS.get(v) for v in vendors}
+        if len(sides) == 1 and None not in sides:
+            return sides.pop()
+    for word, side in NAME_FACTION:
+        if word in rec.get("name", ""):
+            return side
+    return None
+
+
+def apply_reward_faction(items):
+    """Marks one-faction battleground and Alterac Valley rewards; returns how many."""
+    n = 0
+    for rec in items.values():
+        if not rec.get("side"):
+            side = reward_side(rec)
+            if side:
+                rec["side"] = side
+                n += 1
+    return n
 
 
 def pvp_rank_source(rec):
@@ -918,6 +1014,9 @@ def main():
     no_src = 0
     for iid, rec in items.items():
         s = rank_sources(confirm_sources(logged.get(iid, []), al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, [])))
+        side = pvp_rank_side(rec)
+        if side:
+            rec["side"] = side
         pvp = pvp_rank_source(rec)
         if pvp:
             # AtlasLoot's PvP entries only say "Weapons" or "Armor"; the rank is the useful part.
@@ -935,6 +1034,7 @@ def main():
         if "did" not in rec and cm_did.get(iid):
             rec["did"] = cm_did[iid]
     apply_quest_faction(items)
+    apply_reward_faction(items)
     new, changed = forever_changes(items, classic)
     out = {"build": FOREVER_BUILD, "items": sorted(items.values(), key=lambda r: r["id"]), "sets": sets}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)

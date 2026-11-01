@@ -534,7 +534,11 @@ end
 local function sourceSet()
   local saved = ns.db.settings.bisSources
   local set = {}
-  for _, k in ipairs(P.SOURCE_KINDS) do set[k.key] = not (saved and saved[k.key] == false) end
+  for _, k in ipairs(P.SOURCE_KINDS) do
+    local v = saved and saved[k.key]
+    if v == nil then v = P.DEFAULT_SOURCES[k.key] end
+    set[k.key] = v
+  end
   return set
 end
 
@@ -545,7 +549,7 @@ function ns.BIS.ToggleSources(keepOpen)
     for _, k in ipairs(P.SOURCE_KINDS) do rows[#rows + 1] = { k.key, k.name } end
     rows[#rows + 1] = { "__all", "|cff9d9d9dEverything|r" }
     srcWin = makePopup(win, win.sources, "Where items may come from (click to toggle)", rows, function(key)
-      if key == "__all" then ns.db.settings.bisSources = nil
+      if key == "__all" then ns.db.settings.bisSources = { unknown = true }
       else
         local set = sourceSet()
         ns.db.settings.bisSources = ns.db.settings.bisSources or {}
@@ -714,8 +718,8 @@ function ns.BIS.Refresh()
   f.char:SetText(("%s, level %d %s"):format(UnitName("player") or "", UnitLevel("player"), P.CLASSES[state.cls].name))
 
   local sources, limited = sourceSet(), 0
-  for _, k in ipairs(P.SOURCE_KINDS) do if not sources[k.key] then limited = limited + 1 end end
-  f.sources:SetText(limited > 0 and ("Sources (%d off)"):format(limited) or "Sources")
+  for _, k in ipairs(P.SOURCE_KINDS) do if sources[k.key] ~= P.DEFAULT_SOURCES[k.key] then limited = limited + 1 end end
+  f.sources:SetText(limited > 0 and ("Sources (%d changed)"):format(limited) or "Sources")
   f.sources:SetActive(limited > 0)
   f.focusHead:SetText(state.focus and (P.STAT_LABEL[state.focus] or ""):gsub(" resistance", " res"):gsub(" rating", "") or "")
 

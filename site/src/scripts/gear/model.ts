@@ -242,6 +242,24 @@ export const SOURCE_KINDS = [
   { key: "logged", name: "Seen by players" }, { key: "unknown", name: "Source not known yet" },
 ] as const;
 
+/** Sources suggestions use unless the player changes them. Items with no known source are left out:
+ *  many are test or unused items no one can get (Alex's Ring of Audacity, say), and the rest fill in
+ *  as players log loot. */
+export const DEFAULT_SOURCES = SOURCE_KINDS.map((s) => s.key).filter((k) => k !== "unknown");
+
+// Item level 66 and up is raid tier: Molten Core starts there, while dungeon, quest and crafted
+// pre-raid gear (rare or epic) tops out at 65. Quest rewards for raid tokens or raid reputation (tier
+// 2.5 and 3, Qiraji armaments, the C'Thun eye, Zul'Gurub's head quests) are quests in the data, so
+// item level is what tells them apart.
+export const ENDGAME_ILVL = 66;
+/** Gear you only get at the level cap from raids, PvP ranks or raid-token quests, which a leveling
+ *  plan leaves out. */
+export function endgameOnly(it: Item): boolean {
+  if (it.pvprank || Number(it.q) >= 5) return true;
+  if ((it.src || []).some((s) => s.t === "raid" || s.t === "pvp")) return true;
+  return Number(it.q) >= 3 && Number(it.ilvl) >= ENDGAME_ILVL;
+}
+
 export function sourceKind(it: Item): string {
   const s = it.src?.[0];
   if (!s) return "unknown";

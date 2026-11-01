@@ -166,6 +166,78 @@ class LoggedSources(unittest.TestCase):
         self.assertNotIn(9999, got)  # stack 1, unknown binding, no price: nothing to show
         self.assertEqual(build_items.client_item_text(Path(cache) / "missing", False), {})
 
+    def test_item_effect_text_gets_its_numbers(self):
+        """Effect text keeps its numbers: amounts, %, durations and proc chance from the spell tables."""
+        with tempfile.TemporaryDirectory() as cache:
+            d = Path(cache) / build_items.FOREVER_BUILD
+            d.mkdir(parents=True)
+            (d / "Spell.csv").write_text(
+                "ID,Description_lang\n"
+                "810,Launches a bolt of frost at the enemy causing $s1 Frost damage and slowing movement speed by $s2% for $d.\n"
+                "811,Increases your spell damage by up to ${$SP*0.1} for $d.\n"
+                "812,Chance on hit: $h% chance to strike for $s1 damage.\n")
+            (d / "SpellName.csv").write_text("ID,Name_lang\n810,Frost Bolt\n811,Odd\n812,Strike\n")
+            (d / "SpellEffect.csv").write_text(
+                "ID,SpellID,EffectIndex,DifficultyID,EffectBasePointsF,EffectAuraPeriod,EffectRadiusIndex_0\n"
+                "1,810,0,0,48,0,0\n2,810,1,0,-50,0,0\n3,811,0,0,0,0,0\n4,812,0,0,120,0,0\n")
+            (d / "SpellMisc.csv").write_text("ID,SpellID,DifficultyID,DurationIndex\n1,810,0,21\n2,811,0,9\n")
+            (d / "SpellDuration.csv").write_text("ID,Duration\n21,8000\n9,30000\n")
+            (d / "SpellRadius.csv").write_text("ID,Radius\n")
+            (d / "SpellAuraOptions.csv").write_text("ID,SpellID,DifficultyID,ProcChance\n1,812,0,5\n")
+            spells = build_items.spell_texts({"Spell": build_items.load_csv(cache, "Spell", False),
+                                              "SpellName": build_items.load_csv(cache, "SpellName", False)}, cache, False)
+            desc = {r["ID"]: r["Description_lang"] for r in build_items.load_csv(cache, "Spell", False)}
+            self.assertEqual(build_items.spell_text(spells, "810", desc),
+                             "Launches a bolt of frost at the enemy causing 48 Frost damage and slowing movement speed by 50% for 8 sec.")
+            # Player stats can't be known: a "?" instead of a blank or a wrong number.
+            self.assertEqual(build_items.spell_text(spells, "811", desc), "Increases your spell damage by up to ? for 30 sec.")
+            self.assertEqual(build_items.spell_text(spells, "812", desc), "Chance on hit: 5% chance to strike for 120 damage.")
+            # Without the spell tables the text still comes out, with the variables dropped.
+            self.assertEqual(build_items.spell_text(None, "812", desc), "Chance on hit: % chance to strike for damage.")
+            self.assertEqual(build_items.spell_text(spells, "999", desc, {"999": "Named"}), "Named")
+
+
+class Faction(unittest.TestCase):
+    def test_pvp_rank_rewards_take_the_side_of_their_title(self):
+        side = lambda name, rank=12: build_items.pvp_rank_side({"name": name, "pvprank": rank})
+        self.assertEqual(side("Marshal's Plate Legguards"), "A")
+        self.assertEqual(side("Field Marshal's Dragonhide Helmet", 13), "A")
+        self.assertEqual(side("Grand Marshal's Warhammer", 14), "A")
+        self.assertEqual(side("Lieutenant Commander's Plate Helm", 10), "A")
+        self.assertEqual(side("Commander's Plate Helm", 11), "A")
+        self.assertEqual(side("General's Plate Leggings"), "H")
+        self.assertEqual(side("Lieutenant General's Plate Helm", 11), "H")
+        self.assertEqual(side("High Warlord's Battle Axe", 14), "H")
+        self.assertEqual(side("Sergeant Major's Cape", 5), "A")
+        self.assertEqual(side("First Sergeant's Mail Wristguards", 5), "H")
+        self.assertIsNone(side("Sergeant's Cape", 3))          # both sides use the title
+        self.assertIsNone(side("Premier General's Dragonhide"))  # not a classic rank title
+        self.assertIsNone(build_items.pvp_rank_side({"name": "Marshal's Plate Legguards"}))  # needs a rank
+
+    def test_battleground_and_av_rewards(self):
+        v = lambda *names: [{"t": "vendor", "n": n} for n in names]
+        items = {
+            1: {"name": "Scout's Blade", "src": v("Kelm Hargunth")},                       # Warsong Gulch, Horde
+            2: {"name": "Sentinel's Blade", "src": v("Illiyana Moonblaze")},               # Warsong Gulch, Alliance
+            3: {"name": "Highlander's Plate Girdle", "src": v("Samuel Hawke")},
+            4: {"name": "Defiler's Plate Girdle", "src": v("Rutherford Twing")},
+            5: {"name": "Don Julio's Band", "src": v("Gaelden Hammersmith", "Grunnda Wolfheart")},  # both sides
+            6: {"name": "Sentinel's Libram", "src": v("Pix Xizzix")},                     # a neutral vendor
+            7: {"name": "Forest Stalker's Bracers", "src": v("Illiyana Moonblaze", "Kelm Hargunth")},
+            8: {"name": "Stormpike Insignia Rank 6", "src": [{"t": "quest", "n": "The Eye of Command"}]},
+            9: {"name": "Frostwolf Insignia Rank 6", "src": [{"t": "quest", "n": "The Eye of Command"}]},
+            10: {"name": "Frostwolf Cloak", "src": v("Jekyll Flandring"), "side": "H"},   # already marked
+        }
+        self.assertEqual(build_items.apply_reward_faction(items), 6)
+        self.assertEqual([items[i].get("side") for i in range(1, 11)],
+                         ["H", "A", "A", "H", None, None, None, "A", "H", "H"])
+
+    def test_internal_spells_are_not_recipes(self):
+        self.assertTrue(build_items.internal_spell("Conjure Stormpike Rank 1 Insignia DND"))
+        self.assertTrue(build_items.internal_spell("zzOLDCall of Blades"))
+        self.assertFalse(build_items.internal_spell("Lionheart Helm"))
+        self.assertFalse(build_items.internal_spell("Dndthing"))
+
 
 if __name__ == "__main__":
     unittest.main()
