@@ -22,7 +22,7 @@ import sqlite3
 import sys
 import time
 import statistics
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import luadata
@@ -541,6 +541,59 @@ def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
     (out_dir / "objective_areas.json").write_text(json.dumps(areas, separators=(",", ":"), sort_keys=True))
 
 
+BUILD_RE = re.compile(r"^[0-5]{0,30}(-[0-5]{0,30}){0,2}$")
+
+
+def write_talent_builds(db, out_dir, min_players=2):
+    """Every talent build players use, per class, as talent_builds.json:
+    {class: {"players": N, "groups": {"all"/"pve"/"pvp": {"n": characters, "builds": [[string, characters], ...]}}}}.
+
+    A character counts once, with the last build they logged. "pve" is characters who logged a
+    dungeon or raid boss, "pvp" characters who entered a battleground. All builds are published,
+    most used first — except a build stays out until `min_players` different characters use it,
+    so nobody's build is shown alone."""
+    latest = {}   # char -> (when, class, build)
+    flags = defaultdict(lambda: {"pvp": False, "pve": False})
+    for char, cls, start, t, k, raw in db.execute("""SELECT s.char_id, s.class, s.start, e.t, e.k, e.json
+                                                     FROM events e JOIN sessions s ON s.id = e.session_id
+                                                     WHERE e.k IN ('talents', 'enc')"""):
+        if k == "enc":
+            flags[char]["pve"] = True
+            continue
+        try:
+            e = json.loads(raw)
+            b = e.get("b").rstrip("-") if isinstance(e.get("b"), str) else None
+            when = int(start or 0) + int(t or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (isinstance(b, str) and BUILD_RE.fullmatch(b) and b.strip("-") and not b.endswith("-")
+                and sum(int(d) for d in b if d.isdigit()) <= 60):
+            continue
+        if e.get("bg"):
+            flags[char]["pvp"] = True
+        cls = str(cls or "").strip().lower()
+        if re.fullmatch(r"[a-z]+", cls) and (char not in latest or when >= latest[char][0]):
+            latest[char] = (when, cls, b)
+    counts = defaultdict(lambda: {"players": 0, "all": Counter(), "pve": Counter(), "pvp": Counter()})
+    for char, (_, cls, b) in latest.items():
+        c = counts[cls]
+        c["players"] += 1
+        c["all"][b] += 1
+        for group in ("pve", "pvp"):
+            if flags[char][group]:
+                c[group][b] += 1
+    out = {}
+    for cls, c in sorted(counts.items()):
+        groups = {}
+        for group in ("all", "pve", "pvp"):
+            rows = [[b, n] for b, n in c[group].most_common() if n >= min_players]
+            if rows:
+                groups[group] = {"n": sum(c[group].values()), "builds": rows}
+        if groups:
+            out[cls] = {"players": c["players"], "groups": groups}
+    (out_dir / "talent_builds.json").write_text(json.dumps(out, separators=(",", ":"), sort_keys=True))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--questie", required=True)
@@ -559,7 +612,8 @@ def main():
     write_objective_areas(db, out)
     write_scouts(db, out)
     write_encounters(db, out)
-    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv"):
+    write_talent_builds(db, out)
+    for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv", "talent_builds.json"):
         print("wrote", out / name)
 
 

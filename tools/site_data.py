@@ -416,6 +416,10 @@ def main():
     (OUT / "simweights.json").write_text(sim.read_text() if sim.exists() else '{"source":{},"specs":{}}')
     notes = ROOT / "gamedata" / "blizzard-notes.json"
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
+    tb = ROOT / "gamedata" / "talent-builds.json"
+    (OUT / "talent-builds.json").write_text(tb.read_text() if tb.exists() else '{"classes":{}}')
+    pb = ROOT / "gamedata" / "players" / "talent_builds.json"
+    (OUT / "player-talents.json").write_text(pb.read_text() if pb.exists() else "{}")
     raids = ROOT / "gamedata" / "raids.json"
     (OUT / "raids.json").write_text(raids.read_text() if raids.exists() else "[]")
     if not (OUT / "other-items.json").exists():

@@ -172,3 +172,10 @@ function build() {
 build();
 if (location.hash) decode(location.hash);
 render();
+// Build links under the calculator (and pasted links) load without a page reload.
+window.addEventListener("hashchange", () => {
+  decode(location.hash);
+  selected = null;
+  render();
+  root.scrollIntoView({ behavior: "smooth", block: "start" });
+});
