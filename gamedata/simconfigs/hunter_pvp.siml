@@ -1,0 +1,79 @@
+siml 1
+// Forever XP's Hunter PvP-burst setup: the community Survival PvP build (WoW Forever Builds,
+// MIT) on a 20-second burst against a level-60 player-like target (3,100 armor, no boss crit
+// suppression). Gear, buffs and the weave rotation are the PvE setup's, standing in until the
+// planner carries PvP gear; the output is burst stat weights for PvP gearing, not a PvP model.
+spec hunter
+talents "-35020500005001-05501323120100205"
+use "apls/default.apl.siml"
+
+settings:
+  race troll
+  reaction_time_ms 250
+  distance_from_target 12
+  quiver_bonus ancient_sinew_wrapped_lamina
+  ammo thorium_headed_arrow
+  pet_uptime 1
+  cobra_reflexes
+  pet_aggression 5
+  pet_attack_speed faster_attack_ii
+
+gear:
+  head `{"id": 22438}`
+  neck `{"id": 19377}`
+  shoulder `{"id": 22439}`
+  back `{"id": 21403}`
+  chest `{"id": 22436}`
+  wrist `{"id": 22443}`
+  hands `{"id": 22441}`
+  waist `{"id": 22442}`
+  legs `{"id": 22437}`
+  feet `{"id": 22440}`
+  finger1 `{"id": 21205}`
+  finger2 `{"id": 22961}`
+  trinket1 `{"id": 19120}`
+  trinket2 `{"id": 270275}`
+  main_hand `{"id": 17142}`
+  off_hand `{"id": 21244}`
+  ranged `{"id": 23557}`
+
+consumables:
+  flask flask_of_natural_aggression
+  food swiftstrike_steak
+  conjured demonic_rune
+  mh_imbue elemental_sharpening_stone
+  elixir elixir_of_the_mongoose, greater_mageblood_elixir
+  resource_pot major_mana_potion
+  offensive_pot major_frenzy_potion
+
+buffs: greater_blessing_of_kings, greater_blessing_of_might, greater_blessing_of_wisdom
+
+raid_buffs:
+  arcane_brilliance, prayer_of_spirit, gift_of_the_wild, strength_of_earth_totem, grace_of_air_totem
+  windfury_totem
+  battle_shout 1
+  leader_of_the_pack
+
+debuffs:
+  judgement_of_light, judgement_of_wisdom, curse_of_elements, curse_of_recklessness, faerie_fire
+  expose_armor, sunder_armor, gift_of_arthas, insect_swarm
+
+encounter:
+  duration 20
+  duration_variation 4
+  execute_proportion_20 0.2
+  execute_proportion_35 0.35
+  targets(id=31146,
+      name="Player Target",
+      level=60,
+      mob_type=humanoid,
+      stats(attack_power=320, armor=3100, health=600000),
+      min_base_damage=100,
+      damage_spread=0.5,
+      swing_speed=2)
+
+sim:
+  ep_weights_stats(stats(agility=1, strength=1, intellect=1, attack_power=1, ranged_attack_power=1,
+      hit_rating=1, crit_rating=1, haste_rating=1, expertise_rating=1),
+    pseudo_stats(ranged_dps=1))
+  dps_ref_stat ranged_attack_power

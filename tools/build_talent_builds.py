@@ -19,6 +19,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import luadata  # noqa: E402  (tools/luadata.py: safe Lua-literal parser, no code execution)
+
 BUILD_RE = re.compile(r"^[0-5]{0,30}(-[0-5]{0,30}){0,2}$")
 # Spec shorthands in wowsims file names, shown upper case.
 SHORT = {"sv": "SV", "mm": "MM", "bm": "BM", "apl": "APL", "aoe": "AoE"}
@@ -114,10 +117,89 @@ def wowsims(checkout):
     return out
 
 
+CLASS_TOKEN = {"WARRIOR": "warrior", "PALADIN": "paladin", "HUNTER": "hunter", "ROGUE": "rogue",
+               "PRIEST": "priest", "SHAMAN": "shaman", "MAGE": "mage", "WARLOCK": "warlock", "DRUID": "druid"}
+
+
+def _lua_list(v):
+    """luadata turns Lua arrays into lists or {1: ..} maps; give back a plain list."""
+    if isinstance(v, dict):
+        return [v[k] for k in sorted((k for k in v if isinstance(k, int)), key=int)]
+    return v if isinstance(v, list) else []
+
+
+def community(path, talents_json):
+    """Per class slug: the "Endgame PvP" builds from the WoW Forever Builds addon (MIT), decoded
+    into our build strings. Its Guides.lua lists each class's trees as {name, row, col, maxRank}
+    in the same row-then-column order our client data uses, and each guide's `order` holds two
+    characters per point: the tree (0-2) and the talent's index in that tree, base 36.
+
+    A class's builds are imported ONLY when its trees match our client data exactly (same names,
+    positions and ranks, in order) — on any drift the indexes could point at the wrong talent, so
+    the whole class is skipped until the addon regenerates."""
+    src = Path(path) / "Guides.lua"
+    if not src.exists():
+        return {}
+    text = src.read_text(encoding="utf-8", errors="replace")
+    try:
+        their = luadata.loads_value(text[text.index("ns.talents =") + 12:text.index("ns.guides =")].strip())
+        guides = luadata.loads_value(text[text.index("ns.guides =") + 11:].strip().rstrip())
+    except (ValueError, luadata.LuaDataError):
+        return {}
+    ours_trees = {name: trees for _, name, trees in json.loads(Path(talents_json).read_text())["talents"]}
+    ok = {}  # class token -> [per tree: [maxRank per talent]] for matched classes
+    for cname, trees in ours_trees.items():
+        token = next((k for k, v in CLASS_TOKEN.items() if v == cname.lower()), None)
+        th = _lua_list(their.get(token)) if isinstance(their, dict) else None
+        if not th or len(th) != len(trees):
+            continue
+        ranks, match = [], True
+        for i, (_, tname, _, tals) in enumerate(trees):
+            tt = th[i] if isinstance(th[i], dict) else {}
+            rows = [_lua_list(x) for x in _lua_list(tt)]
+            if tt.get("name") != tname or [(t[3], t[1], t[2], t[4]) for t in tals] != [tuple(x[:4]) for x in rows]:
+                match = False
+                break
+            ranks.append([t[4] for t in tals])
+        if match:
+            ok[token] = ranks
+    out = {}
+    pairs = [(tok, g) for tok, lst in (guides.items() if isinstance(guides, dict) else []) if isinstance(tok, str)
+             for g in _lua_list(lst) if isinstance(g, dict)]
+    for token, g in pairs:
+        if g.get("kind") != "Endgame PvP":
+            continue
+        order, spec, title = str(g.get("order", "")), str(g.get("spec", ""))[:30], str(g.get("title", ""))
+        if token not in ok or token not in CLASS_TOKEN or not re.fullmatch(r"[0-9a-z]{2,120}", order) or len(order) % 2:
+            continue
+        ranks = ok[token]
+        pts = [[0] * len(r) for r in ranks]
+        good = True
+        for a, b in zip(order[::2], order[1::2]):
+            tree, idx = int(a, 36), int(b, 36)
+            if tree >= len(pts) or idx >= len(pts[tree]) or pts[tree][idx] >= ranks[tree][idx]:
+                good = False
+                break
+            pts[tree][idx] += 1
+        if not good:
+            continue
+        t = canon("-".join("".join(str(n) for n in p).rstrip("0") for p in pts))
+        if not valid(t):
+            continue
+        note = title.split(": ", 1)[1][:120] if ": " in title else ""
+        rec = {"n": f"{spec} PvP", "t": t, **({"note": note} if note else {})}
+        lst = out.setdefault(CLASS_TOKEN[token], [])
+        if not any(x["t"] == t for x in lst):
+            lst.append(rec)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--simconfigs", default="gamedata/simconfigs")
     ap.add_argument("--wowsims", required=True, help="pinned wowsims/forever checkout")
+    ap.add_argument("--community", help="pinned Boco10/WoWForeverBuilds-Addon checkout, for its PvP builds")
+    ap.add_argument("--talents", default="gamedata/talents.json", help="our client talent data, the match gate for --community")
     ap.add_argument("--out", default="gamedata/talent-builds.json")
     a = ap.parse_args()
     classes = {}
@@ -125,6 +207,9 @@ def main():
         classes.setdefault(slug, {})["ours"] = lst
     for slug, lst in wowsims(a.wowsims).items():
         classes.setdefault(slug, {})["wowsims"] = lst
+    if a.community:
+        for slug, lst in community(a.community, a.talents).items():
+            classes.setdefault(slug, {})["community"] = lst
     out = {"source": {"name": "wowsims/forever presets and forever-xp sim setups",
                       "url": "https://github.com/wowsims/forever", "license": "MIT"},
            "classes": classes}

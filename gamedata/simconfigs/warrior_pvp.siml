@@ -1,0 +1,70 @@
+siml 1
+// Forever XP's Arms PvP-burst setup: the community Arms PvP build (WoW Forever Builds, MIT) on
+// a 20-second burst against a level-60 player-like target (3,100 armor, no boss crit
+// suppression). Gear and buffs are the PvE setup's, with the engine's default Arms APL
+// (index.json names it); the output is burst stat weights for PvP gearing, not a PvP model.
+spec dps_warrior
+talents "02325013032015031-1505013005"
+
+settings:
+  race orc
+  reaction_time_ms 250
+  in_front_of_target false
+
+gear:
+  head `{"id": 12640}`
+  neck `{"id": 23053}`
+  shoulder `{"id": 21330}`
+  back `{"id": 21710}`
+  chest `{"id": 252484}`
+  wrist `{"id": 21602}`
+  hands `{"id": 21581}`
+  waist `{"id": 21586}`
+  legs `{"id": 16479}`
+  feet `{"id": 21613}`
+  finger1 `{"id": 23038}`
+  finger2 `{"id": 18821}`
+  trinket1 `{"id": 19406}`
+  trinket2 `{"id": 23001}`
+  main_hand `{"id": 21134}`
+  ranged `{"id": 23557}`
+
+consumables:
+  food smoked_desert_dumplings
+  conjured demonic_rune
+  mh_imbue elemental_sharpening_stone
+  elixir elixir_of_the_mongoose, elixir_of_greater_strength
+  resource_pot mighty_rage_potion
+  offensive_pot mighty_rage_potion
+
+buffs: greater_blessing_of_kings, greater_blessing_of_might
+
+raid_buffs:
+  gift_of_the_wild, strength_of_earth_totem, grace_of_air_totem
+  windfury_totem
+  battle_shout 1
+  leader_of_the_pack
+
+debuffs:
+  judgement_of_light, judgement_of_wisdom, curse_of_recklessness, faerie_fire
+  expose_armor, sunder_armor, gift_of_arthas
+
+encounter:
+  duration 20
+  duration_variation 4
+  execute_proportion_20 0.2
+  execute_proportion_35 0.35
+  targets(id=31146,
+      name="Player Target",
+      level=60,
+      mob_type=humanoid,
+      stats(attack_power=320, armor=3100, health=600000),
+      min_base_damage=100,
+      damage_spread=0.5,
+      swing_speed=2)
+
+sim:
+  ep_weights_stats(stats(strength=1, agility=1, attack_power=1,
+      hit_rating=1, crit_rating=1, haste_rating=1, expertise_rating=1),
+    pseudo_stats(main_hand_dps=1))
+  dps_ref_stat attack_power
