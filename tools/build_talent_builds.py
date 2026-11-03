@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import check_talent_order  # noqa: E402  (shared talent-order machinery)
 import luadata  # noqa: E402  (tools/luadata.py: safe Lua-literal parser, no code execution)
 
 BUILD_RE = re.compile(r"^[0-5]{0,30}(-[0-5]{0,30}){0,2}$")
@@ -80,13 +81,54 @@ PRESET_RE = re.compile(r"(?:makePresetTalents\(\s*|name:\s*)['\"]([^'\"]{1,60})[
                        r"SavedTalents\.create\(\{[^}]{0,120}?talentsString:\s*['\"]([0-9-]{1,100})['\"]", re.S)
 
 
-def wowsims(checkout):
+def tree_ranks(talents_json):
+    """Class slug -> per tree, each talent's max rank, in build-string order."""
+    g = json.loads(Path(talents_json).read_text())
+    return {name.lower(): [[t[4] for t in tals] for _, _, _, tals in trees] for _, name, trees in g["talents"]}
+
+
+def fits(build, ranks):
+    """Whether a build string fits a class's current trees: no digit past a talent's max rank or a
+    tree's length. Catches presets written against an older tree after a patch reshuffles it."""
+    for ti, part in enumerate(build.split("-")):
+        if ti >= len(ranks) or len(part) > len(ranks[ti]):
+            return False
+        if any(int(d) > ranks[ti][k] for k, d in enumerate(part)):
+            return False
+    return True
+
+
+def ok_for(slug, build, moved, ranks):
+    """A preset passes when it has no points where our order and the engine's disagree, and it
+    fits our current rank caps. With no gate data (tests, no --talents), everything passes."""
+    diffs = moved.get(slug)
+    if diffs is not None:
+        parts = build.split("-")
+        for ti, k in diffs:
+            if ti < len(parts) and k < len(parts[ti]) and parts[ti][k] != "0":
+                return False
+    return fits(build, ranks[slug]) if slug in ranks else True
+
+
+def wowsims(checkout, talents_json=None):
     """Per class slug: every preset build, from ui/specs/<class>/<spec>/builds/ files (named after
-    the file) and the makePresetTalents(...) presets defined inline in each spec's presets.ts."""
+    the file) and the makePresetTalents(...) presets defined inline in each spec's presets.ts.
+
+    Preset strings are written in the pinned engine's talent order. With `talents_json` given, a
+    preset is dropped when it puts points anywhere our current order disagrees with the engine's
+    (a patch moved talents and wowsims hasn't caught up), or when it no longer fits our trees'
+    rank caps — so a reshuffled tree can't mislabel a build."""
     out = {}
     base = Path(checkout) / "ui" / "specs"
     if not base.exists():
         return out
+    moved, ranks = {}, {}
+    if talents_json:
+        ranks = tree_ranks(talents_json)
+        for cname, trees in check_talent_order.ours(talents_json).items():
+            eng = check_talent_order.engine(checkout, cname)
+            if eng is not None:
+                moved[cname.lower()] = check_talent_order.differences(trees, eng)
     for f in sorted(base.glob("*/*/presets.ts")):
         slug, spec = (s.lower() for s in f.relative_to(base).parts[:2])
         if not re.fullmatch(r"[a-z]+", slug):
@@ -99,7 +141,7 @@ def wowsims(checkout):
             if spec != "dps":
                 rec["spec"] = spec[:20]
             lst = out.setdefault(slug, [])
-            if not any(x["t"] == tal for x in lst):
+            if ok_for(slug, tal, moved, ranks) and not any(x["t"] == tal for x in lst):
                 lst.append(rec)
     for f in sorted(base.glob("*/*/builds/*")):
         if f.suffix not in (".siml", ".json") or not f.is_file() or "test" in f.stem.lower():
@@ -112,9 +154,9 @@ def wowsims(checkout):
             if spec not in ("dps",):  # healer, protection... worth naming; dps is the default read
                 rec["spec"] = spec[:20]
             lst = out.setdefault(slug, [])
-            if not any(x["t"] == t for x in lst):
+            if ok_for(slug, t, moved, ranks) and not any(x["t"] == t for x in lst):
                 lst.append(rec)
-    return out
+    return {k: v for k, v in out.items() if v}
 
 
 CLASS_TOKEN = {"WARRIOR": "warrior", "PALADIN": "paladin", "HUNTER": "hunter", "ROGUE": "rogue",
@@ -205,7 +247,7 @@ def main():
     classes = {}
     for slug, lst in ours(a.simconfigs).items():
         classes.setdefault(slug, {})["ours"] = lst
-    for slug, lst in wowsims(a.wowsims).items():
+    for slug, lst in wowsims(a.wowsims, a.talents if Path(a.talents).exists() else None).items():
         classes.setdefault(slug, {})["wowsims"] = lst
     if a.community:
         for slug, lst in community(a.community, a.talents).items():
