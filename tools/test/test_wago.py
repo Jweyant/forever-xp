@@ -68,6 +68,16 @@ class Fetch(unittest.TestCase):
                 wago.fetch("https://wago.tools/x")
         self.assertEqual(len(calls), 1)
 
+    def test_unreachable_build_list_fails_instead_of_regressing(self):
+        def down(req, timeout=0):
+            raise TimeoutError("down")
+        with unittest.mock.patch.object(wago.urllib.request, "urlopen", down), \
+             unittest.mock.patch.object(wago.time, "sleep", lambda s: None):
+            with self.assertRaises(SystemExit):
+                wago.forever_build()
+        # A forced version still works offline, for tests and known-build rebuilds.
+        self.assertEqual(wago.forever_build("1.60.1.70532"), ("1.60.1.70532", "forced"))
+
 
 if __name__ == "__main__":
     unittest.main()
