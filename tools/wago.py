@@ -12,6 +12,9 @@ import json
 import os
 import re
 import sys
+import http.client
+import time
+import urllib.error
 import urllib.request
 
 WAGO = "https://wago.tools"
@@ -29,9 +32,25 @@ FOREVER_FALLBACK = "1.60.1.70532"
 CLASSIC_FALLBACK = "1.15.9.70003"
 
 
-def fetch(url, timeout=180):
-    req = urllib.request.Request(url, headers=UA)
-    return urllib.request.urlopen(req, timeout=timeout).read()
+def fetch(url, timeout=180, tries=4, headers=UA):
+    """Download url, retrying transfers wago.tools cuts off under patch-day load.
+
+    Retries truncated reads (IncompleteRead), connection drops, timeouts, 429 and 5xx answers,
+    with 3/6/12-second backoff. Any other HTTP error (a 404, say) raises straight away."""
+    last = None
+    for attempt in range(tries):
+        if attempt:
+            time.sleep(3 * 2 ** (attempt - 1))
+        try:
+            req = urllib.request.Request(url, headers=headers)
+            return urllib.request.urlopen(req, timeout=timeout).read()
+        except urllib.error.HTTPError as e:
+            if e.code != 429 and e.code < 500:
+                raise
+            last = e
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError, ConnectionError) as e:
+            last = e
+    raise last
 
 
 def valid(version):

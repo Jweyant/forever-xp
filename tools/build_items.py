@@ -72,8 +72,7 @@ def load_csv(cache, table, download):
         if not download:
             raise SystemExit(f"missing {path}; run with --download")
         url = f"{wago.WAGO}/db2/{table}/csv?build={FOREVER_BUILD}"
-        req = urllib.request.Request(url, headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
-        data = urllib.request.urlopen(req, timeout=120).read()
+        data = wago.fetch(url, timeout=120)
         if data[:1] in (b"{", b"<"):
             raise SystemExit(f"wago.tools refused {table}: {data[:120]!r}")
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -103,9 +102,7 @@ def icon_names(cache, download):
     if not path.exists():
         if not download:
             return {}
-        req = urllib.request.Request("https://wago.tools/api/files?search=interface/icons/",
-                                     headers={"User-Agent": "forever-xp data build (github.com/Jweyant/forever-xp)"})
-        path.write_bytes(urllib.request.urlopen(req, timeout=180).read())
+        path.write_bytes(wago.fetch("https://wago.tools/api/files?search=interface/icons/"))
     raw = json.loads(path.read_text())
     # The render service names icons with hyphens where the file name has spaces.
     return {int(k): v.rsplit("/", 1)[-1].rsplit(".", 1)[0].lower().replace(" ", "-")
