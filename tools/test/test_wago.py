@@ -1,6 +1,7 @@
 """Offline tests for tools/wago.py: picking the newest client build from wago.tools' list."""
 import sys
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -35,6 +36,47 @@ class Pick(unittest.TestCase):
         self.assertEqual(wago.forever_build("1.60.3.71234"), ("1.60.3.71234", "forced"))
         with self.assertRaises(SystemExit):
             wago.forever_build("../../secrets")
+
+
+class Fetch(unittest.TestCase):
+    def test_retries_truncated_transfers_and_5xx(self):
+        import http.client
+        import io
+        import urllib.error
+        calls = []
+        def flaky(req, timeout=0):
+            calls.append(req.full_url)
+            if len(calls) == 1:
+                raise http.client.IncompleteRead(b"partial")
+            if len(calls) == 2:
+                raise urllib.error.HTTPError(req.full_url, 502, "Bad Gateway", {}, io.BytesIO(b""))
+            return io.BytesIO(b"whole file")
+        with unittest.mock.patch.object(wago.urllib.request, "urlopen", flaky), \
+             unittest.mock.patch.object(wago.time, "sleep", lambda s: None):
+            self.assertEqual(wago.fetch("https://wago.tools/x"), b"whole file")
+        self.assertEqual(len(calls), 3)
+
+    def test_a_real_refusal_does_not_retry(self):
+        import io
+        import urllib.error
+        calls = []
+        def gone(req, timeout=0):
+            calls.append(1)
+            raise urllib.error.HTTPError(req.full_url, 404, "Not Found", {}, io.BytesIO(b""))
+        with unittest.mock.patch.object(wago.urllib.request, "urlopen", gone):
+            with self.assertRaises(urllib.error.HTTPError):
+                wago.fetch("https://wago.tools/x")
+        self.assertEqual(len(calls), 1)
+
+    def test_unreachable_build_list_fails_instead_of_regressing(self):
+        def down(req, timeout=0):
+            raise TimeoutError("down")
+        with unittest.mock.patch.object(wago.urllib.request, "urlopen", down), \
+             unittest.mock.patch.object(wago.time, "sleep", lambda s: None):
+            with self.assertRaises(SystemExit):
+                wago.forever_build()
+        # A forced version still works offline, for tests and known-build rebuilds.
+        self.assertEqual(wago.forever_build("1.60.1.70532"), ("1.60.1.70532", "forced"))
 
 
 if __name__ == "__main__":

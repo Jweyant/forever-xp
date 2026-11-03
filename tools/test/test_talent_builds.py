@@ -125,6 +125,17 @@ class Community(unittest.TestCase):
         self.assertEqual(out, {"warrior": [{"n": "Arms PvP", "t": "351", "note": "Mortal Strike burst"}]})
         # The leveling guide is skipped (kind), Fury PvP is skipped (6 points into a 5-rank talent),
         # and Mage is skipped entirely: Frost Warding's rank drifted, so the whole class fails the gate.
+class PatchGates(unittest.TestCase):
+    def test_presets_drop_where_the_order_moved_or_ranks_shrank(self):
+        moved = {"warrior": [(1, 2)]}           # tree 1, position 2 disagrees with the engine
+        ranks = {"warrior": [[3, 5, 1], [5, 5, 5], [5]]}
+        ok = build_talent_builds.ok_for
+        self.assertTrue(ok("warrior", "301-550", moved, ranks))      # no points at the moved spot
+        self.assertFalse(ok("warrior", "301-551", moved, ranks))     # a point where orders disagree
+        self.assertFalse(ok("warrior", "305", moved, ranks))         # rank 5 into a 1-rank talent
+        self.assertFalse(ok("warrior", "3011", moved, ranks))        # more digits than the tree has
+        self.assertTrue(ok("rogue", "999", moved, {}))               # no gate data: passes (tests)
+
 
 if __name__ == "__main__":
     unittest.main()

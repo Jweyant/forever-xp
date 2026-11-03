@@ -74,8 +74,7 @@ LEFT = 1020         # x of column 0 in the first spec tree
 # ---------------------------------------------------------------- loading
 
 def fetch(url, timeout=180):
-    req = urllib.request.Request(url, headers=UA)
-    return urllib.request.urlopen(req, timeout=timeout).read()
+    return wago.fetch(url, timeout=timeout, headers=UA)  # retries the transfers wago.tools cuts off
 
 
 def load(cache, build, table, download):
