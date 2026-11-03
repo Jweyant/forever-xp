@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-03",
- "blue_seen": "2026-11-03T03:20:33Z",
+ "blue_seen": "2026-11-03T20:00:09Z",
  "sources": [
   {
    "id": 2360696,
@@ -58,6 +58,24 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2400119,
+   "date": "2026-11-03",
+   "title": "Explore WoW: Forever with a Gamepad",
+   "url": "https://us.forums.blizzard.com/en/wow/t/explore-wow-forever-with-a-gamepad/2400119",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Prefer a gamepad? Get to know another way to play World of Warcraft: Forever, from moving and casting spells to adjusting your settings. Gamepad support is available in a beta state, with more improvements to come. View Full Article"
+  },
+  {
+   "id": 2400000,
+   "date": "2026-11-03",
+   "title": "WoW: Forever—What’s New and What Feels Familiar",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forevere28094whate28099s-new-and-what-feels-familiar/2400000",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "World of Warcraft: Forever has something for explorers, dungeon groups, collectors, roleplayers, and PvP fans alike. See how its interface conveniences, class updates, and progression systems complement a distinct take on original WoW—and what to exp…"
+  },
   {
    "id": 2396008,
    "date": "2026-10-29",
@@ -3622,23 +3640,23 @@
    "race": "Undead"
   },
   {
-   "id": "2c8bffba29",
+   "id": "ec50893e32",
    "date": "2026-11-03",
    "kind": "Development notes",
    "section": "Gamepad support",
    "path": [
-    "Gamepad Support has entered a complete functional state."
+    "Gamepad Support has entered a functional Beta state."
    ],
    "text": "In World of Warcraft: Forever, all major gameplay and core user interface experiences can be played with a controller, including movement, spells, interactions, UI navigation, etc.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
   },
   {
-   "id": "79054cb758",
+   "id": "8f85ed528d",
    "date": "2026-11-03",
    "kind": "Development notes",
    "section": "Gamepad support",
    "path": [
-    "Gamepad Support has entered a complete functional state."
+    "Gamepad Support has entered a functional Beta state."
    ],
    "text": "Gamepad settings can be customized through Edit Mode and the Options menu.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
