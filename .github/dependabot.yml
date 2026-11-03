@@ -20,6 +20,10 @@ updates:
     directory: /server
     schedule: { interval: weekly }
     cooldown: { default-days: 14 }
+  - package-ecosystem: npm
+    directory: /viewer
+    schedule: { interval: weekly }
+    cooldown: { default-days: 14 }
   - package-ecosystem: gomod
     directory: /uploader
     schedule: { interval: weekly }
