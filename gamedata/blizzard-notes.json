@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-03",
+ "updated": "2026-11-04",
  "blue_seen": "2026-11-03T20:00:09Z",
  "sources": [
   {
@@ -991,7 +991,10 @@
    "text": "Swiftmend: Now requires the Rejuvenation or Regrowth effect on the target to be one placed by the casting Druid.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9",
    "cls": "Druid",
-   "spec": "Restoration"
+   "spec": "Restoration",
+   "note": [
+    "There is an incorrect statement in the tooltip for Swiftmend. The usage of the word “consume” is incorrect and will be fixed soon. This ability does not consume the Rejuvenation or Regrowth effect on the target."
+   ]
   },
   {
    "id": "268100c5d9",
