@@ -553,6 +553,11 @@ function P.SourceLines(s)
   else
     L[#L + 1] = ("|cffffd100%s:|r %s%s"):format(kind, s.n or "", s.z and (" in " .. s.z) or "")
   end
+  -- Player logs: how many players saw this drop in Forever, and who logged it first.
+  if s.sn and s.sn > 0 then
+    L[#L + 1] = ("   |cff4fc3f7Confirmed in Forever by %d player%s|r"):format(s.sn, s.sn == 1 and "" or "s")
+  end
+  if s.by then L[#L + 1] = ("   |cff9d9d9dFirst logged by|r |cffffffff%s|r"):format(s.by) end
   return L
 end
 

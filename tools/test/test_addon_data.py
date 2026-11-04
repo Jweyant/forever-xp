@@ -10,6 +10,7 @@ weightsFor() for every class, spec and goal.
   python3 tools/test/test_addon_data.py          # exit 1 on any mismatch
 """
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -133,6 +134,12 @@ def check_items(addon, items, quests, zone_map):
                 bad_(f"item {iid} {it['name']!r}: source level site={lv} addon={sa.get('lv')}")
             if isinstance(s.get("ch"), (int, float)) and s["ch"] > 0 and not num_eq(s["ch"], sa.get("ch"), 0.006):
                 bad_(f"item {iid} {it['name']!r}: drop chance site={s['ch']} addon={sa.get('ch')}")
+            want_sn = s["seen"] if type(s.get("seen")) is int and s["seen"] > 0 else None
+            if (sa.get("sn") or None) != (min(want_sn, 9999) if want_sn else None):
+                bad_(f"item {iid} {it['name']!r}: players who saw it site={s.get('seen')} addon={sa.get('sn')}")
+            want_by = s["by"] if isinstance(s.get("by"), str) and re.fullmatch(r"[A-Za-z0-9 _'-]{2,20}", s["by"]) else None
+            if (sa.get("by") or None) != want_by:
+                bad_(f"item {iid} {it['name']!r}: first logged by site={s.get('by')!r} addon={sa.get('by')!r}")
             if bool(s.get("boss")) != bool(sa.get("boss")):
                 bad_(f"item {iid} {it['name']!r}: boss flag site={s.get('boss')} addon={sa.get('boss')}")
             if isinstance(s.get("qid"), int):

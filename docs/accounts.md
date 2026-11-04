@@ -16,7 +16,9 @@ Discord; every tool still works without an account.
 Endpoints: `POST /api/auth/login` (form field `return=/path/`), `GET /api/auth/callback`, `POST /api/auth/logout`,
 `GET|DELETE /api/me`, `GET|POST /api/plans`, `PUT|DELETE /api/plans/<id>`.
 Scout leaderboard links: `GET /api/scouts`, `POST /api/scouts/claim`, `PATCH|DELETE /api/scouts/claim/<hash>`,
-and the public `GET /api/scouts/names` that the player-data workflow reads.
+the public `GET /api/scouts/names` that the player-data workflow reads, and `GET /api/scouts/discord`, which
+lists the Discord IDs of linked players for the Discord role job. That last route needs the
+`SCOUT_ROLES_TOKEN` secret as a bearer token and doesn't exist until the secret is set.
 
 What we store: a random user ID, the Discord user ID, the Discord display name, session hashes,
 sign-in state for up to 10 minutes, the plans a player saves, and the ForeverScout installs a player

@@ -4,6 +4,7 @@
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
                                                          # (and post or update the welcome and rules text)
   python3 tools/discord_bot.py founding-members [--dry-run]   # give the founding role to the first members (hourly)
+  python3 tools/discord_bot.py scout-role IDS.json [--dry-run]  # give the Scout role to players who linked an install (hourly)
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
   python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
   python3 tools/discord_bot.py post-scouts SCOUTS.json [--dry-run]    # weekly Scout report to the report channel
@@ -39,7 +40,10 @@ ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
 FOUNDING_KEYS = {"role", "count"}
 SNOWFLAKE = re.compile(r"^[0-9]{1,25}$")
-CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "updates", "message"}
+CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "updates", "message", "role"}
+STAFF_ROLES = {"admin", "moderator"}
+USER_ID = re.compile(r"^[0-9]{15,22}$")
+MAX_ROLE_CHANGES = 25     # most Scout roles taken away in one run, so a bad list can't strip everyone
 PRIVATE_KEYS = {"name", "type"}
 MESSAGES = ROOT / "discord" / "messages"
 MESSAGE_FILE_RE = re.compile(r"^[a-z0-9-]{1,40}\.md$")
@@ -56,7 +60,7 @@ def log(msg):
 
 # ---- validation (runs on every pull request, no token) ----------------------------------------
 def validate(cfg):
-    problems, seen, feeds, reports, updates = [], set(), [], [], []
+    problems, seen, feeds, reports, updates, role_channels = [], set(), [], [], [], []
     for cat in cfg.get("categories", []):
         if not cat.get("name") or len(cat["name"]) > 90:
             problems.append(f"category name missing or too long: {cat.get('name')!r}")
@@ -94,6 +98,8 @@ def validate(cfg):
                     problems.append(f"{name}: the updates channel must be a text or announcement channel")
             elif "updates" in ch:
                 problems.append(f"{name}: updates must be true or left out")
+            if "role" in ch:
+                role_channels.append((name, kind, ch["role"]))
             if len(ch.get("topic", "")) > 1024:
                 problems.append(f"{name}: topic over 1024 characters")
             if "message" in ch:
@@ -134,6 +140,19 @@ def validate(cfg):
             problems.append(f"retired role {name!r}: names are 1-60 letters, digits, spaces, & ' or -")
         elif name.lower() in listed:
             problems.append(f"retired role {name}: also listed in roles")
+    for name, kind, role in role_channels:
+        if kind != "text":
+            problems.append(f"{name}: only text channels can be limited to a role")
+        elif not isinstance(role, str) or role.lower() not in listed:
+            problems.append(f"{name}: role must be one of the listed roles")
+        elif role.lower() in STAFF_ROLES:
+            problems.append(f"{name}: can't limit a channel to a staff role")
+    scout_role = cfg.get("scout_role")
+    if scout_role is not None:
+        if not isinstance(scout_role, str) or scout_role.lower() not in listed:
+            problems.append("scout_role must be one of the listed roles")
+        elif scout_role.lower() in STAFF_ROLES:
+            problems.append("scout_role: can't hand out a staff role")
     founding = cfg.get("founding_members")
     if founding is not None:
         if not isinstance(founding, dict) or set(founding) - FOUNDING_KEYS:
@@ -280,6 +299,12 @@ def setup(cfg, d, guild):
                 return hit
         return None
 
+    # Roles come first so a channel limited to a role can name it (a new role is created here).
+    sync_roles(cfg, d, guild, roles, me)
+    if not getattr(d, "dry", False):
+        roles = d.call("GET", f"/guilds/{guild}/roles")
+    role_ids = {r["name"].lower(): r["id"] for r in roles if r["id"] != guild and not r.get("managed")}
+
     order, messages = [], []
     for cat in cfg["categories"]:
         c = find(cat["name"], (4,), cat.get("aliases", ()))
@@ -298,6 +323,16 @@ def setup(cfg, d, guild):
             overwrites = []
             if ch.get("readonly"):
                 overwrites.append({"id": guild, "type": 0, "deny": READONLY_DENY})
+                if bot_role:
+                    overwrites.append({"id": bot_role["id"], "type": 0, "allow": BOT_ALLOW})
+            if ch.get("role"):
+                # Only members with this role can see the channel; the bot keeps access.
+                overwrites.append({"id": guild, "type": 0, "deny": VIEW})
+                rid = role_ids.get(ch["role"].lower())
+                if rid:
+                    overwrites.append({"id": rid, "type": 0, "allow": VIEW | SEND | EMBED | HISTORY})
+                else:
+                    log(f"! {ch['role']} doesn't exist yet, so {ch['name']} stays hidden from everyone.")
                 if bot_role:
                     overwrites.append({"id": bot_role["id"], "type": 0, "allow": BOT_ALLOW})
             body = {"parent_id": c["id"]}
@@ -334,7 +369,6 @@ def setup(cfg, d, guild):
         d.call("PATCH", f"/guilds/{guild}/channels", positions, write=True)
 
     check_private(cfg, d, guild, channels, bot_role)
-    sync_roles(cfg, d, guild, roles, me)
     for channel, f in messages:
         sync_message(d, channel, render_message((MESSAGES / f).read_text(encoding="utf-8"), channels), me)
     log("Done.")
@@ -454,6 +488,66 @@ def founding_members(cfg, d, guild):
         d.call("PUT", f"/guilds/{guild}/members/{m['user']['id']}/roles/{role['id']}", write=True)
         time.sleep(0.5)
     log(f"{conf['role']}: gave it to {len(waiting)}, now {holders + len(waiting)} of {conf['count']}.")
+
+
+# ---- Scout role --------------------------------------------------------------------------------
+def read_discord_ids(path):
+    """The Discord IDs of players who linked a ForeverScout install (forever-xp.com
+    /api/scouts/discord): a set of ID strings, or None when the file is missing or not that shape."""
+    try:
+        doc = json.loads(Path(path).read_text())
+    except (OSError, ValueError):
+        return None
+    ids = doc.get("ids") if isinstance(doc, dict) else None
+    if not isinstance(ids, list):
+        return None
+    return {i for i in ids if isinstance(i, str) and USER_ID.match(i)}
+
+
+def scout_roles(cfg, ids_path, d, guild):
+    """Keep the Scout role in step with the site: members who linked an install (and haven't hidden
+    themselves) get it; members who unlinked or hid lose it. It only touches this one role, never
+    removes more than MAX_ROLE_CHANGES in a run, and leaves everything alone if the list can't be read.
+    Logs counts only: the run log is public, so no names or IDs."""
+    name = cfg.get("scout_role")
+    if not name:
+        log("No scout_role in discord/server.json.")
+        return
+    want = read_discord_ids(ids_path)
+    if want is None:
+        log("The linked-player list isn't available; Scout roles left as they are.")
+        return
+    me = d.call("GET", "/users/@me")
+    roles = d.call("GET", f"/guilds/{guild}/roles")
+    role = next((r for r in roles if r["name"].lower() == name.lower() and not r.get("managed")), None)
+    if not role or not SNOWFLAKE.match(str(role["id"])):
+        log(f"! The {name} role doesn't exist yet; the layout run creates it.")
+        return
+    bot_top = max((r.get("position", 0) for r in roles if (r.get("tags") or {}).get("bot_id") == me["id"]), default=0)
+    if role.get("position", 0) >= bot_top:
+        log(f"! {name} is above the bot's role, so the bot can't give it out.")
+        return
+    members, after = [], "0"
+    for _ in range(50):   # up to 50,000 members
+        page = d.call("GET", f"/guilds/{guild}/members?limit=1000&after={after}", soft=(403,))
+        if page is None:
+            log("! Can't list members. Turn on Server Members Intent: Discord developer portal > Bot > Privileged Gateway Intents.")
+            return
+        members += page
+        if len(page) < 1000:
+            break
+        after = page[-1]["user"]["id"]
+    people = {str(m["user"]["id"]): role["id"] in (m.get("roles") or []) for m in members
+              if isinstance(m.get("user"), dict) and not m["user"].get("bot") and USER_ID.match(str(m["user"].get("id", "")))}
+    give = sorted(i for i in want if people.get(i) is False)
+    take = sorted(i for i, has in people.items() if has and i not in want)[:MAX_ROLE_CHANGES]
+    for uid in give:
+        d.call("PUT", f"/guilds/{guild}/members/{uid}/roles/{role['id']}", write=True)
+        time.sleep(0.5)
+    for uid in take:
+        d.call("DELETE", f"/guilds/{guild}/members/{uid}/roles/{role['id']}", write=True)
+        time.sleep(0.5)
+    log(f"{name}: {len(want)} linked, {sum(1 for i in want if i in people)} on this server; gave it to {len(give)}, took it from {len(take)}.")
 
 
 # ---- patch notes -------------------------------------------------------------------------------
@@ -895,6 +989,9 @@ def main():
     r.add_argument("--dry-run", action="store_true")
     f = sub.add_parser("founding-members")
     f.add_argument("--dry-run", action="store_true")
+    sr = sub.add_parser("scout-role")
+    sr.add_argument("ids")
+    sr.add_argument("--dry-run", action="store_true")
     u = sub.add_parser("update-scouts")
     u.add_argument("scouts")
     u.add_argument("--dry-run", action="store_true")
@@ -918,6 +1015,8 @@ def main():
         setup(cfg, d, guild)
     elif a.cmd == "founding-members":
         founding_members(cfg, d, guild)
+    elif a.cmd == "scout-role":
+        scout_roles(cfg, a.ids, d, guild)
     elif a.cmd == "post-date":
         post_date(cfg, a.notes, a.date, d, guild)
     elif a.cmd == "post-scouts":

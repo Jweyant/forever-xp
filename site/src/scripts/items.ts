@@ -32,12 +32,18 @@ export function seenText(seen: unknown): string {
   if (!Number.isFinite(n) || n < 1) return "";
   return `Confirmed in Forever by ${n} player${n === 1 ? "" : "s"}`;
 }
+/** "First logged by Kinos": the linked player who first looted a drop that others then confirmed. The name
+ * comes from player logs and the accounts site, so it must match the board-name allow-list or it's dropped. */
+export function byText(by: unknown): string {
+  return typeof by === "string" && /^[A-Za-z0-9 _'-]{2,20}$/.test(by) ? `First logged by ${by}` : "";
+}
 export function srcText(it: Item) {
   const s = it.src?.[0];
   if (!s) return "Source not known yet";
   const where = [s.n, s.z].filter(Boolean).join(", ");
   const seen = seenText(s.seen);
-  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}${seen ? ` (${seen[0].toLowerCase()}${seen.slice(1)})` : ""}`;
+  const by = seen ? byText(s.by) : "";
+  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}${seen ? ` (${seen[0].toLowerCase()}${seen.slice(1)}${by ? `; ${by[0].toLowerCase()}${by.slice(1)}` : ""})` : ""}`;
 }
 /** Dungeon or raid page slug, matching tools/build_raids.py. */
 export const instSlug = (name: string) => name.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -47,7 +53,8 @@ export function srcHtml(it: Item, instances: Set<string> = new Set()) {
   if (!s) return esc(srcText(it));
   const label = esc(SRC_LABEL[s.t] || s.t);
   const seen = seenText(s.seen);
-  const tail = seen ? ` (${esc(seen[0].toLowerCase() + seen.slice(1))})` : "";
+  const by = seen ? byText(s.by) : "";
+  const tail = seen ? ` (${esc(seen[0].toLowerCase() + seen.slice(1))}${by ? `; ${esc(by[0].toLowerCase() + by.slice(1))}` : ""})` : "";
   if (s.t === "quest" && num(s.qid) > 0) return `${label}: <a href="/quests/${num(s.qid)}/">${esc(s.n || `Quest ${num(s.qid)}`)}</a>${tail}`;
   const slug = s.z ? instSlug(s.z) : "";
   if ((s.t === "raid" || s.t === "dungeon") && slug && instances.has(slug)) {

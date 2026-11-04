@@ -4,7 +4,7 @@ import Comments from "../../components/Comments.astro";
 import { gear, itemById, rewardedBy, setItems } from "../../lib/gear";
 import { qById } from "../../lib/questdb";
 import { instanceBySlug, raidSlug } from "../../lib/raids";
-import { tooltipHtml, seenText, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
+import { tooltipHtml, seenText, byText, SRC_LABEL, SLOT_NAME, QUALITY, ICON } from "../../scripts/items";
 import type { Item } from "../../scripts/gear/model";
 
 export function getStaticPaths() {
@@ -52,7 +52,8 @@ const unconfirmed = srcs.length - confirmed.length;
           <li><span class="k">{kindName(s.t)}</span>
             {s.qid && qById.has(s.qid) ? <a href={`/quests/${s.qid}/`}>{s.n}</a> : <b>{s.n || kindName(s.t)}</b>}{" "}
             <span class="muted">{s.z && instanceBySlug.has(raidSlug(s.z)) ? <a href={`/raids/${raidSlug(s.z)}/`}>{s.z}</a> : s.z}{[s.z ? "" : null, s.boss ? "boss" : "", s.ch ? `${Number(s.ch)}% drop chance` : ""].filter((x) => x).map((x) => `, ${x}`).join("")}</span>
-            {seenText(s.seen) && <span class="confirmed" title="Different players whose ForeverScout logs saw this drop in WoW Forever">{seenText(s.seen)}</span>}</li>
+            {seenText(s.seen) && <span class="confirmed" title="Different players whose ForeverScout logs saw this drop in WoW Forever">{seenText(s.seen)}</span>}
+            {seenText(s.seen) && byText(s.by) && <span class="firstby">{byText(s.by)}</span>}</li>
         ))}
       </ul>
       {srcs.length > 0 && unconfirmed > 0 && <p class="small muted">{confirmed.length > 0 ? `${unconfirmed} of these sources ${unconfirmed === 1 ? "is" : "are"} from Classic-era data and not yet confirmed in Forever.` : "These sources are from Classic-era data. Forever changed and added loot, so they may be out of date."} Loot it with <a href="/scout/">ForeverScout</a> running and it gets confirmed for everyone.</p>}
@@ -88,5 +89,6 @@ const unconfirmed = srcs.length - confirmed.length;
   .srcs li { padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
   .srcs .k { display: inline-block; min-width: 5.5rem; font: 600 0.8rem var(--font-body); color: var(--xp); }
   .srcs .confirmed { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; border-radius: 999px; font: 600 0.72rem var(--font-body); color: var(--bg); background: var(--xp); white-space: nowrap; }
+  .srcs .firstby { display: inline-block; margin-left: 0.4rem; color: var(--muted); font-size: 0.8rem; }
   .ilist { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.4rem 1rem; max-width: none; }
 </style>
