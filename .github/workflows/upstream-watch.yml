@@ -1,0 +1,56 @@
+# Watches the two upstreams the sims are pinned to: the wowsims/forever engine (its presets and
+# talent order) and Boco10/WoWForeverBuilds-Addon (the community PvP builds). When either has commits
+# past our pin, it opens or updates one issue with the compare links, so moving a pin stays a
+# reviewed pull request. Nothing from upstream is downloaded or run here: only `git ls-remote`.
+
+name: Upstream watch
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write   # open or update the one "Upstream updates" issue
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare our pins with upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pin() { grep -oP "^\s*$1:\s*\K[0-9a-f]{40}" .github/workflows/sim-weights.yml; }
+          head() { git ls-remote "https://github.com/$1" HEAD | cut -f1; }
+          body=""
+          check() {
+            local repo=$1 pinned=$2 latest
+            latest=$(head "$repo")
+            if ! [[ "$pinned" =~ ^[0-9a-f]{40}$ && "$latest" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::warning::couldn't read the pin or upstream head for $repo"; return
+            fi
+            if [ "$pinned" != "$latest" ]; then
+              body+="- **$repo**: pinned ${pinned:0:9}, upstream ${latest:0:9}. Changes: https://github.com/$repo/compare/$pinned...$latest"$'\n'
+            fi
+          }
+          check wowsims/forever "$(pin WOWSIMS_COMMIT)"
+          check Boco10/WoWForeverBuilds-Addon "$(pin FOREVER_BUILDS_COMMIT)"
+          title="Upstream updates for the sims and talent builds"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n1)
+          if [ -z "$body" ]; then
+            echo "Both pins are current."
+            if [ -n "$existing" ]; then gh issue close "$existing" --comment "Both pins are current now."; fi
+            exit 0
+          fi
+          text="Newer upstream commits than our pins in \`.github/workflows/sim-weights.yml\`:"$'\n\n'"$body"$'\n'"To take them: review the changes, then bump the pin in a pull request (for wowsims also \`tools/simrunner/go.mod\`). Talent builds from either source stay hidden for any class whose talent order or ranks don't match the Forever client, so nothing wrong is shown in the meantime."
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$text"
+          else
+            gh issue create --title "$title" --body "$text"
+          fi

@@ -13,7 +13,7 @@ SPECS = {"WARRIOR": {"arms", "fury", "prot"}, "PALADIN": {"holy", "prot", "ret"}
          "PRIEST": {"disc", "holy", "shadow"}, "SHAMAN": {"ele", "enh", "resto"},
          "MAGE": {"arcane", "fire", "frost"}, "WARLOCK": {"aff", "demo", "destro"},
          "DRUID": {"balance", "cat", "bear", "resto"}}
-ENTRY_KEYS = {"key", "label", "note", "file", "specDir", "aplJson", "hps"}
+ENTRY_KEYS = {"key", "label", "note", "file", "specDir", "aplJson", "hps", "talents"}
 SAFE = re.compile(r"^[ -~·]*$")  # printable ASCII plus the separator dot the labels use
 
 
