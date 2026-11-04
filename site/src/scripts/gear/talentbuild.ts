@@ -42,7 +42,7 @@ export function parseBuild(input: string, cls: string): Parsed {
     if (!c) return { ok: false, error: "That link isn't to one of this site's class talent calculators." };
     str = m[2];
   } else if (!RAW.test(text)) {
-    return { ok: false, error: "Paste a link from this site's talent calculator, or a build like 30325213132515201-0505-2." };
+    return { ok: false, error: "Paste a link from this site's talent calculator, or a build like 30323213132215201-5505-2." };
   }
   const ct = classTalents(c);
   if (!ct) return { ok: false, error: "There's no talent data for that class." };

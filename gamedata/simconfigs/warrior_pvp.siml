@@ -3,8 +3,10 @@ siml 1
 // a 20-second burst against a level-60 player-like target (3,100 armor, no boss crit
 // suppression). Gear and buffs are the PvE setup's, with the engine's default Arms APL
 // (index.json names it); the output is burst stat weights for PvP gearing, not a PvP model.
+// Talents remapped by name to Forever's Nov 3 trees: Improved Tactical Mastery is now 3 ranks, so its
+// 2 spare points went to Deflection; the Fury picks moved to their new positions (Enrage is 8th).
 spec dps_warrior
-talents "02325013032015031-1505013005"
+talents "04323013032015031-15050135"
 
 settings:
   race orc
