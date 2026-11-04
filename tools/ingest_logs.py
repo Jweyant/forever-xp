@@ -640,20 +640,110 @@ def write_objective_areas(db, out_dir, cell=2.0, min_players=2):
 BUILD_RE = re.compile(r"^[0-5]{0,30}(-[0-5]{0,30}){0,2}$")
 
 
-def write_talent_builds(db, out_dir, min_players=2):
+FAMILY_POINTS = 3   # builds this many points apart or fewer are one family, shown by its most used member
+
+
+def client_build(v):
+    """"1.60.1.70755" -> (1, 60, 1, 70755), or None."""
+    m = re.fullmatch(r"(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,7})", str(v or ""))
+    return tuple(int(x) for x in m.groups()) if m else None
+
+
+def load_trees(path):
+    """The current talent trees from gamedata/talents.json: {"client": (build tuple), "classes":
+    {class slug: {"ranks": [[max ranks per talent] per tree], "sig": hash of names, ranks and order}}}.
+    None if the file can't be read."""
+    try:
+        g = json.loads(Path(path).read_text())
+        client = client_build((g.get("builds") or {}).get("forever"))
+        classes = {}
+        for _, name, trees in g["talents"]:
+            ranks = [[int(t[4]) for t in tals] for _, _, _, tals in trees]
+            shape = [[(t[3], int(t[4])) for t in tals] for _, _, _, tals in trees]
+            classes[str(name).lower()] = {"ranks": ranks,
+                                          "sig": hashlib.sha256(json.dumps(shape).encode()).hexdigest()[:16]}
+    except (OSError, ValueError, KeyError, TypeError, IndexError):
+        return None
+    return {"client": client, "classes": classes} if client and classes else None
+
+
+def fits_trees(b, ranks):
+    """True if every digit of the build fits the current trees (lengths and max ranks)."""
+    parts = b.split("-")
+    if len(parts) > len(ranks):
+        return False
+    for part, tree in zip(parts, ranks):
+        if len(part) > len(tree) or any(int(ch) > r for ch, r in zip(part, tree)):
+            return False
+    return True
+
+
+def build_distance(a, b):
+    """How many points apart two builds are: the sum of per-talent differences."""
+    pa, pb = a.split("-"), b.split("-")
+    d = 0
+    for i in range(max(len(pa), len(pb))):
+        x = pa[i] if i < len(pa) else ""
+        y = pb[i] if i < len(pb) else ""
+        n = max(len(x), len(y))
+        d += sum(abs(int(x[k] if k < len(x) else 0) - int(y[k] if k < len(y) else 0)) for k in range(n))
+    return d
+
+
+def build_families(counter, min_players):
+    """Group builds within FAMILY_POINTS of each other. Each family is shown by its most used member,
+    which must itself be used by min_players characters (so no single character's build is shown);
+    the family's count adds every close build's characters. Returns [[build, characters, close builds]]."""
+    heads = []   # [build, characters, close builds]
+    for b, n in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0])):
+        home = next((h for h in heads if build_distance(h[0], b) <= FAMILY_POINTS), None)
+        if home:
+            home[1] += n
+            home[2] += 1
+        elif n >= min_players:
+            heads.append([b, n, 0])
+    heads.sort(key=lambda h: (-h[1], h[0]))
+    return heads
+
+
+def write_talent_builds(db, out_dir, min_players=2, trees=None, previous=None, now=None):
     """Every talent build players use, per class, as talent_builds.json:
-    {class: {"players": N, "groups": {"all"/"pve"/"pvp": {"n": characters, "builds": [[string, characters], ...]}}}}.
+    {class: {"players": N, "groups": {"all"/"pve"/"pvp"/"ranked": {"n": characters,
+    "builds": [[string, characters, close builds], ...]}}}, "_trees": {...}}.
 
     A character counts once, with the last build they logged. "pve" is characters who logged a
     dungeon or raid boss, "pvp" characters who entered a battleground, "ranked" characters whose
     logs carry an honor rank (the addon reads the character's own rank, nothing about others).
-    All builds are published, most used first — except a build stays out until `min_players`
-    different characters use it, so nobody's build is shown alone."""
+    Builds within FAMILY_POINTS points of each other count as one family, shown by its most used
+    member; that member must be used by `min_players` characters, so nobody's build is shown alone.
+
+    The addon logs a build as one digit per talent in the game's tree order, so a patch that moves
+    talents changes what an old string means. With `trees` (load_trees), only logs that can be read
+    on today's trees count: from exactly the client build the trees come from (a newer client waits
+    for the next talent refresh), made after the trees last changed, and fitting today's ranks. `previous` (the last published talent_builds.json) tells when
+    each class's trees last changed: a change within the same client build (a hotfix) restarts that
+    class's count from `now`; a new client build is already covered by the build check."""
+    now = int(now if now is not None else time.time())
+    prev_trees = (previous or {}).get("_trees") if isinstance(previous, dict) else None
+    prev_trees = prev_trees if isinstance(prev_trees, dict) else {}
+    since, meta = {}, {}
+    if trees:
+        client = ".".join(map(str, trees["client"]))
+        for cls, info in trees["classes"].items():
+            p = prev_trees.get(cls) if isinstance(prev_trees.get(cls), dict) else {}
+            if p.get("sig") == info["sig"]:
+                start = int(p.get("since") or 0)
+            elif p.get("sig") and p.get("client") == client:
+                start = now    # same client, different trees: a hotfix moved talents
+            else:
+                start = 0      # first run or a new client build: the build check is enough
+            since[cls] = start
+            meta[cls] = {"sig": info["sig"], "client": client, "since": start}
     latest = {}   # char -> (when, class, build)
     flags = defaultdict(lambda: {"pvp": False, "pve": False, "ranked": False})
-    for char, cls, start, t, k, raw in db.execute("""SELECT s.char_id, s.class, s.start, e.t, e.k, e.json
-                                                     FROM events e JOIN sessions s ON s.id = e.session_id
-                                                     WHERE e.k IN ('talents', 'enc')"""):
+    for char, cls, start, sbuild, t, k, raw in db.execute(
+            """SELECT s.char_id, s.class, s.start, s.build, e.t, e.k, e.json
+               FROM events e JOIN sessions s ON s.id = e.session_id WHERE e.k IN ('talents', 'enc')"""):
         if k == "enc":
             flags[char]["pve"] = True
             continue
@@ -661,18 +751,25 @@ def write_talent_builds(db, out_dir, min_players=2):
             e = json.loads(raw)
             b = e.get("b").rstrip("-") if isinstance(e.get("b"), str) else None
             when = int(start or 0) + int(t or 0)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, AttributeError):
             continue
         if not (isinstance(b, str) and BUILD_RE.fullmatch(b) and b.strip("-") and not b.endswith("-")
                 and sum(int(d) for d in b if d.isdigit()) <= 60):
             continue
+        cls = str(cls or "").strip().lower()
+        if not re.fullmatch(r"[a-z]+", cls):
+            continue
+        if trees:
+            info = trees["classes"].get(cls)
+            got = client_build(sbuild)
+            if not info or got != trees["client"] or when < since.get(cls, 0) or not fits_trees(b, info["ranks"]):
+                continue
         if e.get("bg"):
             flags[char]["pvp"] = True
         rank = e.get("rank")
         if isinstance(rank, (int, float)) and 1 <= rank <= 14:
             flags[char]["ranked"] = True
-        cls = str(cls or "").strip().lower()
-        if re.fullmatch(r"[a-z]+", cls) and (char not in latest or when >= latest[char][0]):
+        if char not in latest or when >= latest[char][0]:
             latest[char] = (when, cls, b)
     counts = defaultdict(lambda: {"players": 0, "all": Counter(), "pve": Counter(), "pvp": Counter(), "ranked": Counter()})
     for char, (_, cls, b) in latest.items():
@@ -686,11 +783,13 @@ def write_talent_builds(db, out_dir, min_players=2):
     for cls, c in sorted(counts.items()):
         groups = {}
         for group in ("all", "pve", "pvp", "ranked"):
-            rows = [[b, n] for b, n in c[group].most_common() if n >= min_players]
+            rows = build_families(c[group], min_players)
             if rows:
                 groups[group] = {"n": sum(c[group].values()), "builds": rows}
         if groups:
             out[cls] = {"players": c["players"], "groups": groups}
+    if meta:
+        out["_trees"] = meta
     (out_dir / "talent_builds.json").write_text(json.dumps(out, separators=(",", ":"), sort_keys=True))
 
 
@@ -700,6 +799,8 @@ def main():
     ap.add_argument("--maps", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--names", help="JSON from the accounts API /api/scouts/names: who the leaderboard may name")
+    ap.add_argument("--talents", help="gamedata/talents.json (the newest copy): only builds readable on today's trees count")
+    ap.add_argument("--previous-builds", help="the last published talent_builds.json, to tell when the trees changed")
     ap.add_argument("files", nargs="+")
     a = ap.parse_args()
     out = Path(a.out)
@@ -714,7 +815,16 @@ def main():
     write_objective_areas(db, out)
     write_scouts(db, out, names=names)
     write_encounters(db, out)
-    write_talent_builds(db, out)
+    previous = None
+    if a.previous_builds:
+        try:
+            previous = json.loads(Path(a.previous_builds).read_text())
+        except (OSError, ValueError):
+            previous = None
+    trees = load_trees(a.talents) if a.talents else None
+    if a.talents and not trees:
+        sys.exit(f"{a.talents}: can't read the talent trees")
+    write_talent_builds(db, out, trees=trees, previous=previous)
     for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv", "talent_builds.json"):
         print("wrote", out / name)
 
