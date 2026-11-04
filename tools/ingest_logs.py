@@ -598,11 +598,12 @@ def write_talent_builds(db, out_dir, min_players=2):
     {class: {"players": N, "groups": {"all"/"pve"/"pvp": {"n": characters, "builds": [[string, characters], ...]}}}}.
 
     A character counts once, with the last build they logged. "pve" is characters who logged a
-    dungeon or raid boss, "pvp" characters who entered a battleground. All builds are published,
-    most used first — except a build stays out until `min_players` different characters use it,
-    so nobody's build is shown alone."""
+    dungeon or raid boss, "pvp" characters who entered a battleground, "ranked" characters whose
+    logs carry an honor rank (the addon reads the character's own rank, nothing about others).
+    All builds are published, most used first — except a build stays out until `min_players`
+    different characters use it, so nobody's build is shown alone."""
     latest = {}   # char -> (when, class, build)
-    flags = defaultdict(lambda: {"pvp": False, "pve": False})
+    flags = defaultdict(lambda: {"pvp": False, "pve": False, "ranked": False})
     for char, cls, start, t, k, raw in db.execute("""SELECT s.char_id, s.class, s.start, e.t, e.k, e.json
                                                      FROM events e JOIN sessions s ON s.id = e.session_id
                                                      WHERE e.k IN ('talents', 'enc')"""):
@@ -620,21 +621,24 @@ def write_talent_builds(db, out_dir, min_players=2):
             continue
         if e.get("bg"):
             flags[char]["pvp"] = True
+        rank = e.get("rank")
+        if isinstance(rank, (int, float)) and 1 <= rank <= 14:
+            flags[char]["ranked"] = True
         cls = str(cls or "").strip().lower()
         if re.fullmatch(r"[a-z]+", cls) and (char not in latest or when >= latest[char][0]):
             latest[char] = (when, cls, b)
-    counts = defaultdict(lambda: {"players": 0, "all": Counter(), "pve": Counter(), "pvp": Counter()})
+    counts = defaultdict(lambda: {"players": 0, "all": Counter(), "pve": Counter(), "pvp": Counter(), "ranked": Counter()})
     for char, (_, cls, b) in latest.items():
         c = counts[cls]
         c["players"] += 1
         c["all"][b] += 1
-        for group in ("pve", "pvp"):
+        for group in ("pve", "pvp", "ranked"):
             if flags[char][group]:
                 c[group][b] += 1
     out = {}
     for cls, c in sorted(counts.items()):
         groups = {}
-        for group in ("all", "pve", "pvp"):
+        for group in ("all", "pve", "pvp", "ranked"):
             rows = [[b, n] for b, n in c[group].most_common() if n >= min_players]
             if rows:
                 groups[group] = {"n": sum(c[group].values()), "builds": rows}

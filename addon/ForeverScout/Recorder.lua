@@ -311,15 +311,32 @@ local function encodeTalents()
   return str
 end
 
+-- The character's own honor standing: PvP rank 1-14 and lifetime honorable kills. Numbers only,
+-- read from the same API the default UI uses; nothing about opponents or other players.
+local function pvpStanding()
+  local rank, hk
+  if UnitPVPRank then
+    local ok, r = pcall(UnitPVPRank, "player")
+    if ok and type(r) == "number" and r > 4 and r <= 18 then rank = r - 4 end -- the API offsets ranks by 4
+  end
+  if GetPVPLifetimeStats then
+    local ok, kills = pcall(GetPVPLifetimeStats)
+    if ok and type(kills) == "number" and kills > 0 then hk = math.floor(kills) end
+  end
+  return rank, hk
+end
+
 local lastBuild, talentPending
 local function logTalents()
   talentPending = nil
   if select(1, instanceInfo()) == "pvp" then sawBattleground = true end -- logged in inside one
   local s = encodeTalents()
-  local key = s and (s .. (sawBattleground and "|bg" or ""))
+  local rank, hk = pvpStanding()
+  -- The key holds everything but kill counts, so a rank-up logs a fresh event at next login too.
+  local key = s and (s .. (sawBattleground and "|bg" or "") .. "|r" .. tostring(rank or 0))
   if key and key ~= lastBuild then
     lastBuild = key
-    ns:Log("talents", { b = s, bg = sawBattleground or nil })
+    ns:Log("talents", { b = s, bg = sawBattleground or nil, rank = rank, hk = hk })
   end
 end
 -- Once shortly after login (talents load late), then on changes, at most once per 30 s so

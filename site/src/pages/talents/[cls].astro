@@ -32,7 +32,8 @@ const plRows = (v: unknown): [string, number][] => (Array.isArray(v) ? v : [])
 const popular = ([
   ["all", "Everyone", "every character that shared logs"],
   ["pve", "PvE — dungeon and raid players", "characters that fought dungeon or raid bosses"],
-  ["pvp", "PvP — battleground players", "characters that entered a battleground"],
+  ["pvp", "Battleground PvP", "characters that entered a battleground"],
+  ["ranked", "Ranked PvP", "characters holding an honor rank, 1–14"],
 ] as const).map(([key, name, note]) => {
   const g = pl?.groups?.[key];
   return { name, note, n: Math.max(0, Math.floor(Number(g?.n) || 0)), rows: plRows(g?.builds) };
@@ -41,10 +42,6 @@ const popular = ([
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
 const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0 || communityBuilds.length > 0;
-// The quick strip above the calculator: the most-used player builds, then the recommended ones.
-const popAll = popular.find((g) => g.name === "Everyone");
-const popPvp = popular.find((g) => g.name.startsWith("PvP"));
-const share = (g: { n: number }, n: number) => (g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : "");
 // What a preset stands for, in plain words: wowsims' name shorthands, and the role its spec
 // folder names. The dominant tree comes from the build string itself.
 const WORDS: Record<string, string> = {
