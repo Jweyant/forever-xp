@@ -50,13 +50,23 @@ jobs:
         if: steps.pull.outputs.have == 'true'
         run: bash tools/refresh_questie_data.sh
 
+      # Who the leaderboard may name: players who linked an install to their account. If the site
+      # can't be reached the board is left as last published (tools/ingest_logs.py write_scouts).
+      - name: Fetch linked scout names
+        if: steps.pull.outputs.have == 'true'
+        run: |
+          mkdir -p out
+          curl -fsS --max-time 30 -A "forever-xp-player-data" https://forever-xp.com/api/scouts/names -o out/scout_names.json \
+            || echo "Linked names unavailable; the leaderboard stays as it was"
+
       - name: Aggregate logs
         if: steps.pull.outputs.have == 'true'
         run: |
           python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
-            --maps data/questiedb/uiMapIdToAreaId.json --out out/ logs/*.lua
+            --maps data/questiedb/uiMapIdToAreaId.json --out out/ --names out/scout_names.json logs/*.lua
           mkdir -p gamedata/players
-          cp out/quest_timing.csv out/loot.csv out/objective_areas.json out/scouts.json out/encounters.csv out/talent_builds.json gamedata/players/
+          cp out/quest_timing.csv out/loot.csv out/objective_areas.json out/encounters.csv out/talent_builds.json gamedata/players/
+          if [ -f out/scouts.json ]; then cp out/scouts.json gamedata/players/; fi
           rm -rf logs out
 
       - name: Commit if changed

@@ -47,5 +47,6 @@ GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui -X main.uploadURL=htt
 
 The uploader shows you your scout name (for example "Scout a1b2c3"), a one-way hash of this
 install's random id. After setup it offers to open forever-xp.com so you can sign in with
-Discord and have your Discord name shown instead. The link is also saved in `claim.txt` next to
-the log. Keep it private: anyone with the link can claim your scout name.
+Discord and link this install. The leaderboard only lists linked scouts, under your Discord name
+(or one you pick). The link is also saved in `claim.txt` next to the log. Keep it private: anyone
+with the link can claim your scout name.

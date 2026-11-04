@@ -31,10 +31,10 @@ export const quests = questsJson as Quest[];
 export const zones = zonesJson as { name: string; slug: string; quests: number; do: number; skip: number; optional: number; unknown: number; median_xp_per_min: number | null }[];
 export const meta = metaJson as { built: string; skip_fraction: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
 export interface ScoutRow { handle: string; score: number; quests: number; drops: number; discoveries: number; zones: number; sessions: number }
-/** Contributor leaderboard (tools/site_data.py write_scouts): anonymous handles and counts only. */
+/** Contributor leaderboard (tools/site_data.py write_scouts): linked players' board names and counts only. */
 export const scouts = scoutsJson as {
   updated: number;
-  totals: { scouts: number; sessions: number; quests: number; drops: number; discoveries: number };
+  totals: { scouts: number; linked: number; sessions: number; quests: number; drops: number; discoveries: number };
   week: { scouts: number; quests: number; drops: number };
   board: ScoutRow[];
   week_board: ScoutRow[];

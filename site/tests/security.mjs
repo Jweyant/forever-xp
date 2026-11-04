@@ -79,6 +79,19 @@ const cases = [
       { id: `${P}`, kind: "bis", name: P, data: "c=WARRIOR", updated: 1 },
     ] },
   } }],
+  // The uploader's claim link and the scouting API, with hostile values. The claim code must be exactly 32 hex
+  // characters; anything else is dropped, and the hostile API rows must not render (bad ids/names are filtered).
+  ["Account page, hostile claim code", `/account/?claim=${E}`, { expect: "[data-signed-in]:not([hidden])", api: {
+    "/api/me": { name: P }, "/api/plans": { plans: [] }, "/api/scouts": { scouts: [] },
+  } }],
+  ["Account page, valid claim code and hostile scouts", `/account/?claim=${"a".repeat(32)}`, { expect: "[data-pending]:not([hidden])", api: {
+    "/api/me": { name: P }, "/api/plans": { plans: [] },
+    "/api/scouts": { scouts: [
+      { id: "f".repeat(64), handle: "Scout abcdef", name: P, shown: "Kinos", visible: true },
+      { id: P, handle: P, name: P, shown: P, visible: true },
+      { id: "e".repeat(64), handle: `Scout ${P}`, name: null, shown: P, visible: true },
+    ] },
+  } }],
 ];
 
 const browser = await chromium.launch();

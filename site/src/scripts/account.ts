@@ -4,11 +4,18 @@
 
 export interface Plan { id: string; kind: "bis" | "talents"; name: string; data: string; updated: number }
 export type Me = { name: string } | null;
+/** A ForeverScout install linked to the account (shown on the leaderboard under `shown`). */
+export interface ScoutClaim { id: string; handle: string; name: string | null; shown: string; visible: boolean }
 
 const CLASSES = new Set(["warrior", "paladin", "hunter", "rogue", "priest", "shaman", "mage", "warlock", "druid"]);
 const BIS = /^[A-Za-z0-9=&._,:%-]{1,2048}$/;
 const TALENTS = /^([a-z]+)#([0-9-]{0,200})$/;
 const PLAN_ID = /^[A-Za-z0-9_-]{16}$/;
+export const CLAIM_CODE = /^[0-9a-f]{32}$/;
+const CLAIM_ID = /^[0-9a-f]{64}$/;
+const HANDLE = /^Scout [0-9a-f]{6}$/;
+const BOARD_NAME = /^[A-Za-z0-9 _'-]{2,20}$/;
+const CLAIM_KEY = "fxp-claim";
 
 export const accountsOn = () => document.documentElement.dataset.accounts === "on";
 
@@ -45,6 +52,43 @@ export const savePlan = (kind: Plan["kind"], name: string, data: string) => send
 export const deletePlan = (id: string) => (PLAN_ID.test(id) ? send("DELETE", `/api/plans/${id}`) : Promise.reject(new Error("bad-id")));
 export const signOut = () => send("POST", "/api/auth/logout", {});
 export const deleteAccount = () => send("DELETE", "/api/me");
+
+export async function listScouts(): Promise<ScoutClaim[]> {
+  const j = await send("GET", "/api/scouts");
+  const rows: ScoutClaim[] = Array.isArray(j?.scouts) ? j.scouts : [];
+  return rows.filter((c) => CLAIM_ID.test(String(c?.id)) && HANDLE.test(String(c?.handle)) && BOARD_NAME.test(String(c?.shown)))
+    .map((c) => ({ id: c.id, handle: c.handle, name: typeof c.name === "string" ? c.name.slice(0, 20) : null, shown: c.shown, visible: c.visible === true }));
+}
+export const claimScout = (code: string, name?: string) =>
+  CLAIM_CODE.test(code) ? send("POST", "/api/scouts/claim", name ? { code, name } : { code }) : Promise.reject(new Error("bad-code"));
+export const updateScout = (id: string, patch: { name?: string | null; visible?: boolean }) =>
+  CLAIM_ID.test(id) ? send("PATCH", `/api/scouts/claim/${id}`, patch) : Promise.reject(new Error("bad-id"));
+export const unlinkScout = (id: string) => (CLAIM_ID.test(id) ? send("DELETE", `/api/scouts/claim/${id}`) : Promise.reject(new Error("bad-id")));
+
+/** The uploader opens /account/?claim=<install id>. The value is untrusted: exactly 32 lowercase hex
+ * characters or it is ignored. It is moved out of the address bar into sessionStorage (it has to
+ * survive the Discord sign-in round trip) and never shown or sent anywhere except the claim call. */
+export function pendingClaim(): string | null {
+  const fromUrl = new URLSearchParams(location.search).get("claim");
+  if (fromUrl !== null) {
+    const params = new URLSearchParams(location.search);
+    params.delete("claim");
+    const rest = params.toString();
+    history.replaceState(null, "", location.pathname + (rest ? `?${rest}` : "") + location.hash);
+    if (CLAIM_CODE.test(fromUrl)) { try { sessionStorage.setItem(CLAIM_KEY, fromUrl); } catch { /* storage blocked */ } return fromUrl; }
+  }
+  try {
+    const saved = sessionStorage.getItem(CLAIM_KEY);
+    return saved && CLAIM_CODE.test(saved) ? saved : null;
+  } catch { return null; }
+}
+export function forgetClaim() { try { sessionStorage.removeItem(CLAIM_KEY); } catch { /* storage blocked */ } }
+
+/** "Scout a1b2c3": the same one-way name the uploader shows (first 6 hex of sha256("forever-xp scout|" + id)). */
+export async function scoutHandle(code: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`forever-xp scout|${code}`));
+  return "Scout " + [...new Uint8Array(d)].slice(0, 3).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 /** Where a saved plan opens, rebuilt from checked parts. */
 export function planHref(p: Plan): string | null {

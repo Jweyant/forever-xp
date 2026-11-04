@@ -42,9 +42,10 @@ player-data workflow from shared ForeverScout logs):
   servers following the channel aren't sent every refresh.
 - **Mondays**, `post-scouts` posts the weekly Scout report and publishes it to followers.
 
-Nothing is posted until someone has sent a log. Players appear only under anonymous names like
-`Scout 97800d` (a one-way hash of the uploader's random install id, which the uploader shows the
-player). The bot posts only names in that shape and whole numbers, with mentions off. To preview:
+Nothing is posted until a player has linked their install to their forever-xp.com account.
+Only linked players appear, under their chosen or Discord name (letters, digits, spaces, `_ ' -`
+only, so no mentions or markup). The bot posts only names in that shape and whole numbers, with
+mentions off. To preview:
 **Actions > Scout report > Run workflow**, pick standings or report, with "Only show what would be
 posted" ticked.
 
