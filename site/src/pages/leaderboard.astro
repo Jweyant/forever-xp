@@ -8,10 +8,10 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
 ---
 <Base image="/og/scout.jpg" title="Scout leaderboard" description="The WoW Forever players whose ForeverScout logs time quests and confirm item drops for everyone, ranked. Updated every six hours.">
   <h1>Scout leaderboard</h1>
-  <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it.</p>
+  <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it, under their Discord names.</p>
 
   <ul class="tiles" aria-label="All scouts so far">
-    <li><b>{fmt(totals.scouts)}</b><span>scouts</span></li>
+    <li><b>{fmt(totals.scouts)}</b><span>scouts{n(totals.linked) < n(totals.scouts) ? ` (${fmt(totals.linked)} on the board)` : ""}</span></li>
     <li><b>{fmt(totals.quests)}</b><span>quests timed</span></li>
     <li><b>{fmt(totals.drops)}</b><span>drops logged</span></li>
     <li><b>{fmt(totals.discoveries)}</b><span>discoveries</span></li>
@@ -20,8 +20,8 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
   {board.length === 0 ? (
     <section class="empty">
       <h2>No scouts on the board yet</h2>
-      <p>WoW Forever launches November 4. Install ForeverScout and the uploader before you log in, and your name is on this board after your first session.</p>
-      <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
+      <p>WoW Forever launches November 4. Install ForeverScout and the uploader, play a session, then <a href="/account/">sign in with Discord</a> and link your install. Your Discord name is on this board within six hours.</p>
+      <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/account/">Sign in with Discord</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
     </section>
   ) : (<>
     {week_board.length > 0 && (
@@ -67,9 +67,9 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
       <p>The <b>#leaderboard</b> channel in the <a href={SITE.discord} rel="noopener">Forever XP Discord</a> shows the current standings, updated every six hours, and the Scout report every Monday. Follow the channel to get the report in your own server.</p>
     </section>
     <section>
-      <h2>Your scout name</h2>
-      <p>The ForeverScout Uploader shows your name when you set it up, something like <b>Scout 97800d</b>. It's made from a one-way hash of a random id the uploader creates, so it can't be traced back to you. No character names, realms or chat are ever recorded.</p>
-      <p>Coming soon: link your scout name to your Discord sign-in to show your name here and earn roles in the <a href={SITE.discord} rel="noopener">Forever XP Discord</a>.</p>
+      <h2>Get on the board</h2>
+      <p>Only scouts who signed in with Discord are listed. After setup, the ForeverScout Uploader opens your <a href="/account/">account page</a> with a link that ties your install (something like <b>Scout 97800d</b>) to your Discord name. You can pick a different name, hide yourself or unlink there at any time. Your logs keep improving the routes and drops either way.</p>
+      <p>The site stores your Discord user ID and name, and a one-way hash of your install; never the install itself, and no character names, realms or chat.</p>
     </section>
   </div>
 </Base>

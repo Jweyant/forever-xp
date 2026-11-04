@@ -417,21 +417,53 @@ BOARD_SIZE = 50
 WEEK_BOARD_SIZE = 10
 
 
-def scout_handle(key):
-    """Public name for a player key: "Scout" plus 6 hex digits of a one-way hash of the install id
-    (or the character id for hand-sent logs), so the board never shows the id itself."""
+def scout_hash(key):
+    """One-way hash of a player key (the install id, or the character id for hand-sent logs).
+    The accounts API stores the same hash for a linked install (site/api/app.js SCOUT_SALT)."""
     ident = key.split(":", 1)[1] if ":" in key else key
-    return "Scout " + hashlib.sha256((SCOUT_SALT + ident).encode()).hexdigest()[:6]
+    return hashlib.sha256((SCOUT_SALT + ident).encode()).hexdigest()
 
 
-def write_scouts(db, out_dir, now=None):
+def scout_handle(key):
+    """Anonymous name for a player key: "Scout" plus the first 6 hex digits of scout_hash(). The
+    uploader shows players this name; the board shows it only for names it can't use."""
+    return "Scout " + scout_hash(key)[:6]
+
+
+BOARD_NAME = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")
+
+
+def load_scout_names(path):
+    """The linked players from the accounts API (/api/scouts/names): {install hash: name}. Every key
+    and name is re-checked against the allow-list here, so a bad response can't put odd text on the
+    board. None when the file is missing or unreadable (the board is then left as it was)."""
+    try:
+        doc = json.loads(Path(path).read_text())
+    except (OSError, ValueError, TypeError):
+        return None
+    names = doc.get("names") if isinstance(doc, dict) else None
+    if not isinstance(names, dict):
+        return None
+    return {h: n for h, n in names.items()
+            if isinstance(h, str) and re.fullmatch(r"[0-9a-f]{64}", h) and isinstance(n, str) and BOARD_NAME.match(n)}
+
+
+def write_scouts(db, out_dir, now=None, names=None):
     """Contributor leaderboard, scouts.json.
+
+    Only players who linked their install to a forever-xp.com account appear on the board, under the
+    name they chose or their Discord name (`names`: install hash -> name, from load_scout_names).
+    Everyone's logs still count in the totals and in every other table. With `names=None` (the
+    accounts API couldn't be read) nothing is written, so the last published board stays.
 
     Per player (install): quests timed (accept -> turn-in), drops logged (distinct item, source
     and zone), discoveries (first to loot a drop that another player then confirmed), zones and
     sessions. Points: 1 per quest timed, 1 per drop, 3 per discovery. `week` counts only events
     in the last seven days. Nothing per character, no install ids, no map ids: handles and counts.
     """
+    if names is None:
+        print("scouts.json: linked names unavailable; leaving the published board as it is")
+        return
     now = int(now if now is not None else time.time())
     since = now - WEEK
     starts, owner = {}, {}
@@ -498,18 +530,19 @@ def write_scouts(db, out_dir, now=None):
         return q + d + 3 * f
 
     players = set(sessions)
-    board = [{"handle": scout_handle(k), "quests": len(quests[k]), "drops": len(drops[k]), "discoveries": found[k],
+    linked = {k: names[scout_hash(k)] for k in players if k.startswith("i:") and scout_hash(k) in names}
+    board = [{"handle": linked[k], "quests": len(quests[k]), "drops": len(drops[k]), "discoveries": found[k],
               "zones": len(zones[k]), "sessions": sessions[k],
-              "score": score(len(quests[k]), len(drops[k]), found[k])} for k in players]
+              "score": score(len(quests[k]), len(drops[k]), found[k])} for k in players if k in linked]
     board = [r for r in board if r["score"] > 0 or r["sessions"] > 0]
     board.sort(key=lambda r: (-r["score"], -r["quests"], r["handle"]))
     active = {k for k in players if week_quests[k] or week_drops[k]}
-    week_board = [{"handle": scout_handle(k), "quests": len(week_quests[k]), "drops": len(week_drops[k]),
-                   "score": score(len(week_quests[k]), len(week_drops[k]), week_found[k])} for k in active]
+    week_board = [{"handle": linked[k], "quests": len(week_quests[k]), "drops": len(week_drops[k]),
+                   "score": score(len(week_quests[k]), len(week_drops[k]), week_found[k])} for k in active if k in linked]
     week_board.sort(key=lambda r: (-r["score"], -r["quests"], r["handle"]))
     out = {
         "updated": now,
-        "totals": {"scouts": len(players), "sessions": sum(sessions.values()),
+        "totals": {"scouts": len(players), "linked": len(linked), "sessions": sum(sessions.values()),
                    "quests": len(set().union(*quests.values())), "drops": len(first),
                    "discoveries": sum(found.values())},
         "week": {"scouts": len(active), "quests": len(set().union(*week_quests.values())),
@@ -652,6 +685,7 @@ def main():
     ap.add_argument("--questie", required=True)
     ap.add_argument("--maps", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--names", help="JSON from the accounts API /api/scouts/names: who the leaderboard may name")
     ap.add_argument("files", nargs="+")
     a = ap.parse_args()
     out = Path(a.out)
@@ -663,7 +697,7 @@ def main():
     analyze(db, Questie(a.questie, a.maps), out)
     write_loot(db, out)
     write_objective_areas(db, out)
-    write_scouts(db, out)
+    write_scouts(db, out, names=load_scout_names(a.names) if a.names else None)
     write_encounters(db, out)
     write_talent_builds(db, out)
     for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv", "talent_builds.json"):

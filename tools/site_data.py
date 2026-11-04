@@ -460,13 +460,13 @@ def main():
           f"{confirmed_items} items confirmed -> {OUT}")
 
 
-SCOUT_HANDLE = re.compile(r"^Scout [0-9a-f]{6}$")
+SCOUT_HANDLE = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")  # a linked player's board name (or "Scout 1a2b3c")
 SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
 
 
 def write_scouts():
     """The Scout leaderboard for /leaderboard/ (tools/ingest_logs.py write_scouts), allow-listed:
-    handles must look like "Scout 1a2b3c", every count is a whole number, lists are capped."""
+    names must be 2-20 of letters, digits, space, _ ' and -, every count is a whole number, lists are capped."""
     src = ROOT / "out" / "scouts.json"
     if not src.exists():  # published aggregate from the player-data workflow
         src = ROOT / "gamedata" / "players" / "scouts.json"
@@ -492,7 +492,7 @@ def write_scouts():
     week = doc.get("week") if isinstance(doc.get("week"), dict) else {}
     clean = {
         "updated": whole(doc.get("updated")),
-        "totals": {k: whole(totals.get(k)) for k in ("scouts", "sessions", "quests", "drops", "discoveries")},
+        "totals": {k: whole(totals.get(k)) for k in ("scouts", "linked", "sessions", "quests", "drops", "discoveries")},
         "week": {k: whole(week.get(k)) for k in ("scouts", "quests", "drops")},
         "board": rows(doc.get("board"), 50),
         "week_board": rows(doc.get("week_board"), 10),

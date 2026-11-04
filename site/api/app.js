@@ -29,6 +29,15 @@ const BIS_DATA = /^[A-Za-z0-9=&._,:%-]{1,2048}$/;
 const TALENT_DATA = /^([a-z]+)#([0-9-]{0,200})$/;
 // Pages a sign-in may return to.
 const RETURN_PATH = /^\/(?:[a-z0-9-]+\/)*$/;
+// Scout leaderboard claims: the uploader's install id (32 hex) is the claim code. Only its hash is
+// stored, computed the same way tools/ingest_logs.py scout_handle does.
+const SCOUT_SALT = "forever-xp scout|";
+const MAX_CLAIMS = 3;
+const CLAIM_CODE = /^[0-9a-f]{32}$/;
+const CLAIM_ID = /^[0-9a-f]{64}$/;
+const BOARD_NAME = /^[A-Za-z0-9 _'-]{3,20}$/;
+const DISCORD_BOARD_NAME = /^[A-Za-z0-9 _'-]{2,20}$/; // Discord allows 2-character names
+const NAME_OUTSIDE = /[^A-Za-z0-9 _'-]/g;
 
 // ---------------------------------------------------------------- helpers
 
@@ -93,6 +102,21 @@ export function cleanName(v) {
   if (typeof v !== "string") return null;
   const s = v.replace(/[\t\n\r\f\v]+/g, " ").replace(/[\p{C}]/gu, "").replace(/\s+/g, " ").trim();
   return s.length >= 1 && s.length <= 60 ? s : null;
+}
+
+/** A custom leaderboard name: 3-20 of letters, digits, space, _ ' -, and never another scout's "Scout a1b2c3". */
+export function scoutName(v) {
+  if (typeof v !== "string") return null;
+  const s = v.replace(/\s+/g, " ").trim();
+  return BOARD_NAME.test(s) && !/^scout [0-9a-f]{6}$/i.test(s) ? s : null;
+}
+
+/** The name the board shows: the custom name, else the Discord name with anything outside the
+ * allow-list removed, else "Scout a1b2c3" when under 2 characters are left (for example an all-emoji name). */
+export function boardName(custom, discord, hash) {
+  if (typeof custom === "string" && BOARD_NAME.test(custom)) return custom;
+  const s = String(discord ?? "").replace(NAME_OUTSIDE, "").replace(/\s+/g, " ").trim().slice(0, 20).trim();
+  return DISCORD_BOARD_NAME.test(s) && !/^scout [0-9a-f]{6}$/i.test(s) ? s : `Scout ${hash.slice(0, 6)}`;
 }
 
 /** The saved data must be exactly what the site writes for that kind. */
@@ -249,8 +273,77 @@ async function updatePlan(request, env, user, id) {
   return json({ ok: true });
 }
 
+// ---------------------------------------------------------------- scout claims
+
+async function listScouts(env, user) {
+  const { results } = await env.DB.prepare(
+    "SELECT install_hash, display_name, visible, created FROM scout_claims WHERE user_id = ? ORDER BY created",
+  ).bind(user.id).all();
+  return (results || []).map((r) => ({
+    id: r.install_hash, handle: `Scout ${r.install_hash.slice(0, 6)}`, name: r.display_name,
+    shown: boardName(r.display_name, user.name, r.install_hash), visible: !!r.visible, created: r.created,
+  }));
+}
+
+async function claimScout(request, env, user) {
+  const body = await readJson(request);
+  if (body.error) return fail(400, body.error);
+  const { code, name } = body.value;
+  if (typeof code !== "string" || !CLAIM_CODE.test(code)) return fail(400, "bad-code");
+  const custom = name === undefined || name === null ? null : scoutName(name);
+  if (name !== undefined && name !== null && custom === null) return fail(400, "bad-name");
+  const id = hex(await sha256(SCOUT_SALT + code));
+  const owner = await env.DB.prepare("SELECT user_id FROM scout_claims WHERE install_hash = ?").bind(id).first();
+  if (owner) {
+    if (owner.user_id !== user.id) return fail(409, "already-claimed");
+    if (custom) await env.DB.prepare("UPDATE scout_claims SET display_name = ? WHERE install_hash = ?").bind(custom, id).run();
+    return json({ id });
+  }
+  const count = await env.DB.prepare("SELECT COUNT(*) AS n FROM scout_claims WHERE user_id = ?").bind(user.id).first();
+  if ((count?.n || 0) >= MAX_CLAIMS) return fail(409, "too-many-claims");
+  try {
+    await env.DB.prepare("INSERT INTO scout_claims (install_hash, user_id, display_name, visible, created) VALUES (?, ?, ?, 1, ?)")
+      .bind(id, user.id, custom, now()).run();
+  } catch {
+    return fail(409, "already-claimed"); // someone else claimed it between the check and the insert
+  }
+  return json({ id }, 201);
+}
+
+async function updateScout(request, env, user, id) {
+  const body = await readJson(request);
+  if (body.error) return fail(400, body.error);
+  const row = await env.DB.prepare("SELECT display_name, visible FROM scout_claims WHERE install_hash = ? AND user_id = ?").bind(id, user.id).first();
+  if (!row) return fail(404, "not-found");
+  let display = row.display_name;
+  if (body.value.name !== undefined) {
+    display = body.value.name === null || body.value.name === "" ? null : scoutName(body.value.name);
+    if (display === null && body.value.name !== null && body.value.name !== "") return fail(400, "bad-name");
+  }
+  let visible = row.visible;
+  if (body.value.visible !== undefined) {
+    if (typeof body.value.visible !== "boolean") return fail(400, "bad-visible");
+    visible = body.value.visible ? 1 : 0;
+  }
+  await env.DB.prepare("UPDATE scout_claims SET display_name = ?, visible = ? WHERE install_hash = ? AND user_id = ?")
+    .bind(display, visible, id, user.id).run();
+  return json({ ok: true });
+}
+
+/** Public: who the board may name. Keyed by the install hash (one-way), so reading it reveals nothing
+ * the board doesn't already show. The player-data workflow reads this every few hours. */
+async function scoutNames(env) {
+  const { results } = await env.DB.prepare(
+    "SELECT c.install_hash, c.display_name, u.name FROM scout_claims c JOIN users u ON u.id = c.user_id WHERE c.visible = 1 ORDER BY c.created LIMIT 5000",
+  ).all();
+  const names = {};
+  for (const r of results || []) names[r.install_hash] = boardName(r.display_name, r.name, r.install_hash);
+  return json({ names });
+}
+
 async function deleteAccount(env, user) {
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM scout_claims WHERE user_id = ?").bind(user.id),
     env.DB.prepare("DELETE FROM plans WHERE user_id = ?").bind(user.id),
     env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(user.id),
     env.DB.prepare("DELETE FROM users WHERE id = ?").bind(user.id),
@@ -274,6 +367,8 @@ export async function handle(request, env, ctx = { waitUntil() {} }) {
   }
   if (method === "GET" && path === "/api/auth/callback") return callback(request, env, origin, ctx);
 
+  if (method === "GET" && path === "/api/scouts/names") return scoutNames(env);
+
   // Everything else is JSON for the signed-in user. Writes must come from the site itself.
   const writes = method !== "GET" && method !== "HEAD";
   if (writes && request.headers.get("Origin") !== origin) return fail(403, "bad-origin");
@@ -292,6 +387,14 @@ export async function handle(request, env, ctx = { waitUntil() {} }) {
   if (path === "/api/me" && method === "DELETE") return deleteAccount(env, user);
   if (path === "/api/plans" && method === "GET") return json({ plans: await listPlans(env, user) });
   if (path === "/api/plans" && method === "POST") return createPlan(request, env, user);
+  if (path === "/api/scouts" && method === "GET") return json({ scouts: await listScouts(env, user) });
+  if (path === "/api/scouts/claim" && method === "POST") return claimScout(request, env, user);
+  const sc = /^\/api\/scouts\/claim\/([0-9a-f]{64})$/.exec(path);
+  if (sc && method === "PATCH") return updateScout(request, env, user, sc[1]);
+  if (sc && method === "DELETE") {
+    const r = await env.DB.prepare("DELETE FROM scout_claims WHERE install_hash = ? AND user_id = ?").bind(sc[1], user.id).run();
+    return r.meta?.changes ? json({ ok: true }) : fail(404, "not-found");
+  }
   const m = /^\/api\/plans\/([A-Za-z0-9_-]{16})$/.exec(path);
   if (m && method === "PUT") return updatePlan(request, env, user, m[1]);
   if (m && method === "DELETE") {

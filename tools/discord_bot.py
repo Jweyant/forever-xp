@@ -681,7 +681,7 @@ def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles,
 
 # ---- weekly Scout report ---------------------------------------------------------------------
 SCOUTS_URL = "https://forever-xp.com/leaderboard/"
-SCOUT_HANDLE = re.compile(r"^Scout [0-9a-f]{6}$")
+SCOUT_HANDLE = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")  # a linked player's board name
 
 
 def count(v, cap=10_000_000):

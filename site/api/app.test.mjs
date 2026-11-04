@@ -4,7 +4,7 @@ import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import { handle, safeReturn, cleanName, validData } from "./app.js";
+import { handle, safeReturn, cleanName, validData, boardName } from "./app.js";
 
 const ORIGIN = "https://forever-xp.com";
 const SCHEMA = readFileSync(new URL("./schema.sql", import.meta.url), "utf8");
@@ -225,4 +225,96 @@ test("name and data helpers", () => {
   assert.ok(!validData("bis", "c=WARRIOR#x"));
   assert.ok(validData("talents", "druid#"));
   assert.ok(!validData("talents", "constructor#1"));
+});
+
+// ---------------------------------------------------------------- scout claims
+
+const INSTALL = "a".repeat(32);
+const claim = (cookie, body, method = "POST", path = "/api/scouts/claim") =>
+  handle(req(path, { method, cookie, origin: ORIGIN, body }), env, ctx);
+
+test("claiming a scout stores only the hash, and the board name defaults to the Discord name", async () => {
+  const { sid } = await signIn();
+  const cookie = `__Host-fxp_sid=${sid}`;
+  const r = await claim(cookie, { code: INSTALL });
+  assert.equal(r.status, 201);
+  const { id } = await r.json();
+  assert.match(id, /^[0-9a-f]{64}$/);
+  assert.ok(id.startsWith("97800d"), "same hash as the uploader's Scout 97800d");
+  const dump = JSON.stringify(env.DB.db.prepare("SELECT * FROM scout_claims").all());
+  assert.ok(!dump.includes(INSTALL), "the install id itself is never stored");
+  const mine = await (await handle(req("/api/scouts", { cookie }), env, ctx)).json();
+  assert.deepEqual(mine.scouts.map((s) => [s.handle, s.name, s.shown, s.visible]), [["Scout 97800d", null, "JW", true]]);
+  const names = await (await handle(req("/api/scouts/names"), env, ctx)).json();
+  assert.deepEqual(names, { names: { [id]: "JW" } });
+  assert.equal((await claim(cookie, { code: INSTALL })).status, 200, "claiming your own install again is fine");
+});
+
+test("the public names list needs no sign-in and hides what players hid", async () => {
+  const { sid } = await signIn();
+  const cookie = `__Host-fxp_sid=${sid}`;
+  const { id } = await (await claim(cookie, { code: INSTALL, name: "Kinos" })).json();
+  assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, { [id]: "Kinos" });
+  assert.equal((await claim(cookie, { visible: false }, "PATCH", `/api/scouts/claim/${id}`)).status, 200);
+  assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, {});
+  assert.equal((await claim(cookie, { name: null, visible: true }, "PATCH", `/api/scouts/claim/${id}`)).status, 200);
+  assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, { [id]: "JW" }, "clearing the custom name goes back to Discord's");
+});
+
+test("claim codes and names are checked against exact formats", async () => {
+  const { sid } = await signIn();
+  const cookie = `__Host-fxp_sid=${sid}`;
+  for (const code of ["", "a".repeat(31), "A".repeat(32), "g".repeat(32), `${"a".repeat(32)}0`, "__proto__", null, 7, ["a".repeat(32)]]) {
+    assert.equal((await claim(cookie, { code })).status, 400, String(code));
+  }
+  for (const name of ["ab", "x".repeat(21), "<img src=x>", "a.b.com", "https://evil.com", "Scout 97800d", "scout ABCDEF", "Kinos‮", 5, {}]) {
+    assert.equal((await claim(cookie, { code: INSTALL, name })).status, 400, String(name));
+  }
+  assert.equal(env.DB.count("scout_claims"), 0);
+  assert.equal((await claim(cookie, { code: INSTALL, name: "  Old   Kinos  " })).status, 201);
+  assert.equal(env.DB.db.prepare("SELECT display_name FROM scout_claims").get().display_name, "Old Kinos");
+});
+
+test("an install can be claimed by one account only, and an account holds up to three", async () => {
+  const a = await signIn();
+  const ca = `__Host-fxp_sid=${a.sid}`;
+  assert.equal((await claim(ca, { code: INSTALL })).status, 201);
+  discordUser = { id: "999999999999999999", username: "other", global_name: "Other" };
+  const b = await signIn();
+  const cb = `__Host-fxp_sid=${b.sid}`;
+  assert.equal((await claim(cb, { code: INSTALL })).status, 409, "already claimed by someone else");
+  const mine = (await (await handle(req("/api/scouts", { cookie: cb }), env, ctx)).json()).scouts;
+  assert.deepEqual(mine, []);
+  const id = env.DB.db.prepare("SELECT install_hash FROM scout_claims").get().install_hash;
+  assert.equal((await claim(cb, { name: "Mine" }, "PATCH", `/api/scouts/claim/${id}`)).status, 404, "can't edit another player's");
+  assert.equal((await claim(cb, null, "DELETE", `/api/scouts/claim/${id}`)).status, 404, "can't unlink another player's");
+  for (const c of ["b", "c", "d", "e"]) {
+    const res = await claim(cb, { code: c.repeat(32) });
+    assert.equal(res.status, c === "e" ? 409 : 201, c);
+  }
+});
+
+test("Discord names the board can't show fall back to the scout handle", async () => {
+  discordUser = { id: "123456789012345678", username: "x", global_name: "🔥🔥" };
+  const { sid } = await signIn();
+  const { id } = await (await claim(`__Host-fxp_sid=${sid}`, { code: INSTALL })).json();
+  assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, { [id]: "Scout 97800d" });
+  assert.equal(boardName(null, "Ünï<b>cöde</b> Name!!", "f".repeat(64)), "nbcdeb Name");
+  assert.equal(boardName(null, "Zoë <3 Kinos", "f".repeat(64)), "Zo 3 Kinos");
+  assert.equal(boardName(null, "x".repeat(40), "f".repeat(64)), "x".repeat(20));
+});
+
+test("scout writes need sign-in, the site's Origin and JSON; unlinking and deleting the account remove claims", async () => {
+  const { sid } = await signIn();
+  const cookie = `__Host-fxp_sid=${sid}`;
+  assert.equal((await handle(req("/api/scouts/claim", { method: "POST", body: { code: INSTALL } }), env, ctx)).status, 403, "no Origin");
+  assert.equal((await handle(req("/api/scouts/claim", { method: "POST", origin: ORIGIN, body: { code: INSTALL } }), env, ctx)).status, 401, "signed out");
+  assert.equal((await handle(req("/api/scouts/claim", { method: "POST", cookie, origin: ORIGIN, body: `code=${INSTALL}`, type: "application/x-www-form-urlencoded" }), env, ctx)).status, 400);
+  const { id } = await (await claim(cookie, { code: INSTALL })).json();
+  assert.equal((await claim(cookie, null, "DELETE", `/api/scouts/claim/${id}`)).status, 200);
+  assert.equal(env.DB.count("scout_claims"), 0);
+  await claim(cookie, { code: INSTALL });
+  assert.equal((await handle(req("/api/me", { method: "DELETE", cookie, origin: ORIGIN }), env, ctx)).status, 200);
+  assert.equal(env.DB.count("scout_claims"), 0);
+  assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, {});
 });

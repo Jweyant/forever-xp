@@ -31,3 +31,13 @@ CREATE TABLE IF NOT EXISTS plans (
   updated INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS plans_user ON plans(user_id, updated);
+-- A ForeverScout install a player has linked to their account, so the leaderboard shows their name.
+-- install_hash is sha256("forever-xp scout|" + install id): the install id itself is never stored.
+CREATE TABLE IF NOT EXISTS scout_claims (
+  install_hash TEXT PRIMARY KEY CHECK (length(install_hash) = 64),
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  display_name TEXT CHECK (display_name IS NULL OR length(display_name) BETWEEN 3 AND 20),
+  visible INTEGER NOT NULL DEFAULT 1 CHECK (visible IN (0, 1)),
+  created INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS scout_claims_user ON scout_claims(user_id);
