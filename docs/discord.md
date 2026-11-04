@@ -37,7 +37,7 @@ The channel marked `"report": true` in `discord/server.json` is the read-only #l
 **Scout report** workflow keeps it current from `gamedata/players/scouts.json` (built by the
 player-data workflow from shared ForeverScout logs):
 
-- **Every six hours**, just after the player-data refresh, `update-scouts` edits one "Scout
+- **Every hour**, just after the player-data refresh, `update-scouts` edits one "Scout
   standings" message (all-time top 10, this week's top 3) in place. It's never published, so
   servers following the channel aren't sent every refresh.
 - **Mondays**, `post-scouts` posts the weekly Scout report and publishes it to followers.

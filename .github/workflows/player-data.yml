@@ -9,13 +9,13 @@
 # Raw logs only exist inside this run: they are downloaded, parsed as data (never executed),
 # aggregated, and discarded. Nothing per player is committed or uploaded as an artifact.
 #
-# Runs every six hours and on demand (Actions > Refresh player data > Run workflow).
+# Runs every hour and on demand (Actions > Refresh player data > Run workflow).
 
 name: Refresh player data
 
 on:
   schedule:
-    - cron: "41 */6 * * *"
+    - cron: "41 * * * *"
   workflow_dispatch:
 
 permissions:

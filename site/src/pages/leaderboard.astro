@@ -6,7 +6,7 @@ const { totals, week, board, week_board } = scouts;
 const n = (x: unknown) => Number(x) || 0;
 const fmt = (x: unknown) => n(x).toLocaleString("en-US");
 ---
-<Base image="/og/scout.jpg" title="Scout leaderboard" description="The WoW Forever players whose ForeverScout logs time quests and confirm item drops for everyone, ranked. Updated every six hours.">
+<Base image="/og/scout.jpg" title="Scout leaderboard" description="The WoW Forever players whose ForeverScout logs time quests and confirm item drops for everyone, ranked. Updated every hour.">
   <h1>Scout leaderboard</h1>
   <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it, under their Discord names.</p>
 
@@ -20,7 +20,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
   {board.length === 0 ? (
     <section class="empty">
       <h2>No scouts on the board yet</h2>
-      <p>WoW Forever launches November 4. Install ForeverScout and the uploader, play a session, then <a href="/account/">sign in with Discord</a> and link your install. Your Discord name is on this board within six hours.</p>
+      <p>WoW Forever launches November 4. Install ForeverScout and the uploader, play a session, then <a href="/account/">sign in with Discord</a> and link your install. Your Discord name is on this board within the hour.</p>
       <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/account/">Sign in with Discord</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
     </section>
   ) : (<>
@@ -55,7 +55,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
         <li><b>1 point</b> for each drop you log: an item, the mob or chest it came from, and the zone.</li>
         <li><b>3 points</b> for each <b>discovery</b>: you were the first to loot a drop, and another player's log then confirmed it.</li>
       </ul>
-      <p class="muted small">The board updates every six hours from shared logs. Alts on the same computer count as one scout.</p>
+      <p class="muted small">The board updates every hour from shared logs. Alts on the same computer count as one scout.</p>
     </section>
     <section>
       <h2>Badges on item pages</h2>
@@ -64,7 +64,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
     </section>
     <section>
       <h2>In Discord</h2>
-      <p>The <b>#leaderboard</b> channel in the <a href={SITE.discord} rel="noopener">Forever XP Discord</a> shows the current standings, updated every six hours, and the Scout report every Monday. Follow the channel to get the report in your own server.</p>
+      <p>The <b>#leaderboard</b> channel in the <a href={SITE.discord} rel="noopener">Forever XP Discord</a> shows the current standings, updated every hour, and the Scout report every Monday. Follow the channel to get the report in your own server.</p>
     </section>
     <section>
       <h2>Get on the board</h2>

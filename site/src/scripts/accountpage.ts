@@ -85,7 +85,7 @@ async function offerClaim(code: string) {
   const done = () => { forgetClaim(); box.hidden = true; return loadScouts(); };
   $("[data-link]").addEventListener("click", async () => {
     const name = $<HTMLInputElement>("[data-pending-name]").value.trim();
-    try { await claimScout(code, name || undefined); toast("Linked. The board updates within six hours."); await done(); }
+    try { await claimScout(code, name || undefined); toast("Linked. The board updates within the hour."); await done(); }
     catch (e) { toast(why(e, "Couldn't link that. Try again.")); if ((e as Error)?.message === "already-claimed") await done(); }
   });
   $("[data-skip]").addEventListener("click", () => { void done(); });
