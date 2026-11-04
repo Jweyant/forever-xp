@@ -172,6 +172,8 @@ end
 
 local instanceType, instanceMap = "party", 389
 GetInstanceInfo = function() return "Instance", instanceType, 1, "Normal", 5, 0, false, instanceMap end
+UnitPVPRank = function() return 11 end            -- the API offsets ranks by 4: this is rank 7
+GetPVPLifetimeStats = function() return 2384, 1 end
 
 -- Talents: two tabs, listed out of row order to prove the addon sorts by (tier, column).
 local talentRanks = { [1] = { 2, 5, 0 }, [2] = { 1 } } -- tab 1: ranks by index; index 1 sits on row 2

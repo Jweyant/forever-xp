@@ -61,15 +61,17 @@ class Popularity(unittest.TestCase):
 
     def test_last_build_wins_and_groups_split(self):
         out = self.run_builds(
-            [("a", 10, {"b": "5-1"}), ("a", 99, {"b": "255-1", "bg": True}),   # respecced: only 255-1 counts
-             ("b", 10, {"b": "255-1"}),
-             ("c", 10, {"b": "255-1"}), ("d", 10, {"b": "111"})],              # d's build is alone: not shown
+            [("a", 10, {"b": "5-1"}), ("a", 99, {"b": "255-1", "bg": True, "rank": 7, "hk": 2384}),
+             ("b", 10, {"b": "255-1", "rank": 3}),                             # a respecced: only 255-1 counts
+             ("c", 10, {"b": "255-1", "rank": 99}),                            # rank out of range: not ranked
+             ("d", 10, {"b": "111"})],                                         # d's build is alone: not shown
             encs=[("b", 20), ("c", 20)])
         self.assertEqual(out, {"hunter": {"players": 4, "groups": {
             "all": {"n": 4, "builds": [["255-1", 3]]},       # "111" stays out: below two characters
             "pve": {"n": 2, "builds": [["255-1", 2]]},
+            "ranked": {"n": 2, "builds": [["255-1", 2]]},    # a (rank 7) and b (rank 3); c's 99 is invalid
         }}})
-        # "pvp" group absent entirely: its only build is one character's.
+        # "pvp" group absent entirely: its only build is one battleground character's.
 
     def test_bad_rows_stay_out(self):
         out = self.run_builds([("a", 1, {"b": "<img>"}), ("b", 1, {"b": "9" * 40}),
