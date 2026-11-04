@@ -4,7 +4,30 @@
   "label": "Planner BIS \u00b7 weave build",
   "note": "Our own sim run: the planner's suggested gear on the default weave build, full raid buffs, a 180 s raid boss. Ranged weapon DPS stands in for all weapon DPS.",
   "file": "hunter.siml",
-  "specDir": "hunter/dps"
+  "specDir": "hunter/dps",
+  "talents": {
+   "Marksmanship": {
+    "Lethal Attacks": 5,
+    "Improved Stings": 3,
+    "Careful Aim": 5,
+    "Improved Arcane Shot": 1,
+    "Lone Wolf": 1,
+    "Trueshot Aura": 1,
+    "Mortal Shots": 4
+   },
+   "Survival": {
+    "Improved Tracking": 5,
+    "Deflection": 5,
+    "Savage Strikes": 2,
+    "Surefooted": 3,
+    "Predator's Edge": 5,
+    "Resourcefulness": 2,
+    "Expose Prey": 2,
+    "Strider Kick": 1,
+    "Lightning Reflexes": 5,
+    "Lacerating Strikes": 1
+   }
+  }
  },
  {
   "key": "WARRIOR.arms",
@@ -12,14 +35,64 @@
   "note": "Our own sim run: the planner's suggested gear (a two-hander, so the Arms build) with full raid buffs on a 180 s raid boss.",
   "file": "warrior_arms.siml",
   "specDir": "warrior/dps",
-  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"
+  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json",
+  "talents": {
+   "Arms": {
+    "Improved Heroic Strike": 3,
+    "Improved Rend": 3,
+    "Improved Charge": 2,
+    "Improved Tactical Mastery": 3,
+    "Improved Overpower": 2,
+    "Anger Management": 1,
+    "Deep Wounds": 3,
+    "Spearing Strike": 1,
+    "Two-Handed Weapon Specialization": 3,
+    "Impale": 2,
+    "Bloodthrill": 2,
+    "Sweeping Strikes": 1,
+    "Weaponmaster": 5,
+    "Improved Slam": 2,
+    "Mortal Strike": 1
+   },
+   "Fury": {
+    "Booming Voice": 5,
+    "Cruelty": 5,
+    "Unbridled Wrath": 5
+   },
+   "Protection": {
+    "Improved Bloodrage": 2
+   }
+  }
  },
  {
   "key": "HUNTER.sv",
   "label": "Community PvP \u00b7 20 s burst",
   "note": "Our own sim run: the community Survival PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
   "file": "hunter_pvp.siml",
-  "specDir": "hunter/dps"
+  "specDir": "hunter/dps",
+  "talents": {
+   "Marksmanship": {
+    "Hawk Eye": 3,
+    "Improved Concussive Shot": 5,
+    "Improved Stings": 2,
+    "Careful Aim": 5,
+    "Mortal Shots": 5,
+    "Scatter Shot": 1
+   },
+   "Survival": {
+    "Deflection": 5,
+    "Entrapment": 5,
+    "Survivalist": 1,
+    "Improved Wing Clip": 3,
+    "Clever Traps": 2,
+    "Surefooted": 3,
+    "Deterrence": 1,
+    "Survival Tactics": 2,
+    "Counterattack": 1,
+    "Survivalist's Discipline": 2,
+    "Lightning Reflexes": 5
+   }
+  }
  },
  {
   "key": "WARRIOR.arms",
@@ -27,6 +100,30 @@
   "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT), remapped to the Nov 3 trees, on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
   "file": "warrior_pvp.siml",
   "specDir": "warrior/dps",
-  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"
+  "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json",
+  "talents": {
+   "Arms": {
+    "Deflection": 4,
+    "Improved Rend": 3,
+    "Improved Charge": 2,
+    "Improved Tactical Mastery": 3,
+    "Anger Management": 1,
+    "Deep Wounds": 3,
+    "Two-Handed Weapon Specialization": 3,
+    "Impale": 2,
+    "Sweeping Strikes": 1,
+    "Weaponmaster": 5,
+    "Improved Hamstring": 3,
+    "Mortal Strike": 1
+   },
+   "Fury": {
+    "Booming Voice": 1,
+    "Cruelty": 5,
+    "Unbridled Wrath": 5,
+    "Piercing Howl": 1,
+    "Blood Craze": 3,
+    "Enrage": 5
+   }
+  }
  }
 ]

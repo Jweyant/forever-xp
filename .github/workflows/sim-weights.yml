@@ -5,7 +5,8 @@
 #
 # The engine is pinned to one commit (WOWSIMS_COMMIT below, and the pseudo-version in
 # tools/simrunner/go.mod — the offline test checks they agree), so the weights only change when a
-# reviewed pull request moves the pin or edits a setup. Runs on demand and on pushes to work
+# reviewed pull request moves the pin or edits a setup, or the talent trees change (setups keep their
+# builds by name; tools/sim_talents.py). Runs on demand, after a talent refresh that changed the trees, and on pushes to work
 # branches that change the runner, the setups or this file. On main the data goes to the `data`
 # branch (tools/push_data.sh) and the site redeploys; on a work branch it's committed to that
 # branch so the pull request shows the real output. Pull requests only run the offline tests.
@@ -16,9 +17,10 @@ on:
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", "tools/check_talent_order.py", "tools/build_talent_builds.py", ".github/workflows/sim-weights.yml"]
+    paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/push_data.sh", "tools/check_talent_order.py", "tools/build_talent_builds.py", "tools/sim_talents.py", ".github/workflows/sim-weights.yml"]
   pull_request:
     paths: ["tools/simrunner/**", "gamedata/simconfigs/**", "tools/test/test_simconfigs.py", "tools/check_talent_order.py",
+      "tools/sim_talents.py", "tools/test/test_sim_talents.py",
       "tools/test/test_talent_order.py", ".github/workflows/sim-weights.yml"]
 
 permissions:
@@ -42,6 +44,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 -I tools/test/test_simconfigs.py
+      - run: python3 -I tools/test/test_sim_talents.py
 
   build:
     name: Run the sims
@@ -64,15 +67,21 @@ jobs:
           path: ext/wowsims
           persist-credentials: false
 
-      # A build string means the same talents to the engine as to our data, or the run sims the wrong
-      # build. The daily talent refresh lands on the `data` branch, so check the newer of the two copies.
-      - name: Check talent order against the engine
+      # The talent refresh lands on the `data` branch; use the newer of the two copies for the whole run.
+      # Our setups keep their builds by talent name (index.json), so after a tree change the .siml
+      # talents lines are rewritten for the new tree here. A build that can no longer be made stops
+      # the run, so no weights are published for it.
+      - name: Use the newest talent data and rewrite our builds for it
         run: |
-          extra=""
           if git fetch -q --depth=1 origin data && git show FETCH_HEAD:gamedata/talents.json > "$RUNNER_TEMP/talents-data.json"; then
-            extra="$RUNNER_TEMP/talents-data.json"
+            cp "$(python3 -I -c 'import sys; sys.path.insert(0, "tools"); import check_talent_order as c; print(c.newest(sys.argv[1:]))' gamedata/talents.json "$RUNNER_TEMP/talents-data.json")" "$RUNNER_TEMP/talents-newest.json"
+            cp "$RUNNER_TEMP/talents-newest.json" gamedata/talents.json
           fi
-          python3 -I tools/check_talent_order.py ext/wowsims gamedata/simconfigs gamedata/talents.json $extra
+          python3 -I tools/sim_talents.py gamedata/simconfigs gamedata/talents.json --write
+
+      # A build string means the same talents to the engine as to our data, or the run sims the wrong build.
+      - name: Check talent order against the engine
+        run: python3 -I tools/check_talent_order.py ext/wowsims gamedata/simconfigs gamedata/talents.json
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:

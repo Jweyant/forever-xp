@@ -21,6 +21,18 @@ number comes from these runs; nothing published by wowsims ships.
 
 1. Copy a setup, set gear from the planner's suggestion for that spec, the talents string, and the
    stats to weigh.
-2. Add its `index.json` entry, keyed to the planner's `CLASS.spec`.
+2. Add its `index.json` entry, keyed to the planner's `CLASS.spec`, with the build as talent names
+   and points per tree (`"talents": {"Arms": {"Mortal Strike": 1, ...}}`). Then run
+   `python3 -I tools/sim_talents.py gamedata/simconfigs gamedata/talents.json --write` to write the
+   setup's `talents` line, and `--check` to confirm it.
 3. Push: the workflow runs the sims and commits the refreshed `simweights.json` to the branch, so
    the pull request shows the real output.
+
+## When the talent trees change
+
+The builds are kept by talent name, so a patch that moves, adds or re-ranks talents needs no edit:
+the talent refresh (every 3 hours) starts this workflow when the trees change, and it rewrites each
+setup's `talents` line for the new trees before simming. A talent that lost ranks keeps what it
+still has, one that left the game drops out, and the run notes the unspent points. A build that
+can no longer be made (not enough points above a talent's row) stops the run, and the last weights
+stay published until the setup's names are fixed.
