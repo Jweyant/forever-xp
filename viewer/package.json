@@ -8,7 +8,7 @@
     "deploy": "npm run vendor && wrangler deploy"
   },
   "dependencies": {
-    "jquery": "3.7.1",
+    "jquery": "4.0.0",
     "wow-model-viewer": "1.5.3"
   }
 }
