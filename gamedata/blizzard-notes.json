@@ -1,14 +1,14 @@
 {
  "updated": "2026-11-04",
- "blue_seen": "2026-11-03T20:00:09Z",
+ "blue_seen": "2026-11-04T19:35:16Z",
  "sources": [
   {
    "id": 2360696,
    "title": "WoW Forever Beta Development Notes – Updated November 2",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696",
    "kind": "Development notes",
-   "updated": "2026-11-03",
-   "rows": 973
+   "updated": "2026-11-04",
+   "rows": 991
   },
   {
    "id": 2369360,
@@ -58,6 +58,15 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2400905,
+   "date": "2026-11-04",
+   "title": "World of Warcraft: Forever Launch Time",
+   "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-launch-time/2400905",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "WoW Forever launches simultaneously in all regions today at 3:00 p.m. PST. That’s: Time Zone Location Time Date HST Honolulu 1:00 p.m. Nov. 4 AKST Juneau 2:00 p.m. Nov. 4 PST Los Angeles 3:00 p.m. Nov. 4 PCT Vancouver 4:00 p.m. Nov. 4 MST Denver 4:00 p.m. Nov. 4 CST Dallas 5:00…"
+  },
   {
    "id": 2400119,
    "date": "2026-11-03",
@@ -4258,6 +4267,87 @@
     "Wetlands"
    ],
    "text": "Fixed an issue during “Destruction in Deadmines” where Alba Fairmoon would become unavailable to turn-in the quest.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "c731612ba5",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Swing Timer bar will no longer fade out due to distance until the swing finishes.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "f842b96316",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "When combined bag is enabled, the background art of the inventory slots are updated to show which bag the slot is from.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "c771c6b510",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Fixed an issue where Nameplates did not display Elite enemy status.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "f36c8d618c",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Debuff icons on the Nameplate can now be clicked through.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "5f44c8761e",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Spellbook and Talents frame now opens at the same height as other panels.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "c4903ae5aa",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Combat mode for the Spellbook frame has been reduced in size.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "6eedc4cc97",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "PvP scoreboard display has been updated.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "8926e56ee4",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "Killing a player while at Honor cap will no longer show honor gained in floating text or chat messages.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
+  },
+  {
+   "id": "4e8fb4c370",
+   "date": "2026-11-03",
+   "kind": "Development notes",
+   "section": "User Interface and Accessibility",
+   "path": [],
+   "text": "While in keybinds menu, hovering over an action bar keybind will now highlight the button on the action bar.",
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-beta-development-notes-%E2%80%93-updated-november-2/2360696/9"
   },
   {
