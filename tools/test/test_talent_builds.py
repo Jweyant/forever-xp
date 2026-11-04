@@ -44,19 +44,20 @@ class Extractor(unittest.TestCase):
 
 
 class Popularity(unittest.TestCase):
-    def run_builds(self, rows, encs=()):
+    def run_builds(self, rows, encs=(), trees=None, previous=None, now=None, builds=None):
         db = sqlite3.connect(":memory:")
         db.executescript(ingest_logs.SCHEMA)
         chars = sorted({r[0] for r in rows} | {c for c, _ in encs})
         for i, char in enumerate(chars, 1):
-            db.execute("INSERT INTO sessions (id, char_id, class, start) VALUES (?,?,?,?)", (i, char, "HUNTER", 1000))
+            db.execute("INSERT INTO sessions (id, char_id, class, start, build) VALUES (?,?,?,?,?)",
+                       (i, char, "HUNTER", 1000, (builds or {}).get(char, "1.60.1.70755")))
         sid = {c: i for i, c in enumerate(chars, 1)}
         for char, t, e in rows:
             db.execute("INSERT INTO events (session_id, t, k, json) VALUES (?,?,?,?)", (sid[char], t, "talents", json.dumps(e)))
         for char, t in encs:
             db.execute("INSERT INTO events (session_id, t, k, json) VALUES (?,?,?,?)", (sid[char], t, "enc", "{}"))
         with tempfile.TemporaryDirectory() as d:
-            ingest_logs.write_talent_builds(db, Path(d))
+            ingest_logs.write_talent_builds(db, Path(d), trees=trees, previous=previous, now=now)
             return json.loads((Path(d) / "talent_builds.json").read_text())
 
     def test_last_build_wins_and_groups_split(self):
@@ -67,11 +68,59 @@ class Popularity(unittest.TestCase):
              ("d", 10, {"b": "111"})],                                         # d's build is alone: not shown
             encs=[("b", 20), ("c", 20)])
         self.assertEqual(out, {"hunter": {"players": 4, "groups": {
-            "all": {"n": 4, "builds": [["255-1", 3]]},       # "111" stays out: below two characters
-            "pve": {"n": 2, "builds": [["255-1", 2]]},
-            "ranked": {"n": 2, "builds": [["255-1", 2]]},    # a (rank 7) and b (rank 3); c's 99 is invalid
+            "all": {"n": 4, "builds": [["255-1", 3, 0]]},    # "111" stays out: below two characters, no close family
+            "pve": {"n": 2, "builds": [["255-1", 2, 0]]},
+            "ranked": {"n": 2, "builds": [["255-1", 2, 0]]},  # a (rank 7) and b (rank 3); c's 99 is invalid
         }}})
         # "pvp" group absent entirely: its only build is one battleground character's.
+
+    def test_close_builds_are_one_family_shown_by_the_most_used(self):
+        rows = [("a", 1, {"b": "255-1"}), ("b", 1, {"b": "255-1"}), ("c", 1, {"b": "254-1"}),   # 1 point off
+                ("d", 1, {"b": "255-12"}), ("e", 1, {"b": "005-15"}), ("f", 1, {"b": "005-15"})]  # 2 off; far
+        out = self.run_builds(rows)
+        self.assertEqual(out["hunter"]["groups"]["all"]["builds"], [["255-1", 4, 2], ["005-15", 2, 0]])
+        # a family never shows a build fewer than two characters use, even when its relatives add up
+        out = self.run_builds([("a", 1, {"b": "255-1"}), ("b", 1, {"b": "254-1"}), ("c", 1, {"b": "253-1"})])
+        self.assertEqual(out, {})
+
+    # Today's trees for the class: three talents in tree 1 (max 5, 5, 1) and one in tree 2 (max 1).
+    TREES = {"client": (1, 60, 1, 70755), "classes": {"hunter": {"ranks": [[5, 5, 1], [1]], "sig": "new"}}}
+
+    def test_only_builds_readable_on_todays_trees_count(self):
+        rows = [("a", 10, {"b": "551-1"}), ("b", 10, {"b": "551-1"}),
+                ("c", 10, {"b": "552-1"}), ("d", 10, {"b": "552-1"}),        # 2 points in a 1-rank talent
+                ("e", 10, {"b": "551-1"}), ("f", 10, {"b": "551-1"}),        # logged on an older client
+                ("g", 10, {"b": "551-1"}), ("h", 10, {"b": "551-1"})]        # a newer one: waits for the refresh
+        out = self.run_builds(rows, trees=self.TREES, builds={"e": "1.60.1.70532", "f": "1.60.1.70532",
+                                                              "g": "1.60.1.70800", "h": "1.60.1.70800"})
+        self.assertEqual(out["hunter"]["groups"]["all"]["builds"], [["551-1", 2, 0]])
+        self.assertEqual(out["_trees"]["hunter"], {"sig": "new", "client": "1.60.1.70755", "since": 0})
+
+    def test_a_hotfix_that_moves_talents_restarts_the_count(self):
+        rows = [("a", 10, {"b": "551-1"}), ("b", 10, {"b": "551-1"}), ("c", 5000, {"b": "551-1"}), ("d", 5000, {"b": "551-1"})]
+        prev = {"_trees": {"hunter": {"sig": "old", "client": "1.60.1.70755", "since": 0}}}
+        out = self.run_builds(rows, trees=self.TREES, previous=prev, now=3000)   # trees changed at 3000
+        self.assertEqual(out["hunter"]["groups"]["all"]["builds"], [["551-1", 2, 0]])   # only c and d (1000+5000)
+        self.assertEqual(out["_trees"]["hunter"]["since"], 3000)
+        # the next run keeps that start time while the trees stay the same
+        again = self.run_builds(rows, trees=self.TREES, previous=out, now=9999)
+        self.assertEqual(again["_trees"]["hunter"]["since"], 3000)
+        # a new client build: the client check covers it, no restart needed
+        prev = {"_trees": {"hunter": {"sig": "old", "client": "1.60.1.70532", "since": 0}}}
+        self.assertEqual(self.run_builds(rows, trees=self.TREES, previous=prev, now=3000)["_trees"]["hunter"]["since"], 0)
+
+    def test_reads_the_real_trees(self):
+        trees = ingest_logs.load_trees(Path(__file__).resolve().parents[2] / "gamedata" / "talents.json")
+        self.assertGreaterEqual(trees["client"], (1, 60, 1, 70755))
+        self.assertEqual(sorted(trees["classes"]), ["druid", "hunter", "mage", "paladin", "priest", "rogue", "shaman", "warlock", "warrior"])
+        self.assertEqual(trees["classes"]["warrior"]["ranks"][0][4], 3)   # Improved Tactical Mastery after Nov 3
+        self.assertIsNone(ingest_logs.load_trees("/nonexistent.json"))
+
+    def test_distance(self):
+        d = ingest_logs.build_distance
+        self.assertEqual(d("255-1", "255-1"), 0)
+        self.assertEqual(d("255-1", "25-1"), 5)
+        self.assertEqual(d("-05", "1"), 6)
 
     def test_bad_rows_stay_out(self):
         out = self.run_builds([("a", 1, {"b": "<img>"}), ("b", 1, {"b": "9" * 40}),

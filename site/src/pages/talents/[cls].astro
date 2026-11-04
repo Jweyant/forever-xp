@@ -26,9 +26,11 @@ const communityBuilds = (Array.isArray(groups.community) ? groups.community : []
 // only; a build is listed once two or more characters use it, so nobody's shows alone).
 type PlayerGroups = { players?: number; groups?: Record<string, { n?: number; builds?: unknown }> };
 const pl = (playersJson as Record<string, PlayerGroups>)[c.slug];
-const plRows = (v: unknown): [string, number][] => (Array.isArray(v) ? v : [])
-  .filter((r): r is [string, number] => Array.isArray(r) && typeof r[0] === "string" && BUILD_RE.test(r[0]) && Number(r[1]) > 0)
-  .map((r) => [r[0], Math.floor(Number(r[1]))]);
+// [build, characters, close builds]: builds within a few points of each other are one family.
+const plRows = (v: unknown): [string, number, number][] => (Array.isArray(v) ? v : [])
+  .filter((r): r is [string, number, number] => Array.isArray(r) && typeof r[0] === "string" && BUILD_RE.test(r[0]) && Number(r[1]) > 0)
+  .map((r) => [r[0], Math.floor(Number(r[1])), Math.max(0, Math.floor(Number(r[2]) || 0))]);
+const closeText = (k: number) => (k > 0 ? ` · incl. ${k} close build${k === 1 ? "" : "s"}` : "");
 const popular = ([
   ["all", "Everyone", "every character that shared logs"],
   ["pve", "PvE — dungeon and raid players", "characters that fought dungeon or raid bosses"],
@@ -97,21 +99,21 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
             <h3>{g.name.split(" — ")[0]} <span class="muted">· {g.n} character{g.n === 1 ? "" : "s"}</span></h3>
             <p class="gnote">{g.note}</p>
             <ul class="b">
-              {g.rows.slice(0, 5).map(([b, n]) => (
-                <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
+              {g.rows.slice(0, 5).map(([b, n, k]) => (
+                <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}{closeText(k)}</span></li>
               ))}
             </ul>
             {g.rows.length > 5 && (
               <details><summary class="small">All {g.rows.length} builds</summary><ul class="b">
-                {g.rows.slice(5).map(([b, n]) => (
-                  <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}</span></li>
+                {g.rows.slice(5).map(([b, n, k]) => (
+                  <li><a class="load" href={`#${b}`}><b>{dominant(b) || "Build"}</b><span class="split">{split(b)}</span></a><span class="sub">{n} character{n === 1 ? "" : "s"}{g.n > 1 ? ` · ${Math.round((n / g.n) * 100)}%` : ""}{closeText(k)}</span></li>
                 ))}
               </ul></details>
             )}
           </section>
         ))}
         {popular.length === 0 && <p class="gnote">No player builds logged yet. Run <a href="/scout/">ForeverScout</a> while you play and the builds {c.name}s actually use show up here, split into everyone, PvE and PvP (battleground) players — a build is listed once two or more characters use it.</p>}
-        {popular.length > 0 && <p class="gnote">A build is listed once two or more characters use it. No open source publishes Forever PvP builds, so the PvP list is measured from battleground players' own logs.</p>}
+        {popular.length > 0 && <p class="gnote">A build is listed once two or more characters use it, and builds within 3 points of it count with it. Only builds made on today's talent trees are counted: after a patch moves talents, the count starts again. No open source publishes Forever PvP builds, so the PvP list is measured from battleground players' own logs.</p>}
 
         {communityBuilds.length > 0 && (
           <section>

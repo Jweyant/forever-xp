@@ -59,11 +59,30 @@ jobs:
           curl -fsS --max-time 30 -A "forever-xp-player-data" https://forever-xp.com/api/scouts/names -o out/scout_names.json \
             || echo "Linked names unavailable; the leaderboard stays as it was"
 
+      # Talent builds are digits in the game's tree order, so they're only counted on the trees they
+      # were made for: the newest talent data (the refresh lands on the `data` branch), and the last
+      # published builds, which record when each class's trees last changed.
+      - name: Get the newest talent trees and the last published builds
+        if: steps.pull.outputs.have == 'true'
+        run: |
+          mkdir -p out
+          cp gamedata/talents.json out/talents.json
+          if git fetch -q --depth=1 origin data; then
+            git show FETCH_HEAD:gamedata/talents.json > out/talents-data.json 2>/dev/null || true
+            git show FETCH_HEAD:gamedata/players/talent_builds.json > out/previous-builds.json 2>/dev/null || true
+            if [ -s out/talents-data.json ]; then
+              newest=$(python3 -I -c 'import sys; sys.path.insert(0, "tools"); import check_talent_order as c; print(c.newest(sys.argv[1:]))' out/talents.json out/talents-data.json)
+              [ "$newest" = out/talents.json ] || cp "$newest" out/talents.json
+            fi
+          fi
+          [ -s out/previous-builds.json ] || cp gamedata/players/talent_builds.json out/previous-builds.json 2>/dev/null || echo '{}' > out/previous-builds.json
+
       - name: Aggregate logs
         if: steps.pull.outputs.have == 'true'
         run: |
           python3 tools/ingest_logs.py --questie data/forever_questdb.sqlite \
-            --maps data/questiedb/uiMapIdToAreaId.json --out out/ --names out/scout_names.json logs/*.lua
+            --maps data/questiedb/uiMapIdToAreaId.json --out out/ --names out/scout_names.json \
+            --talents out/talents.json --previous-builds out/previous-builds.json logs/*.lua
           mkdir -p gamedata/players
           cp out/quest_timing.csv out/loot.csv out/objective_areas.json out/encounters.csv out/talent_builds.json gamedata/players/
           if [ -f out/scouts.json ]; then cp out/scouts.json gamedata/players/; fi
