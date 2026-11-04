@@ -64,7 +64,7 @@ number and "Only show what would be posted" ticked.
 ## Roles
 
 `roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,
-Contributor and ForeverScout tester. Admin is a name tag for the server owner, who already has every
+Contributor, ForeverScout tester and Scout. Admin is a name tag for the server owner, who already has every
 permission. A member's name takes the color of their highest role.
 
 - The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
@@ -75,6 +75,25 @@ permission. A member's name takes the color of their highest role.
   says which roles it had to leave alone.
 - Staff permissions (Moderator) are given by hand in Server Settings > Roles, since a bot can't
   grant permissions it doesn't have.
+
+## Scout role and #scouts
+
+Players who link a ForeverScout install to their forever-xp.com account (and haven't hidden
+themselves there) get the **Scout** role; **#scouts** is visible to that role only. The Discord
+workflow runs `scout-role` every hour: it reads the linked players' Discord IDs from
+`https://forever-xp.com/api/scouts/discord`, gives the role to members on the list and takes it from
+members who unlinked or hid themselves (never more than 25 removals in one run, and nothing if the
+list can't be read). It logs counts only.
+
+One-time setup:
+
+1. Make a long random token (at least 32 characters, for example from a password manager).
+2. In the Cloudflare Pages project's environment variables, add `SCOUT_ROLES_TOKEN` as a secret with
+   that value. Until it's set the API route doesn't exist.
+3. In the GitHub repo, add the same value as the Actions secret `SCOUT_ROLES_TOKEN`.
+4. Run **Actions > Discord > Run workflow** once with "Only show what would change" unticked, so the
+   Scout role and #scouts channel are created. The role needs the same Server Members Intent the
+   founding-members job uses.
 
 ## Security
 

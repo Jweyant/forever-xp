@@ -518,6 +518,94 @@ class Tests(unittest.TestCase):
                     {"role": "Founding Member", "count": "50"}, {"role": "Founding Member", "count": 50, "x": 1}, "Founding Member"):
             self.assertTrue(bot.validate({**base, "founding_members": bad}), bad)
 
+    # ---- Scout role and the scouts channel ----
+    def test_scouts_channel_is_hidden_from_everyone_but_the_scout_role(self):
+        guild = "1"
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "50", "name": "forever-xp", "position": 9, "managed": True, "tags": {"bot_id": "42"}}]
+        d = FakeDiscord([], roles)
+        bot.setup(CFG, d, guild)
+        scout = next(r for r in d.roles if r["name"] == "Scout")
+        made = next(b for m, p, b in d.calls if m == "POST" and p.endswith("/channels") and b.get("name") == "scouts")
+        ow = {o["id"]: o for o in made["permission_overwrites"]}
+        self.assertTrue(int(ow["1"]["deny"]) & bot.VIEW)                # @everyone can't see it
+        self.assertTrue(int(ow[scout["id"]]["allow"]) & bot.VIEW)       # Scouts can, and talk
+        self.assertTrue(int(ow[scout["id"]]["allow"]) & bot.SEND)
+        self.assertTrue(int(ow["50"]["allow"]) & bot.VIEW)              # the bot keeps access
+        first_role = next(i for i, (m, p, _) in enumerate(d.calls) if m == "POST" and p.endswith("/roles"))
+        first_chan = next(i for i, (m, p, _) in enumerate(d.calls) if m == "POST" and p.endswith("/channels") and p != "x")
+        self.assertLess(first_role, first_chan)                         # roles exist before channels name them
+
+    def test_role_and_scout_role_validation(self):
+        base = {"roles": [{"name": "Scout"}, {"name": "Admin"}], "categories": [{"name": "X", "channels": []}]}
+        def with_ch(**kw):
+            return {**base, "categories": [{"name": "X", "channels": [{"name": "scouts", "type": "text", **kw}]}]}
+        self.assertEqual(bot.validate(with_ch(role="Scout")), [])
+        for bad in ("Nope", "Admin", 5):
+            self.assertTrue(bot.validate(with_ch(role=bad)), bad)
+        self.assertTrue(bot.validate({**base, "categories": [{"name": "X", "channels": [{"name": "s", "type": "forum", "role": "Scout"}]}]}))
+        self.assertEqual(bot.validate({**base, "scout_role": "Scout"}), [])
+        for bad in ("Nope", "Admin", 5):
+            self.assertTrue(bot.validate({**base, "scout_role": bad}), bad)
+
+    def _scouts(self, members, ids, no_intent=False):
+        roles = [{"id": "1", "name": "@everyone", "position": 0},
+                 {"id": "50", "name": "forever-xp", "position": 9, "managed": True, "tags": {"bot_id": "42"}},
+                 {"id": "61", "name": "Scout", "position": 2}]
+
+        class Fake(FakeDiscord):
+            def call(self, method, path, body=None, *, write=False, soft=()):
+                if "/members?" in path:
+                    self.calls.append((method, path, body))
+                    return None if no_intent else members
+                if "/members/" in path and "/roles/" in path:
+                    self.calls.append((method, path, body))
+                    return {}
+                return super().call(method, path, body, write=write)
+        d = Fake([], roles)
+        out = []
+        orig, bot.log = bot.log, out.append
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                f = Path(tmp) / "ids.json"
+                if ids is not None:
+                    f.write_text(ids if isinstance(ids, str) else json.dumps({"ids": ids}))
+                bot.scout_roles({**CFG, "scout_role": "Scout"}, f, d, "1")
+        finally:
+            bot.log = orig
+        puts = [p.split("/")[4] for m, p, _ in d.calls if m == "PUT"]
+        dels = [p.split("/")[4] for m, p, _ in d.calls if m == "DELETE"]
+        return puts, dels, out, d
+
+    def test_scout_role_follows_the_linked_list(self):
+        ms = [self._m("111111111111111111", 1), self._m("222222222222222222", 2, roles=["61"]),
+              self._m("333333333333333333", 3, roles=["61"]), self._m("444444444444444444", 4, bot_=True)]
+        # 1 is linked (gets it), 2 is still linked (keeps it), 3 unlinked (loses it), 9... isn't on the server
+        puts, dels, out, d = self._scouts(ms, ["111111111111111111", "222222222222222222", "999999999999999999", "junk", 7])
+        self.assertEqual(puts, ["111111111111111111"])
+        self.assertEqual(dels, ["333333333333333333"])
+        self.assertTrue(all(p.endswith("/roles/61") for m, p, _ in d.calls if m in ("PUT", "DELETE")))
+        text = " ".join(out)
+        self.assertNotIn("1111", text)                       # counts only in the public log
+        self.assertNotIn("3333", text)
+
+    def test_scout_role_is_left_alone_when_the_list_is_missing_or_wrong(self):
+        ms = [self._m("222222222222222222", 2, roles=["61"])]
+        for ids in (None, "not json", json.dumps({"ids": "oops"}), json.dumps([1, 2])):
+            puts, dels, out, _ = self._scouts(ms, ids)
+            self.assertEqual((puts, dels), ([], []), ids)
+            self.assertTrue(any("isn't available" in line for line in out))
+
+    def test_scout_role_removals_are_capped(self):
+        ms = [self._m(str(500000000000000000 + i), 1 + i % 28, roles=["61"]) for i in range(40)]
+        puts, dels, _, _ = self._scouts(ms, [])
+        self.assertEqual((puts, len(dels)), ([], bot.MAX_ROLE_CHANGES))
+
+    def test_scout_role_without_member_intent_is_a_notice(self):
+        puts, dels, out, _ = self._scouts([], ["111111111111111111"], no_intent=True)
+        self.assertEqual((puts, dels), ([], []))
+        self.assertTrue(any("Server Members Intent" in line for line in out))
+
     def test_updates_channel_validation(self):
         two = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "updates": True},
                                                           {"name": "b", "type": "announcement", "updates": True}]}]}

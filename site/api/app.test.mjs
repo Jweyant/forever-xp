@@ -318,3 +318,22 @@ test("scout writes need sign-in, the site's Origin and JSON; unlinking and delet
   assert.equal(env.DB.count("scout_claims"), 0);
   assert.deepEqual((await (await handle(req("/api/scouts/names"), env, ctx)).json()).names, {});
 });
+
+test("the Discord role list needs its own secret token and lists only visible claims", async () => {
+  const { sid } = await signIn();
+  const cookie = `__Host-fxp_sid=${sid}`;
+  const { id } = await (await claim(cookie, { code: INSTALL })).json();
+  const ask = (auth) => handle(new Request(`${ORIGIN}/api/scouts/discord`, { headers: auth ? { Authorization: auth } : {} }), env, ctx);
+  assert.equal((await ask("Bearer anything")).status, 404, "route doesn't exist until the secret is set");
+  env.SCOUT_ROLES_TOKEN = "t".repeat(40);
+  assert.equal((await ask()).status, 401);
+  assert.equal((await ask("Bearer " + "x".repeat(40))).status, 401);
+  assert.equal((await ask("t".repeat(40))).status, 401, "scheme required");
+  assert.equal((await ask(`Bearer ${"t".repeat(40)}`)).status, 200);
+  assert.deepEqual(await (await ask(`Bearer ${"t".repeat(40)}`)).json(), { ids: ["123456789012345678"] });
+  await claim(cookie, { visible: false }, "PATCH", `/api/scouts/claim/${id}`);
+  assert.deepEqual(await (await ask(`Bearer ${"t".repeat(40)}`)).json(), { ids: [] }, "hidden players lose the role");
+  env.SCOUT_ROLES_TOKEN = "short";
+  assert.equal((await ask("Bearer short")).status, 404, "a weak token is treated as not set");
+  assert.equal((await handle(new Request(`${ORIGIN}/api/scouts/discord`, { method: "POST", headers: { Origin: ORIGIN, Authorization: `Bearer ${"t".repeat(40)}` } }), env, ctx)).status, 401, "writes still need a session");
+});

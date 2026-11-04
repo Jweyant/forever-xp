@@ -341,6 +341,18 @@ async function scoutNames(env) {
   return json({ names });
 }
 
+/** For the Discord role job only: the Discord IDs of players with at least one visible claim.
+ * Needs the SCOUT_ROLES_TOKEN secret as a bearer token; without the secret set the route doesn't exist. */
+async function scoutDiscordIds(request, env) {
+  const token = env.SCOUT_ROLES_TOKEN;
+  if (typeof token !== "string" || token.length < 32) return fail(404, "not-found");
+  if (!sameString(request.headers.get("Authorization") || "", `Bearer ${token}`)) return fail(401, "unauthorized");
+  const { results } = await env.DB.prepare(
+    "SELECT DISTINCT u.discord_id FROM scout_claims c JOIN users u ON u.id = c.user_id WHERE c.visible = 1 LIMIT 20000",
+  ).all();
+  return json({ ids: (results || []).map((r) => r.discord_id) });
+}
+
 async function deleteAccount(env, user) {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM scout_claims WHERE user_id = ?").bind(user.id),
@@ -368,6 +380,7 @@ export async function handle(request, env, ctx = { waitUntil() {} }) {
   if (method === "GET" && path === "/api/auth/callback") return callback(request, env, origin, ctx);
 
   if (method === "GET" && path === "/api/scouts/names") return scoutNames(env);
+  if (method === "GET" && path === "/api/scouts/discord") return scoutDiscordIds(request, env);
 
   // Everything else is JSON for the signed-in user. Writes must come from the site itself.
   const writes = method !== "GET" && method !== "HEAD";

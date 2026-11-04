@@ -72,6 +72,10 @@ def source(s):
         parts.append("ch=" + lua_num(s["ch"]))
     if s.get("boss"):
         parts.append("boss=1")
+    if type(s.get("seen")) is int and s["seen"] > 0:
+        parts.append("sn=%d" % min(s["seen"], 9999))  # players whose logs saw this drop in Forever
+    if isinstance(s.get("by"), str) and re.fullmatch(r"[A-Za-z0-9 _'-]{2,20}", s["by"]):
+        parts.append("by=" + lua_str(s["by"]))        # first logged by this (linked) player
     if isinstance(s.get("qid"), int):
         parts.append("qid=%d" % s["qid"])
         q = _quests.get(s["qid"])

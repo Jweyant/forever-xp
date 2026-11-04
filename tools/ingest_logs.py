@@ -371,11 +371,14 @@ def player_key(char_id, source):
     return "i:" + m.group(1) if m else "c:" + str(char_id)
 
 
-def write_loot(db, out_dir):
+def write_loot(db, out_dir, linked=None):
     """Which NPC or object dropped which item, from ForeverScout 'loot' events.
 
     players = distinct players (installs) who looted it from that source in that zone;
-    looted = how many times it was seen dropping there, across everyone."""
+    looted = how many times it was seen dropping there, across everyone;
+    first_by = the board name of the first player to loot it, when that player has linked their
+    account and a second player has since seen the same drop (`linked`: see load_scout_names).
+    Otherwise empty: unlinked, hidden or hand-sent logs are never credited by name."""
     zones = {}
     zfile = Path(__file__).parent / "zone_sizes.json"
     if zfile.exists():
@@ -387,7 +390,8 @@ def write_loot(db, out_dir):
             names[e["npc"]] = e["name"]
     seen = defaultdict(set)
     looted = defaultdict(int)
-    for char, source, raw in db.execute("""SELECT s.char_id, s.source, e.json FROM events e
+    first = {}  # drop -> (time, player) of its earliest loot
+    for char, source, start, t, raw in db.execute("""SELECT s.char_id, s.source, s.start, e.t, e.json FROM events e
                                            JOIN sessions s ON s.id = e.session_id WHERE e.k = 'loot'"""):
         e = json.loads(raw)
         try:
@@ -400,13 +404,23 @@ def write_loot(db, out_dir):
         # kind is "object"/"npc" from ForeverScout 0.4 on, "GameObject"/"Creature" before.
         label = names.get(src) or (f"Object #{src}" if e.get("kind") in ("GameObject", "object") else f"NPC #{src}" if src else "")
         key = (item, str(label), zones.get(e.get("map")) or "")
-        seen[key].add(player_key(char, source))
+        who = player_key(char, source)
+        seen[key].add(who)
         looted[key] += 1
-    out = ["item,source,zone,players,looted"]
+        try:
+            when = int(start or 0) + int(t or 0)
+        except (TypeError, ValueError):
+            when = 0
+        if key not in first or when < first[key][0]:
+            first[key] = (when, who)
+    linked = linked or {}
+    out = ["item,source,zone,players,looted,first_by"]
     for key, players in sorted(seen.items()):
         item, label, zone = key
+        who = first[key][1]
+        by = linked.get(scout_hash(who), "") if len(players) >= 2 and who.startswith("i:") else ""
         out.append(",".join([str(item), '"' + label.replace('"', "'") + '"', '"' + zone + '"',
-                             str(len(players)), str(looted[key])]))
+                             str(len(players)), str(looted[key]), '"' + by + '"']))
     (out_dir / "loot.csv").write_text("\n".join(out) + "\n")
 
 
@@ -695,9 +709,10 @@ def main():
     added, skipped = ingest(db, a.files)
     print(f"sessions added: {added}, already present: {skipped}")
     analyze(db, Questie(a.questie, a.maps), out)
-    write_loot(db, out)
+    names = load_scout_names(a.names) if a.names else None
+    write_loot(db, out, linked=names)
     write_objective_areas(db, out)
-    write_scouts(db, out, names=load_scout_names(a.names) if a.names else None)
+    write_scouts(db, out, names=names)
     write_encounters(db, out)
     write_talent_builds(db, out)
     for name in ("findings.md", "questie_candidates.lua", "quest_timing.csv", "loot.csv", "objective_areas.json", "scouts.json", "encounters.csv", "talent_builds.json"):

@@ -16,7 +16,7 @@ INSTALL_B = "logs/" + "b" * 32 + "-" + "2" * 16 + ".lua"
 
 
 class Loot(unittest.TestCase):
-    def run_loot(self, sessions, loots):
+    def run_loot(self, sessions, loots, names=None):
         db = sqlite3.connect(":memory:")
         db.executescript(ingest_logs.SCHEMA)
         for sid, char, source in sessions:
@@ -26,7 +26,7 @@ class Loot(unittest.TestCase):
             db.execute("INSERT INTO events (session_id, k, json) VALUES (?,?,?)",
                        (sid, "loot", json.dumps({"item": item, "src": src, "kind": kind, "map": 1429})))
         with tempfile.TemporaryDirectory() as d:
-            ingest_logs.write_loot(db, Path(d))
+            ingest_logs.write_loot(db, Path(d), linked=names)
             return list(csv.DictReader(io.StringIO((Path(d) / "loot.csv").read_text())))
 
     def test_alts_on_one_install_count_as_one_player(self):
@@ -42,6 +42,23 @@ class Loot(unittest.TestCase):
                              [(1, 200, 55, "GameObject"), (2, 200, 55, "GameObject")])
         self.assertEqual(rows[0]["source"], "Object #55")
         self.assertEqual(rows[0]["players"], "2")
+
+    def test_first_looter_is_credited_only_when_linked_and_confirmed(self):
+        names = {ingest_logs.scout_hash("i:" + "a" * 32): "Kinos", ingest_logs.scout_hash("i:" + "b" * 32): "Bee"}
+        sessions = [(1, "c1", INSTALL_A), (2, "c2", INSTALL_B)]        # A's session starts first (start = id)
+        # a drop two players saw: A was first. A drop only B saw: not confirmed, so no credit.
+        rows = self.run_loot(sessions, [(1, 100, 7, "Creature"), (2, 100, 7, "Creature"), (2, 300, 7, "Creature")], names)
+        by = {r["item"]: r["first_by"] for r in rows}
+        self.assertEqual(by, {"100": "Kinos", "300": ""})
+        # the first looter hasn't linked: nobody is credited, even though the second has
+        rows = self.run_loot(sessions, [(1, 100, 7, "Creature"), (2, 100, 7, "Creature")], {ingest_logs.scout_hash("i:" + "b" * 32): "Bee"})
+        self.assertEqual(rows[0]["first_by"], "")
+        # no names list (accounts API unreachable): no credits at all
+        self.assertEqual(self.run_loot(sessions, [(1, 100, 7, "Creature"), (2, 100, 7, "Creature")])[0]["first_by"], "")
+        # hand-sent logs can't be linked
+        rows = self.run_loot([(1, "c1", "logs/manual.lua"), (2, "c2", "logs/manual.lua")], [(1, 5, 9, "Creature"), (2, 5, 9, "Creature")],
+                             {ingest_logs.scout_hash("c:c1"): "Sneaky"})
+        self.assertEqual(rows[0]["first_by"], "")
 
     def test_bad_item_ids_are_skipped(self):
         rows = self.run_loot([(1, "c", INSTALL_A)], [(1, "nope", 7, "Creature"), (1, 0, 7, "Creature")])

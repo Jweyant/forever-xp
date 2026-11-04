@@ -13,7 +13,7 @@ export interface Item {
   new?: 1; chg?: [string, number, number][];
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
   /** `seen`: how many different players' ForeverScout logs saw this drop in Forever (tools/build_items.py). */
-  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number; seen?: number }[];
+  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number; seen?: number; by?: string }[];
 }
 
 export const CRIT_RATING = 14;

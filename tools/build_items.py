@@ -791,6 +791,8 @@ def journal_sources(cache, download, keep):
 
 # Player logs are public input: a drop is only published once this many different players saw it.
 MIN_LOGGED_PLAYERS = 2
+# Who first logged a drop ("by"): a linked player's board name, re-checked here (see ingest_logs.BOARD_NAME).
+BY_NAME = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")
 
 
 def read_loot_csv(path):
@@ -805,8 +807,12 @@ def read_loot_csv(path):
                 continue
             if iid <= 0 or players < MIN_LOGGED_PLAYERS:
                 continue
-            logged[iid].append({"t": "logged", "n": str(r.get("source") or "")[:80], "z": str(r.get("zone") or "")[:60],
-                                "seen": players})
+            row = {"t": "logged", "n": str(r.get("source") or "")[:80], "z": str(r.get("zone") or "")[:60],
+                   "seen": players}
+            by = str(r.get("first_by") or "")
+            if BY_NAME.match(by):
+                row["by"] = by
+            logged[iid].append(row)
     return logged
 
 
@@ -827,6 +833,8 @@ def confirm_sources(logged, known):
         hit = [s for s in out if n and _norm(s.get("n")) == n] if n else []
         if hit:
             for s in hit:
+                if lg["seen"] >= s.get("seen", 0) and lg.get("by"):
+                    s["by"] = lg["by"]
                 s["seen"] = max(s.get("seen", 0), lg["seen"])
         else:
             rest.append(lg)
