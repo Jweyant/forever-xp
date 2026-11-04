@@ -518,5 +518,60 @@ class Tests(unittest.TestCase):
                     {"role": "Founding Member", "count": "50"}, {"role": "Founding Member", "count": 50, "x": 1}, "Founding Member"):
             self.assertTrue(bot.validate({**base, "founding_members": bad}), bad)
 
+    def test_updates_channel_validation(self):
+        two = {"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "updates": True},
+                                                          {"name": "b", "type": "announcement", "updates": True}]}]}
+        self.assertTrue(any("only one updates channel" in x for x in bot.validate(two)))
+        self.assertTrue(bot.validate({"categories": [{"name": "X", "channels": [{"name": "a", "type": "forum", "updates": True}]}]}))
+        self.assertTrue(bot.validate({"categories": [{"name": "X", "channels": [{"name": "a", "type": "text", "updates": "yes"}]}]}))
+        self.assertEqual(bot.feed_channel(CFG, "updates")[0], "announcements")
+
+    def test_update_text_is_safe_and_only_the_announce_section(self):
+        body = ("## Summary\nInternal notes, not for players.\n\n## Announce\n- Leaderboard now shows **names** @everyone\n"
+                "- See https://evil.example/x and https://forever-xp.com/leaderboard/\nSome plain line with discord.gg/abc\n\n## Test plan\n- ran tests\n")
+        text = bot.update_text(body)
+        self.assertNotIn("Internal notes", text)
+        self.assertNotIn("ran tests", text)
+        self.assertNotIn("evil.example", text)
+        self.assertIn("https://forever-xp.com/leaderboard/", text)
+        self.assertNotIn("@everyone", text.replace("@\u200beveryone", ""))
+        self.assertNotIn("discord.gg/", text.replace("discord\u200b.gg/", ""))
+        self.assertTrue(text.startswith("\u2022 "))
+        self.assertEqual(bot.update_text("no section here"), "")
+        self.assertEqual(bot.update_text(None), "")
+
+    def test_site_update_skips_bots_labels_and_junk(self):
+        ok = {"number": 5, "title": "Add a thing", "body": "", "author": "Jweyant", "labels": []}
+        self.assertEqual(bot.site_update(ok)[:2], (5, "Add a thing"))
+        for bad in ({**ok, "author": "dependabot[bot]"}, {**ok, "labels": ["No-Announce"]}, {**ok, "number": "5"},
+                    {**ok, "number": True}, {**ok, "title": "  "}, {**ok, "title": 7}, "x", None):
+            self.assertIsNone(bot.site_update(bad), bad)
+
+    def test_post_update_posts_once_and_never_pings(self):
+        pr = {"number": 12, "title": "Leaderboard: **names** <@everyone>", "author": "Jweyant", "labels": [],
+              "body": "## Announce\n- Linked players show their name\n"}
+        with tempfile.TemporaryDirectory() as tmp:
+            f = Path(tmp) / "pr.json"
+            f.write_text(json.dumps(pr))
+            d = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [])
+            bot.post_update(CFG, f, d, "1")
+            sent = posts(d)
+            self.assertEqual(len(sent), 1)
+            self.assertEqual(sent[0]["allowed_mentions"], {"parse": []})
+            self.assertIn("Linked players show their name", shown(sent[0]))
+            self.assertNotIn("<@everyone>", shown(sent[0]))
+            self.assertEqual(sent[0]["embeds"][0]["footer"]["text"], "Site update #12")
+            self.assertTrue(any(m == "POST" and p == "/channels/7/messages/m1/crosspost" for m, p, b in d.calls))
+            # already there: a rerun posts nothing
+            again = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [],
+                                messages=[{"author": {"id": "42"}, "embeds": [{"footer": {"text": "Site update #12"}}]}])
+            bot.post_update(CFG, f, again, "1")
+            self.assertEqual(posts(again), [])
+            # someone else's look-alike footer doesn't count
+            fake = FakeDiscord([{"id": "7", "type": 5, "name": "announcements"}], [],
+                               messages=[{"author": {"id": "99"}, "embeds": [{"footer": {"text": "Site update #12"}}]}])
+            bot.post_update(CFG, f, fake, "1")
+            self.assertEqual(len(posts(fake)), 1)
+
 if __name__ == "__main__":
     unittest.main()

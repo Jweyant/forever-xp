@@ -1,0 +1,63 @@
+# Announces each merged change to the site in #announcements (the channel marked "updates" in
+# discord/server.json), published to servers that follow it. Runs when a pull request lands on
+# main with user-facing files in it. The post is the pull request's title plus its "## Announce"
+# section, if it has one; label a pull request no-announce to skip it. Dependency bumps are skipped.
+# Needs the DISCORD_BOT_TOKEN secret and DISCORD_GUILD_ID variable (see docs/discord.md).
+name: Site updates
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/src/**", "site/public/**", "addon/**", "uploader/**", "routes/**"]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number to announce"
+        required: true
+        type: string
+      dry_run:
+        description: "Only show what would be posted"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: site-updates
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      # The title and text come from the API and go to the bot as a file, never into a shell command.
+      - name: Find the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          PR_INPUT: ${{ inputs.pr }}
+        run: |
+          n="$PR_INPUT"
+          if [ -z "$n" ]; then
+            n=$(gh api "repos/$REPO/commits/$SHA/pulls" --jq '[.[] | select(.merged_at != null and .base.ref == "main")][0].number // empty')
+          fi
+          case "$n" in ''|*[!0-9]*) echo "No merged pull request for this push."; exit 0 ;; esac
+          gh api "repos/$REPO/pulls/$n" --jq '{number, title, body, author: .user.login, labels: [.labels[].name]}' > "$RUNNER_TEMP/pr.json"
+          echo "found=yes" >> "$GITHUB_OUTPUT"
+      - name: Post to #announcements
+        if: steps.pr.outputs.found == 'yes'
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          DRY: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ] || [ -z "$DISCORD_GUILD_ID" ]; then echo "::notice::Discord bot not configured yet; see docs/discord.md."; exit 0; fi
+          python3 tools/discord_bot.py post-update "$RUNNER_TEMP/pr.json" $DRY

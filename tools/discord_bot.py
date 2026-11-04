@@ -39,7 +39,7 @@ ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
 FOUNDING_KEYS = {"role", "count"}
 SNOWFLAKE = re.compile(r"^[0-9]{1,25}$")
-CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "message"}
+CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "updates", "message"}
 PRIVATE_KEYS = {"name", "type"}
 MESSAGES = ROOT / "discord" / "messages"
 MESSAGE_FILE_RE = re.compile(r"^[a-z0-9-]{1,40}\.md$")
@@ -56,7 +56,7 @@ def log(msg):
 
 # ---- validation (runs on every pull request, no token) ----------------------------------------
 def validate(cfg):
-    problems, seen, feeds, reports = [], set(), [], []
+    problems, seen, feeds, reports, updates = [], set(), [], [], []
     for cat in cfg.get("categories", []):
         if not cat.get("name") or len(cat["name"]) > 90:
             problems.append(f"category name missing or too long: {cat.get('name')!r}")
@@ -88,6 +88,12 @@ def validate(cfg):
                     problems.append(f"{name}: the report channel must be a text or announcement channel")
             elif "report" in ch:
                 problems.append(f"{name}: report must be true or left out")
+            if ch.get("updates") is True:
+                updates.append(name)
+                if kind not in ("text", "announcement"):
+                    problems.append(f"{name}: the updates channel must be a text or announcement channel")
+            elif "updates" in ch:
+                problems.append(f"{name}: updates must be true or left out")
             if len(ch.get("topic", "")) > 1024:
                 problems.append(f"{name}: topic over 1024 characters")
             if "message" in ch:
@@ -101,6 +107,8 @@ def validate(cfg):
         problems.append(f"only one feed channel, not {', '.join(feeds)}")
     if len(reports) > 1:
         problems.append(f"only one report channel, not {', '.join(reports)}")
+    if len(updates) > 1:
+        problems.append(f"only one updates channel, not {', '.join(updates)}")
     private = cfg.get("private_channels", [])
     if not isinstance(private, list) or len(private) > 10:
         problems.append("private_channels must be a list of at most 10 channels")
@@ -804,6 +812,70 @@ def post_scouts(cfg, path, d, guild):
     log(f"Posted the Scout report to #{target['name']}.")
 
 
+# ---- Site updates ------------------------------------------------------------------------------
+ANNOUNCE_SECTION = re.compile(r"^#{1,3}[ \t]*announce[ \t]*$\n(.*?)(?=^#{1,3}[ \t]|\Z)", re.I | re.M | re.S)
+OTHER_LINKS = re.compile(r"https?://(?!(?:www\.)?forever-xp\.com(?:[/?#\s]|$))\S*", re.I)
+
+
+def update_text(body, max_lines=8):
+    """The "## Announce" section of a pull request, as safe Discord text: bullets kept, markdown
+    escaped, no pings, and no links except to forever-xp.com. Empty when the PR has no section."""
+    m = ANNOUNCE_SECTION.search(str(body or "").replace("\r\n", "\n"))
+    lines = []
+    for raw in (m.group(1) if m else "").split("\n"):
+        raw = OTHER_LINKS.sub("", raw).strip()
+        bullet = re.match(r"^[-*][ \t]+(.*)$", raw)
+        text = plain(bullet.group(1) if bullet else raw, 220 if bullet else 300)
+        if text:
+            lines.append(("\u2022 " if bullet else "") + text)
+        if len(lines) >= max_lines:
+            break
+    return "\n".join(lines)[:1200]
+
+
+def site_update(pr):
+    """(number, title, text) for a merged pull request worth announcing, else None. Skipped: bots'
+    pull requests (dependency bumps), anything labelled no-announce, and malformed input."""
+    if not isinstance(pr, dict) or type(pr.get("number")) is not int or not 1 <= pr["number"] <= 10_000_000:
+        return None
+    title = pr.get("title")
+    if not isinstance(title, str) or not title.strip():
+        return None
+    if str(pr.get("author", "")).lower().endswith("[bot]"):
+        return None
+    labels = pr.get("labels") if isinstance(pr.get("labels"), list) else []
+    if any(str(x).lower() == "no-announce" for x in labels):
+        return None
+    return pr["number"], label(title, 200), update_text(pr.get("body"))
+
+
+def post_update(cfg, path, d, guild):
+    """Announce a merged pull request in the channel marked "updates" (#announcements), once."""
+    try:
+        pr = json.loads(Path(path).read_text())
+    except (OSError, ValueError):
+        sys.exit(f"{path}: not a readable pull request file.")
+    found = site_update(pr)
+    if found is None:
+        log("Nothing to announce for this pull request.")
+        return
+    number, title, text = found
+    target = feed_target(cfg, d, guild, flag="updates")
+    foot = f"Site update #{number}"
+    me = d.call("GET", "/users/@me") or {}
+    for m in d.call("GET", f"/channels/{target['id']}/messages?limit=50") or []:
+        if isinstance(m, dict) and (m.get("author") or {}).get("id") == me.get("id"):
+            if any(isinstance(e, dict) and (e.get("footer") or {}).get("text") == foot for e in m.get("embeds") or []):
+                log(f"Update #{number} is already in #{target['name']}.")
+                return
+    embed = {"author": {"name": "New on forever-xp.com"}, "title": title, "url": "https://forever-xp.com/",
+             "color": BRAND, "footer": {"text": foot}}
+    if text:
+        embed["description"] = text
+    post(d, target, embed)
+    log(f"Posted update #{number} to #{target['name']}.")
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -826,6 +898,9 @@ def main():
     u = sub.add_parser("update-scouts")
     u.add_argument("scouts")
     u.add_argument("--dry-run", action="store_true")
+    w = sub.add_parser("post-update")
+    w.add_argument("pr")
+    w.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     cfg = json.loads((ROOT / "discord" / "server.json").read_text())
@@ -847,6 +922,8 @@ def main():
         post_date(cfg, a.notes, a.date, d, guild)
     elif a.cmd == "post-scouts":
         post_scouts(cfg, a.scouts, d, guild)
+    elif a.cmd == "post-update":
+        post_update(cfg, a.pr, d, guild)
     elif a.cmd == "update-scouts":
         update_scouts(cfg, a.scouts, d, guild)
     else:

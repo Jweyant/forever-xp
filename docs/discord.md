@@ -49,6 +49,18 @@ mentions off. To preview:
 **Actions > Scout report > Run workflow**, pick standings or report, with "Only show what would be
 posted" ticked.
 
+## Site updates
+
+The channel marked `"updates": true` in `discord/server.json` is #announcements. The **Site
+updates** workflow posts there when a pull request lands on `main` with files under `site/src`,
+`site/public`, `addon`, `uploader` or `routes`, and publishes it to servers that follow the
+channel. The post is the pull request's title plus the text under a `## Announce` heading in its
+description (bullets are kept; keep it to what a player would notice). No `## Announce` section
+posts the title alone. Label a pull request `no-announce` to skip it; dependency bumps are skipped.
+Links other than forever-xp.com are dropped, mentions are off, and each pull request is posted once.
+To post or preview one by hand: **Actions > Site updates > Run workflow**, with the pull request
+number and "Only show what would be posted" ticked.
+
 ## Roles
 
 `roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,
