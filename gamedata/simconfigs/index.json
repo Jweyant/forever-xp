@@ -24,7 +24,7 @@
  {
   "key": "WARRIOR.arms",
   "label": "Community PvP \u00b7 20 s burst",
-  "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
+  "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT), remapped to the Nov 3 trees, on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent.",
   "file": "warrior_pvp.siml",
   "specDir": "warrior/dps",
   "aplJson": "ui/specs/warrior/dps/apls/arms.apl.json"

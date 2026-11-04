@@ -3,8 +3,9 @@ siml 1
 // Gear is the BIS planner's own suggested set (Orc Warrior, PvE, level 60, all sources), which
 // picks a two-hander, so this setup sims the Arms build. The rotation is the engine's default
 // Arms APL (index.json names it; .apl.json can't be pulled in with `use`).
+// Talents: wowsims/forever's Arms preset for Forever's trees (ui/specs/warrior/dps/presets.ts, Nov 3 patch).
 spec dps_warrior
-talents "30325213132515201-0505-2"
+talents "30323213132215201-5505-2"
 
 settings:
   race orc
