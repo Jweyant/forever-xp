@@ -8,7 +8,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
 ---
 <Base image="/og/scout.jpg" title="Scout leaderboard" description="The WoW Forever players whose ForeverScout logs time quests and confirm item drops for everyone, ranked. Updated every hour.">
   <h1>Scout leaderboard</h1>
-  <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it, under their Discord names.</p>
+  <p class="lede">Every quest you time and every drop you loot with <a href="/scout/">ForeverScout</a> running makes the routes and the item database better for every player. These are the scouts doing it.</p>
 
   <ul class="tiles" aria-label="All scouts so far">
     <li><b>{fmt(totals.scouts)}</b><span>scouts{n(totals.linked) < n(totals.scouts) ? ` (${fmt(totals.linked)} on the board)` : ""}</span></li>
@@ -20,8 +20,8 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
   {board.length === 0 ? (
     <section class="empty">
       <h2>No scouts on the board yet</h2>
-      <p>WoW Forever launches November 4. Install ForeverScout and the uploader, play a session, then <a href="/account/">sign in with Discord</a> and link your install. Your Discord name is on this board within the hour.</p>
-      <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/account/">Sign in with Discord</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
+      <p>WoW Forever launches November 4. Install ForeverScout and the uploader and play. When the addon asks "Show your name on the leaderboard?", click <b>Show my name</b>. You're on this board within the hour.</p>
+      <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
     </section>
   ) : (<>
     {week_board.length > 0 && (
@@ -59,7 +59,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
     </section>
     <section>
       <h2>Badges on item pages</h2>
-      <p>When two different scouts loot the same item from the same source, its item page shows <span class="confirmed">Confirmed in Forever by 2 players</span> next to that source, in the tooltip and in the BIS planner, with <b>First logged by</b> the scout who found it first, when they're linked. Sources nobody has looted yet are marked as Classic-era data, because Forever changed and added loot.</p>
+      <p>When two different scouts loot the same item from the same source, its item page shows <span class="confirmed">Confirmed in Forever by 2 players</span> next to that source, in the tooltip and in the BIS planner, with <b>First logged by</b> the scout who found it first, when they've chosen to show their name. Sources nobody has looted yet are marked as Classic-era data, because Forever changed and added loot.</p>
       <p><a href="/items/">Browse the item database</a></p>
     </section>
     <section>
@@ -68,8 +68,8 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
     </section>
     <section>
       <h2>Get on the board</h2>
-      <p>Only scouts who signed in with Discord are listed. After setup, the ForeverScout Uploader opens your <a href="/account/">account page</a> with a link that ties your install (something like <b>Scout 97800d</b>) to your Discord name. You can pick a different name, hide yourself or unlink there at any time. Your logs keep improving the routes and drops either way.</p>
-      <p>The site stores your Discord user ID and name, and a one-way hash of your install; never the install itself, and no character names, realms or chat.</p>
+      <p>Scouts are listed only if they choose to be. In game, ForeverScout asks once whether to show your character's name; change it any time from the minimap button's menu or with <code>/fscout board on</code> or <code>/fscout board off</code>. Only that one name is shared: no realm, guild or chat. Each name belongs to the first player who chose it. Your logs keep improving the routes and drops either way.</p>
+      <p>Prefer your Discord name? <a href="/account/">Sign in with Discord</a> and use the link the ForeverScout Uploader gives you after setup. That ties your install (something like <b>Scout 97800d</b>) to your Discord name, and you can pick a different name, hide yourself or unlink there at any time. The site stores your Discord user ID and name and a one-way hash of your install, never the install itself.</p>
     </section>
   </div>
 </Base>

@@ -102,5 +102,60 @@ class Scouts(unittest.TestCase):
         self.assertEqual(out["totals"]["scouts"], 0)
 
 
+
+class BoardNames(unittest.TestCase):
+    """Players who chose in game to show their character name (addon settings.boardName / boardAt)."""
+
+    def log(self, d, name, install, slot, settings):
+        p = Path(d) / f"{install}-{slot * 16}.lua"
+        s = ", ".join(f"[{json.dumps(k)}] = {v}" for k, v in settings.items())
+        p.write_text("ForeverScoutDB = {\n  [\"settings\"] = { " + s + " },\n  [\"chars\"] = {},\n}\n")
+        return str(p)
+
+    def board(self, files):
+        board = {}
+        for f in files:
+            list(ingest_logs.load_file(f, board))
+        return board
+
+    def test_newest_choice_per_install_wins(self):
+        with tempfile.TemporaryDirectory() as d:
+            board = self.board([
+                self.log(d, "", A, "1", {"boardName": '"Kinos"', "boardAt": 100}),
+                self.log(d, "", A, "2", {"boardName": "false", "boardAt": 200}),   # later: hid the name
+                self.log(d, "", B, "3", {"boardName": '"Zoë"', "boardAt": 50}),     # accents are fine
+                self.log(d, "", "c" * 32, "4", {"boardName": '"Bad Name!"', "boardAt": 1}),  # not a WoW name
+                self.log(d, "", "d" * 32, "5", {"boardName": '"Nodate"'}),            # no boardAt: ignored
+            ])
+            hand = Path(d) / "hand-sent.lua"
+            hand.write_text('ForeverScoutDB = { ["settings"] = { ["boardName"] = "Hand", ["boardAt"] = 9 } }\n')
+            list(ingest_logs.load_file(str(hand), board))  # hand-sent: no install, so never named
+        self.assertEqual(board, {"i:" + A: (200, None), "i:" + B: (50, "Zoë"), "i:" + "c" * 32: (1, None)})
+
+    def test_linked_names_first_then_oldest_choice(self):
+        C, D = "c" * 32, "d" * 32
+        h = ingest_logs.scout_hash
+        names = {h("i:" + A): "Kinos"}
+        board = {"i:" + A: (5, "Other"), "i:" + B: (10, "kinos"), "i:" + C: (20, "Thrall"), "i:" + D: (30, "THRALL")}
+        out = ingest_logs.with_board_names(names, board)
+        self.assertEqual(out, {h("i:" + A): "Kinos", h("i:" + C): "Thrall"})  # linked name kept; no duplicates
+        self.assertIsNone(ingest_logs.with_board_names(None, board))
+
+    def test_board_lists_in_game_names(self):
+        db = sqlite3.connect(":memory:")
+        db.executescript(ingest_logs.SCHEMA)
+        db.execute("INSERT INTO sessions (id, char_id, start, source) VALUES (1, 'c1', ?, ?)", (NOW, LOG_A))
+        names = ingest_logs.with_board_names({}, {"i:" + A: (1, "Zoë")})
+        with tempfile.TemporaryDirectory() as d:
+            ingest_logs.write_scouts(db, Path(d), now=NOW, names=names)
+            out = json.loads((Path(d) / "scouts.json").read_text())
+        self.assertEqual([r["handle"] for r in out["board"]], ["Zoë"])
+        self.assertEqual(out["totals"]["linked"], 1)
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        import site_data
+        self.assertTrue(site_data.SCOUT_HANDLE.match("Zoë"))
+        self.assertFalse(site_data.SCOUT_HANDLE.match("Zoë\u202e"))
+
+
 if __name__ == "__main__":
     unittest.main()

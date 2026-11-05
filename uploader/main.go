@@ -66,8 +66,8 @@ func (a *App) interactive() {
 	if a.isInstalled() {
 		a.writeClaimFile()
 		if ask(appName, "The ForeverScout Uploader is already set up and runs in the background.\n\n"+
-			"Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n"+
-			"To show your Discord name there instead, open the link in "+filepath.Join(a.dir, "claim.txt")+".\n\n"+
+			"To show your name on the Scout leaderboard (forever-xp.com/leaderboard/), type /fscout board on in game. "+
+			"For your Discord name instead, open the link in "+filepath.Join(a.dir, "claim.txt")+".\n\n"+
 			"Do you want to STOP it and remove it from startup?") {
 			a.uninstall()
 			say(appName, "Stopped and removed. Your recorded data stays on your computer.")
@@ -85,7 +85,8 @@ func (a *App) interactive() {
 	}
 	msg := found + "\n\nStart the uploader automatically when you sign in to your computer?\n\n" +
 		"It checks for new ForeverScout data every 30 seconds and sends it only if you chose " +
-		"\"Share automatically\" in game. No names, realms or chat are included."
+		"\"Share automatically\" in game. No names, realms or chat are included, except your character's " +
+		"name if you chose to show it on the leaderboard."
 	if !ask(appName, msg) {
 		a.scanAndUpload(time.Now())
 		say(appName, "OK, nothing was installed. Any data you chose to share has been sent once. "+

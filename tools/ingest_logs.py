@@ -44,8 +44,10 @@ def as_list(v):
     return [v]
 
 
-def load_file(path):
+def load_file(path, board=None):
     """Yield (charId, char_meta, session) from one log file.
+
+    With a `board` dict, also note the player's in-game leaderboard choice there (board_choice).
 
     Logs come from the public, so they are read as data only (tools/luadata.py), never run as Lua.
     Files that aren't plain data are skipped with a warning.
@@ -69,6 +71,8 @@ def load_file(path):
     db = env.get("ForeverScoutDB") or {}
     if not isinstance(db, dict):
         return
+    if board is not None:
+        board_choice(board, path, db.get("settings"))
     for char_id, char in (db.get("chars") or {}).items():
         if not isinstance(char, dict):
             continue
@@ -91,10 +95,10 @@ CREATE INDEX IF NOT EXISTS e_k ON events(k); CREATE INDEX IF NOT EXISTS e_q ON e
 """
 
 
-def ingest(db, files):
+def ingest(db, files, board=None):
     added = skipped = 0
     for path in files:
-        for char_id, meta, s in load_file(path):
+        for char_id, meta, s in load_file(path, board):
             if not isinstance(s, dict):
                 continue
             cur = db.execute(
@@ -462,11 +466,52 @@ def load_scout_names(path):
             if isinstance(h, str) and re.fullmatch(r"[0-9a-f]{64}", h) and isinstance(n, str) and BOARD_NAME.match(n)}
 
 
+GAME_NAME = re.compile(r"[^\W\d_]{2,12}")  # a WoW character name: 2-12 letters, accents allowed
+
+
+def board_choice(board, path, settings):
+    """Record one log file's in-game leaderboard choice in `board`: {player key: (boardAt, name or None)}.
+
+    The addon sets settings.boardName (one character's name, or false) and settings.boardAt when the
+    player answers "Show my name on the leaderboard?" (addon/ForeverScout/Core.lua ns.SetBoard). An
+    install can have several log files; the newest choice wins, so "hide my name" sticks. Only
+    uploader logs count (hand-sent logs have no install to tie a name to)."""
+    m = INSTALL_RE.search(str(path or ""))
+    if not m or not isinstance(settings, dict):
+        return
+    at, name = settings.get("boardAt"), settings.get("boardName")
+    if isinstance(at, bool) or not isinstance(at, (int, float)):
+        return
+    key = "i:" + m.group(1)
+    if key not in board or at > board[key][0]:
+        board[key] = (at, name if isinstance(name, str) and GAME_NAME.fullmatch(name) else None)
+
+
+def with_board_names(names, board):
+    """The names the board and the "first logged by" credit may use: {install hash: name}.
+
+    Account links from the site (`names`) come first. Then players who chose to show their
+    character name in game (`board`, from board_choice), oldest choice first; a name already taken
+    (any case) by a linked player or an earlier install is skipped, so nobody can take another
+    player's name. None stays None (the accounts API couldn't be read: leave the board as it is)."""
+    if names is None:
+        return None
+    out = dict(names)
+    taken = {n.casefold() for n in out.values()}
+    for key, (_, name) in sorted(board.items(), key=lambda kv: (kv[1][0], kv[0])):
+        h = scout_hash(key)
+        if name and h not in out and name.casefold() not in taken:
+            out[h] = name
+            taken.add(name.casefold())
+    return out
+
+
 def write_scouts(db, out_dir, now=None, names=None):
     """Contributor leaderboard, scouts.json.
 
-    Only players who linked their install to a forever-xp.com account appear on the board, under the
-    name they chose or their Discord name (`names`: install hash -> name, from load_scout_names).
+    Only named players appear on the board: those who linked their install to a forever-xp.com
+    account (their chosen or Discord name) and those who chose in game to show their character name
+    (`names`: install hash -> name, from with_board_names).
     Everyone's logs still count in the totals and in every other table. With `names=None` (the
     accounts API couldn't be read) nothing is written, so the last published board stays.
 
@@ -807,10 +852,11 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(out / "logs.sqlite")
     db.executescript(SCHEMA)
-    added, skipped = ingest(db, a.files)
+    board = {}
+    added, skipped = ingest(db, a.files, board)
     print(f"sessions added: {added}, already present: {skipped}")
     analyze(db, Questie(a.questie, a.maps), out)
-    names = load_scout_names(a.names) if a.names else None
+    names = with_board_names(load_scout_names(a.names) if a.names else None, board)
     write_loot(db, out, linked=names)
     write_objective_areas(db, out)
     write_scouts(db, out, names=names)

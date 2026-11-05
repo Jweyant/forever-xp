@@ -51,8 +51,9 @@ func (a *App) claimURL() string {
 // writeClaimFile keeps the claim link next to the log, for players who want to copy it by hand.
 func (a *App) writeClaimFile() {
 	text := "ForeverScout Uploader\n\n" +
-		"Your name on the Scout leaderboard is " + scoutName(a.state.InstallID) + ".\n" +
-		"To show your Discord name instead, open this link, sign in with Discord and confirm:\n\n" +
+		"To show your character's name on the Scout leaderboard, type /fscout board on in game.\n\n" +
+		"Or, to show your Discord name instead (your install is " + scoutName(a.state.InstallID) + "),\n" +
+		"open this link, sign in with Discord and confirm:\n\n" +
 		a.claimURL() + "\n\n" +
 		"Keep this link to yourself: anyone with it can claim your scout name.\n"
 	_ = os.WriteFile(filepath.Join(a.dir, "claim.txt"), []byte(text), 0o600)
@@ -66,8 +67,9 @@ func (a *App) offerClaim() {
 	}
 	a.state.ClaimOffered = true
 	a.saveState()
-	if ask(appName, "Your name on the Scout leaderboard (forever-xp.com/leaderboard/) is "+scoutName(a.state.InstallID)+".\n\n"+
-		"Want it to show your Discord name instead? This opens forever-xp.com in your browser, "+
+	if ask(appName, "To get on the Scout leaderboard (forever-xp.com/leaderboard/), click \"Show my name\" "+
+		"when ForeverScout asks in game, or type /fscout board on.\n\n"+
+		"Want your Discord name there instead of your character's? This opens forever-xp.com in your browser, "+
 		"where you sign in with Discord and confirm.\n\nYou can do it later: the link is in "+
 		filepath.Join(a.dir, "claim.txt")+".") {
 		if err := openURL(a.claimURL()); err != nil {
