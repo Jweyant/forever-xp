@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-04",
- "blue_seen": "2026-11-04T19:35:16Z",
+ "updated": "2026-11-05",
+ "blue_seen": "2026-11-05T00:30:07Z",
  "sources": [
   {
    "id": 2360696,
@@ -59,6 +59,15 @@
  ],
  "announcements": [
   {
+   "id": 2401461,
+   "date": "2026-11-05",
+   "title": "Set Your Campfire Ablaze with the Pouch of Violet Dust!",
+   "url": "https://us.forums.blizzard.com/en/wow/t/set-your-campfire-ablaze-with-the-pouch-of-violet-dust/2401461",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Watch 4 hours of any eligible World of Warcraft stream on Twitch.tv during the World of Warcraft: Forever launch week to collect the Pouch of Violet Dust toy. View Full Article"
+  },
+  {
    "id": 2400905,
    "date": "2026-11-04",
    "title": "World of Warcraft: Forever Launch Time",
@@ -88,11 +97,11 @@
   {
    "id": 2396008,
    "date": "2026-10-29",
-   "title": "World of Warcraft: Forever Goes Live Globally November 4!",
-   "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-goes-live-globally-november-4/2396008",
+   "title": "World of Warcraft: Forever Now Live!",
+   "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-now-live/2396008",
    "category": "General Discussion",
    "kind": "Article",
-   "excerpt": "Begin your first adventure or return to a new and reimagined Azeroth in World of Warcraft: Forever, launching worldwide November 4 at 3:00 pm PST. Adventure to level 60 across the original continents, discover new stories, and meet fellow a…"
+   "excerpt": "Begin your first adventure or return to a new and reimagined Azeroth in World of Warcraft: Forever, now live worldwide. Adventure to level 60 across the original continents, discover new stories, and meet fellow adventurers in a permanent home alongside modern…"
   },
   {
    "id": 2395799,
@@ -101,6 +110,15 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-6-all-about-tech-ft-e280aashobek/2395799",
    "category": "General Discussion",
    "kind": "Forum post"
+  },
+  {
+   "id": 2394974,
+   "date": "2026-10-28",
+   "title": "New Player’s Starter Guide: Welcome to World of Warcraft: Forever",
+   "url": "https://us.forums.blizzard.com/en/wow/t/new-playere28099s-starter-guide-welcome-to-world-of-warcraft-forever/2394974",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "World of Warcraft: Forever invites players into a reimagined original Azeroth where exploration, community, and the journey itself take center stage. Begin at level one, shape a character of your own, and learn the essentials for fi…"
   },
   {
    "id": 2394467,
