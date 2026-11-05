@@ -874,11 +874,30 @@ local function minimapButton()
   dot:SetTexture("Interface\\COMMON\\Indicator-Green")
   b.dot = dot
 
+  -- Sit on the minimap's edge at the saved angle. The radius comes from the minimap's
+  -- current size (not a fixed 80 px), so the button stays on the ring when the UI scale,
+  -- the minimap scale or a minimap addon changes it. Square minimaps (GetMinimapShape is
+  -- defined by addons such as SexyMap) put the button on the square's edge instead.
   local function place()
     local angle = math.rad(ns.db.settings.minimapAngle or 200)
+    local x, y = math.cos(angle), math.sin(angle)
+    local w = (Minimap:GetWidth() or 140) / 2 + 5
+    local h = (Minimap:GetHeight() or 140) / 2 + 5
+    if GetMinimapShape and GetMinimapShape() == "SQUARE" then
+      -- Push the point out past the corners, then clamp it to the square's edge.
+      x = math.max(-w, math.min(x * w * 1.42, w))
+      y = math.max(-h, math.min(y * h * 1.42, h))
+    else
+      x, y = x * w, y * h
+    end
     b:ClearAllPoints()
-    b:SetPoint("CENTER", Minimap, "CENTER", math.cos(angle) * 80, math.sin(angle) * 80)
+    b:SetPoint("CENTER", Minimap, "CENTER", x, y)
   end
+  b.place = place
+  b:RegisterEvent("UI_SCALE_CHANGED")
+  b:RegisterEvent("DISPLAY_SIZE_CHANGED")
+  b:SetScript("OnEvent", place)
+  Minimap:HookScript("OnSizeChanged", place)
   b:SetScript("OnDragStart", function(self)
     self:SetScript("OnUpdate", function()
       local mx, my = Minimap:GetCenter()
