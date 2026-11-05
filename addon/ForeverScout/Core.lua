@@ -296,8 +296,9 @@ function ns.SetBoard(on)
   s.boardAt = time()
   s.boardAsked = true
   if on then
+    -- The board only sees shared logs, so asking to be listed turns sharing on too.
+    if not s.share then ns.SetShare(true) end
     ns.Print("The forever-xp.com leaderboard will show you as |cffffffff" .. s.boardName .. "|r after your next upload."
-      .. (s.share and "" or " Sharing is off, so turn it on too: /fscout share on.")
       .. " Hide it any time with /fscout board off.")
   else
     ns.Print("Your name is hidden from the forever-xp.com leaderboard.")
@@ -306,10 +307,11 @@ end
 
 local function askBoard()
   local s = ns.db.settings
-  if s.boardAsked or not s.share or not StaticPopupDialogs or not StaticPopup_Show then return end
+  if s.boardAsked or not StaticPopupDialogs or not StaticPopup_Show then return end
   StaticPopupDialogs.FOREVERSCOUT_BOARD = {
     text = "Show |cffffffff" .. (UnitName("player") or "this character") .. "|r on the forever-xp.com "
-      .. "leaderboard?\n\nOnly this character's name is shared, nothing else. "
+      .. "leaderboard?\n\nOnly this character's name is shared, nothing else"
+      .. (s.share and ". " or ", and automatic sharing is turned on so your logs reach the site. ")
       .. "Change it any time from the minimap menu or with /fscout board.",
     button1 = "Show my name",
     button2 = "Stay anonymous",
