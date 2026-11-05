@@ -1,0 +1,28 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base image="/og/scout.jpg" title="Send your ForeverScout data" description="Paste your ForeverScout export to add your quest times and item drops to Forever XP. Nothing to install.">
+  <h1>Send your ForeverScout data</h1>
+  <p class="lede">Your quest times and drops make the routes, quest pages and item database better for every player. Nothing to install: copy from the game, paste here.</p>
+
+  <ol class="send-steps">
+    <li>In game, right-click the ForeverScout minimap button and choose <b>Send to forever-xp.com</b> (or type <code>/fscout export</code>).</li>
+    <li>The text is already selected: press <kbd>Ctrl</kbd>+<kbd>C</kbd>.</li>
+    <li>Paste it below with <kbd>Ctrl</kbd>+<kbd>V</kbd> and press <b>Send</b>.</li>
+  </ol>
+
+  <div id="send-page">
+    <label for="send-text" class="small muted">Your ForeverScout export</label>
+    <textarea id="send-text" rows="8" spellcheck="false" autocomplete="off" placeholder="FSCOUT1:{…}"></textarea>
+    <p class="actions">
+      <button type="button" class="btn" data-send disabled>Send</button>
+      <label class="small muted">or choose your <code>ForeverScout.lua</code> file <input type="file" accept=".lua,.txt" data-file /></label>
+    </p>
+    <p data-status role="status" aria-live="polite"></p>
+  </div>
+
+  <h2>What gets sent</h2>
+  <p>Quests you accepted and turned in (with time, XP and where), loot, objectives, deaths, flights and your route. No names, realms, gold or chat, except your character's name if you chose to show it on the <a href="/leaderboard/">leaderboard</a> (minimap menu, or <code>/fscout board on</code>, then send again).</p>
+  <p class="muted small">Each export holds only sessions you haven't exported before, and the session you're playing is included next time. <code>/fscout export all</code> gives everything again; sessions we already have are skipped. Players who run the optional ForeverScout Uploader app don't need this page.</p>
+</Base>
+<script>import "../scripts/send.ts";</script>

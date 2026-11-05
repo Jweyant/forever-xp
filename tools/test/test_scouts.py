@@ -132,6 +132,13 @@ class BoardNames(unittest.TestCase):
             list(ingest_logs.load_file(str(hand), board))  # hand-sent: no install, so never named
         self.assertEqual(board, {"i:" + A: (200, None), "i:" + B: (50, "Zoë"), "i:" + "c" * 32: (1, None)})
 
+    def test_pasted_export_carries_the_name(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / f"{A}-{'9' * 16}.lua"  # forever-xp.com/send stores pastes like uploader logs
+            p.write_text('FSCOUT1:{charId="c1",sessions={},boardName="Artillerist",boardAt=7,}'
+                         'FSCOUT1:{charId="c2",sessions={},boardName="Artillerist",boardAt=7,}')
+            self.assertEqual(self.board([str(p)]), {"i:" + A: (7, "Artillerist")})
+
     def test_linked_names_first_then_oldest_choice(self):
         C, D = "c" * 32, "d" * 32
         h = ingest_logs.scout_hash

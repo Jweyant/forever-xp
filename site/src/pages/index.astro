@@ -177,7 +177,7 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
     <h2>How the numbers get better</h2>
     <ol class="loop">
       <li><h3>You play</h3><p>ForeverScout records quests, XP, loot and how long each quest really took. No names, realms or chat.</p></li>
-      <li><h3>Logs come in</h3><p>The uploader sends your log after you log out, or you attach it to a GitHub issue.</p></li>
+      <li><h3>Logs come in</h3><p>You paste your export on the <a href="/send/">Send page</a> (or the optional uploader app sends it for you).</p></li>
       <li><h3>Everyone benefits</h3><p>Routes get measured times, drops get a "Confirmed in Forever" badge on their item page, missing quests go back to Questie, and you climb the <a href="/leaderboard/">Scout leaderboard</a>.</p></li>
     </ol>
     <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">From player logs so far: {meta.measured_quests} quests measured, {meta.confirmed_items || 0} item drops confirmed in Forever{scouts.totals.scouts > 0 ? `, by ${Number(scouts.totals.scouts)} scouts` : ""}.</span></p>

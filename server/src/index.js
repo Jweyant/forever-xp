@@ -2,6 +2,8 @@
 //
 //   POST /v1/upload          gzip body of ForeverScout.lua, from the uploader app
 //        headers X-FScout-Install (32 hex), X-FScout-Slot (16 hex), X-FScout-Version
+//   POST /v1/send?install=&slot=   plain text from forever-xp.com/send: an /fscout export string
+//        (FSCOUT1:...) or the ForeverScout.lua file. Only from the site's own origin.
 //   GET  /v1/logs?cursor=    list stored logs            (Authorization: Bearer ADMIN_TOKEN)
 //   GET  /v1/logs/<key>      download one log, gzip      (Authorization: Bearer ADMIN_TOKEN)
 //   GET  /health
@@ -17,6 +19,12 @@ const MIN_SECONDS_BETWEEN_UPLOADS = 60;
 const MAX_NEW_LOGS_PER_IP_PER_DAY = 12;
 const HEX32 = /^[0-9a-f]{32}$/;
 const HEX16 = /^[0-9a-f]{16}$/;
+// forever-xp.com/send posts pasted exports here. Pasting is the player's own action, so unlike the
+// uploader it doesn't need the in-game "share automatically" flag. Each send is a new slot (exports
+// hold only sessions not sent before), so the per-network daily limit on new logs applies to every send.
+const SEND_ORIGIN = "https://forever-xp.com";
+const MAX_SEND_BYTES = 4 * 1024 * 1024;
+const SEND_CORS = { "access-control-allow-origin": SEND_ORIGIN, vary: "origin" };
 
 const json = (body, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -136,6 +144,37 @@ async function upload(request, env) {
   return json({ ok: true });
 }
 
+async function gzipText(text) {
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+  return await new Response(stream).arrayBuffer();
+}
+
+async function send(request, env, url) {
+  if (request.headers.get("origin") !== SEND_ORIGIN) return json({ error: "origin" }, 403);
+  const reply = (body, status = 200, headers = {}) => json(body, status, { ...SEND_CORS, ...headers });
+  const install = url.searchParams.get("install") || "";
+  const slot = url.searchParams.get("slot") || "";
+  if (!HEX32.test(install) || !HEX16.test(slot)) return reply({ error: "bad id" }, 400);
+  const declared = Number(request.headers.get("content-length") || 0);
+  if (declared > MAX_SEND_BYTES) return reply({ error: "too large" }, 413);
+  const body = await request.arrayBuffer();
+  if (body.byteLength === 0 || body.byteLength > MAX_SEND_BYTES) return reply({ error: "bad size" }, 413);
+  const text = new TextDecoder().decode(body);
+  if (!/^\s*FSCOUT1:\{/.test(text) && !/^\s*ForeverScoutDB\s*=\s*\{/.test(text)) {
+    return reply({ error: "not ForeverScout data" }, 422);
+  }
+  const key = `logs/${install}/${slot}.lua.gz`;
+  if (await env.LOGS.head(key)) return reply({ error: "already sent" }, 409);
+  if (!(await allowNewLog(request, env))) {
+    return reply({ error: "too many sends from this network today" }, 429, { "retry-after": "86400" });
+  }
+  await env.LOGS.put(key, await gzipText(text), {
+    httpMetadata: { contentType: "application/gzip" },
+    customMetadata: { uploadedAt: String(Date.now()), version: "web", rawBytes: String(text.length) },
+  });
+  return reply({ ok: true });
+}
+
 async function listLogs(url, env) {
   const listed = await env.LOGS.list({
     prefix: "logs/",
@@ -203,6 +242,7 @@ export default {
         return json({ error: "slow down" }, 429, { "retry-after": "10" });
       }
       if (request.method === "POST" && url.pathname === "/v1/upload") return await upload(request, env);
+      if (request.method === "POST" && url.pathname === "/v1/send") return await send(request, env, url);
       if (url.pathname.startsWith("/v1/logs")) {
         if (!authorized(request, env)) return json({ error: "unauthorized" }, 401);
         if (request.method !== "GET") return json({ error: "method" }, 405);

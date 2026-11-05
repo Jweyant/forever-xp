@@ -1,18 +1,18 @@
 ---
 import Base from "../layouts/Base.astro";
-import { RELEASES, SUBMIT_LOG, REPO } from "../lib/data";
+import { RELEASES, REPO } from "../lib/data";
 import { SITE } from "../config";
 const commands = [
   ["/fscout", "Status: sessions, events, route points, items missing from Questie"],
   ["/fscout bis", "Best-in-slot planner in game: your gear next to the best item per slot, where to get it, map pins (also on the minimap button)"],
   ["/fscout pins", "Show or hide the plan's gear locations on the world map and minimap"],
   ["/fscout pause", "Stop recording (resume with /fscout resume)"],
-  ["/fscout share on", "Allow automatic uploads by the uploader app (off to stop)"],
+  ["/fscout export", "Copy your new sessions to paste at forever-xp.com/send (also in the minimap menu; \"export all\" for everything)"],
+  ["/fscout board on", "Show your character's name on the leaderboard (off to hide it)"],
   ["/fscout note <text>", "Drop a note at your spot, like \"cave is packed\" or \"skip, elite\""],
   ["/fscout gear", "Copy your equipped gear into the BIS planner on this site"],
   ["/fscout report", "Copyable list of quests and NPCs Questie is missing"],
-  ["/fscout export", "Copyable export string of your recorded sessions"],
-  ["/fscout minimap", "Show or hide the minimap button (left-click opens the planner, right-click a menu: pause, sharing, pins)"],
+  ["/fscout minimap", "Show or hide the minimap button (left-click opens the planner, right-click a menu: send, leaderboard, pins, pause)"],
   ["/fscout wipe confirm", "Erase everything recorded"],
 ];
 ---
@@ -36,7 +36,7 @@ const commands = [
     </section>
     <section>
       <h3>Your name on the leaderboard</h3>
-      <p>Every quest you time and every drop you log earns points on the <a href="/leaderboard/">Scout leaderboard</a>, with 3 extra for each drop you find first that someone else then confirms. The Discord's <b>#leaderboard</b> channel shows the standings and a weekly Scout report (<a href={SITE.discord} rel="noopener">join the Discord</a>). To be listed, click <b>Show my name</b> when the addon asks, or use <code>/fscout board on</code>. Only your character's name is shared, and you can hide it again any time. Prefer your Discord name? <a href="/account/">Sign in with Discord</a> and link your install instead.</p>
+      <p>Every quest you time and every drop you log earns points on the <a href="/leaderboard/">Scout leaderboard</a>, with 3 extra for each drop you find first that someone else then confirms. The Discord's <b>#leaderboard</b> channel shows the standings and a weekly Scout report (<a href={SITE.discord} rel="noopener">join the Discord</a>). To be listed, choose <b>Show my name on the leaderboard</b> in the minimap button's menu (or <code>/fscout board on</code>) and send. Only your character's name is shared, and you can hide it again any time. Prefer your Discord name? <a href="/account/">Sign in with Discord</a> and link your install instead.</p>
     </section>
   </div>
   <p class="dl">
@@ -53,20 +53,16 @@ const commands = [
       <p>Download <code>ForeverScout-x.y.z.zip</code> and unzip the <code>ForeverScout</code> folder into your Forever client's <code>Interface\AddOns\</code> folder.</p>
     </li>
     <li>
-      <h3>Log in and choose sharing</h3>
-      <p>You'll see "ForeverScout: recording your route." Pick <b>Share automatically</b> if you want your log sent for you.</p>
-    </li>
-    <li>
-      <h3>Install the uploader (optional)</h3>
-      <p>From the same release, run <code>ForeverScoutUploader.exe</code> (Mac builds are there too) and choose <b>Yes</b>. It sends your log after each logout or <code>/reload</code>.</p>
-    </li>
-    <li>
       <h3>Play normally</h3>
-      <p>That's all. Type <code>/fscout</code> any time to see what's been recorded.</p>
+      <p>It records on its own: no questions, nothing to click. Type <code>/fscout</code> any time to see what's been recorded.</p>
+    </li>
+    <li>
+      <h3>Send it now and then</h3>
+      <p>Right-click the minimap button, choose <b>Send to forever-xp.com</b>, press <kbd>Ctrl</kbd>+<kbd>C</kbd> and paste it on the <a href="/send/">Send page</a>. Nothing to install.</p>
     </li>
   </ol>
   <div class="callout">
-    <p>No uploader? Zip <code>WTF\Account\&lt;ACCOUNT&gt;\SavedVariables\ForeverScout.lua</code> from your Forever folder and attach it to a <a href={SUBMIT_LOG}>Submit a log</a> issue.</p>
+    <p>Want it fully automatic? The optional <code>ForeverScoutUploader.exe</code> from the <a href={RELEASES}>release</a> (Mac builds too) sends your log after each logout once you type <code>/fscout share on</code>.</p>
   </div>
 
   <h2>What it records</h2>
@@ -115,7 +111,8 @@ const commands = [
 
   <h2>What's new</h2>
   <ul>
-    <li><b>Your name on the leaderboard, no sign-in needed:</b> the addon asks once whether to show your character's name on the <a href="/leaderboard/">leaderboard</a>. Say yes and you're listed after your next upload. Only that name is shared, it's off unless you choose it, and the minimap menu or <code>/fscout board off</code> hides it again.</li>
+    <li><b>Your name on the leaderboard, no sign-in needed:</b> turn on your character's name from the minimap menu or with <code>/fscout board on</code> and you're on the <a href="/leaderboard/">leaderboard</a> after your next send. Only that name is shared, it's off unless you choose it, and the minimap menu or <code>/fscout board off</code> hides it again.</li>
+    <li><b>Nothing to install, no popups:</b> ForeverScout records without asking anything. To share, choose <b>Send to forever-xp.com</b> in the minimap menu and paste on the <a href="/send/">Send page</a>. The uploader app is now optional.</li>
     <li><b>Minimap button:</b> stays on the edge of the minimap at any UI scale, and on square minimaps.</li>
     <li><b>First logged by:</b> item pages, tooltips and the in-game planner credit the linked scout who first logged a confirmed drop. Linked scouts also get the <b>Scout</b> role and the private #scouts channel in the <a href={SITE.discord} rel="noopener">Discord</a>.</li>
     <li><b>Discord names on the leaderboard:</b> the board now lists scouts who sign in with Discord and link their install. The addon records nothing new; the link lives on this site.</li>
