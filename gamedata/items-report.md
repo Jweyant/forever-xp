@@ -1,6 +1,6 @@
 # Gear database
 
-Forever client build 1.60.1.70755.
+Forever client build 1.60.1.70790.
 
 - Equippable items: 6499 (by quality: {0: 436, 1: 1150, 2: 2094, 3: 1667, 4: 1132, 5: 10, 6: 10})
 - Item sets: 155
