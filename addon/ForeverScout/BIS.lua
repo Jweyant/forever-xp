@@ -917,6 +917,9 @@ local function minimapButton()
     GameTooltip:AddLine("Forever|cFF4FC3F7Scout|r")
     GameTooltip:AddLine(ns.db.settings.paused and "|cffff5555Recording paused|r" or "|cff55ff55Recording|r", 1, 1, 1)
     GameTooltip:AddLine(ns.db.settings.share and "Sharing on" or "Sharing off (local only)", 0.8, 0.8, 0.8)
+    local board = ns.db.settings.boardName
+    GameTooltip:AddLine("Leaderboard: " .. (board and (ns.db.settings.share and board or board .. " (needs sharing on)")
+      or "not listed"), 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Left-click: best in slot planner", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Right-click: menu (pause, sharing, pins)", 0.8, 0.8, 0.8)
     GameTooltip:AddLine("Drag to move", 0.6, 0.6, 0.6)
@@ -934,7 +937,8 @@ function ns.BIS.ToggleMenu(anchor)
   if menu and menu:IsShown() then menu:Hide() return end
   if not menu then
     local rows = {
-      { "pause", "" }, { "bis", "Best in slot planner" }, { "pins", "" }, { "share", "" }, { "status", "Status in chat" },
+      { "pause", "" }, { "bis", "Best in slot planner" }, { "pins", "" }, { "share", "" }, { "board", "" },
+      { "status", "Status in chat" },
     }
     menu = makePopup(UIParent, anchor, "Forever|cFF4FC3F7Scout|r", rows, function(key)
       if key == "pause" then
@@ -944,9 +948,10 @@ function ns.BIS.ToggleMenu(anchor)
       elseif key == "bis" then ns.BIS.Toggle()
       elseif key == "pins" then ns.Pins.SetEnabled(not ns.Pins.Enabled()) ns.Print("Map pins " .. (ns.Pins.Enabled() and "on" or "off") .. ".")
       elseif key == "share" then ns.SetShare(not ns.db.settings.share)
+      elseif key == "board" then ns.SetBoard(ns.db.settings.boardName ~= UnitName("player"))
       elseif key == "status" then SlashCmdList.FOREVERSCOUT("") end
       menu:Hide()
-    end, 220)
+    end, 260)
     menu:ClearAllPoints()
     menu:SetPoint("TOPRIGHT", anchor, "BOTTOMLEFT", 0, 0)
     menu:SetFrameStrata("TOOLTIP")
@@ -960,7 +965,12 @@ function ns.BIS.ToggleMenu(anchor)
   for _, r in ipairs(menu.rows) do
     if r.key == "pause" then r.label:SetText(ns.db.settings.paused and "|cff55ff55Resume recording|r" or "|cffff5555Pause recording|r")
     elseif r.key == "pins" then r.label:SetText(ns.Pins.Enabled() and "Hide map pins" or "Show map pins")
-    elseif r.key == "share" then r.label:SetText(ns.db.settings.share and "Turn automatic sharing off" or "Turn automatic sharing on") end
+    elseif r.key == "share" then r.label:SetText(ns.db.settings.share and "Turn automatic sharing off" or "Turn automatic sharing on")
+    elseif r.key == "board" then
+      local name = ns.db.settings.boardName
+      r.label:SetText(name == UnitName("player") and "Hide my name from the leaderboard"
+        or ("Show " .. (UnitName("player") or "me") .. " on the leaderboard"))
+    end
   end
   menu:Mark(function() return false end)
   menu:Show()

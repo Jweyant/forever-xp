@@ -460,7 +460,9 @@ def main():
           f"{confirmed_items} items confirmed -> {OUT}")
 
 
-SCOUT_HANDLE = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")  # a linked player's board name (or "Scout 1a2b3c")
+# A board name: a linked player's chosen or Discord name (2-20 of letters, digits, space, _ ' -),
+# or a character name shown by choice in game (2-12 letters, accents allowed; ingest_logs.GAME_NAME).
+SCOUT_HANDLE = re.compile(r"^(?:[A-Za-z0-9 _'-]{2,20}|[^\W\d_]{2,12})$")
 SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
 
 

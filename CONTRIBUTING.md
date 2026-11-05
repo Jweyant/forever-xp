@@ -12,7 +12,8 @@ Read the security rules in [`CLAUDE.md`](CLAUDE.md#secure-development-rules) fir
 request is checked against them.
 
 - Keep ForeverScout read-only. It records game events and never automates gameplay.
-- Never store character names, realms, GUIDs or chat.
+- Never store character names, realms, GUIDs or chat. (Only exception: the one character name a
+  player opts in to show on the leaderboard with `/fscout board on`.)
 - Before opening a pull request that changes the addon, run the mocked-client test:
 
   ```bash

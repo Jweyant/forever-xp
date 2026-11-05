@@ -29,7 +29,9 @@ and how it could be abused; before pushing, run the checks below.
    artifacts. Workflows that run on pull requests from forks get none.
 8. **Dependencies**: exact versions, a release at least two weeks old, `npm audit` clean.
    GitHub Actions are pinned to full commit SHAs.
-9. **Player privacy**: never collect names, realms, GUIDs, chat, gold or IP addresses.
+9. **Player privacy**: never collect names, realms, GUIDs, chat, gold or IP addresses. The one
+   exception is opt-in: a character name the player chooses to show on the leaderboard
+   (`/fscout board`), validated as 2-12 letters and never shown twice.
    Player logs are parsed as data (`tools/luadata.py`), never executed.
 10. **Least privilege**: workflows declare only the `permissions` they need; the Cloudflare token
     is scoped to forever-xp.com.
