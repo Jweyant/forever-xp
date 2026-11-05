@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-05",
- "blue_seen": "2026-11-05T00:30:07Z",
+ "blue_seen": "2026-11-05T06:39:29Z",
  "sources": [
   {
    "id": 2360696,
@@ -58,6 +58,15 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2401646,
+   "date": "2026-11-05",
+   "title": "Issues Resolved for Invite-a-Friend Players",
+   "url": "https://us.forums.blizzard.com/en/wow/t/issues-resolved-for-invite-a-friend-players/2401646",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "With a hotfix that is now live, we’ve fixed an issue where players who joined WoW Forever by using an Invite-a-Friend Code were unexpectedly restricted from using certain chat channels, leveling past 10, participating in guilds, forming parties, or trading items with other playe…"
+  },
   {
    "id": 2401461,
    "date": "2026-11-05",
@@ -136,7 +145,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/name-reservation-issue-for-oceanic-players/2393431",
    "category": "General Discussion",
    "kind": "Forum post",
-   "excerpt": "Attention Oceanic players connecting to Australian-based servers! Due to a bug, you must create any characters on Roleplay or Roleplay-PvP rulesets before creating characters on Normal or PvP rulesets. If you first create a character on the Normal or PvP ruleset, the Roleplay an…"
+   "excerpt": "Attention Oceanic players connecting to Australian-based servers! Due to a bug, you must create any characters on Roleplay or Roleplay-PvP rulesets bef…"
   },
   {
    "id": 2393349,
