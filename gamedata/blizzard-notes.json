@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-05",
- "blue_seen": "2026-11-05T06:39:29Z",
+ "blue_seen": "2026-11-05T15:51:58Z",
  "sources": [
   {
    "id": 2360696,
@@ -25,6 +25,14 @@
    "kind": "Known issues",
    "updated": "2026-10-08",
    "rows": 58
+  },
+  {
+   "id": 2402363,
+   "title": "Known Issues - WoW Forever - Updated Nov. 5",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363",
+   "kind": "Known issues",
+   "updated": "2026-11-05",
+   "rows": 7
   },
   {
    "id": 2360719,
@@ -58,6 +66,25 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2402363,
+   "date": "2026-11-05",
+   "title": "Known Issues - WoW Forever - Updated Nov. 5",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363",
+   "category": "Bug Report",
+   "kind": "Forum post",
+   "excerpt": "In this thread, we will discuss issues that the WoW Forever team have determined to be notable, impactful, and already tracked with plans to fix in the future. This is not a comprehensive list of issues, and it will be updated regularly. Known Issues Dungeons In Razorfen Kraul,…",
+   "notes": 1
+  },
+  {
+   "id": 2402319,
+   "date": "2026-11-05",
+   "title": "WoW Forever Bug Report Forum Guidelines",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-bug-report-forum-guidelines/2402319",
+   "category": "Bug Report",
+   "kind": "Forum post",
+   "excerpt": "Welcome! Please read this before posting in this forum. What follows are guidelines for how this forum should and shouldn’t be used. WoW Forever Bug Report Forum Guidelines: Please do not post off-topic banter or discussions. The purpose of this forum is to report bugs which our…"
+  },
   {
    "id": 2401646,
    "date": "2026-11-05",
@@ -531,6 +558,69 @@
   }
  ],
  "rows": [
+  {
+   "id": "66f2338b97",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "In Razorfen Kraul, there’s a cauldron near Roogug that players can fall into and get stuck.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "724cd5e443",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "An error may be generated when attempting to delete more than 1 rare or epic item.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "fc4bdabab4",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "Instructions for the push-to-talk keyboard button may be unintentionally displayed when joining a voice channel.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "0e279183f1",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "PvP Vendors are temporarily unavailable in all locations (Orgrimmar, Stormwind, and Dalaran).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "f2d5e12d24",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "“Vorsha the Lasher” in Ashenvale has been disabled until a bug causing a crash can be fixed.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "c9e0620b50",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "Bank pages are displaying in pages, causing the tabs to be listed outside the frame.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "253fbcbbf4",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "The entrance of Stormwind Keep may not look as intended, including unintended flashing textures.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
   {
    "id": "db44cd08d4",
    "date": "2026-11-03",
