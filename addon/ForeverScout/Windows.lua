@@ -123,18 +123,36 @@ local function serialize(v, out)
   end
 end
 
-function ns.ShowExport()
-  local char = ns.char
-  if not char then return end
-  local payload = { schema = ns.SCHEMA, charId = ns.charId, race = char.race,
-                    class = char.class, faction = char.faction, sessions = char.sessions }
-  local out = {}
-  serialize(payload, out)
-  local text = "FSCOUT1:" .. table.concat(out)
-  ns.ShowCopy("ForeverScout export",
-       "Ctrl+A, Ctrl+C, then paste into the project's submission form. "
-       .. "Sending the SavedVariables\\ForeverScout.lua file works too and is better for long sessions.",
-       text)
+-- /fscout export (or "Send my data" in the minimap menu): every character's finished sessions
+-- not exported before, one FSCOUT1 payload per character, for pasting at forever-xp.com/send.
+-- The session in progress waits for the next export, so it's never sent half-done. "all" sends
+-- everything again (the site skips sessions it already has).
+function ns.ShowExport(all)
+  local settings = ns.db.settings
+  local out, sessions, now = {}, 0, time()
+  for charId, char in pairs(ns.db.chars) do
+    local pick = {}
+    for _, s in ipairs(char.sessions or {}) do
+      if s ~= ns.session and (all or not s.sent) then pick[#pick + 1] = s end
+    end
+    if #pick > 0 then
+      local payload = { schema = ns.SCHEMA, charId = charId, race = char.race, class = char.class,
+                        faction = char.faction, sessions = pick,
+                        boardName = settings.boardName, boardAt = settings.boardAt }
+      out[#out + 1] = "FSCOUT1:"
+      serialize(payload, out)
+      for _, s in ipairs(pick) do s.sent = now end
+      sessions = sessions + #pick
+    end
+  end
+  if sessions == 0 then
+    ns.Print("Nothing new to send yet. Your current session is included after you log out or /reload.")
+    return
+  end
+  ns.ShowCopy("Send to forever-xp.com",
+       ("%d session%s ready. Press Ctrl+C to copy, then paste it at |cff4fc3f7forever-xp.com/send|r.")
+         :format(sessions, sessions == 1 and "" or "s"),
+       table.concat(out))
 end
 
 function ns.ShowReport()

@@ -27,10 +27,11 @@ beta or alpha files.
 > - `/fscout pause` and `/fscout resume` stop and start recording
 > - `/fscout board on` puts your character's name on the forever-xp.com Scout leaderboard
 >   (`/fscout board off` hides it again)
+> - `/fscout export` (or **Send to forever-xp.com** in the minimap menu) copies your new sessions:
+>   paste them at forever-xp.com/send. Nothing else to install.
 >
 > No names, realms, chat, gold or bag contents are recorded, except your character's name if you
-> choose to show it on the leaderboard. Sharing is opt-in: the addon asks once, and the free
-> ForeverScout Uploader app sends your log after you log out.
+> choose to show it on the leaderboard. Nothing leaves your PC unless you send it.
 >
 > Source code: [github.com/Jweyant/forever-xp](https://github.com/Jweyant/forever-xp). Join the
 > community on [Discord](https://discord.gg/z8DfMK7Uw).

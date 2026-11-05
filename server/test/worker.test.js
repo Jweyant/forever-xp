@@ -35,6 +35,40 @@ test("rejects files with sharing off, non-ForeverScout files, bad gzip and bad i
   assert.equal(e.LOGS.store.size, 0);
 });
 
+function send(body, { origin = "https://forever-xp.com", install = INSTALL, slot = SLOT } = {}) {
+  return new Request(`https://x/v1/send?install=${install}&slot=${slot}`, {
+    method: "POST", body, headers: { "content-type": "text/plain;charset=UTF-8", origin },
+  });
+}
+
+test("send: stores a pasted export from forever-xp.com, gzipped, without the sharing flag", async () => {
+  const e = env();
+  const text = 'FSCOUT1:{charId="abc",sessions={},boardName="Zoë"}';
+  const res = await worker.fetch(send(text), e);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("access-control-allow-origin"), "https://forever-xp.com");
+  assert.equal(gunzipSync(e.LOGS.store.get(`logs/${INSTALL}/${SLOT}.lua.gz`).body).toString(), text);
+  assert.equal((await worker.fetch(send(GOOD.replace("true", "false"), { slot: "1".repeat(16) }), e)).status, 200);
+  assert.equal((await worker.fetch(send(text), e)).status, 409); // a slot is never overwritten
+});
+
+test("send: rejects other origins, other data, bad ids and oversize bodies", async () => {
+  const e = env();
+  const text = "FSCOUT1:{}";
+  assert.equal((await worker.fetch(send(text, { origin: "https://evil.example" }), e)).status, 403);
+  assert.equal((await worker.fetch(send("Questie = {}"), e)).status, 422);
+  assert.equal((await worker.fetch(send(text, { install: "nope" }), e)).status, 400);
+  assert.equal((await worker.fetch(send("FSCOUT1:{" + "x".repeat(5 * 1024 * 1024)), e)).status, 413);
+  assert.equal(e.LOGS.store.size, 0);
+});
+
+test("send: each send counts against the per-network daily limit", async () => {
+  const e = env();
+  let last;
+  for (let i = 0; i < 13; i++) last = await worker.fetch(send("FSCOUT1:{}", { slot: i.toString(16).padStart(16, "0") }), e);
+  assert.equal(last.status, 429);
+});
+
 test("rejects decompression bombs", async () => {
   const e = env();
   const huge = gzipSync(GOOD + " ".repeat(25 * 1024 * 1024));

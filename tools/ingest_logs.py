@@ -60,6 +60,8 @@ def load_file(path, board=None):
             for payload in payloads:
                 if not isinstance(payload, dict):
                     continue
+                if board is not None:  # exports carry boardName/boardAt at the top level
+                    board_choice(board, path, payload)
                 meta = {k: payload.get(k) for k in ("race", "class", "faction")}
                 for s in as_list(payload.get("sessions")):
                     yield payload.get("charId"), meta, s

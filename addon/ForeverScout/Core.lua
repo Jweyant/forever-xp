@@ -10,7 +10,7 @@
 --     } },
 --   },
 --   settings = { paused = false, crumbSeconds = 10, share = true|false|nil, shareAsked, minimapAngle, hideMinimap,
---                boardName = "<character name>"|false, boardAt = <time()>, boardAsked },
+--                boardName = "<character name>"|false, boardAt = <time()>, introShown },
 -- ForeverScoutCharDB = { charId, bisSpots }   -- per character, never uploaded (bisSpots: planner map pins)
 -- }
 
@@ -225,8 +225,8 @@ SlashCmdList.FOREVERSCOUT = function(input)
     else ns.Print("Recording is paused, so the note wasn't saved. /fscout resume first.") end
   elseif cmd == "report" then
     ns.ShowReport()
-  elseif cmd == "export" then
-    ns.ShowExport()
+  elseif cmd == "export" or cmd == "send" then
+    ns.ShowExport(rest:lower() == "all")
   elseif cmd == "gear" then
     ns.ShowGear()
   elseif cmd == "bis" or cmd == "plan" then
@@ -257,12 +257,10 @@ SlashCmdList.FOREVERSCOUT = function(input)
     local state = ns.db.settings.paused and "|cffff5555PAUSED|r" or "|cff55ff55recording|r"
     ns.Print(("%s — %d sessions, %d events, %d route points. Unknown to Questie: %d"):format(
       state, s, e, c, ns.missingCount or 0))
-    if ns.db.settings.share then
-      ns.Print("Automatic sharing is |cff55ff55on|r. The ForeverScout Uploader app sends your log after you log out or /reload.")
-    else
-      ns.Print("Automatic sharing is |cffff5555off|r. Turn it on with /fscout share on.")
-    end
-    ns.Print("Commands: /fscout bis | pins | pause | resume | share on|off | board on|off | note <text> | gear | report | export | minimap | wipe")
+    local unsent = ns.UnsentSessions()
+    ns.Print(unsent > 0 and ("%d session%s not sent yet: /fscout export, then paste at forever-xp.com/send."):format(unsent, unsent == 1 and "" or "s")
+      or "Everything finished so far has been exported.")
+    ns.Print("Commands: /fscout bis | pins | pause | resume | export [all] | board on|off | note <text> | gear | report | minimap | share on|off | wipe")
   end
 end
 
@@ -270,22 +268,23 @@ end
 -- Boot
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
--- Sharing consent. The addon cannot use the network; this flag tells the ForeverScout
--- Uploader app (which reads the SavedVariables file) whether it may send the log.
+-- Automatic sharing, for players who run the optional ForeverScout Uploader app. The addon
+-- cannot use the network; this flag tells the app (which reads the SavedVariables file) whether
+-- it may send the log. Sending through forever-xp.com/send doesn't need it.
 ------------------------------------------------------------------------------------------
 function ns.SetShare(on)
   ns.db.settings.share = on and true or false
   ns.db.settings.shareAsked = true
   if on then
-    ns.Print("Automatic sharing |cff55ff55on|r. Install the ForeverScout Uploader app once and your "
-      .. "route is sent after each logout or /reload. Turn off any time with /fscout share off.")
+    ns.Print("Automatic sharing |cff55ff55on|r for the optional ForeverScout Uploader app. "
+      .. "Turn off any time with /fscout share off.")
   else
-    ns.Print("Automatic sharing |cffff5555off|r. Recording continues locally only.")
+    ns.Print("Automatic sharing |cffff5555off|r. You can still send with /fscout export.")
   end
 end
 
 ------------------------------------------------------------------------------------------
--- Leaderboard name. Off unless the player says yes: then the shared log carries this one
+-- Leaderboard name. Off unless the player turns it on: then sent data carries this one
 -- character's name (nothing else: no realm, guild or GUID), and forever-xp.com shows it on
 -- the leaderboard instead of an anonymous "Scout a1b2c3". boardAt lets the site keep the
 -- newest choice when an install has several log files.
@@ -294,54 +293,32 @@ function ns.SetBoard(on)
   local s = ns.db.settings
   s.boardName = on and UnitName("player") or false
   s.boardAt = time()
-  s.boardAsked = true
   if on then
-    -- The board only sees shared logs, so asking to be listed turns sharing on too.
-    if not s.share then ns.SetShare(true) end
-    ns.Print("The forever-xp.com leaderboard will show you as |cffffffff" .. s.boardName .. "|r after your next upload."
+    ns.Print("The forever-xp.com leaderboard will show you as |cffffffff" .. s.boardName .. "|r once you next send."
       .. " Hide it any time with /fscout board off.")
   else
     ns.Print("Your name is hidden from the forever-xp.com leaderboard.")
   end
 end
 
-local function askBoard()
-  local s = ns.db.settings
-  if s.boardAsked or not StaticPopupDialogs or not StaticPopup_Show then return end
-  StaticPopupDialogs.FOREVERSCOUT_BOARD = {
-    text = "Show |cffffffff" .. (UnitName("player") or "this character") .. "|r on the forever-xp.com "
-      .. "leaderboard?\n\nOnly this character's name is shared, nothing else"
-      .. (s.share and ". " or ", and automatic sharing is turned on so your logs reach the site. ")
-      .. "Change it any time from the minimap menu or with /fscout board.",
-    button1 = "Show my name",
-    button2 = "Stay anonymous",
-    OnAccept = function() ns.SetBoard(true) end,
-    OnCancel = function() ns.SetBoard(false) end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = false,
-    preferredIndex = 3,
-  }
-  StaticPopup_Show("FOREVERSCOUT_BOARD")
+-- Unsent sessions: finished sessions not yet exported for forever-xp.com/send.
+function ns.UnsentSessions()
+  local n = 0
+  for _, char in pairs(ns.db.chars) do
+    for _, s in ipairs(char.sessions or {}) do
+      if s ~= ns.session and not s.sent then n = n + 1 end
+    end
+  end
+  return n
 end
 
-local function askToShare()
-  if ns.db.settings.shareAsked then askBoard() return end
-  if not StaticPopupDialogs or not StaticPopup_Show then return end
-  StaticPopupDialogs.FOREVERSCOUT_SHARE = {
-    text = "|cFF4FC3F7ForeverScout|r records your questing route (quests, XP, positions, timing) "
-      .. "to build free leveling guides for everyone.\n\nShare it automatically? "
-      .. "No names, realms or chat, unless you choose to show your name on the leaderboard.",
-    button1 = "Share automatically",
-    button2 = "Keep it local",
-    OnAccept = function() ns.SetShare(true) C_Timer.After(0.5, askBoard) end,
-    OnCancel = function() ns.SetShare(false) end,
-    timeout = 0,
-    whileDead = true,
-    hideOnEscape = false,
-    preferredIndex = 3,
-  }
-  StaticPopup_Show("FOREVERSCOUT_SHARE")
+-- No popups: recording needs no answer. One chat line on the very first login says how to send.
+local function intro()
+  local s = ns.db.settings
+  if s.introShown then return end
+  s.introShown = true
+  ns.Print("records your quests and loot as you play. To add them to forever-xp.com, open the minimap "
+    .. "button's menu (right-click) and choose |cffffffffSend to forever-xp.com|r, or type /fscout export.")
 end
 
 ns:On("PLAYER_LOGIN", function()
@@ -350,7 +327,7 @@ ns:On("PLAYER_LOGIN", function()
   ns:Log("login", { xp = UnitXP("player"), maxxp = UnitXPMax("player"), rested = GetXPExhaustion() })
   if ns.Recorder and ns.Recorder.Start then ns.Recorder.Start() end
   ns.Print("recording your route. Type /fscout for status.")
-  C_Timer.After(5, askToShare)
+  C_Timer.After(5, intro)
 end)
 
 ns:On("PLAYER_LOGOUT", function()

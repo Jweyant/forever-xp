@@ -20,7 +20,7 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
   {board.length === 0 ? (
     <section class="empty">
       <h2>No scouts on the board yet</h2>
-      <p>WoW Forever launches November 4. Install ForeverScout and the uploader and play. When the addon asks "Show your name on the leaderboard?", click <b>Show my name</b>. You're on this board within the hour.</p>
+      <p>WoW Forever launches November 4. Install ForeverScout and play. Then right-click its minimap button, choose <b>Show my name on the leaderboard</b> and <b>Send to forever-xp.com</b>, and paste on the <a href="/send/">Send page</a>. You're on this board within the hour.</p>
       <p><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href={SITE.discord} rel="noopener">Join the Discord</a></p>
     </section>
   ) : (<>
@@ -68,8 +68,8 @@ const fmt = (x: unknown) => n(x).toLocaleString("en-US");
     </section>
     <section>
       <h2>Get on the board</h2>
-      <p>Scouts are listed only if they choose to be. In game, ForeverScout asks once whether to show your character's name; change it any time from the minimap button's menu or with <code>/fscout board on</code> or <code>/fscout board off</code>. Only that one name is shared: no realm, guild or chat. Each name belongs to the first player who chose it. Your logs keep improving the routes and drops either way.</p>
-      <p>Prefer your Discord name? <a href="/account/">Sign in with Discord</a> and use the link the ForeverScout Uploader gives you after setup. That ties your install (something like <b>Scout 97800d</b>) to your Discord name, and you can pick a different name, hide yourself or unlink there at any time. The site stores your Discord user ID and name and a one-way hash of your install, never the install itself.</p>
+      <p>Scouts are listed only if they choose to be. Turn on your character's name from the minimap button's menu or with <code>/fscout board on</code> (<code>/fscout board off</code> hides it), then <a href="/send/">send</a> as usual. Only that one name is shared: no realm, guild or chat. Each name belongs to the first player who chose it. Your logs keep improving the routes and drops either way.</p>
+      <p>Prefer your Discord name? <a href="/account/">Sign in with Discord</a> and use the link the optional ForeverScout Uploader app gives you after setup. That ties your install (something like <b>Scout 97800d</b>) to your Discord name, and you can pick a different name, hide yourself or unlink there at any time. The site stores your Discord user ID and name and a one-way hash of your install, never the install itself.</p>
     </section>
   </div>
 </Base>
