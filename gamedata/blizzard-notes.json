@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-05",
- "blue_seen": "2026-11-05T15:51:58Z",
+ "updated": "2026-11-06",
+ "blue_seen": "2026-11-05T22:00:07Z",
  "sources": [
   {
    "id": 2360696,
@@ -32,7 +32,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363",
    "kind": "Known issues",
    "updated": "2026-11-05",
-   "rows": 7
+   "rows": 8
   },
   {
    "id": 2360719,
@@ -66,6 +66,15 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2402801,
+   "date": "2026-11-05",
+   "title": "WoW: Forever– Watch Forging Forever",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forevere28093-watch-forging-forever/2402801",
+   "category": "General Discussion",
+   "kind": "Article",
+   "excerpt": "Witness the creation of World of Warcraft: Forever's first legendary: Taldramir, the Whispering Wood. View Full Article"
+  },
   {
    "id": 2402363,
    "date": "2026-11-05",
@@ -163,7 +172,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/overly-restrictive-name-check-and-fix-incoming-october-27/2394467",
    "category": "General Discussion",
    "kind": "Forum post",
-   "excerpt": "In WoW Forever, we’ve been working on the restricted name list, which is a list the game uses to check for non-profane names that we wish to restrict, such as major Warcraft lore characters or names that are blocked for technical reasons. Today we’ve determined that we have a bu…"
+   "excerpt": "In WoW Forever, we've been working on the restricted name list, which is a list the game uses to check for non-profane names that we wish to restrict,…"
   },
   {
    "id": 2393431,
@@ -592,6 +601,15 @@
    "section": "Known issues",
    "path": [],
    "text": "PvP Vendors are temporarily unavailable in all locations (Orgrimmar, Stormwind, and Dalaran).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
+  },
+  {
+   "id": "f5c6f81693",
+   "date": "2026-11-05",
+   "kind": "Known issues",
+   "section": "Known issues",
+   "path": [],
+   "text": "Stormwind guards incorrectly direct players to Fyrenz Stagazer for Transmogrification. The correct name of the NPC is Fyrenz Vishonar.",
    "url": "https://us.forums.blizzard.com/en/wow/t/known-issues-wow-forever-updated-nov-5/2402363/1"
   },
   {
