@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-06",
- "blue_seen": "2026-11-05T22:00:07Z",
+ "blue_seen": "2026-11-06T02:34:10Z",
  "sources": [
   {
    "id": 2360696,
@@ -25,6 +25,14 @@
    "kind": "Known issues",
    "updated": "2026-10-08",
    "rows": 58
+  },
+  {
+   "id": 2403040,
+   "title": "WoW: Forever Hotfixes - November 5, 2026",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040",
+   "kind": "Development notes",
+   "updated": "2026-11-06",
+   "rows": 10
   },
   {
    "id": 2402363,
@@ -66,6 +74,16 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2403040,
+   "date": "2026-11-06",
+   "title": "WoW: Forever Hotfixes - November 5, 2026",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040",
+   "category": "Bug Report",
+   "kind": "Forum post",
+   "excerpt": "Hotfixes November 5, 2026 Enemies and NPCs Durotar - Fixed an issue where Yarrog Baneshadow was respawning more slowly than intended. Zephras - Lotheluum Starbreeze now offers training to Druids as expected. Dustwallow Marsh - Fixed an issue where some murlocs in Dustwallow Mars…",
+   "notes": 1
+  },
   {
    "id": 2402801,
    "date": "2026-11-05",
@@ -154,7 +172,8 @@
    "title": "The WoW: Forever Podcast: Episode 6 - All About Tech ft. @Shobek",
    "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-6-all-about-tech-ft-e280aashobek/2395799",
    "category": "General Discussion",
-   "kind": "Forum post"
+   "kind": "Forum post",
+   "excerpt": "All About Tech ft. @Shobek | Episode 6 - The WoW: Forever Podcast https://www.youtube.com/watch All About Tech ft. @Shobek | Episode 6 - The WoW: Forev…"
   },
   {
    "id": 2394974,
@@ -567,6 +586,97 @@
   }
  ],
  "rows": [
+  {
+   "id": "9dfb841937",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Durotar - Fixed an issue where Yarrog Baneshadow was respawning more slowly than intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "b5f67b4126",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Zephras - Lotheluum Starbreeze now offers training to Druids as expected.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1",
+   "cls": "Druid"
+  },
+  {
+   "id": "9ce858ea4c",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Dustwallow Marsh - Fixed an issue where some murlocs in Dustwallow Marsh were respawning too quickly.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "45dfd0f64e",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Swamp of Sorrows - Fixed an issue where Pelluk would sometimes not spawn.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "3091b6c517",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Fixed an issue where trade supply vendors on Zephras Isle didn’t sell apprentice tradeskill bags.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "c7527a607c",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Mild Spices now sell to vendors for 1 copper each (was 2 copper).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "08d978978d",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "PvP",
+   "path": [],
+   "text": "Fixed an issue where Plainsrunning could be stacked in a battleground’s preparation phase.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "e42045da39",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "PvP",
+   "path": [],
+   "text": "Plainsrunning can no longer stack and stacks will be cancelled when carrying a flag in a battleground.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "2f7741e3d3",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed an issue with incorrect text in “The Sisterhood of Elune”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
+  {
+   "id": "5a2d6a6bf5",
+   "date": "2026-11-05",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Deathstalker Erland respawns much more quickly for the quest “Escorting Erland”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-5-2026/2403040/1"
+  },
   {
    "id": "66f2338b97",
    "date": "2026-11-05",
