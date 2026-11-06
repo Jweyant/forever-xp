@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-06",
- "blue_seen": "2026-11-06T02:34:10Z",
+ "blue_seen": "2026-11-06T21:11:39Z",
  "sources": [
   {
    "id": 2360696,
@@ -25,6 +25,14 @@
    "kind": "Known issues",
    "updated": "2026-10-08",
    "rows": 58
+  },
+  {
+   "id": 2404092,
+   "title": "Class Tuning Incoming - November 10",
+   "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092",
+   "kind": "Development notes",
+   "updated": "2026-11-06",
+   "rows": 3
   },
   {
    "id": 2403040,
@@ -74,6 +82,16 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2404092,
+   "date": "2026-11-06",
+   "title": "Class Tuning Incoming - November 10",
+   "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Now that players around the world are leveling up in WoW: Forever, we’ve identified a few class issues that we feel need some immediate changes. Today, we’re still investigating these issues and working through them with a plan to release hotfixes on Tuesday, November 10 to addr…",
+   "notes": 1
+  },
   {
    "id": 2403040,
    "date": "2026-11-06",
@@ -586,6 +604,34 @@
   }
  ],
  "rows": [
+  {
+   "id": "a1941e6d52",
+   "date": "2026-11-06",
+   "kind": "Development notes",
+   "section": "General",
+   "path": [],
+   "text": "We’ve seen that Hunter pets and Warlock Voidwalkers are not as durable as tanks as we would like them to be. Our intent is for their effectiveness to be relatively the same as in Classic Era. We will adjust their stats as necessary to accomplish this.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092/1"
+  },
+  {
+   "id": "96bc080f4e",
+   "date": "2026-11-06",
+   "kind": "Development notes",
+   "section": "General",
+   "path": [],
+   "text": "Affliction Warlock reports indicate that always channeling Wrack is superior to also casting damage-over-time abilities like Siphon Life, Corruption, and Bane of Agony. We will make adjustments to make sure those are always worthwhile to cast combined with Wrack, without affecting Affliction Warlocks’ total damage output.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092/1",
+   "cls": "Warlock"
+  },
+  {
+   "id": "740aa956a8",
+   "date": "2026-11-06",
+   "kind": "Development notes",
+   "section": "General",
+   "path": [],
+   "text": "Enhancement Shamans are finding that Intellect and Spellpower are superior stats compared to Strength and Attack Power. We plan to make changes so that Strength is always their strongest stat, and Enhancement Shamans will not prefer gear intended for Mages and Warlocks. Ideally, Enhancement’s best items have Strength or Attack Power, along with some Intellect and/or Spell Power.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092/1"
+  },
   {
    "id": "9dfb841937",
    "date": "2026-11-05",
