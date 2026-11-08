@@ -14,4 +14,4 @@ Forever client build 1.60.1.70862.
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims 376a6aa, Questie 5fba5d8
+Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims 376a6aa, Questie aa1d7e7
