@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-08",
- "blue_seen": "2026-11-07T01:07:59Z",
+ "blue_seen": "2026-11-08T19:47:33Z",
  "sources": [
   {
    "id": 2360696,
@@ -82,6 +82,15 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2406595,
+   "date": "2026-11-08",
+   "title": "Dungeon Enemy XP Increased - November 8",
+   "url": "https://us.forums.blizzard.com/en/wow/t/dungeon-enemy-xp-increased-november-8/2406595",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "At about 11:05 PST today, we deployed a hotfix that increased kill experience in dungeons by 50%, so it feels better to go back in for more runs. Happy dungeon crawling, and good luck with those Deviate Hides!"
+  },
   {
    "id": 2404092,
    "date": "2026-11-06",
