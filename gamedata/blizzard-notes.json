@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-09",
- "blue_seen": "2026-11-08T19:47:33Z",
+ "updated": "2026-11-10",
+ "blue_seen": "2026-11-10T04:23:46Z",
  "sources": [
   {
    "id": 2360696,
@@ -31,16 +31,16 @@
    "title": "Class Tuning Incoming - November 10",
    "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092",
    "kind": "Development notes",
-   "updated": "2026-11-09",
+   "updated": "2026-11-10",
    "rows": 3
   },
   {
    "id": 2403040,
-   "title": "WoW: Forever Hotfixes - November 6, 2026",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040",
+   "title": "WoW: Forever Hotfixes - November 9, 2026",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040",
    "kind": "Development notes",
-   "updated": "2026-11-07",
-   "rows": 82
+   "updated": "2026-11-10",
+   "rows": 204
   },
   {
    "id": 2402363,
@@ -83,6 +83,15 @@
  ],
  "announcements": [
   {
+   "id": 2408781,
+   "date": "2026-11-10",
+   "title": "PvP Faction Balance Updates - November 10",
+   "url": "https://us.forums.blizzard.com/en/wow/t/pvp-faction-balance-updates-november-10/2408781",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "It’s vitally important that the PvP rulesets in WoW: Forever have balanced factions where both factions vie for supremacy, creating memories of epic victories and stunning defeats that we all remember for years to come. While even the most extreme case in a region is currently a…"
+  },
+  {
    "id": 2406595,
    "date": "2026-11-08",
    "title": "Dungeon Enemy XP Increased - November 8",
@@ -104,11 +113,11 @@
   {
    "id": 2403040,
    "date": "2026-11-06",
-   "title": "WoW: Forever Hotfixes - November 6, 2026",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040",
+   "title": "WoW: Forever Hotfixes - November 9, 2026",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040",
    "category": "Bug Report",
    "kind": "Forum post",
-   "excerpt": "Hotfixes November 6, 2026 Classes Fixed an issue with the Quick and the Dead Legacy Talent where it sometimes did not work as intended. Cooldown Manager The Cooldown Manager will now correctly display the duration of crowd control spells at all times, even when diminishing retur…",
+   "excerpt": "Hotfixes November 9, 2026 Classes Druid The Cooldown Manager no longer shows Berserk, and now correctly shows Lacerate when learned. Idol of Ferocity no longer lists Mangle as an ability it discounts. Feral Fixed an issue where Feral Charge (Cat) was not putting the Druid in com…",
    "notes": 1
   },
   {
@@ -146,7 +155,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/issues-resolved-for-invite-a-friend-players/2401646",
    "category": "General Discussion",
    "kind": "Forum post",
-   "excerpt": "With a hotfix that is now live, we’ve fixed an issue where players who joined WoW Forever by using an Invite-a-Friend Code were unexpectedly restricted from using certain chat channels, leveling past 10, participating in guilds, forming parties, or trading items with other playe…"
+   "excerpt": "With a hotfix that is now live, we've fixed an issue where players who joined WoW Forever by using an Invite-a-Friend Code were unexpectedly restricted…"
   },
   {
    "id": 2401461,
@@ -164,7 +173,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/world-of-warcraft-forever-launch-time/2400905",
    "category": "General Discussion",
    "kind": "Forum post",
-   "excerpt": "WoW Forever launches simultaneously in all regions today at 3:00 p.m. PST. That’s: Time Zone Location Time Date HST Honolulu 1:00 p.m. Nov. 4 AKST Juneau 2:00 p.m. Nov. 4 PST Los Angeles 3:00 p.m. Nov. 4 PCT Vancouver 4:00 p.m. Nov. 4 MST Denver 4:00 p.m. Nov. 4 CST Dallas 5:00…"
+   "excerpt": "WoW Forever launches simultaneously in all regions today at 3:00 p.m. PST. That's: Time Zone Location Time Date HST Honolulu 1:00 p.m. Nov. 4 AKST June…"
   },
   {
    "id": 2400119,
@@ -614,6 +623,656 @@
  ],
  "rows": [
   {
+   "id": "dc15cfc7e2",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Druid"
+   ],
+   "text": "The Cooldown Manager no longer shows Berserk, and now correctly shows Lacerate when learned.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Druid"
+  },
+  {
+   "id": "7f1fc6fb92",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Druid"
+   ],
+   "text": "Idol of Ferocity no longer lists Mangle as an ability it discounts.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Druid"
+  },
+  {
+   "id": "203a89926a",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Druid",
+    "Feral"
+   ],
+   "text": "Fixed an issue where Feral Charge (Cat) was not putting the Druid in combat right away.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Druid",
+   "spec": "Feral"
+  },
+  {
+   "id": "d5d9368d39",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Druid",
+    "Feral"
+   ],
+   "text": "Fixed an issue where Natural Instinct was not applying correctly to Lacerate or Pounce.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Druid",
+   "spec": "Feral"
+  },
+  {
+   "id": "733087830a",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Druid",
+    "Feral"
+   ],
+   "text": "Fixed an issue where the Pounce Stun debuff was not showing in the enemy debuffs while active.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Druid",
+   "spec": "Feral"
+  },
+  {
+   "id": "94f4ec9d54",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Hunter"
+   ],
+   "text": "Vulgara the Insatiable and the Shrieklings of Zephras should now belong to the correct hunter pet families.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Hunter"
+  },
+  {
+   "id": "650bf5a81d",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Hunter"
+   ],
+   "text": "Fixed an issue causing Hunters to sometimes aggro enemies from very far away by targeting them.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Hunter"
+  },
+  {
+   "id": "ee9c3d2bd6",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Mage"
+   ],
+   "text": "Flamestirke’s ticks on the ground no longer incorrectly consume clearcasting.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Mage"
+  },
+  {
+   "id": "7ab7c069b4",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Mage"
+   ],
+   "text": "Arcane Concentration’s activation chance now correctly splits across the cast and every bolt (was granting 10% on cast and per bolt).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Mage"
+  },
+  {
+   "id": "34f94502e3",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Paladin"
+   ],
+   "text": "Fixed an issue where Consecration could stop dealing increased damage to enemies if targets inside of the Consecration despawned previously.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Paladin"
+  },
+  {
+   "id": "de6389af57",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Paladin"
+   ],
+   "text": "Fixed an issue where Cooldown Manager wasn’t showing Seals correctly.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Paladin"
+  },
+  {
+   "id": "afd31b0266",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Priest"
+   ],
+   "text": "Shadowform no longer breaks when casting Fear Ward.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Priest"
+  },
+  {
+   "id": "0262c06e9f",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Priest"
+   ],
+   "text": "Power Infusion will now correctly persist when used on allies.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Priest"
+  },
+  {
+   "id": "d9cb29b7ce",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Shaman"
+   ],
+   "text": "Updated the visual effect for Lightning Mastery.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Shaman"
+  },
+  {
+   "id": "7446cb3def",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Shaman"
+   ],
+   "text": "Lightning Overload now deals the correct amount of damage for Lightning Bolt.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Shaman"
+  },
+  {
+   "id": "5fb60ebe92",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Shaman"
+   ],
+   "text": "Fixed an issue causing Improved Ghost Wolf to not hold the Night Watchman’s Torch in its mouth.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Shaman"
+  },
+  {
+   "id": "fb81eb9c03",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Warlock"
+   ],
+   "text": "Completing “Summon Felsteed” will correctly grant the player the appropriate riding skill.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Warlock",
+   "note": [
+    "If a player completed the quest before this hotfix, summoning the Felsteed once will grant them the apprentice riding skill, allowing them to ride other mounts if desired."
+   ]
+  },
+  {
+   "id": "64a79adfb6",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Warlock"
+   ],
+   "text": "Fixed an issue allowing Incinerate to be available to non-Destruction specializations.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Warlock"
+  },
+  {
+   "id": "57a4c07059",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Classes",
+   "path": [
+    "Warrior"
+   ],
+   "text": "Thunderclap no longer tracks its duration on the target via Cooldown Manager and now only shows its cooldown.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Warrior"
+  },
+  {
+   "id": "9e6f95e43d",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [],
+   "text": "Experience rewarded for all enemy kills in dungeons increased by 50%.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "fc1d4aa699",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "Alcaz Prison"
+   ],
+   "text": "Defeating Zarla Ober will now drop loot.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "10651573dd",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "Blackfathom Deeps"
+   ],
+   "text": "Fixed an issue that could cause players to become unable to release after dying in Blackfathom Deeps.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "128fef48b0",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "Blackrock Depths"
+   ],
+   "text": "Fixed an issue that prevented the throne room doors from opening if the party wiped while fighting Emperor Thaurissan.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "a21a7f6043",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "Blackrock Depths"
+   ],
+   "text": "Heart of the Mountain can now be looted more than once.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "023fe1c28f",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Drowned City"
+   ],
+   "text": "Fixed an issue that was causing creatures inside the Drowned City to do about 30% more damage than intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "4637715c0c",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Drowned City",
+    "Deathless Marrow"
+   ],
+   "text": "Lowered the health of the creatures in the Deathless Marrow encounter by 25%.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "9fc323358d",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Drowned City",
+    "Deathless Marrow"
+   ],
+   "text": "Lowered the damage of the Deathless Sorcerer’s Fireball by 25%.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "98ee5b3a81",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Drowned City",
+    "Deathless Marrow"
+   ],
+   "text": "Lowered the damage of the Deathless Watcher’s Charge by 50%.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "9bd228da4c",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Drowned City",
+    "Deathless Marrow"
+   ],
+   "text": "Reduced the cast frequency of the Deathless Guardian’s Shield Slam ability by about 50%.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "f1470e1ba7",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Shaper’s Terrace"
+   ],
+   "text": "The Shaper’s Terrace: Vitrix, Snowtalon, and Cinder now correctly drop loot and higher-level skinning materials.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "a40829a34f",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "The Shaper’s Terrace"
+   ],
+   "text": "Cinder should now correctly spawn after players use the Archival Panel.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "7b255c4a3f",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Dungeons",
+   "path": [
+    "Stratholme"
+   ],
+   "text": "Fixed an issue that allowed players to mount inside Stratholme.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "3d9602c2d5",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Silverpine Forest - Fixed an issue where Ivar the Foul was respawning more slowly than intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "5093b90f3c",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Teldrassil - Spawn time reduced for Ferocitas the Dream Eater.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "bca09900b0",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Un’goro Crater - Fixed an issue that was causing Young Diemetradons to spawn at level 58 (rather than 51 to 52).",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "52e05582a5",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Enemies and NPCs",
+   "path": [],
+   "text": "Zephras - Malduko Cloudcrush now respawns slightly more slowly.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "81bb4208aa",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Fixed an issue with the Pouch of Violet Dust preventing players from receiving an extra hour of duration of the Camp Benefits aura as intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "017823bb38",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Fixed a bug that prevented Waylaid Crates and Craftsman’s Writs from dropping inside dungeons.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "81cc2bb212",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Berdun’s Trusty Rifle no longer has random stats and is not Bind-on-Equip.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "0b9a427317",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Fixed a bug causing Nifty Stopwatch to share a cooldown with Dash, Blink, Sprint, and other movement abilities.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "39e93b9b74",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Zephrali Greatstaff and Fallen Dragon’s Scepter now appear correctly oriented when sheathed on the player’s back.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "3119ed2651",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Items",
+   "path": [],
+   "text": "Gloves of Holy Might now work as intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "aca3160912",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "PvP",
+   "path": [],
+   "text": "Removed an invisible wall that was incorrectly blocking the roof of the Alliance base in Warsong Gulch. Please be careful up there.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "60deb181e6",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "“The Monster Surfaces” quest item is now available to all players in a party.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "18e6764ce0",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "“Croaky’s Head” is now available to all players in a party.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "3c290bb526",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "“Elmpaw’s Head” is now available to all players in a party.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "cf1956b3c4",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Mistreating Astor Hadren during the quest “The Deathstalkers” should now properly anger him, allowing you to fight him.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "ad5c57a903",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed a bug preventing Jom-jom from continuing his escape on “Jom-jom’s Escape”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "c5c00d02b3",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "The door available after the quest “Ever After” should now correctly teleport players who interact with the door.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "0451fffe08",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed a bug keeping Terry Longdrink alive during the quest “Unwelcome Guests”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "f259a112a3",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed an issue where the quest “Find Bingles” was incorrectly categorized in Ironforge, rather than Loch Modan.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "fda3c6b4a5",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Updated Skonk’s list to be readable by everyone going on “A Quick Grocery Run”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "01a04f5ac3",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Henrig Lonebrow’s Journal now respawns more quickly, so that more players can get started on “Lonebrow’s Journal”. It has also moved slightly down the road. Look for a similar skeleton to mark the location.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "aedcd3cd52",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Addressed an issue that could prevent players from looting Berard’s Journal from Berard’s Bookshelf for “A Recipe for Death”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "231eea4f41",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Resolved an issue preventing completion of “Fetch ‘n’ Fletch”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "d0d35ce9d5",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed an issue where restarting the Rogue quest “Mission: Possible not Probable” was much less possible than intended.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "cls": "Rogue"
+  },
+  {
+   "id": "9665bdd333",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Resolved an issue where Jezap Jinglesprocket could fail to provide players a “Bloodmaster’s Ring”.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "a1902fcf7b",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Quests",
+   "path": [],
+   "text": "Fixed an issue during the quest “Feathers in Flight” where players below level 60 could not loot the Hyjal Owl Nests.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
+   "id": "bba0eaf7b5",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "Races",
+   "path": [
+    "Tauren"
+   ],
+   "text": "Cultivation now correctly only goes on cooldown after completing the cast.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "race": "Tauren"
+  },
+  {
+   "id": "322503b07b",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "World",
+   "path": [],
+   "text": "Lowered the population of players in various zones where there was significant congestion.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
+   "note": [
+    "We’ve made this an even bigger change on the PvP ruleset, following feedback from players that they felt overcrowded in several places. We will continue to monitor how zones feel and make further adjustments as necessary."
+   ]
+  },
+  {
+   "id": "7ebaa96591",
+   "date": "2026-11-09",
+   "kind": "Development notes",
+   "section": "World",
+   "path": [],
+   "text": "Resolved an issue where the flight path from Camp Taurajo to Thunder Bluff could unintentionally go through objects.",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
+  },
+  {
    "id": "a1941e6d52",
    "date": "2026-11-06",
    "kind": "Development notes",
@@ -648,7 +1307,7 @@
    "section": "Classes",
    "path": [],
    "text": "Fixed an issue with the Quick and the Dead Legacy Talent where it sometimes did not work as intended.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "48be54a91f",
@@ -659,7 +1318,7 @@
     "Cooldown Manager"
    ],
    "text": "The Cooldown Manager will now correctly display the duration of crowd control spells at all times, even when diminishing returns or mechanic reductions (like orc stun reduction) are factors.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "8e0c1d177c",
@@ -670,7 +1329,7 @@
     "Druid"
    ],
    "text": "Bloom will now correctly heal the target.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid"
   },
   {
@@ -682,7 +1341,7 @@
     "Druid"
    ],
    "text": "Fixed a bug where the tooltip of Bear Form claimed an incorrect health value increase. The functionality was correct, but the wrong value was reported.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid"
   },
   {
@@ -694,7 +1353,7 @@
     "Druid"
    ],
    "text": "The tooltip for Ravage reported an incorrect value for its damage, and the tooltip has been corrected. There was no change made to damage done.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid"
   },
   {
@@ -706,7 +1365,7 @@
     "Druid"
    ],
    "text": "Fixed the tooltip for Swiftmend to no longer incorrectly mention consuming the effect.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid"
   },
   {
@@ -718,7 +1377,7 @@
     "Mage"
    ],
    "text": "Fixed an issue where Mages were still learning the Research spell and then losing it upon relogging. This spell should not exist, and you should only have the Study spell after completing the relevant quest.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Mage"
   },
   {
@@ -730,7 +1389,7 @@
     "Mage"
    ],
    "text": "Fixed an issue with Arcane Blast where its duration was not properly 18 seconds.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Mage"
   },
   {
@@ -742,7 +1401,7 @@
     "Rogue"
    ],
    "text": "Shank will now display Rank 1 and Rank 2 in the tooltips.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Rogue"
   },
   {
@@ -754,7 +1413,7 @@
     "Rogue"
    ],
    "text": "While Boot Knife is talented, Shank will now correctly display the number of Combo Points it grants.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Rogue"
   },
   {
@@ -766,7 +1425,7 @@
     "Warlock"
    ],
    "text": "Voidwalker base health increased by about 40 at all levels.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Warlock"
   },
   {
@@ -778,7 +1437,7 @@
     "Warlock"
    ],
    "text": "The Soul Siphon talent no longer incorrectly causes Wrack to increase its own damage.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Warlock"
   },
   {
@@ -790,7 +1449,7 @@
     "Warrior"
    ],
    "text": "Fixed the tooltip for Reckless Swings to mention that it activates Gore Drinker.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Warrior"
   },
   {
@@ -800,7 +1459,7 @@
    "section": "Dungeons",
    "path": [],
    "text": "Fixed an issue that would prevent Zaetar’s Spirit from spawning after defeating Princess Theradras in Maraudon.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "993c86f0d4",
@@ -809,7 +1468,7 @@
    "section": "Dungeons",
    "path": [],
    "text": "Fixed an issue that could cause some creatures inside Blackmaw Hold and The Drowned City to erroneously disengage.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "151f116f8d",
@@ -818,7 +1477,7 @@
    "section": "Dungeons",
    "path": [],
    "text": "The instance portal should now correctly teleport you inside The Drowned City",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "9d06556c36",
@@ -827,7 +1486,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Dun Morogh - Fixed an issue where the troggs in Grol’bolar Quarry would respawn too quickly.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "af04b9da0d",
@@ -836,7 +1495,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Durotar - Ridgeshade Lurkers now correctly have loot.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "cbee5c7729",
@@ -845,7 +1504,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Riverglades - Krek the Noxious now has correct loot when defeated.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "c61e1887eb",
@@ -854,7 +1513,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Teldrassil - Fixed an issue where Lasher Sproutlings, Blooming Lashers, and Wrathvine were immune to nature damage.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "bc494c925b",
@@ -863,7 +1522,7 @@
    "section": "Items",
    "path": [],
    "text": "Searing Dagger is now only activated by spells that have a damaging component.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "259a708ff8",
@@ -874,7 +1533,7 @@
     "Leatherworking"
    ],
    "text": "Tanning Rack skill requirement lowered to 125 (was 140). This prevents it from being an obstacle to crafting various Leatherworking patterns that require 125 skill. Tanning Rack skill-ups lowered by 15 skill points to account for this.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "bda743f77a",
@@ -883,7 +1542,7 @@
    "section": "Quests",
    "path": [],
    "text": "Resolved an issue with the quest “Vorsha the Lasher” rudely lashing everyone in the zone.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "1f35d9b4f2",
@@ -892,7 +1551,7 @@
    "section": "Quests",
    "path": [],
    "text": "Brewed a fresh pot of Darnassus’s finest coffee for Kerlonian Evershade so he falls asleep less often during “The Sleeper Has Awakened”. Players now also start with the Horn of Awakening item to wake him up when needed.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "cabd51f822",
@@ -901,7 +1560,7 @@
    "section": "Quests",
    "path": [],
    "text": "The quest “Rough Wolf Pelts” is now automatically cancelled if you unlearn the Skinning skill.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "1696253a21",
@@ -910,7 +1569,7 @@
    "section": "Quests",
    "path": [],
    "text": "Resolved an issue with “Rediscovering the Light” where players were sometimes unable to heal NPCs.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "61a2436d39",
@@ -919,7 +1578,7 @@
    "section": "Quests",
    "path": [],
    "text": "Fixed an issue during the quest “Ammo for Rumbleshot” where players could not see loot if interacting immediately following another player.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "850d90b7af",
@@ -928,7 +1587,7 @@
    "section": "Quests",
    "path": [],
    "text": "Resolved an issue where some quest item drops in Riverglades were not shared by players in a party.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "0e26337091",
@@ -937,7 +1596,7 @@
    "section": "Quests",
    "path": [],
    "text": "“Never Saddle on Quality” spawns and quest item drops should now be more plentiful.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "d498aa65a9",
@@ -946,7 +1605,7 @@
    "section": "Quests",
    "path": [],
    "text": "The Abomimable Head dropped from The Baron in the Ruins of Lordaeron dungeon will now properly offer the quest “Unending Torment” for Horde players at level 15 (was level 16).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "ae916685df",
@@ -955,7 +1614,7 @@
    "section": "Quests",
    "path": [],
    "text": "Damp Note drop rate increased. Eww.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "e43847ec2f",
@@ -966,7 +1625,7 @@
     "Night Elf"
    ],
    "text": "Fixed a bug granting Shadowmelded Druids access to Ravage and Pounce.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid",
    "race": "Night Elf"
   },
@@ -979,7 +1638,7 @@
     "Orc"
    ],
    "text": "Fixes an issue where some Warlock pet abilities were benefitting too much from the Orc Command racial ability.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Warlock",
    "race": "Orc"
   },
@@ -990,7 +1649,7 @@
    "section": "World",
    "path": [],
    "text": "Deployed some improvements to the visibility of other players and their targets across relatively large distances.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "92d9a8aefd",
@@ -999,7 +1658,7 @@
    "section": "World",
    "path": [],
    "text": "Thunder Bluff - Fixed an issue where the Barbershop was darker than intended. We moooved the lights around.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "9dfb841937",
@@ -1008,7 +1667,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Durotar - Fixed an issue where Yarrog Baneshadow was respawning more slowly than intended.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "b5f67b4126",
@@ -1017,7 +1676,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Zephras - Lotheluum Starbreeze now offers training to Druids as expected.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1",
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1",
    "cls": "Druid"
   },
   {
@@ -1027,7 +1686,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Dustwallow Marsh - Fixed an issue where some murlocs in Dustwallow Marsh were respawning too quickly.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "45dfd0f64e",
@@ -1036,7 +1695,7 @@
    "section": "Enemies and NPCs",
    "path": [],
    "text": "Swamp of Sorrows - Fixed an issue where Pelluk would sometimes not spawn.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "3091b6c517",
@@ -1045,7 +1704,7 @@
    "section": "Items",
    "path": [],
    "text": "Fixed an issue where trade supply vendors on Zephras Isle didn’t sell apprentice tradeskill bags.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "c7527a607c",
@@ -1054,7 +1713,7 @@
    "section": "Items",
    "path": [],
    "text": "Mild Spices now sell to vendors for 1 copper each (was 2 copper).",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "08d978978d",
@@ -1063,7 +1722,7 @@
    "section": "PvP",
    "path": [],
    "text": "Fixed an issue where Plainsrunning could be stacked in a battleground’s preparation phase.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "e42045da39",
@@ -1072,7 +1731,7 @@
    "section": "PvP",
    "path": [],
    "text": "Plainsrunning can no longer stack and stacks will be cancelled when carrying a flag in a battleground.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "2f7741e3d3",
@@ -1081,7 +1740,7 @@
    "section": "Quests",
    "path": [],
    "text": "Fixed an issue with incorrect text in “The Sisterhood of Elune”.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "5a2d6a6bf5",
@@ -1090,7 +1749,7 @@
    "section": "Quests",
    "path": [],
    "text": "Deathstalker Erland respawns much more quickly for the quest “Escorting Erland”.",
-   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-6-2026/2403040/1"
+   "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-9-2026/2403040/1"
   },
   {
    "id": "66f2338b97",
