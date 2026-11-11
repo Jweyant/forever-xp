@@ -241,6 +241,9 @@ def check_private(cfg, d, guild, channels, bot_role):
 
 
 # ---- Discord REST ------------------------------------------------------------------------------
+RETRY_WAIT = 3  # seconds between tries of a read during a Discord outage
+
+
 class Discord:
     def __init__(self, token, dry=False):
         if not token:
@@ -249,11 +252,15 @@ class Discord:
         self.dry = dry
 
     def call(self, method, path, body=None, *, write=False, soft=()):
-        """soft: HTTP codes that return None instead of stopping the run."""
+        """soft: HTTP codes that return None instead of stopping the run.
+
+        A read (GET) that hits a Discord outage (a 5xx answer, a dropped connection or a timeout)
+        is tried again; anything that changes the server is not, so nothing is ever sent twice."""
         if write and self.dry:
             log(f"  [dry run] {method} {path}")
             return {}
         data = json.dumps(body).encode() if body is not None else None
+        problem = "still rate limited"
         for _ in range(5):
             req = urllib.request.Request(API + path, data=data, method=method, headers=self.h)
             try:
@@ -267,9 +274,18 @@ class Discord:
                     continue
                 if e.code in soft:
                     return None
+                if method == "GET" and e.code >= 500:
+                    problem = f"failed: {e.code}"
+                    time.sleep(RETRY_WAIT)
+                    continue
                 detail = e.read()[:300].decode("utf-8", "replace")
                 raise SystemExit(f"Discord API {method} {path} failed: {e.code} {detail}")
-        raise SystemExit(f"Discord API {method} {path}: still rate limited")
+            except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+                if method != "GET":
+                    raise SystemExit(f"Discord API {method} {path} failed: {type(e).__name__}")
+                problem = f"failed: {type(e).__name__}"
+                time.sleep(RETRY_WAIT)
+        raise SystemExit(f"Discord API {method} {path}: {problem}")
 
 
 def merge_overwrites(existing, wanted):
