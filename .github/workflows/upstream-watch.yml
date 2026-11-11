@@ -27,11 +27,12 @@ jobs:
         run: |
           set -euo pipefail
           pin() { grep -oP "^\s*$1:\s*\K[0-9a-f]{40}" .github/workflows/sim-weights.yml; }
-          head() { git ls-remote "https://github.com/$1" HEAD | cut -f1; }
+          # Not named "head": that would replace the head command used further down.
+          upstream_head() { git ls-remote "https://github.com/$1" HEAD | cut -f1; }
           body=""
           check() {
             local repo=$1 pinned=$2 latest
-            latest=$(head "$repo")
+            latest=$(upstream_head "$repo")
             if ! [[ "$pinned" =~ ^[0-9a-f]{40}$ && "$latest" =~ ^[0-9a-f]{40}$ ]]; then
               echo "::warning::couldn't read the pin or upstream head for $repo"; return
             fi
