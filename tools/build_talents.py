@@ -23,6 +23,7 @@ import math
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import defaultdict
@@ -39,6 +40,9 @@ TRAIT_TABLES = ["TraitTree", "TraitNode", "TraitNodeEntry", "TraitDefinition", "
                 "TraitNodeXTraitCond", "TraitDefinitionEffectPoints", "CurvePoint", "SkillLineXTraitTree"]
 SPELL_TABLES = ["Spell", "SpellName", "SpellEffect", "SpellMisc", "SpellDuration", "SpellRadius", "SpellAuraOptions"]
 FOREVER_TABLES = TRAIT_TABLES + SPELL_TABLES + ["TalentTab"]
+# Tables that can have no rows. wago.tools doesn't export an empty table (it answers "Table not
+# found"), so for these, and only these, that answer means "no rows" rather than a failed build.
+MAY_BE_EMPTY = {"TraitNodeXTraitCond"}
 CLASSIC_TABLES = ["Talent", "TalentTab"] + SPELL_TABLES
 
 # Class trait trees are tied to the class's skill line. These are the classic class skill lines.
@@ -83,7 +87,12 @@ def load(cache, build, table, download):
     if not path.exists():
         if not download:
             raise SystemExit(f"missing {path}; run with --download")
-        data = fetch(f"{WAGO}/db2/{table}/csv?build={urllib.parse.quote(build)}")
+        try:
+            data = fetch(f"{WAGO}/db2/{table}/csv?build={urllib.parse.quote(build)}")
+        except urllib.error.HTTPError as e:
+            if table in MAY_BE_EMPTY and e.code in (400, 404):
+                return []  # not cached: the next build may have rows again
+            raise SystemExit(f"wago.tools has no {table} for {build} (HTTP {e.code})") from e
         if data[:1] in (b"{", b"<"):
             raise SystemExit(f"wago.tools refused {table} for {build}: {data[:120]!r}")
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -774,7 +783,9 @@ def main():
     if args.hotfixes:
         for t in FOREVER_TABLES:
             fixes = hotfix_pages(args.forever, t)
-            if fixes:
+            if fixes and not (Path(args.cache) / args.forever / f"{t}.csv").exists():
+                report.append(f"{t}: {len(fixes)} hotfixes not applied, the table isn't in this build's export")
+            elif fixes:
                 F[t] = apply_hotfixes(F[t], header(args.cache, args.forever, t), fixes, report, t)
     C = {t: load(args.cache, args.classic, t, args.download) for t in CLASSIC_TABLES}
     icons = icon_names(args.cache, args.download)

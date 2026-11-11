@@ -105,6 +105,33 @@ class Packing(unittest.TestCase):
         self.assertEqual(bt.pack(["1 sec", "1 min"]), [["1 sec", "1 min"]])
 
 
+class EmptyTables(unittest.TestCase):
+    """wago.tools answers "Table not found" for a table with no rows. That's fine for the tables
+    known to be empty sometimes, and still a failed build for every other table."""
+
+    def setUp(self):
+        import tempfile
+        self.dir = tempfile.TemporaryDirectory()
+        self.real = bt.fetch
+
+        def not_found(url, timeout=180):
+            import urllib.error
+            raise urllib.error.HTTPError(url, 400, "Bad Request", None, None)
+        bt.fetch = not_found
+
+    def tearDown(self):
+        bt.fetch = self.real
+        self.dir.cleanup()
+
+    def test_a_table_that_may_be_empty_loads_as_no_rows(self):
+        self.assertEqual(bt.load(self.dir.name, "1.60.1.70888", "TraitNodeXTraitCond", True), [])
+        self.assertFalse((Path(self.dir.name) / "1.60.1.70888" / "TraitNodeXTraitCond.csv").exists())
+
+    def test_any_other_missing_table_still_fails(self):
+        with self.assertRaises(SystemExit):
+            bt.load(self.dir.name, "1.60.1.70888", "TraitNode", True)
+
+
 class Hotfixes(unittest.TestCase):
     def test_add_replace_remove_and_cancel(self):
         cols = ["Name_lang", "ID", "SpellID", "Ranks_0", "Ranks_1"]
