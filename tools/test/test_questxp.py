@@ -15,6 +15,19 @@ def write(root, rel, rows):
     p.write_text("\n".join(r if isinstance(r, str) else json.dumps(r) for r in rows) + "\n")
 
 
+class Named(unittest.TestCase):
+    """A quest with no title is left out: it can't be shown, searched or sorted."""
+
+    def test_only_quests_with_a_title_are_kept(self):
+        quests = [{"id": 1, "n": "Sharptalon's Claw"}, {"id": 2, "n": None}, {"id": 3, "n": ""}, {"id": 4, "n": "  "},
+                  {"id": 5}, {"id": 6, "n": 7}, "not a quest", None, {"id": 8, "n": "A"}]
+        self.assertEqual([q["id"] for q in questxp.named(quests)], [1, 8])
+
+    def test_nothing_is_dropped_when_every_quest_has_a_title(self):
+        quests = [{"id": 1, "n": "One"}, {"id": 2, "n": "Two"}]
+        self.assertEqual(questxp.named(quests), quests)
+
+
 class OpenData(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
