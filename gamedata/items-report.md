@@ -1,17 +1,17 @@
 # Gear database
 
-Forever client build 1.60.1.70755.
+Forever client build 1.60.1.70888.
 
-- Equippable items: 6499 (by quality: {0: 436, 1: 1150, 2: 2094, 3: 1667, 4: 1132, 5: 10, 6: 10})
+- Equippable items: 6506 (by quality: {0: 436, 1: 1150, 2: 2095, 3: 1667, 4: 1136, 5: 12, 6: 10})
 - Item sets: 155
-- Items with a known source: 4310
-- Items with no known source yet: 2189
-- Items with a display id (3D model): 6235
-- New in Forever (not in the classic item list): 2106
+- Items with a known source: 4354
+- Items with no known source yet: 2152
+- Items with a display id (3D model): 6242
+- New in Forever (not in the classic item list): 2113
 - Changed in Forever: 147
-- Other items (consumables, trade goods, recipes, quest items...): 9055 (9022 with an icon)
+- Other items (consumables, trade goods, recipes, quest items...): 10289 (10252 with an icon)
 
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Sources: cmangos 37eeeeb, AtlasLoot 8e99341, opendata 4f68475, wowsims 376a6aa, Questie c5de61a
+Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims 376a6aa, Questie 90ab55b
