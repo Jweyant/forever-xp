@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-12",
- "blue_seen": "2026-11-12T00:48:47Z",
+ "blue_seen": "2026-11-12T19:10:52Z",
  "sources": [
   {
    "id": 2360696,
@@ -31,7 +31,7 @@
    "title": "Class Tuning Incoming - November 10",
    "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092",
    "kind": "Development notes",
-   "updated": "2026-11-11",
+   "updated": "2026-11-12",
    "rows": 3
   },
   {
@@ -40,7 +40,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-11-2026/2403040",
    "kind": "Development notes",
    "updated": "2026-11-12",
-   "rows": 350
+   "rows": 355
   },
   {
    "id": 2402363,
@@ -83,6 +83,14 @@
  ],
  "announcements": [
   {
+   "id": 2412856,
+   "date": "2026-11-12",
+   "title": "The WoW Forever Podcast: Episode 7 - Turbo Nerds Lore-ing Out ft. @Nobbel87 & Platinum WoW",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-7-turbo-nerds-lore-ing-out-ft-nobbel87-platinum-wow/2412856",
+   "category": "General Discussion",
+   "kind": "Forum post"
+  },
+  {
    "id": 2408781,
    "date": "2026-11-10",
    "title": "PvP Faction Balance Updates - November 10",
@@ -117,7 +125,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/wow-forever-hotfixes-november-11-2026/2403040",
    "category": "Bug Report",
    "kind": "Forum post",
-   "excerpt": "Hotfixes November 11, 2026 Classes Druid Feral Rend and Tear now works on Pounce Bleed. Hunter Fixed an issue where Volley was activating procs. Fixed an issue where Volley would continue to channel even when the Hunter had started moving. Paladin Judgement changed to now be con…",
+   "excerpt": "Hotfixes November 11, 2026 Classes Druid Feral Rend and Tear now works on Pounce Bleed. Hunter Fixed an issue where Volley was activating procs. Fixed…",
    "notes": 1
   },
   {
