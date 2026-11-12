@@ -42,7 +42,9 @@ consumables:
 buffs: greater_blessing_of_kings, greater_blessing_of_might
 
 raid_buffs:
-  gift_of_the_wild, strength_of_earth_totem, grace_of_air_totem
+  gift_of_the_wild
+  strength_of_earth_totem 1
+  grace_of_air_totem 1
   windfury_totem
   battle_shout 1
   leader_of_the_pack

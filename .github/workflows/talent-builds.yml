@@ -1,0 +1,98 @@
+# Talent builds for the talent pages: our sim setups' builds, wowsims/forever's presets and the
+# WoW Forever Builds addon's endgame builds, read from the newest commit of each upstream every
+# 6 hours and after a talent refresh (which starts this workflow).
+#
+# Only text is read from upstream: a sparse checkout of the files tools/build_talent_builds.py
+# parses (wowsims' ui/specs presets and builds, its proto talent lists and class files for the
+# talent order; the addon's Guides.lua, read by tools/luadata.py). Nothing from either repository is
+# built or run here. A build reaches the site only if it reads the same way on today's talent trees:
+# same talent order as the game (wowsims) or identical trees (the addon), and within every rank cap.
+# The sims themselves still use the engine at the commit pinned in sim-weights.yml.
+
+name: Talent builds
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  # A work branch that changes how builds are collected gets the result committed to it for review.
+  push:
+    branches-ignore: [main, data, "dependabot/**"]
+    paths: ["tools/build_talent_builds.py", "tools/check_talent_order.py", "tools/sim_talents.py", "tools/luadata.py",
+      "gamedata/simconfigs/**", ".github/workflows/talent-builds.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: talent-builds-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  builds:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # commit gamedata/talent-builds.json (to the data branch when on main)
+      actions: write   # start the site deploy after a data commit on main
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read wowsims/forever's presets (text only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: wowsims/forever
+          path: ext/wowsims
+          persist-credentials: false
+          sparse-checkout: |
+            ui/specs
+            proto
+            sim/druid
+            sim/hunter
+            sim/mage
+            sim/paladin
+            sim/priest
+            sim/rogue
+            sim/shaman
+            sim/warlock
+            sim/warrior
+
+      - name: Read the WoW Forever Builds addon's guides (text only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Boco10/WoWForeverBuilds-Addon
+          path: ext/forever-builds
+          persist-credentials: false
+          sparse-checkout: Guides.lua
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      # The talent refresh lands on the `data` branch; use the newer copy, and write our setups'
+      # builds (kept by talent name) for those trees, as the sim run does.
+      - name: Use the newest talent data
+        run: |
+          if git fetch -q --depth=1 origin data && git show FETCH_HEAD:gamedata/talents.json > "$RUNNER_TEMP/talents-data.json"; then
+            newest=$(python3 -I -c 'import sys; sys.path.insert(0, "tools"); import check_talent_order as c; print(c.newest(sys.argv[1:]))' gamedata/talents.json "$RUNNER_TEMP/talents-data.json")
+            [ "$newest" = gamedata/talents.json ] || cp "$newest" gamedata/talents.json
+          fi
+          python3 -I tools/sim_talents.py gamedata/simconfigs gamedata/talents.json --write
+
+      - name: Collect talent builds
+        run: |
+          src() { echo "$1=$(git -C "$2" rev-parse HEAD)@$(git -C "$2" log -1 --format=%cs)"; }
+          python3 -I tools/build_talent_builds.py --simconfigs gamedata/simconfigs --wowsims ext/wowsims \
+            --community ext/forever-builds --talents gamedata/talents.json --out gamedata/talent-builds.json \
+            --source "$(src wowsims ext/wowsims)" --source "$(src community ext/forever-builds)"
+
+      - name: Commit if changed
+        id: commit
+        run: bash tools/push_data.sh "Refresh talent builds from wowsims/forever and WoW Forever Builds" gamedata/talent-builds.json
+
+      # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here.
+      - name: Deploy the site with the new builds
+        if: steps.commit.outputs.changed == 'true' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-site.yml --ref main

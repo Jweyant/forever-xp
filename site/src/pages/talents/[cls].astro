@@ -15,13 +15,24 @@ const treeNames = c.trees.map((t) => t.name).join(", ");
 // Recommended and popular builds for this class. Build strings are validated here and the digits
 // are clamped to each talent's rank cap by the calculator when a link loads one.
 const BUILD_RE = /^[0-5]{0,30}(-[0-5]{0,30}){0,2}$/;
-const okBuild = (b: unknown): b is { n: string; t: string; note?: string; spec?: string } =>
+const okBuild = (b: unknown): b is { n: string; t: string; note?: string; spec?: string; k?: string } =>
   !!b && typeof b === "object" && typeof (b as { n: unknown }).n === "string" && typeof (b as { t: unknown }).t === "string"
   && BUILD_RE.test((b as { t: string }).t) && (b as { t: string }).t.replace(/-/g, "").length > 0;
 const groups = (buildsJson as { classes: Record<string, Record<string, unknown[]>> }).classes?.[c.slug] ?? {};
 const oursBuilds = (Array.isArray(groups.ours) ? groups.ours : []).filter(okBuild);
 const wowsimsBuilds = (Array.isArray(groups.wowsims) ? groups.wowsims : []).filter(okBuild);
-const communityBuilds = (Array.isArray(groups.community) ? groups.community : []).filter(okBuild);
+const communityAll = (Array.isArray(groups.community) ? groups.community : []).filter(okBuild);
+const communityBuilds = communityAll.filter((b) => b.k !== "pve");   // older files have no k: those were all PvP
+const communityPve = communityAll.filter((b) => b.k === "pve");
+// Which upstream commit each list was read from, and when it was made (checked shape only).
+type Src = { commit?: unknown; date?: unknown };
+const srcOf = (k: string) => {
+  const v = ((buildsJson as { sources?: Record<string, Src> }).sources ?? {})[k];
+  return v && typeof v.commit === "string" && /^[0-9a-f]{40}$/.test(v.commit) && typeof v.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v.date)
+    ? { commit: v.commit, date: v.date } : null;
+};
+const wsSrc = srcOf("wowsims");
+const cmSrc = srcOf("community");
 // What players actually run, from ForeverScout logs: every build, most used first (aggregates
 // only; a build is listed once two or more characters use it, so nobody's shows alone).
 type PlayerGroups = { players?: number; groups?: Record<string, { n?: number; builds?: unknown }> };
@@ -43,7 +54,7 @@ const popular = ([
 // "0 / 31 / 20" from a build string, so each row names its spec without loading it.
 const split = (b: string) => { const p = b.split("-"); return c.trees.map((_, i) => [...(p[i] || "")].reduce((s, d) => s + +d, 0)).join(" / "); };
 const dominant = (b: string) => { const s = split(b).split(" / ").map(Number); const m = Math.max(...s); return m > 0 ? c.trees[s.indexOf(m)].name : ""; };
-const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0 || communityBuilds.length > 0;
+const hasBuilds = popular.length > 0 || oursBuilds.length > 0 || wowsimsBuilds.length > 0 || communityAll.length > 0;
 // What a preset stands for, in plain words: wowsims' name shorthands, and the role its spec
 // folder names. The dominant tree comes from the build string itself.
 const WORDS: Record<string, string> = {
@@ -123,7 +134,19 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
                 <li><a class="load" href={`#${b.t}`}><b>{b.n}</b><span class="split">{split(b.t)}</span></a>{b.note && <span class="sub">{b.note}</span>}</li>
               ))}
             </ul>
-            <p class="gnote">Hand-written battleground builds from the open-source <a href="https://github.com/Boco10/WoWForeverBuilds-Addon" rel="noopener">WoW Forever Builds</a> addon (MIT) — its authors' picks, not measured. A class is imported only while the addon's talent data matches the game client's exactly.</p>
+            <p class="gnote">Hand-written battleground builds from the open-source <a href="https://github.com/Boco10/WoWForeverBuilds-Addon" rel="noopener">WoW Forever Builds</a> addon (MIT) — its authors' picks, not measured. A class is imported only while the addon's talent data matches the game client's exactly.{cmSrc && <> Read from <a href={`https://github.com/Boco10/WoWForeverBuilds-Addon/commit/${cmSrc.commit}`} rel="noopener">its {cmSrc.date} update</a>.</>}</p>
+          </section>
+        )}
+
+        {communityPve.length > 0 && (
+          <section>
+            <h3>Community PvE <span class="muted">· raids &amp; dungeons</span></h3>
+            <ul class="b">
+              {communityPve.map((b) => (
+                <li><a class="load" href={`#${b.t}`}><b>{b.n}</b><span class="split">{split(b.t)}</span></a>{b.note && <span class="sub">{b.note}</span>}</li>
+              ))}
+            </ul>
+            <p class="gnote">Endgame builds from the same <a href="https://github.com/Boco10/WoWForeverBuilds-Addon" rel="noopener">WoW Forever Builds</a> addon (MIT), checked against the client's trees the same way.</p>
           </section>
         )}
 
@@ -147,14 +170,14 @@ const ogImage = Object.prototype.hasOwnProperty.call(CLASS_COLOR, c.slug) ? `/og
                 <li><a class="load" href={`#${b.t}`}><b>{b.n}</b><span class="split">{split(b.t)}</span></a><span class="sub">{dominant(b.t) && !what(b).startsWith(dominant(b.t)) ? `${dominant(b.t)} · ` : ""}{what(b)}</span></li>
               ))}
             </ul>
-            <p class="gnote">From <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator — raid setups; it doesn't model PvP.</p>
+            <p class="gnote">From <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT), the open-source Forever simulator — raid setups; it doesn't model PvP.{wsSrc && <> Read from <a href={`https://github.com/wowsims/forever/commit/${wsSrc.commit}`} rel="noopener">its {wsSrc.date} version</a>; a class shows only while the simulator reads talents in the same order as the game.</>}</p>
           </section>
         )}
       </aside>
     </div>
     <div id="tal-tip" class="wowtip tal-tip" hidden role="tooltip"></div>
   </div>
-  <p class="small muted">Read from the WoW Forever game client's talent trees (build {data.build}){data.hotfixes ? " with Blizzard's latest hotfixes" : ""}, refreshed daily. Talents tagged NEW aren't in Classic Era. Click or tap to add a point, right-click or long-press to remove.</p>
+  <p class="small muted">Read from the WoW Forever game client's talent trees (build {data.build}){data.hotfixes ? " with Blizzard's latest hotfixes" : ""}, checked every 3 hours. Talents tagged NEW aren't in Classic Era. Click or tap to add a point, right-click or long-press to remove.</p>
   <script type="application/json" id="talent-data" set:html={jsonForHtml(c)} />
 </Base>
 <script>import "../../scripts/talents.ts"; import { mountSave } from "../../scripts/saveplan"; mountSave();</script>

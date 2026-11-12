@@ -82,3 +82,4 @@ jobs:
         run: |
           gh workflow run deploy-site.yml --ref main
           gh workflow run sim-weights.yml --ref main
+          gh workflow run talent-builds.yml --ref main

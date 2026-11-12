@@ -146,6 +146,7 @@ ns.guides = {
   WARRIOR = {
     { id = "arms-warrior-pvp-guide", title = "Arms Warrior PvP guide: Mortal Strike burst", spec = "Arms", kind = "Endgame PvP", from = 10, to = 60, order = "000000010101010102" },
     { id = "arms-warrior-leveling", title = "Arms leveling", spec = "Arms", kind = "Leveling", from = 10, to = 60, order = "0000" },
+    { id = "prot-warrior-raid", title = "Protection raid: main tank", spec = "Protection", kind = "Endgame PvE", from = 10, to = 60, order = "2020" },
     { id = "fury-warrior-pvp-guide", title = "Fury PvP: too many points", spec = "Fury", kind = "Endgame PvP", from = 10, to = 60, order = "101010101010" },
   },
   MAGE = {
@@ -173,7 +174,8 @@ class Community(unittest.TestCase):
             talents.write_text(json.dumps(OUR_TALENTS))
             out = build_talent_builds.community(tmp, talents)
         # Arms PvP: 3 points in talent 0, 5 in talent 1, 1 in talent 2 (index 2 = Mortal Strike) -> "351"
-        self.assertEqual(out, {"warrior": [{"n": "Arms PvP", "t": "351", "note": "Mortal Strike burst"}]})
+        self.assertEqual(out, {"warrior": [{"n": "Arms PvP", "t": "351", "k": "pvp", "note": "Mortal Strike burst"},
+                                           {"n": "Protection PvE", "t": "--2", "k": "pve", "note": "main tank"}]})
         # The leveling guide is skipped (kind), Fury PvP is skipped (6 points into a 5-rank talent),
         # and Mage is skipped entirely: Frost Warding's rank drifted, so the whole class fails the gate.
 class PatchGates(unittest.TestCase):
@@ -186,6 +188,24 @@ class PatchGates(unittest.TestCase):
         self.assertFalse(ok("warrior", "305", moved, ranks))         # rank 5 into a 1-rank talent
         self.assertFalse(ok("warrior", "3011", moved, ranks))        # more digits than the tree has
         self.assertTrue(ok("rogue", "999", moved, {}))               # no gate data: passes (tests)
+        self.assertFalse(ok("priest", "5", {"priest": None}, {}))     # engine order unreadable: nothing passes
+
+
+class EngineFormat(unittest.TestCase):
+    def test_reads_both_proto_styles_and_refuses_a_mismatch(self):
+        import check_talent_order as cto
+        for opts in ("", ", (talent_max_rank) = 5"):
+            with tempfile.TemporaryDirectory() as tmp:
+                (Path(tmp) / "proto").mkdir()
+                (Path(tmp) / "sim" / "rogue").mkdir(parents=True)
+                (Path(tmp) / "proto" / "rogue.proto").write_text(
+                    "message RogueTalents {\n    int32 a = 1 [(talent_spell_id) = 11%s];\n"
+                    "    int32 b = 2 [(talent_spell_id) = 22%s];\n    bool c = 3 [(talent_spell_id) = 33];\n}\n" % (opts, opts))
+                go = Path(tmp) / "sim" / "rogue" / "rogue.go"
+                go.write_text("var TalentTreeSizes = [3]int{1, 1, 1}\n")
+                self.assertEqual(cto.engine(tmp, "Rogue"), [[11], [22], [33]])
+                go.write_text("var TalentTreeSizes = [3]int{1, 1, 2}\n")   # one more than the proto lists
+                self.assertIsNone(cto.engine(tmp, "Rogue"))
 
 
 if __name__ == "__main__":

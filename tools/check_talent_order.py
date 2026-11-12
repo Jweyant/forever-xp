@@ -36,8 +36,13 @@ def engine(checkout, cls):
     sizes = re.search(r"TalentTreeSizes = \[3\]int\{\s*(\d+),\s*(\d+),\s*(\d+)\s*\}", go.read_text())
     if not msg or not sizes:
         return None
-    fields = sorted((int(n), int(s)) for n, s in re.findall(r"= (\d+) \[\(talent_spell_id\) = (\d+)\]", msg.group(1)))
+    # `= 3 [(talent_spell_id) = 17810]`, or with more options after it (`, (talent_max_rank) = 5]`)
+    fields = sorted((int(n), int(s)) for n, s in re.findall(r"= (\d+) \[\(talent_spell_id\) = (\d+)", msg.group(1)))
     ids = [s for _, s in fields]
+    if len(ids) != sum(map(int, sizes.groups())):
+        print(f"::warning::{cls}: the engine's talent list doesn't match its tree sizes; its format may have changed",
+              file=sys.stderr)
+        return None
     trees, at = [], 0
     for n in map(int, sizes.groups()):
         trees.append(ids[at:at + n])
