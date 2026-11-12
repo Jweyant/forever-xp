@@ -62,6 +62,65 @@ def posts(d):
     return [b for m, p, b in d.calls if m == "POST" and p.endswith("/messages")]
 
 
+class Outages(unittest.TestCase):
+    """A read that hits a Discord outage is tried again; a write never is."""
+
+    def setUp(self):
+        self.real, self.wait = bot.urllib.request.urlopen, bot.RETRY_WAIT
+        bot.RETRY_WAIT = 0
+        self.calls = []
+
+    def tearDown(self):
+        bot.urllib.request.urlopen, bot.RETRY_WAIT = self.real, self.wait
+
+    def answers(self, *steps):
+        import io
+
+        class Reply(io.BytesIO):
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+        def urlopen(req, timeout=30):
+            self.calls.append(req.get_method())
+            step = steps[min(len(self.calls), len(steps)) - 1]
+            if isinstance(step, Exception):
+                raise step
+            return Reply(step)
+        bot.urllib.request.urlopen = urlopen
+
+    def gone(self, code=503):
+        import io
+        return bot.urllib.error.HTTPError("https://discord.test", code, "down", None, io.BytesIO(b"upstream"))
+
+    def test_a_read_survives_a_bad_gateway_and_a_dropped_connection(self):
+        self.answers(self.gone(502), bot.urllib.error.URLError("reset"), b'{"id": "1"}')
+        self.assertEqual(bot.Discord("t").call("GET", "/users/@me"), {"id": "1"})
+        self.assertEqual(self.calls, ["GET", "GET", "GET"])
+
+    def test_a_read_gives_up_after_five_tries(self):
+        self.answers(self.gone())
+        with self.assertRaises(SystemExit):
+            bot.Discord("t").call("GET", "/users/@me")
+        self.assertEqual(len(self.calls), 5)
+
+    def test_a_write_is_never_sent_twice(self):
+        for failure in (self.gone(), bot.urllib.error.URLError("reset"), TimeoutError()):
+            self.calls.clear()
+            self.answers(failure)
+            with self.assertRaises(SystemExit):
+                bot.Discord("t").call("POST", "/channels/5/messages", {"content": "hi"}, write=True)
+            self.assertEqual(self.calls, ["POST"])
+
+    def test_other_errors_on_a_read_still_stop_at_once(self):
+        self.answers(self.gone(403))
+        with self.assertRaises(SystemExit):
+            bot.Discord("t").call("GET", "/guilds/1/roles")
+        self.assertEqual(self.calls, ["GET"])
+
+
 class Tests(unittest.TestCase):
     def test_config_is_valid(self):
         self.assertEqual(bot.validate(CFG), [])

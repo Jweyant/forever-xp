@@ -174,12 +174,16 @@ def main():
                 if chg:
                     q["chg"] = chg
         out.append(q)
+    unnamed = len(out) - len(questxp.named(out))
+    out = questxp.named(out)
     fill_gaps(out, talk, a.opendata, zones, items, a.questie)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     new = sum(1 for q in out if q.get("new"))
     print(f"XP: {sum(1 for q in out if q.get('xps'))} from opendata, {sum(1 for q in out if q.get('xpe'))} estimated; "
           f"{sum(1 for q in out if (q.get('start') or {}).get('src'))} quest givers from opendata")
+    if unnamed:
+        print(f"{unnamed} quests left out: no title in Questie yet")
     print(f"{len(out)} quests ({new} new to Forever, {sum(1 for q in out if q.get('chg'))} changed), "
           f"{len({q['z'] for q in out})} zones -> {a.out}")
 

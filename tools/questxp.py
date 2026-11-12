@@ -55,6 +55,13 @@ def read_jsonl(path):
                 yield row
 
 
+def named(quests):
+    """The quests that have a title. Blizzard adds quests to the game before their text, and a
+    source can list one with no name; those can't be shown, searched or sorted, so they're left
+    out until a later refresh has the name."""
+    return [q for q in quests if isinstance(q, dict) and isinstance(q.get("n"), str) and q["n"].strip()]
+
+
 def opendata_quests(root):
     """{quest_id: {xp, lv, req, obj}} from opendata's client-cache quest templates."""
     out = {}

@@ -20,6 +20,8 @@ from pathlib import Path
 
 import yaml
 
+import questxp  # same folder: tools/
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "site" / "src" / "data"
 
@@ -243,7 +245,7 @@ def write_questdb(gear):
     if not src.exists():
         (OUT / "questdb.json").write_text("[]")
         return
-    qdb = json.loads(src.read_text())
+    qdb = questxp.named(json.loads(src.read_text()))  # a quest with no title can't be shown or sorted
     items = {}
     if gear.exists():
         g = json.loads(gear.read_text())

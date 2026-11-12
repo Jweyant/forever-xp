@@ -6,7 +6,7 @@ export function getStaticPaths() {
   return qzones.map((z) => ({ params: { slug: z.slug }, props: { z } }));
 }
 const { z } = Astro.props as { z: (typeof qzones)[number] };
-const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.lv || 99) || a.n.localeCompare(b.n));
+const list = qdb.filter((q) => q.z === z.name).sort((a, b) => (a.lv || 99) - (b.lv || 99) || (a.n || "").localeCompare(b.n || ""));
 ---
 <Base image="/og/quests.jpg" title={`${z.name} quests`} description={`All ${z.count} WoW Forever quests in ${z.name}${z.max ? `, levels ${z.min} to ${z.max}` : ""}, with quest givers, coordinates and rewards.`}>
   <p class="crumbs"><a href="/quests/">Quests</a> / {z.name}</p>
