@@ -100,7 +100,10 @@ def fits(build, ranks):
 
 def ok_for(slug, build, moved, ranks):
     """A preset passes when it has no points where our order and the engine's disagree, and it
-    fits our current rank caps. With no gate data (tests, no --talents), everything passes."""
+    fits our current rank caps. A class whose engine order can't be read (moved[slug] is None)
+    passes nothing. With no gate data (tests, no --talents), everything passes."""
+    if slug in moved and moved[slug] is None:
+        return False
     diffs = moved.get(slug)
     if diffs is not None:
         parts = build.split("-")
@@ -127,8 +130,8 @@ def wowsims(checkout, talents_json=None):
         ranks = tree_ranks(talents_json)
         for cname, trees in check_talent_order.ours(talents_json).items():
             eng = check_talent_order.engine(checkout, cname)
-            if eng is not None:
-                moved[cname.lower()] = check_talent_order.differences(trees, eng)
+            # Unreadable engine order: we can't tell what its strings mean, so its presets stay out.
+            moved[cname.lower()] = None if eng is None else check_talent_order.differences(trees, eng)
     for f in sorted(base.glob("*/*/presets.ts")):
         slug, spec = (s.lower() for s in f.relative_to(base).parts[:2])
         if not re.fullmatch(r"[a-z]+", slug):
@@ -171,7 +174,7 @@ def _lua_list(v):
 
 
 def community(path, talents_json):
-    """Per class slug: the "Endgame PvP" builds from the WoW Forever Builds addon (MIT), decoded
+    """Per class slug: the endgame PvP and PvE builds from the WoW Forever Builds addon (MIT), decoded
     into our build strings. Its Guides.lua lists each class's trees as {name, row, col, maxRank}
     in the same row-then-column order our client data uses, and each guide's `order` holds two
     characters per point: the tree (0-2) and the talent's index in that tree, base 36.
@@ -209,8 +212,9 @@ def community(path, talents_json):
     pairs = [(tok, g) for tok, lst in (guides.items() if isinstance(guides, dict) else []) if isinstance(tok, str)
              for g in _lua_list(lst) if isinstance(g, dict)]
     for token, g in pairs:
-        if g.get("kind") != "Endgame PvP":
-            continue
+        kind = {"Endgame PvP": "pvp", "Endgame PvE": "pve"}.get(g.get("kind"))
+        if not kind:
+            continue  # leveling guides aren't end builds
         order, spec, title = str(g.get("order", "")), str(g.get("spec", ""))[:30], str(g.get("title", ""))
         if token not in ok or token not in CLASS_TOKEN or not re.fullmatch(r"[0-9a-z]{2,120}", order) or len(order) % 2:
             continue
@@ -229,7 +233,7 @@ def community(path, talents_json):
         if not valid(t):
             continue
         note = title.split(": ", 1)[1][:120] if ": " in title else ""
-        rec = {"n": f"{spec} PvP", "t": t, **({"note": note} if note else {})}
+        rec = {"n": f"{spec} {'PvP' if kind == 'pvp' else 'PvE'}", "t": t, "k": kind, **({"note": note} if note else {})}
         lst = out.setdefault(CLASS_TOKEN[token], [])
         if not any(x["t"] == t for x in lst):
             lst.append(rec)
@@ -243,7 +247,15 @@ def main():
     ap.add_argument("--community", help="pinned Boco10/WoWForeverBuilds-Addon checkout, for its PvP builds")
     ap.add_argument("--talents", default="gamedata/talents.json", help="our client talent data, the match gate for --community")
     ap.add_argument("--out", default="gamedata/talent-builds.json")
+    ap.add_argument("--source", action="append", default=[], metavar="NAME=COMMIT@DATE",
+                    help="which upstream commit a list came from (wowsims, community), shown on the talent pages")
     a = ap.parse_args()
+    sources = {}
+    for v in a.source:
+        m = re.fullmatch(r"(wowsims|community)=([0-9a-f]{40})@(\d{4}-\d{2}-\d{2})", v)
+        if not m:
+            sys.exit(f"bad --source {v!r}: want wowsims|community=<40-hex commit>@YYYY-MM-DD")
+        sources[m.group(1)] = {"commit": m.group(2), "date": m.group(3)}
     classes = {}
     for slug, lst in ours(a.simconfigs).items():
         classes.setdefault(slug, {})["ours"] = lst
@@ -254,6 +266,7 @@ def main():
             classes.setdefault(slug, {})["community"] = lst
     out = {"source": {"name": "wowsims/forever presets and forever-xp sim setups",
                       "url": "https://github.com/wowsims/forever", "license": "MIT"},
+           "sources": sources,
            "classes": classes}
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False, sort_keys=True))
     n = sum(len(v) for c in classes.values() for v in c.values())

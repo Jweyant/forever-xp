@@ -1,7 +1,8 @@
-# Watches the two upstreams the sims are pinned to: the wowsims/forever engine (its presets and
-# talent order) and Boco10/WoWForeverBuilds-Addon (the community PvP builds). When either has commits
-# past our pin, it opens or updates one issue with the compare links, so moving a pin stays a
-# reviewed pull request. Nothing from upstream is downloaded or run here: only `git ls-remote`.
+# Watches the one upstream our sims are pinned to: the wowsims/forever engine, which CI builds and
+# runs. When it has commits past our pin, this opens or updates one issue with the compare link, so
+# moving the pin stays a reviewed pull request. (The talent pages' preset and community build lists
+# follow upstream on their own, as text only: talent-builds.yml.) Nothing from upstream is
+# downloaded or run here: only `git ls-remote`.
 
 name: Upstream watch
 
@@ -41,7 +42,6 @@ jobs:
             fi
           }
           check wowsims/forever "$(pin WOWSIMS_COMMIT)"
-          check Boco10/WoWForeverBuilds-Addon "$(pin FOREVER_BUILDS_COMMIT)"
           title="Upstream updates for the sims and talent builds"
           existing=$(gh issue list --state open --search "in:title \"$title\"" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n1)
           if [ -z "$body" ]; then
@@ -49,7 +49,7 @@ jobs:
             if [ -n "$existing" ]; then gh issue close "$existing" --comment "Both pins are current now."; fi
             exit 0
           fi
-          text="Newer upstream commits than our pins in \`.github/workflows/sim-weights.yml\`:"$'\n\n'"$body"$'\n'"To take them: review the changes, then bump the pin in a pull request (for wowsims also \`tools/simrunner/go.mod\`). Talent builds from either source stay hidden for any class whose talent order or ranks don't match the Forever client, so nothing wrong is shown in the meantime."
+          text="Newer upstream commits than our pin in \`.github/workflows/sim-weights.yml\`:"$'\n\n'"$body"$'\n'"To take them: review the changes, then bump the pin in a pull request and \`tools/simrunner/go.mod\`. The talent pages' preset lists already follow upstream; only the stat-weight sims wait for this."
           if [ -n "$existing" ]; then
             gh issue edit "$existing" --body "$text"
           else
