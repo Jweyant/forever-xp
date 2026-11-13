@@ -57,4 +57,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims e855db5, Questie 90ab55b
+Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims e855db5, wowsims-items 65d253a, Questie 90ab55b
