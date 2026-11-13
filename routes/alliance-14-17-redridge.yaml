@@ -3,7 +3,7 @@
 # race-only steps are tagged. Order only; tools/guidegen.py fills coordinates, NPCs and checks from
 # Forever Questie data.
 # Forever-only quests on the way are included (Show of Force, Alther's Mill); their XP is an estimate
-# (~ in the report) until ForeverScout logs measure it, so treat the level numbers as approximate.
+# (~ in the report), so treat the level numbers as approximate.
 # Skipped on purpose: 116 Dry Times (needs four drinks bought in four cities), 120/121/143/144/145/146
 # Messenger chain (Stormwind/Westfall/Darkshire runs), 1097 Elmore's Task and 2281/2282 (Stormwind
 # trips; 2281 is Rogue-only), 20/98387/115 Blackrock quests and 2358/91 (level 21-23 mobs east of the

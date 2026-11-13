@@ -1,4 +1,4 @@
-"""Build gamedata/raids.json: every dungeon and raid with its bosses, loot, levels and player data.
+"""Build gamedata/raids.json: every dungeon and raid with its bosses, loot and levels.
 
 Sources (all open):
   - AtlasLoot Classic (GPL-2.0): raids, boss order, boss NPC IDs and loot tables
@@ -6,15 +6,12 @@ Sources (all open):
     armor and resistances; drop chances (classic data, Forever may differ)
   - Questie's Forever database (GPLv3): entrances, the quests that belong to each instance, and
     boss drops Questie knows for Forever (mostly quest items and recipes)
-  - ForeverScout player data (gamedata/players/): kills, wipes and kill times per boss, and which
-    drops players confirmed in Forever. Only aggregates; nothing per player.
 
 Usage:
   python3 tools/build_raids.py --atlasloot ext/AtlasLootClassic --cmangos ext/cmangos.sql \
       --questie data/questiedb --out gamedata/raids.json
 """
 import argparse
-import csv
 import json
 import re
 import sys
@@ -167,33 +164,9 @@ def questie_drops(qdir):
     return out
 
 
-def player_data(pdir):
-    """Boss name (lower case) -> encounter stats; source name (lower case) -> {item: players who saw it drop}."""
-    pdir = Path(pdir)
-    enc, seen = {}, {}
-    p = pdir / "encounters.csv"
-    if p.exists():
-        with p.open() as f:
-            for r in csv.DictReader(f):
-                try:
-                    enc[r["encounter"].strip().lower()] = {k: int(float(r[k])) for k in ("kills", "wipes", "median_kill_seconds", "groups") if r.get(k)}
-                except (KeyError, ValueError):
-                    continue
-    p = pdir / "loot.csv"
-    if p.exists():
-        with p.open() as f:
-            for r in csv.DictReader(f):
-                try:
-                    seen.setdefault(r["source"].strip().lower(), {})[int(r["item"])] = int(r["players"])
-                except (KeyError, ValueError):
-                    continue
-    return enc, seen
-
-
-def build(raids, inst, ctpl, chance, entr, quests, enc, seen, gear, other, qdrops=None):
-    """Loot per boss, in order: AtlasLoot's list where Forever's item data has the item, Questie's
-    Forever drops, then anything players confirmed (which can include items no other source has).
-    Each loot row is [item, chance or None, players who saw it or absent]."""
+def build(raids, inst, ctpl, chance, entr, quests, gear, other, qdrops=None):
+    """Loot per boss, in order: AtlasLoot's list where Forever's item data has the item, then
+    Questie's Forever drops. Each loot row is [item, chance or None]."""
     qdrops = qdrops or {}
     known = set(gear) | set(other)
     out = []
@@ -222,28 +195,18 @@ def build(raids, inst, ctpl, chance, entr, quests, enc, seen, gear, other, qdrop
                    if isinstance(c.get(f"Resistance{s.title()}"), int) and c[f"Resistance{s.title()}"] > 0}
             if res:
                 boss["res"] = res
-            confirmed = seen.get(b["name"].lower(), {})
             order, missing = [], 0
             for iid in b["items"]:
                 if iid in known:
                     order.append(iid)
                 else:
                     missing += 1
-            for iid in qdrops.get(b["npc"], []) + sorted(confirmed):
-                if iid not in order and (iid in known or iid in confirmed):
+            for iid in qdrops.get(b["npc"], []):
+                if iid not in order and iid in known:
                     order.append(iid)
-            loot = []
-            for iid in order:
-                row = [iid, round(min(ch[iid], 100), 1) if ch.get(iid) else None]
-                if confirmed.get(iid):
-                    row.append(confirmed[iid])
-                loot.append(row)
-            boss["loot"] = loot
+            boss["loot"] = [[iid, round(min(ch[iid], 100), 1) if ch.get(iid) else None] for iid in order]
             if missing:
                 boss["classic_only"] = missing
-            e = enc.get(b["name"].lower())
-            if e:
-                boss["seen"] = e
             bosses.append(boss)
         rec["bosses"] = bosses
         rec["other"] = [{"name": o["name"], "loot": [[i] for i in o["items"] if i in known]} for o in r["other"]]
@@ -259,18 +222,16 @@ def main():
     ap.add_argument("--questie", default=str(ROOT / "data" / "questiedb"))
     ap.add_argument("--items", default=str(ROOT / "gamedata" / "items.json"))
     ap.add_argument("--other", default=str(ROOT / "gamedata" / "other-items.json"))
-    ap.add_argument("--players", default=str(ROOT / "gamedata" / "players"))
     ap.add_argument("--out", default=str(ROOT / "gamedata" / "raids.json"))
     a = ap.parse_args()
     raids = atlasloot_raids(a.atlasloot)
     inst, ctpl, chance = cmangos_data(a.cmangos) if a.cmangos else ({}, {}, {})
     entr, quests = questie_data(a.questie)
-    enc, seen = player_data(a.players)
     qdrops = questie_drops(a.questie)
     g = json.loads(Path(a.items).read_text())
     gear = {i["id"] for i in (g["items"] if isinstance(g, dict) else g)}
     other = {o["id"] for o in json.loads(Path(a.other).read_text())} if Path(a.other).exists() else set()
-    out = build(raids, inst, ctpl, chance, entr, quests, enc, seen, gear, other, qdrops)
+    out = build(raids, inst, ctpl, chance, entr, quests, gear, other, qdrops)
     Path(a.out).write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False))
     print(f"{sum(1 for r in out if r['kind'] == 'dungeon')} dungeons, {sum(1 for r in out if r['kind'] == 'raid')} raids, {sum(len(r['bosses']) for r in out)} bosses, "
           f"{sum(len(b['loot']) for r in out for b in r['bosses'])} boss drops -> {a.out}")

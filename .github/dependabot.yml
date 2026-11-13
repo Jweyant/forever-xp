@@ -1,4 +1,4 @@
-# Weekly update PRs for pinned GitHub Actions and the site, server and uploader dependencies.
+# Weekly update PRs for pinned GitHub Actions and the site and 3D viewer dependencies.
 # Every update arrives as a pull request and needs the maintainer's review like any other change.
 # Version updates wait 14 days after a release (cooldown), matching the rule in CLAUDE.md;
 # security updates are not delayed.
@@ -17,14 +17,10 @@ updates:
     groups:
       site: { patterns: ["*"] }
   - package-ecosystem: npm
-    directory: /server
-    schedule: { interval: weekly }
-    cooldown: { default-days: 14 }
-  - package-ecosystem: npm
     directory: /viewer
     schedule: { interval: weekly }
     cooldown: { default-days: 14 }
   - package-ecosystem: gomod
-    directory: /uploader
+    directory: /tools/simrunner
     schedule: { interval: weekly }
     cooldown: { default-days: 14 }

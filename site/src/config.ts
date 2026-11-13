@@ -4,10 +4,7 @@ export const SITE = {
   tagline: "Routes, quests, gear and talents for WoW Forever",
   discord: "https://discord.gg/z8DfMK7Uw",
   repo: "https://github.com/Jweyant/forever-xp",
-  curseforge: "https://www.curseforge.com/wow/addons/foreverscout", // the ForeverScout CurseForge page
   viewer3d: "https://viewer.forever-xp.com", // the 3D gear viewer worker (viewer/ in this repo)
-  // Optional accounts (Discord sign-in, saved plans). Turn on after the setup in docs/accounts.md.
-  accounts: true,
   // Blizzard's times: name reservation opens Oct 27 at 4 PM Eastern, launch is Nov 4 at 3 PM Pacific.
   names: "2026-10-27T20:00:00Z",
   launch: "2026-11-04T23:00:00Z",

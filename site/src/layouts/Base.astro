@@ -16,8 +16,6 @@ const nav = [
   { href: "/talents/", label: "Talents" },
   { href: "/changes/", label: "Changes" },
   { href: "/news/", label: "News" },
-  { href: "/scout/", label: "ForeverScout" },
-  { href: "/leaderboard/", label: "Leaderboard" },
   { href: "/community/", label: "Community" },
 ];
 const canonical = new URL(path, Astro.site);
@@ -29,7 +27,7 @@ const ld = {
 const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.32 4.37A19.8 19.8 0 0 0 15.4 2.85a.07.07 0 0 0-.08.04c-.21.38-.45.87-.61 1.25a18.3 18.3 0 0 0-5.49 0 12.6 12.6 0 0 0-.62-1.25.08.08 0 0 0-.08-.04 19.7 19.7 0 0 0-4.88 1.52.07.07 0 0 0-.03.03C.53 9.05-.32 13.58.1 18.06a.08.08 0 0 0 .03.06 19.9 19.9 0 0 0 5.99 3.03.08.08 0 0 0 .08-.03c.46-.63.87-1.3 1.23-1.99a.08.08 0 0 0-.04-.11 13.1 13.1 0 0 1-1.87-.89.08.08 0 0 1-.01-.13l.37-.29a.07.07 0 0 1 .08-.01c3.93 1.79 8.18 1.79 12.06 0a.07.07 0 0 1 .08.01l.37.29a.08.08 0 0 1-.01.13c-.6.35-1.22.65-1.87.89a.08.08 0 0 0-.04.11c.36.7.77 1.36 1.23 1.99a.08.08 0 0 0 .08.03 19.8 19.8 0 0 0 6-3.03.08.08 0 0 0 .03-.06c.5-5.18-.84-9.67-3.55-13.66a.06.06 0 0 0-.03-.03ZM8.02 15.33c-1.18 0-2.16-1.09-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.33-.96 2.42-2.16 2.42Zm7.97 0c-1.18 0-2.16-1.09-2.16-2.42s.96-2.42 2.16-2.42c1.21 0 2.18 1.1 2.16 2.42 0 1.33-.95 2.42-2.16 2.42Z"/></svg>`;
 ---
 <!doctype html>
-<html lang="en" data-accounts={SITE.accounts ? "on" : undefined}>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -85,7 +83,6 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="m13 13 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span class="lbl">Search</span><kbd>/</kbd>
         </button>
-        {SITE.accounts && <a class="acct" href="/account/" data-acct hidden aria-label="Sign in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></svg><span data-acct-name>Sign in</span></a>}
         <a class="icon-btn discord" href={SITE.discord} rel="noopener" aria-label="Forever XP on Discord" title="Join our Discord" set:html={discordIcon} />
         <button class="icon-btn theme" type="button" aria-label="Switch light or dark theme" title="Switch theme"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg></button>
         <button class="icon-btn menu" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu">
@@ -102,7 +99,7 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
       <div class="cols">
         <div class="about">
           <a class="brand small-brand" href="/" aria-label="Forever XP home"><Logo size={36} /><span class="word">Forever <span>XP</span></span></a>
-          <p>A free, open community project for WoW Forever players. Data comes from the game client, open databases and players running ForeverScout.</p>
+          <p>A free, open community project for WoW Forever players. Data comes from the game client and open databases, refreshed automatically.</p>
           <p><a class="btn discord" href={SITE.discord} rel="noopener"><Fragment set:html={discordIcon} />Join the Discord</a></p>
         </div>
         <nav aria-label="Tools"><h2>Tools</h2><ul>
@@ -110,11 +107,11 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
           <li><a href="/bis/">BIS planner</a></li><li><a href="/talents/">Talent calculator</a></li><li><a href="/changes/">All Forever changes</a></li><li><a href="/news/">News from Blizzard</a></li>
         </ul></nav>
         <nav aria-label="Project"><h2>Project</h2><ul>
-          <li><a href="/scout/">ForeverScout addon</a></li><li><a href="/leaderboard/">Scout leaderboard</a></li><li><a href="/contribute/">Help with data</a></li><li><a href="/community/">Community</a></li>
+          <li><a href="/contribute/">Help with data</a></li><li><a href="/community/">Community</a></li>
           <li><a href={SITE.repo}>Source on GitHub</a></li><li><a href={`${SITE.repo}/security/policy`}>Security</a></li>
         </ul></nav>
       </div>
-      <p class="small muted credits">Our own data: leveling routes, quest XP-per-minute scores, the skip list, loot and drop sources from <a href="/scout/">ForeverScout</a> player logs, BIS stat weights and scoring, and the change list, built by Forever XP and published openly in the <a href={`${SITE.repo}/tree/main/gamedata`}>repository</a> (GPL-3.0).
+      <p class="small muted credits">Our own data: leveling routes, quest XP-per-minute scores, the skip list, BIS stat weights and scoring, and the change list, built by Forever XP and published openly in the <a href={`${SITE.repo}/tree/main/gamedata`}>repository</a> (GPL-3.0).
       Quest, NPC and object data from <a href="https://github.com/Questie/Questie">Questie</a> (GPLv3). Item stats from the Forever game client; item sources also from cmangos classic-db and AtlasLoot Classic. Change notes are Blizzard's, linked to each original post. Game icons are Blizzard's, loaded from their render service.
       Not affiliated with or endorsed by Blizzard Entertainment. World of Warcraft is a trademark of Blizzard Entertainment, Inc. Site code is GPL-3.0.</p>
     </div>
@@ -160,16 +157,6 @@ const discordIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
   .site-header nav a:hover { border-bottom-color: var(--line); }
   .site-header nav a[aria-current="page"] { border-bottom-color: var(--xp); color: var(--xp); }
   .actions { display: flex; align-items: center; gap: 0.4rem; flex: none; margin-left: auto; }
-  .acct { display: inline-flex; align-items: center; height: 38px; padding: 0 0.7rem; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 600; text-decoration: none; max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .acct:hover { border-color: var(--ink); }
-  .acct svg { width: 18px; height: 18px; flex: none; }
-  .acct span { overflow: hidden; text-overflow: ellipsis; }
-  /* Beside the full nav the account button is just its icon (the name is its label and tooltip). */
-  @media (min-width: 1321px), (max-width: 699px) {
-    .acct { width: 38px; padding: 0; justify-content: center; }
-    .acct span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  }
-  @media (max-width: 1320px) and (min-width: 700px) { .acct { gap: 0.4rem; } }
   .acct[hidden] { display: none; }
   .icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
   .icon-btn svg { width: 19px; height: 19px; }

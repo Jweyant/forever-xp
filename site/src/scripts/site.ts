@@ -1,7 +1,6 @@
 // Runs on every page: theme switch, phone menu, launch banner, quick search, item tooltips,
 // broken game icons and a small toast helper other scripts can use.
 import { loadGear, loadOther, tooltipHtml, otherTooltipHtml, placeTip, ICON, QUALITY, esc, num } from "./items";
-import { accountsOn, me, startSignIn, afterSignIn } from "./account";
 
 const root = document.documentElement;
 
@@ -113,7 +112,7 @@ const PAGES: [string, string, string][] = [
   ["Quest XP per minute", "/quests/xp/", "Fastest quests"], ["Skip list", "/skip/", "Quests to skip"],
   ["Item database", "/items/", "Every item"], ["BIS planner", "/bis/", "Best in slot"],
   ["Talent calculator", "/talents/", "All classes"], ["All Forever changes", "/changes/", "Patch notes"],
-  ["ForeverScout addon", "/scout/", "Download"], ["Community and Discord", "/community/", "Discord"],
+  ["Community and Discord", "/community/", "Discord"],
   ...["Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid"].map((c) =>
     [`${c} talents`, `/talents/${c.toLowerCase()}/`, "Talent calculator"] as [string, string, string]),
 ];
@@ -195,31 +194,6 @@ document.addEventListener("click", async (e) => {
   try { await navigator.clipboard.writeText(b.dataset.copy!); toast("Copied. Paste it in game chat."); }
   catch { toast("Couldn't copy. Select the text and press Ctrl+C."); }
 });
-
-// Account button (only when accounts are switched on): your name, or "Sign in".
-const signin = afterSignIn();
-const acct = document.querySelector<HTMLAnchorElement>("[data-acct]");
-if (acct && accountsOn()) {
-  me().then((who) => {
-    if (who === "off") return;
-    const label = acct.querySelector<HTMLElement>("[data-acct-name]") || acct;
-    if (who) {
-      label.textContent = who.name;
-      acct.href = "/account/";
-      acct.setAttribute("aria-label", `${who.name}: your saved plans`);
-      acct.title = `${who.name}: your saved plans`;
-    } else {
-      label.textContent = "Sign in";
-      acct.href = "/account/";
-      acct.setAttribute("aria-label", "Sign in");
-      acct.title = "Sign in with Discord to save plans";
-      acct.addEventListener("click", startSignIn);
-    }
-    acct.hidden = false;
-  });
-}
-if (signin === "ok") toast("Signed in. Your saved plans are under the account button, top right.");
-else if (signin === "failed") toast("Sign-in didn't work. Please try again.");
 
 // Item icons come from Blizzard's render service, which doesn't have every Forever icon.
 // When one fails to load, show the game's question-mark icon instead of an empty box.

@@ -7,8 +7,6 @@ export interface QQuest {
   rew?: { id: number; n: string; q?: number; icon?: string }[]; repu?: number; new?: 1; chg?: string[];
   /** Objective spawn areas from Questie: name, npc/object/item, zone, points on a 0-100 map grid. */
   objs?: { n: string; t: string; z: string; a: [number, number][] }[];
-  /** Where ForeverScout players progressed objectives: [x, y, players]. */
-  seen?: [number, number, number][];
 }
 /** The point nearest the middle of a spawn area, for a /way line. */
 export function centre(a: [number, number][]): [number, number] | null {

@@ -5,7 +5,6 @@ Inputs (all committed, nothing downloaded):
   reports/*.md                   per-guide estimates written by tools/guidegen.py
   reports/quest-scores-*.csv     per-quest XP/minute written by tools/score_quests.py
   tools/zone_sizes.json          uiMapId -> zone name
-  out/quest_timing.csv           measured timings from ForeverScout logs (optional; used when present)
 
 Output: site/src/data/{guides,quests,zones,meta}.json
 
@@ -29,8 +28,6 @@ OUT = ROOT / "site" / "src" / "data"
 # (travel included) of quests within two levels of it. A flat number can't work: a level 3 quest
 # can't reach what a level 30 quest does.
 SKIP_FRACTION = 0.6
-# Characters that must have logged a quest before its measured time replaces the model.
-MIN_PLAYERS = 3
 
 ACTION_KEYS = ("accept", "turnin", "complete")
 
@@ -108,7 +105,7 @@ def quest_chains(all_rows, shown):
     parts share a name (Elixir of Agony parts 1-5).
 
     all_rows: the full quest export (gamedata/quests.json: id, n, lv, pre, next).
-    shown: {qid: site quest row} with xp, minutes and measured values.
+    shown: {qid: site quest row} with xp and minutes.
     Returns {qid: {"name", "part", "parts", "xp", "minutes", "xp_per_min"}} for shown quests
     whose chain has two or more scored parts. part/parts count the whole storyline; xp, minutes
     and the rate sum only the scored parts.
@@ -173,7 +170,7 @@ def quest_chains(all_rows, shown):
         if len(rows) < 2:
             continue
         xp = sum(r.get("xp") or 0 for r in rows)
-        mins = round(sum((r.get("measured") or {}).get("minutes") or r.get("minutes") or 0 for r in rows), 1)
+        mins = round(sum(r.get("minutes") or 0 for r in rows), 1)
         rate = int(xp / mins) if mins else None
         name = byid[order[0]].get("n") or rows[0].get("name")
         for i, m in enumerate(order, 1):
@@ -250,20 +247,7 @@ def write_questdb(gear):
     if gear.exists():
         g = json.loads(gear.read_text())
         items = {i["id"]: i for i in (g["items"] if isinstance(g, dict) else g)}
-    # Where ForeverScout players actually progressed each objective (aggregated by tools/ingest_logs.py).
-    seen = {}
-    for p in (ROOT / "gamedata" / "players" / "objective_areas.json", ROOT / "out" / "objective_areas.json"):
-        if p.exists():
-            seen = json.loads(p.read_text())
-            break
     for q in qdb:
-        s = seen.get(str(q["id"])) if isinstance(seen, dict) else None
-        if isinstance(s, dict):
-            cells = [[num(c[0]), num(c[1]), num(c[2], int)] for o in s.values() if isinstance(o, dict)
-                     for c in (o.get("cells") or []) if isinstance(c, list) and len(c) == 3]
-            cells = [c for c in cells if None not in c and 0 <= c[0] <= 100 and 0 <= c[1] <= 100]
-            if cells:
-                q["seen"] = cells[:200]
         for r in q.get("rew", []):
             it = items.get(r["id"])
             if it:
@@ -321,21 +305,6 @@ def main():
         })
     guides.sort(key=lambda x: (x["faction"], x["from"] or 0))
 
-    # Measured timings, once ForeverScout logs have been ingested.
-    measured = {}
-    timing = ROOT / "out" / "quest_timing.csv"
-    if not timing.exists():  # published aggregate from the player-data workflow
-        timing = ROOT / "gamedata" / "players" / "quest_timing.csv"
-    if timing.exists():
-        with timing.open() as f:
-            for r in csv.DictReader(f):
-                q = num(r.get("quest_id") or r.get("quest"), int)
-                secs = num(r.get("median_seconds"))
-                if q and secs and secs > 0:
-                    measured[q] = {"minutes": round(secs / 60, 1),
-                                   "xp_per_min": num(r.get("xp_per_minute"), lambda v: int(float(v))),
-                                   "players": num(r.get("players"), int) or 0}
-
     quests = {}
     for sp in sorted((ROOT / "reports").glob("quest-scores-*.csv")):
         with sp.open() as f:
@@ -367,11 +336,6 @@ def main():
         q["in_route"] = bool(q["guides"])
         if qid in skip_notes:
             q["skip_note"] = skip_notes[qid]
-        # One player's log is a sample, not a measurement: it's shown, but the model's
-        # minutes and XP/min stay in charge until MIN_PLAYERS characters have logged the quest.
-        if qid in measured:
-            key = "measured" if measured[qid]["players"] >= MIN_PLAYERS else "early"
-            q[key] = measured[qid]
 
     # A chained quest is judged by its whole chain: part 4 of Elixir of Agony is pointless
     # alone and misleading alone (a 20-second turn-in looks like 7,000 XP/min).
@@ -393,7 +357,7 @@ def main():
         if qid in chains:
             q["chain"] = chains[qid]
         q["skip_below"] = skip_below(q.get("level"))
-        rate = (q.get("measured") or {}).get("xp_per_min") or q.get("xp_per_min")
+        rate = q.get("xp_per_min")
         rate = (q.get("chain") or {}).get("xp_per_min", rate)
         if q["in_route"]:
             q["verdict"] = "do"
@@ -421,14 +385,12 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
     build_game_data()
     gear = ROOT / "gamedata" / "items.json"
-    confirmed_items = 0
     if gear.exists():
         pub = ROOT / "site" / "public" / "data"
         pub.mkdir(parents=True, exist_ok=True)
         (pub / "items.json").write_bytes(gear.read_bytes())
         (OUT / "items.json").write_bytes(gear.read_bytes())
         write_item_index(gear, pub)
-        confirmed_items = count_confirmed(gear)
     else:
         (OUT / "items.json").write_text('{"build":"","items":[],"sets":{}}')
     # Stat weights measured by wowsims/forever (tools/build_simweights.py); the planner falls back to
@@ -439,77 +401,21 @@ def main():
     (OUT / "notes.json").write_text(notes.read_text() if notes.exists() else '{"rows":[],"sources":[],"articles":[],"announcements":[]}')
     tb = ROOT / "gamedata" / "talent-builds.json"
     (OUT / "talent-builds.json").write_text(tb.read_text() if tb.exists() else '{"classes":{}}')
-    pb = ROOT / "gamedata" / "players" / "talent_builds.json"
-    (OUT / "player-talents.json").write_text(pb.read_text() if pb.exists() else "{}")
     raids = ROOT / "gamedata" / "raids.json"
     (OUT / "raids.json").write_text(raids.read_text() if raids.exists() else "[]")
     if not (OUT / "other-items.json").exists():
         (OUT / "other-items.json").write_text("[]")
     write_questdb(gear)
-    write_scouts()
     (OUT / "guides.json").write_text(json.dumps(guides, indent=1))
     (OUT / "quests.json").write_text(json.dumps(sorted(quests.values(), key=lambda q: q["id"]), indent=1))
     (OUT / "zones.json").write_text(json.dumps(sorted(zones.values(), key=lambda z: z["name"]), indent=1))
     (OUT / "meta.json").write_text(json.dumps({
         "built": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "skip_fraction": SKIP_FRACTION,
-        "measured_quests": sum(1 for m in measured.values() if m["players"] >= MIN_PLAYERS),
-        "confirmed_items": confirmed_items,
         "quests": len(quests),
         "guides": len(guides),
     }, indent=1))
-    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones, {len(measured)} measured, "
-          f"{confirmed_items} items confirmed -> {OUT}")
-
-
-# A board name: a linked player's chosen or Discord name (2-20 of letters, digits, space, _ ' -),
-# or a character name shown by choice in game (2-12 letters, accents allowed; ingest_logs.GAME_NAME).
-SCOUT_HANDLE = re.compile(r"^(?:[A-Za-z0-9 _'-]{2,20}|[^\W\d_]{2,12})$")
-SCOUT_COUNTS = ("score", "quests", "drops", "discoveries", "zones", "sessions")
-
-
-def write_scouts():
-    """The Scout leaderboard for /leaderboard/ (tools/ingest_logs.py write_scouts), allow-listed:
-    names must be 2-20 of letters, digits, space, _ ' and -, every count is a whole number, lists are capped."""
-    src = ROOT / "out" / "scouts.json"
-    if not src.exists():  # published aggregate from the player-data workflow
-        src = ROOT / "gamedata" / "players" / "scouts.json"
-    try:
-        doc = json.loads(src.read_text()) if src.exists() else {}
-    except ValueError:
-        doc = {}
-    doc = doc if isinstance(doc, dict) else {}
-
-    def whole(v):
-        n = num(v, int)
-        return max(0, min(n, 10_000_000)) if isinstance(n, int) else 0
-
-    def rows(v, cap):
-        out = []
-        for r in v if isinstance(v, list) else []:
-            if isinstance(r, dict) and isinstance(r.get("handle"), str) and SCOUT_HANDLE.match(r["handle"]):
-                out.append({"handle": r["handle"], **{k: whole(r.get(k)) for k in SCOUT_COUNTS}})
-        out.sort(key=lambda r: (-r["score"], r["handle"]))
-        return out[:cap]
-
-    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
-    week = doc.get("week") if isinstance(doc.get("week"), dict) else {}
-    clean = {
-        "updated": whole(doc.get("updated")),
-        "totals": {k: whole(totals.get(k)) for k in ("scouts", "linked", "sessions", "quests", "drops", "discoveries")},
-        "week": {k: whole(week.get(k)) for k in ("scouts", "quests", "drops")},
-        "board": rows(doc.get("board"), 50),
-        "week_board": rows(doc.get("week_board"), 10),
-    }
-    (OUT / "scouts.json").write_text(json.dumps(clean, indent=1))
-    return clean
-
-
-def count_confirmed(gear):
-    """Items with at least one drop source confirmed by player logs (a `seen` count)."""
-    g = json.loads(gear.read_text())
-    return sum(1 for i in g.get("items", []) if isinstance(i, dict)
-               and any(isinstance(s, dict) and num(s.get("seen"), int) for s in i.get("src") or []))
+    print(f"{len(guides)} guides, {len(quests)} quests, {len(zones)} zones -> {OUT}")
 
 
 def decode_desc(d, rank):

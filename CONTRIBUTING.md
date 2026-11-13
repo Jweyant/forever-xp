@@ -1,34 +1,22 @@
 # Contributing
 
-## Logs
+## Reports
 
-The most useful contribution right now is a ForeverScout log. Every level range helps,
-especially brand-new Forever zones and quests. Submit logs with the
-[Submit a log](../../issues/new?template=submit-log.yml) issue form.
+Found a wrong step, a missing quest or an item with the wrong source? Open a
+[bug report](../../issues/new?template=bug.yml) or post it in the Discord.
 
 ## Code
 
 Read the security rules in [`CLAUDE.md`](CLAUDE.md#secure-development-rules) first; every pull
 request is checked against them.
 
-- Keep ForeverScout read-only. It records game events and never automates gameplay.
-- Never store character names, realms, GUIDs or chat. (Only exception: the one character name a
-  player opts in to show on the leaderboard with `/fscout board on`.)
-- Before opening a pull request that changes the addon, run the mocked-client test:
-
-  ```bash
-  lua5.1 tools/test/simulate_session.lua addon/ForeverScout /tmp/ForeverScout.lua
-  ```
+- The site is built from data. Fix a wrong number in the builder (`tools/`) or its source, not in
+  the generated files under `gamedata/` or `reports/`.
+- Routes are the hand-written part: edit `routes/*.yaml`, then run `tools/guidegen.py`.
+- Run the checks listed under "Before every push" in `CLAUDE.md`.
 
 ## Fixes for Questie
 
-Confirmed findings (seen by 2 or more players) go upstream to
-[QuestieDB](https://github.com/Questie/QuestieDB) as corrections in
+Confirmed fixes go upstream to [QuestieDB](https://github.com/Questie/QuestieDB) as corrections in
 `src/corrections/Forever/forever*Fixes.lua`. Check Questie's Discord first to avoid duplicating
 their work.
-
-## Releases
-
-Maintainers: bump nothing by hand. Push a tag such as `v0.2.0`. GitHub Actions stamps the version,
-publishes the zip to Releases, and uploads it to CurseForge once that's configured
-(see `.github/workflows/release.yml`).

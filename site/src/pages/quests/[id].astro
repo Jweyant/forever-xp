@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import Comments from "../../components/Comments.astro";
-import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, SUBMIT_LOG, type Quest } from "../../lib/data";
+import { questById, guideBySlug, VERDICT_LABEL, rateOf, meta, type Quest } from "../../lib/data";
 import { qdb, qById, questChain, centre, pct, zslug, QUALITY, ICON, SIDE_LABEL, xpText, OPENDATA, type QQuest, type Place } from "../../lib/questdb";
 import { itemById } from "../../lib/gear";
 
@@ -16,7 +16,6 @@ const pre = (q.pre || []).filter((id) => id > 0);
 // Walk the chain backwards and forwards (links in either direction) so the page shows where this quest sits.
 const { chain, branches, from } = questChain(q);
 const objs = (q.objs || []).filter((o) => o && typeof o.n === "string" && Array.isArray(o.a) && o.a.length);
-const seen = Array.isArray(q.seen) ? q.seen : [];
 const why = !s ? null :
   s.verdict === "do" ? "Part of a Forever XP route." :
   s.verdict === "skip" ? (s.skip_note?.reason ? `Skipped in the route: ${s.skip_note.reason}.` :
@@ -49,10 +48,8 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   <dl class="facts">
     <div><dt>Quest level</dt><dd>{q.lv > 0 ? q.lv : "–"}</dd></div>
     <div><dt>Required level</dt><dd>{q.req || "–"}</dd></div>
-    <div><dt>Quest XP</dt><dd>{s?.xp && !q.xpe ? s.xp : xpText(q)}{q.xpe && <span class="muted small" title="No source has this quest's XP yet. This is the usual XP for a quest of its level and kind; ForeverScout logs will replace it."> estimate</span>}</dd></div>
-    {s && (s.measured
-      ? <div><dt>Minutes (measured)</dt><dd>{s.measured.minutes ?? "–"}</dd></div>
-      : <div><dt>Estimated minutes</dt><dd title="Talking, travel from the giver to the objectives and back to the turn-in, kills and loot, at Classic run speed. Player logs replace it.">{s.minutes ?? "–"}</dd></div>)}
+    <div><dt>Quest XP</dt><dd>{s?.xp && !q.xpe ? s.xp : xpText(q)}{q.xpe && <span class="muted small" title="No source has this quest's XP yet. This is the usual XP for a quest of its level and kind."> estimate</span>}</dd></div>
+    {s && <div><dt>Estimated minutes</dt><dd title="Talking, travel from the giver to the objectives and back to the turn-in, kills and loot, at Classic run speed.">{s.minutes ?? "–"}</dd></div>}
     {s && <div><dt>XP per minute</dt><dd>{s.unlocated || rate == null ? "–" : rate}</dd></div>}
     {q.repu ? <div><dt>Reputation rewards</dt><dd>{q.repu}</dd></div> : null}
   </dl>
@@ -85,13 +82,12 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   {objs.length > 0 && (<>
     <h2>Objective areas</h2>
     <div class="where">
-      {objs.map((o, i) => {
+      {objs.map((o) => {
         const c = centre(o.a);
         return (
           <figure class="pin">
             <div class="grid" aria-hidden="true">
               {o.a.map(([x, y]) => <span class="spawn" style={`left:${pct(x)}%;top:${pct(y)}%`}></span>)}
-              {i === 0 && seen.map(([x, y, n]) => <span class="seen" title={`${n} players`} style={`left:${pct(x)}%;top:${pct(y)}%`}></span>)}
             </div>
             <figcaption>
               <span class="role">{o.t === "item" ? "Drops from" : o.t === "object" ? "Use" : "Kill or find"}</span>
@@ -103,7 +99,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
         );
       })}
     </div>
-    <p class="small muted">Dots are spawn points from Questie's data{seen.length > 0 && <>; gold squares are where ForeverScout players actually progressed this quest</>}. The <code>/way</code> line points at the middle of the area.</p>
+    <p class="small muted">Dots are spawn points from Questie's data. The <code>/way</code> line points at the middle of the area.</p>
   </>)}
 
   {q.rew && q.rew.length > 0 && (<>
@@ -137,11 +133,7 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   </>)}
 
   <div class="callout">
-    {s?.measured
-      ? <p>Measured from {s.measured.players} players' logs: a median of {s.measured.minutes} minutes of play between accepting and turning it in.</p>
-      : s?.early
-      ? <p>{s.early.players === 1 ? "One player has" : `${s.early.players} players have`} logged this quest so far ({s.early.minutes} minutes). The estimate above stays until three have. If you do it with <a href="/scout/">ForeverScout</a> running, your time counts. <a href={SUBMIT_LOG}>Send a log</a></p>
-      : <p>No player has logged this quest yet, so the minutes are an estimate: talking, running from the giver to the objectives and on to the turn-in, kills and loot. If you do it with <a href="/scout/">ForeverScout</a> running, your time replaces it. <a href={SUBMIT_LOG}>Send a log</a></p>}
+    <p>The minutes are an estimate: talking, running from the giver to the objectives and on to the turn-in, kills and loot, at Classic speeds.</p>
   </div>
   <p class="small muted">Quest ID {q.id}. Quest data from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3){fromOpendata && <>, with gaps filled from <a href={OPENDATA}>opendata</a> (CC BY 4.0)</>}.</p>
   <Comments />
@@ -163,7 +155,6 @@ const kind = (t: string) => (t === "object" ? "Object" : t === "item" ? "Item" :
   .pin .dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid #111; box-shadow: 0 0 0 3px #0006, 0 0 10px #e8b92e; }
   .pin .dot.start { background: #e8b92e; } .pin .dot.end { background: #69ccf0; }
   .pin .spawn { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #e05a4f; opacity: .85; }
-  .pin .seen { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border: 1px solid #111; background: #e8b92e; }
   .pin figcaption { display: grid; gap: 0.1rem; }
   .pin .role { font: 600 0.75rem var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--xp); }
   .rewards { list-style: none; padding: 0; display: grid; gap: 0.4rem; }

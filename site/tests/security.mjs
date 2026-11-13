@@ -54,8 +54,6 @@ const cases = [
   ["BIS planner link", `/bis/#c=${E}&s=${E}&g=${E}&l=${E}&f=${E}&r=${E}.${E}&src=${E}&cur=0-${E}&plan=0-${E}.1-1&own=${E}&w=${E}:1`],
   ["BIS planner link, prototype names", `/bis/#c=constructor&s=__proto__&g=toString&r=hasOwnProperty.F&f=constructor`],
   ["BIS planner saved state", "/bis/", { storage: { "fxp-gear": `c=${E}&r=${E}&s=${E}` } }],
-  ["BIS gear import", "/bis/", { import: `FXPG1:WARRIOR:60:${P}.F:H:head=${P},chest=1` }],
-  ["BIS gear import, prototype class", "/bis/", { import: "FXPG1:CONSTRUCTOR:60:Orc.M:H:head=1" }],
   ["BIS talent build in the link", `/bis/#c=WARRIOR&t=${E}`],
   ["BIS talent build, prototype names", "/bis/#c=WARRIOR&t=__proto__&w=__proto__:5.constructor:3"],
   ["BIS talent box", "/bis/", { talents: `/talents/${P}/#1` }],
@@ -67,31 +65,6 @@ const cases = [
   ["Quest XP table", `/quests/xp/?text=${E}&zone=${E}&verdict=${E}`],
   ...(slug ? [["Zone page", `/quests/zone/${slug}/?text=${E}&side=${E}&new=${E}`]] : []),
   ["Quick search", "/", { search: P }],
-  // The accounts API answering with hostile names and plan data (as if the database were tampered with).
-  // Signed out: the sign-in buttons must not be plain links into /api/ (checked on every page below).
-  ["Signed-out sign-in buttons", "/bis/", { expect: "a[data-save-signin]:not([hidden])[href=\"/account/\"]", api: { "/api/me": { status: 401, body: { error: "signed-out" } } } }],
-  ["Account page, hostile saved plans", "/account/", { expect: "[data-plans] tr", api: {
-    "/api/me": { name: P },
-    "/api/plans": { plans: [
-      { id: "AAAAAAAAAAAAAAAA", kind: "bis", name: P, data: P, updated: P },
-      { id: "BBBBBBBBBBBBBBBB", kind: "talents", name: P, data: `warlock#${P}`, updated: 1 },
-      { id: "CCCCCCCCCCCCCCCC", kind: "talents", name: "ok", data: "javascript:alert(1)//#1", updated: 1 },
-      { id: `${P}`, kind: "bis", name: P, data: "c=WARRIOR", updated: 1 },
-    ] },
-  } }],
-  // The uploader's claim link and the scouting API, with hostile values. The claim code must be exactly 32 hex
-  // characters; anything else is dropped, and the hostile API rows must not render (bad ids/names are filtered).
-  ["Account page, hostile claim code", `/account/?claim=${E}`, { expect: "[data-signed-in]:not([hidden])", api: {
-    "/api/me": { name: P }, "/api/plans": { plans: [] }, "/api/scouts": { scouts: [] },
-  } }],
-  ["Account page, valid claim code and hostile scouts", `/account/?claim=${"a".repeat(32)}`, { expect: "[data-pending]:not([hidden])", api: {
-    "/api/me": { name: P }, "/api/plans": { plans: [] },
-    "/api/scouts": { scouts: [
-      { id: "f".repeat(64), handle: "Scout abcdef", name: P, shown: "Kinos", visible: true },
-      { id: P, handle: P, name: P, shown: P, visible: true },
-      { id: "e".repeat(64), handle: `Scout ${P}`, name: null, shown: P, visible: true },
-    ] },
-  } }],
 ];
 
 const browser = await chromium.launch();
@@ -102,30 +75,11 @@ for (const [name, path, opts = {}] of cases) {
   page.on("dialog", (d) => { problems.push(`dialog opened: ${d.message()}`); d.dismiss().catch(() => {}); });
   page.on("pageerror", (e) => problems.push(`script error: ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error" && /Content Security Policy|Refused to/.test(m.text())) problems.push(`CSP violation: ${m.text().slice(0, 200)}`); });
-  if (opts.api) {
-    // Test the account code whether or not accounts are switched on in config.ts: mark the page
-    // as accounts-on after parsing, before its module scripts run.
-    await page.addInitScript(() => document.addEventListener("readystatechange", () => {
-      if (document.readyState === "interactive") document.documentElement.dataset.accounts = "on";
-    }));
-    await page.route("**/api/**", (route) => {
-      const path = new URL(route.request().url()).pathname;
-      const body = opts.api[path];
-      const reply = body && typeof body.status === "number" ? body : body ? { status: 200, body } : { status: 404, body: {} };
-      route.fulfill({ status: reply.status, contentType: "application/json", body: JSON.stringify(reply.body) });
-    });
-  }
   if (opts.storage) {
     await page.addInitScript((s) => { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); }, opts.storage);
   }
   await page.goto(base + path, { waitUntil: "load" });
   await page.waitForTimeout(1200);
-  if (opts.import) {
-    await page.evaluate(() => { const d = document.querySelector(".import"); if (d) d.open = true; });
-    await page.fill("#g-import", opts.import);
-    await page.click("#g-import-go");
-    await page.waitForTimeout(400);
-  }
   if (opts.talents) {
     await page.fill("#g-talents", opts.talents);
     await page.press("#g-talents", "Tab");
@@ -141,10 +95,8 @@ for (const [name, path, opts = {}] of cases) {
     ran: !!window.__xss,
     scripts: [...document.querySelectorAll("script:not([src])")].filter((s) => s.textContent.includes("__xss")).length,
     jsLinks: [...document.querySelectorAll("a[href]")].filter((a) => /^\s*javascript:/i.test(a.getAttribute("href") || "")).length,
-    apiLinks: [...document.querySelectorAll("a[href]")].filter((a) => new URL(a.href, location.href).pathname.startsWith("/api/")).length,
   }));
   if (found.jsLinks) problems.push(`${found.jsLinks} javascript: link(s) in the page`);
-  if (found.apiLinks) problems.push(`${found.apiLinks} plain link(s) into /api/ (sign-in must be a form POST)`);
   if (found.probe) problems.push(`${found.probe} injected element(s) in the page`);
   if (found.ran) problems.push("injected script ran");
   if (found.scripts) problems.push("injected <script> element in the page");

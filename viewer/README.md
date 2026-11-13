@@ -34,7 +34,7 @@ The page also reads gear from its URL hash, for testing:
   pattern, fine for a free fan site, but Wowhead can change or close it at any time — the site
   treats 3D as an extra view and keeps its own drawn figure as the default.
 - Items new to Forever that Wowhead has no art for yet just don't render on the model.
-- Deploys mirror `server/`: the **Deploy 3D viewer** workflow runs `npm ci`, the tests,
+- The **Deploy 3D viewer** workflow runs `npm ci`, the tests,
   `npm run vendor` (copies the pinned jQuery and wow-model-viewer files into `public/vendor/`)
   and `wrangler deploy` when `viewer/` changes on main. It needs the same Cloudflare secrets
   plus a `VIEWER_HOST` repository variable (the hostname; Cloudflare creates DNS and the

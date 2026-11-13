@@ -6,8 +6,7 @@
 
 Build strings are one digit per talent in tree order, trees joined by "-": the same format as the
 site's talent calculator hash and the sim configs, and tools/check_talent_order.py guards that the
-order means the same talents to us and to wowsims. Player-measured popularity is separate
-(tools/ingest_logs.py -> gamedata/players/talent_builds.json).
+order means the same talents to us and to wowsims.
 
 Usage:
   python3 -I tools/build_talent_builds.py --simconfigs gamedata/simconfigs --wowsims ext/wowsims \

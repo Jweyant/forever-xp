@@ -6,7 +6,7 @@
 #   - wowlayerup-forever/opendata (data CC BY 4.0) for quest XP and givers Questie doesn't have yet
 #   - wowsims/forever (MIT) item database, for item icons the client tables leave unnamed
 # It also rebuilds gamedata/quests.json (every Forever quest) from Questie and gamedata/raids.json
-# (dungeons and raids, with player kill data from gamedata/players/), and commits the result
+# (dungeons and raids), and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
 #
 # Runs daily (Questie and the Forever client change often around launch), on demand (Actions > Refresh gear data > Run workflow), and on pushes to
@@ -39,15 +39,6 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
-
-      # Player loot sightings (gamedata/players/loot.csv) are committed to the `data` branch by
-      # the player-data workflow; the gear build folds them in as confirmed drop sources.
-      - name: Use the newest player loot data
-        run: |
-          git fetch -q --depth 1 origin data || { echo "No data branch yet."; exit 0; }
-          f=gamedata/players/loot.csv
-          d=$(git log -1 --format=%ct FETCH_HEAD -- "$f" 2>/dev/null); m=$(git log -1 --format=%ct HEAD -- "$f" 2>/dev/null)
-          if [ "${d:-0}" -gt "${m:-0}" ]; then mkdir -p gamedata/players; git show "FETCH_HEAD:$f" > "$f"; echo "Using $f from the data branch"; fi
 
       - name: Get open-source data
         run: |

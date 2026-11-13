@@ -5,13 +5,9 @@
 Report security problems privately through GitHub's **Report a vulnerability** button on the
 Security tab, not in a public issue.
 
-## How player data is handled
+## Player data
 
-- The upload server only accepts ForeverScout files with sharing turned on, limits size,
-  re-uploads and new logs per network address, and never stores IP addresses.
-- Logs are read as plain data (`tools/luadata.py`). They are never run as Lua.
-- Drops from player logs only count once at least two different players have reported them.
-- Downloading logs needs the admin token, which lives only in GitHub Actions secrets.
+The site has no accounts, no sign-in and no uploads, and collects nothing from players.
 
 ## The website
 
@@ -29,15 +25,15 @@ outside input as untrusted, allow-list it, escape it, keep the CSP strict, and k
 of code.
 
 Every pull request runs:
-- **CodeQL** on the site, tools, server, uploader and workflows. Merges are blocked on any
+- **CodeQL** on the site, tools and workflows. Merges are blocked on any
   high-severity finding.
 - **A hostile-input browser test** (`site/tests/security.mjs`) that pushes attack strings through
-  every link, saved-data, search and import path and fails on any injected HTML or script.
-- **Dependency audits**: `npm audit` for the site and `govulncheck` for the uploader.
+  every link, saved-data and search path and fails on any injected HTML or script.
+- **Dependency audits**: `npm audit` for the site and the 3D viewer.
 
 ## Dependencies and code scanning
 
-Dependabot opens weekly update PRs for the site, server, uploader and GitHub Actions. Every Action
+Dependabot opens weekly update PRs for the site, the 3D viewer, the sim runner and GitHub Actions. Every Action
 is pinned to a commit SHA. CodeQL scans JavaScript/TypeScript, Python, Go and the workflows on
 every pull request.
 

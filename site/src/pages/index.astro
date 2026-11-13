@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import XpBar from "../components/XpBar.astro";
 import Logo from "../components/Logo.astro";
-import { guides, quests, meta, scouts, rateOf, fmtMinutes } from "../lib/data";
+import { guides, quests, rateOf, fmtMinutes } from "../lib/data";
 import { qdb } from "../lib/questdb";
 import { gear } from "../lib/gear";
 import notesJson from "../data/notes.json";
@@ -96,27 +96,12 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
     <div class="mark"><Logo size={190} animate /></div>
     <div class="copy">
       <h1>Everything you need for WoW Forever, in one place.</h1>
-      <p class="lede">Plan your gear, find any quest, read every change Blizzard made, and level on routes built from real player logs. Free, open source, and run by players.</p>
+      <p class="lede">Plan your gear, find any quest, read every change Blizzard made, and level on routes that say what to skip. Free, open source, and run by players.</p>
       <div class="ctas">
         <a class="btn" href="/bis/">Plan your gear</a>
         <a class="btn discord" href={SITE.discord} rel="noopener">Join the Discord</a>
       </div>
       <p class="launch-count" data-names={SITE.names} data-launch={SITE.launch}><b>WoW Forever launches November 4.</b> <span class="cd"></span></p>
-    </div>
-  </section>
-
-  <section class="scoutband" aria-labelledby="sb-title">
-    <span class="ico lg"><img src={ICON("inv_misc_bag_10")} alt="" width="58" height="58" loading="lazy" /></span>
-    <div>
-      <h2 id="sb-title">ForeverScout records the gear you find</h2>
-      <p>Forever adds items Classic never had, and nobody knows where most of them drop yet. When you loot something green or better, ForeverScout notes the item and the NPC or chest that dropped it. <b>Each recording helps other players find new gear and new items.</b></p>
-      <ul>
-        <li>Drop sources show up in the <a href="/items/">item database</a> and the <a href="/bis/">BIS planner</a></li>
-        <li>Once two players loot the same drop, its item page says <b>Confirmed in Forever</b></li>
-        <li>Every quest you time and drop you log earns points on the <a href="/leaderboard/">Scout leaderboard</a></li>
-        <li>No names, realms, gold or chat (your name only if you want it on the leaderboard)</li>
-      </ul>
-      <p class="ctas"><a class="btn" href="/scout/">Get ForeverScout</a> <a class="btn secondary" href="/leaderboard/">See the leaderboard</a></p>
     </div>
   </section>
 
@@ -174,13 +159,12 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
   </section>
 
   <section>
-    <h2>How the numbers get better</h2>
+    <h2>How the site stays current</h2>
     <ol class="loop">
-      <li><h3>You play</h3><p>ForeverScout records quests, XP, loot and how long each quest really took. No names, realms or chat.</p></li>
-      <li><h3>Logs come in</h3><p>You paste your export on the <a href="/send/">Send page</a> (or the optional uploader app sends it for you).</p></li>
-      <li><h3>Everyone benefits</h3><p>Routes get measured times, drops get a "Confirmed in Forever" badge on their item page, missing quests go back to Questie, and you climb the <a href="/leaderboard/">Scout leaderboard</a>.</p></li>
+      <li><h3>Blizzard changes the game</h3><p>A new client build, a hotfix or a staff post on the official forums.</p></li>
+      <li><h3>The site rebuilds itself</h3><p>Items, quests and dungeon loot refresh every day, talents every three hours and Blizzard's notes every hour, from the game client and open databases.</p></li>
+      <li><h3>You see it the same day</h3><p>Every change lands in the <a href="/changes/">change list</a>, and the item database, BIS planner and talent calculator use the new data.</p></li>
     </ol>
-    <p><a class="btn secondary" href="/scout/">Get ForeverScout</a> <span class="muted small">From player logs so far: {meta.measured_quests} quests measured, {meta.confirmed_items || 0} item drops confirmed in Forever{scouts.totals.scouts > 0 ? `, by ${Number(scouts.totals.scouts)} scouts` : ""}.</span></p>
   </section>
 </Base>
 <script>
@@ -230,13 +214,6 @@ const recentNews = headlines.filter((a) => (Date.now() - Date.parse(`${a.date}T1
   .launch-count { margin-top: 1.1rem; color: var(--muted); }
   .launch-count b { color: var(--ink); }
   @media (max-width: 760px) { .hero { grid-template-columns: 1fr; } .hero .mark { padding: 0; } .hero .mark :global(svg) { width: 130px; height: auto; } }
-  .scoutband { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.4rem 1.2rem; align-items: start; margin-top: 1.5rem; padding: 1.2rem 1.4rem; border: 1px solid var(--line); border-left: 4px solid var(--xp); border-radius: 10px; background: color-mix(in srgb, var(--xp) 8%, var(--surface)); }
-  .scoutband .ico { --qb: #1eff00; }
-  .scoutband h2 { margin: 0 0 0.4rem; font-size: var(--step-2); }
-  .scoutband p { max-width: 75ch; }
-  .scoutband ul { margin: 0.2rem 0 0.9rem; padding-left: 1.1rem; }
-  .scoutband .ctas { margin: 0; }
-  @media (max-width: 560px) { .scoutband { grid-template-columns: 1fr; } }
   .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.8rem; margin-top: 2rem; }
   .tools a { display: grid; grid-template-columns: auto 1fr; column-gap: 0.9rem; row-gap: 0.15rem; align-items: start; padding: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); transition: border-color .12s, transform .12s; }
   .tools a:hover { border-color: var(--xp); transform: translateY(-1px); }

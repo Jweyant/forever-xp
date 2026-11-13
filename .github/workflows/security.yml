@@ -48,9 +48,6 @@ jobs:
       - name: Suggested plans test
         working-directory: site
         run: npm run test:plans
-      - name: Accounts API tests
-        working-directory: site
-        run: npm run test:api
       - name: Data tool tests
         run: |
           python3 tools/test/test_wago.py
@@ -63,48 +60,8 @@ jobs:
           python3 tools/test/test_questxp.py
           python3 tools/test/test_quest_counts.py
           python3 tools/test/test_quest_chains.py
-          python3 tools/test/test_objective_areas.py
           python3 tools/test/test_raids.py
           python3 -I tools/test/test_talent_builds.py
-          python3 tools/test/test_loot.py
-          python3 tools/test/test_scouts.py
-          python3 tools/test/test_quest_timing.py
-      - name: Addon data matches the site
-        # The in-game BIS planner is a Lua port of the site's; both must read the same data and
-        # pick the same items. lupa runs the addon's Lua 5.1 code here. (site data was generated above.)
-        run: |
-          pip install lupa==2.8
-          python3 tools/build_addon_data.py
-          python3 tools/test/test_addon_data.py
-          python3 tools/test/test_planner.py
-
-  uploader:
-    name: Uploader security
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version: "1.27"
-      - name: Vet, tests and vulnerability check
-        working-directory: uploader
-        run: |
-          go vet ./...
-          go test ./...
-          go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
-
-  server:
-    name: Upload server tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: "22"
-      - name: Tests (size limits, rate limits, input validation)
-        working-directory: server
-        run: npm test
-
   viewer:
     name: 3D viewer tests
     runs-on: ubuntu-latest

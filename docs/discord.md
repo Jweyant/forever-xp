@@ -31,29 +31,11 @@ never needs Administrator.
 
 After that, the #forever-announcements feed starts on its own with the next new Blizzard post.
 
-## #leaderboard
-
-The channel marked `"report": true` in `discord/server.json` is the read-only #leaderboard. The
-**Scout report** workflow keeps it current from `gamedata/players/scouts.json` (built by the
-player-data workflow from shared ForeverScout logs):
-
-- **Every hour**, just after the player-data refresh, `update-scouts` edits one "Scout
-  standings" message (all-time top 10, this week's top 3) in place. It's never published, so
-  servers following the channel aren't sent every refresh.
-- **Mondays**, `post-scouts` posts the weekly Scout report and publishes it to followers.
-
-Nothing is posted until a player has linked their install to their forever-xp.com account.
-Only linked players appear, under their chosen or Discord name (letters, digits, spaces, `_ ' -`
-only, so no mentions or markup). The bot posts only names in that shape and whole numbers, with
-mentions off. To preview:
-**Actions > Scout report > Run workflow**, pick standings or report, with "Only show what would be
-posted" ticked.
-
 ## Site updates
 
 The channel marked `"updates": true` in `discord/server.json` is #announcements. The **Site
 updates** workflow posts there when a pull request lands on `main` with files under `site/src`,
-`site/public`, `addon`, `uploader` or `routes`, and publishes it to servers that follow the
+`site/public` or `routes`, and publishes it to servers that follow the
 channel. The post is the pull request's title plus the text under a `## Announce` heading in its
 description (bullets are kept; keep it to what a player would notice). No `## Announce` section
 posts the title alone. Label a pull request `no-announce` to skip it; dependency bumps are skipped.
@@ -64,7 +46,7 @@ number and "Only show what would be posted" ticked.
 ## Roles
 
 `roles` in `discord/server.json` is listed top to bottom in display order: Admin, Moderator,
-Contributor, ForeverScout tester and Scout. Admin is a name tag for the server owner, who already has every
+Contributor and Founding Member. Admin is a name tag for the server owner, who already has every
 permission. A member's name takes the color of their highest role.
 
 - The bot creates missing roles with **no permissions** and not mentionable, keeps each role's
@@ -75,25 +57,6 @@ permission. A member's name takes the color of their highest role.
   says which roles it had to leave alone.
 - Staff permissions (Moderator) are given by hand in Server Settings > Roles, since a bot can't
   grant permissions it doesn't have.
-
-## Scout role and #scouts
-
-Players who link a ForeverScout install to their forever-xp.com account (and haven't hidden
-themselves there) get the **Scout** role; **#scouts** is visible to that role only. The Discord
-workflow runs `scout-role` every hour: it reads the linked players' Discord IDs from
-`https://forever-xp.com/api/scouts/discord`, gives the role to members on the list and takes it from
-members who unlinked or hid themselves (never more than 25 removals in one run, and nothing if the
-list can't be read). It logs counts only.
-
-One-time setup:
-
-1. Make a long random token (at least 32 characters, for example from a password manager).
-2. In the Cloudflare Pages project's environment variables, add `SCOUT_ROLES_TOKEN` as a secret with
-   that value. Until it's set the API route doesn't exist.
-3. In the GitHub repo, add the same value as the Actions secret `SCOUT_ROLES_TOKEN`.
-4. Run **Actions > Discord > Run workflow** once with "Only show what would change" unticked, so the
-   Scout role and #scouts channel are created. The role needs the same Server Members Intent the
-   founding-members job uses.
 
 ## Security
 
