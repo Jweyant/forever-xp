@@ -4,7 +4,8 @@
 #   - AtlasLoot Classic (GPL-2.0) for instance, boss, PvP and faction reward lists
 #   - Questie's Forever database (GPLv3) for Forever quest rewards, vendors, chests and drops
 #   - wowlayerup-forever/opendata (data CC BY 4.0) for quest XP and givers Questie doesn't have yet
-#   - wowsims/forever (MIT) item database, for item icons the client tables leave unnamed
+#   - wowsims/forever (MIT) item database, for Forever stats and sources of gear the client lists
+#     without stats, and for item icons the client tables leave unnamed
 # It also rebuilds gamedata/quests.json (every Forever quest) from Questie and gamedata/raids.json
 # (dungeons and raids), and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
@@ -45,11 +46,14 @@ jobs:
           git clone -q --depth 1 https://github.com/cmangos/classic-db ext/classic-db
           git clone -q --depth 1 https://github.com/Hoizame/AtlasLootClassic ext/AtlasLootClassic
           git clone -q --depth 1 https://github.com/wowlayerup-forever/opendata ext/opendata
-          # wowsims/forever (MIT) item database, pinned like sim-weights.yml: a last fallback for item icons.
+          # wowsims/forever (MIT) item database, newest commit: Forever stats and sources for gear the
+          # client lists without stats, and a fallback for item icons. Only these two JSON files are
+          # fetched and they are read as data (tools/build_items.py checks every field); nothing from
+          # the repository is run here. The sim engine stays pinned in sim-weights.yml.
           git init -q ext/wowsims
           git -C ext/wowsims remote add origin https://github.com/wowsims/forever
-          git -C ext/wowsims sparse-checkout set --no-cone 'assets/database/db.json'
-          git -C ext/wowsims fetch -q --depth 1 --filter=blob:none origin 376a6aa2886bddbd66784bfe3ba691e99abb9496
+          git -C ext/wowsims sparse-checkout set --no-cone 'assets/database/db.json' 'assets/database/leftover_db.json'
+          git -C ext/wowsims fetch -q --depth 1 --filter=blob:none origin HEAD
           git -C ext/wowsims checkout -q FETCH_HEAD
           zcat ext/classic-db/Full_DB/*.sql.gz > ext/cmangos.sql
           echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD), opendata $(git -C ext/opendata rev-parse --short HEAD), wowsims $(git -C ext/wowsims rev-parse --short HEAD)" > ext/versions.txt
@@ -62,7 +66,7 @@ jobs:
       - name: Build gear database
         run: |
           python3 tools/build_items.py --download --cache .cache/wago \
-            --cmangos ext/cmangos.sql --atlasloot ext/AtlasLootClassic --questie data/questiedb --wowsims-db ext/wowsims/assets/database/db.json \
+            --cmangos ext/cmangos.sql --atlasloot ext/AtlasLootClassic --questie data/questiedb --wowsims-db ext/wowsims/assets/database/db.json --wowsims-leftover ext/wowsims/assets/database/leftover_db.json \
             --out gamedata/items.json --report gamedata/items-report.md
           printf '\nSources: %s\n' "$(paste -sd ';' ext/versions.txt | sed 's/;/, /g')" >> gamedata/items-report.md
 

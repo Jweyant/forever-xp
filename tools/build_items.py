@@ -122,6 +122,156 @@ def wowsims_icons(path):
     return out
 
 
+# wowsims/forever proto Stat index -> our stat keys (proto/common.proto). Bonus armor counts as armor.
+# Feral attack power, armor penetration and flat physical damage have no key here and are left out.
+WS_STAT = {0: "str", 1: "agi", 2: "sta", 3: "int", 4: "heal", 5: "sp", 6: "sp_arcane", 7: "sp_fire", 8: "sp_frost",
+           9: "sp_holy", 10: "sp_nature", 11: "sp_shadow", 12: "spen", 13: "spi", 14: "ap", 15: "rap", 17: "hit",
+           18: "crit", 19: "haste", 21: "expertise", 22: "def", 23: "block", 24: "blockv", 25: "dodge", 26: "parry",
+           27: "armor", 28: "armor", 29: "hp", 30: "mana", 31: "mp5", 32: "arcane_res", 33: "fire_res",
+           34: "frost_res", 35: "nature_res", 36: "shadow_res"}
+WS_CLASS_BIT = {1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 7: 64, 8: 128, 9: 256, 11: 1024}
+WS_PROFESSION = {1: "Alchemy", 2: "Blacksmithing", 3: "Enchanting", 4: "Engineering", 8: "Leatherworking", 11: "Tailoring"}
+WS_REP = {4: "Neutral", 5: "Friendly", 6: "Honored", 7: "Revered", 8: "Exalted"}
+MAX_STAT = 100000   # no item stat is anywhere near this; anything larger is bad data
+
+
+def _ws_num(v, lo=0, hi=MAX_STAT):
+    """A finite number within [lo, hi] from wowsims' JSON, or None."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not lo <= v <= hi:
+        return None
+    return v
+
+
+def wowsims_items(*paths):
+    """ItemID -> wowsims/forever's item record (MIT), from assets/database/db.json and
+    leftover_db.json. wowsims builds these from the game files plus Blizzard's hotfixes, so they
+    hold Forever's own stats for gear the client tables ship without. Read as data only; every
+    field is checked where it's used (wowsims_record, wowsims_sources)."""
+    out, names = {}, {"zones": {}, "npcs": {}, "factions": {}}
+    for path in paths:
+        if not path or not Path(path).exists():
+            continue
+        try:
+            db = json.loads(Path(path).read_text())
+        except ValueError:
+            continue
+        if not isinstance(db, dict):
+            continue
+        for key, into in names.items():
+            for e in db.get(key) or []:
+                if isinstance(e, dict) and type(e.get("id")) is int and isinstance(e.get("name"), str):
+                    into.setdefault(e["id"], e["name"][:80])
+        for e in db.get("items") or []:
+            if isinstance(e, dict) and type(e.get("id")) is int and e["id"] > 0:
+                out.setdefault(e["id"], e)
+    return out, names
+
+
+def wowsims_record(w, it, effect_text):
+    """An item record from wowsims' record w, for gear the Forever client has an Item row (it) for
+    but no stats. Slot and type come from the client's row; name, level, quality and stats are
+    wowsims', read from the game's hotfix data, so the record is marked ws. effect_text(spell id)
+    gives an effect's tooltip text. Returns None for test items, slots the planner doesn't use and
+    records that don't hold up (no name, no item level)."""
+    name = w.get("name")
+    inv = num(it.get("InventoryType"), int)
+    cls, sub = num(it.get("ClassID"), int), num(it.get("SubclassID"), int)
+    opt = (w.get("scalingOptions") or {}).get("0") if isinstance(w.get("scalingOptions"), dict) else None
+    if not isinstance(name, str) or junk_name(name) or inv not in SLOTS or cls not in (2, 4) or not isinstance(opt, dict):
+        return None
+    ilvl, q, req = _ws_num(opt.get("ilvl"), 1, 1000), _ws_num(w.get("quality"), 0, 6), _ws_num(w.get("reqLvl", 0), 0, 100)
+    if ilvl is None or q is None or req is None:
+        return None
+    stats = {}
+    raw = opt.get("stats") if isinstance(opt.get("stats"), dict) else {}
+    for k, v in raw.items():
+        key, val = WS_STAT.get(int(k)) if str(k).isdigit() else None, _ws_num(v, -MAX_STAT)
+        if key and val:
+            stats[key] = round(stats.get(key, 0) + val, 1)
+    stats = {k: (int(v) if float(v).is_integer() else v) for k, v in stats.items()}
+    # wowsims lists spell power as healing and spell damage, and attack power as melee and ranged.
+    # Here "sp" and "ap" already mean both, and "heal" or "rap" is only kept when it differs.
+    if stats.get("heal") is not None and stats.get("heal") == stats.get("sp"):
+        del stats["heal"]
+    if stats.get("rap") is not None and stats.get("rap") == stats.get("ap"):
+        del stats["rap"]
+    weapon = None
+    lo, hi, spd = _ws_num(opt.get("weaponDamageMin")), _ws_num(opt.get("weaponDamageMax")), _ws_num(w.get("weaponSpeed"), 0.1, 10)
+    if cls == 2 and lo is not None and hi and spd:
+        dps = round((lo + hi) / 2 / spd, 1)
+        weapon = {"min": round(lo), "max": round(hi), "speed": spd, "dps": dps}
+        stats["dps"] = dps
+    effects = []
+    for e in w.get("itemEffects") if isinstance(w.get("itemEffects"), list) else []:
+        sid = e.get("buffId") if isinstance(e, dict) else None
+        if type(sid) is not int or sid <= 0:
+            continue
+        text = effect_text(str(sid))
+        if text:
+            effects.append({"on": "use" if "onUse" in e else "hit" if "proc" in e else "equip", "text": text[:220]})
+    rec = {"id": int(w["id"]), "name": name[:120], "q": int(q), "ilvl": int(ilvl), "req": int(req), "slot": SLOTS[inv],
+           "inv": inv, "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc", "cls": cls,
+           "stats": stats, "ws": 1}
+    if weapon:
+        rec["weapon"] = weapon
+    if effects:
+        rec["fx"] = effects
+    allow = w.get("classAllowlist")
+    if isinstance(allow, list) and allow and all(type(c) is int and c in WS_CLASS_BIT for c in allow):
+        rec["classes"] = sum({WS_CLASS_BIT[c] for c in allow})
+    if w.get("factionRestriction") in (1, 2):
+        rec["side"] = "A" if w["factionRestriction"] == 1 else "H"
+    return rec
+
+
+def wowsims_sources(ws, names, keep):
+    """Where wowsims lists an item as coming from, in our source shape, for the item IDs in keep.
+    Used only for items no other database has a source for."""
+    def text(v):
+        return v[:80] if isinstance(v, str) else ""
+    src = {}
+    for iid in keep:
+        out = []
+        w = ws.get(iid) or {}
+        for s in w.get("sources") if isinstance(w.get("sources"), list) else []:
+            if not isinstance(s, dict):
+                continue
+            d = s.get("drop")
+            if isinstance(d, dict):
+                zone = names["zones"].get(d.get("zoneId"), "")
+                n = names["npcs"].get(d.get("npcId"), "") or text(d.get("otherName"))
+                if not n and not zone:
+                    out.append({"t": "world"})
+                    continue
+                rec = {"t": {1: "dungeon", 2: "raid"}.get(d.get("difficulty"), "drop")}
+                if n:
+                    rec["n"] = n
+                if zone:
+                    rec["z"] = zone
+                out.append(rec)
+            q = s.get("quest")
+            if isinstance(q, dict) and type(q.get("id")) is int and q["id"] > 0 and text(q.get("name")):
+                out.append({"t": "quest", "n": text(q["name"]), "qid": q["id"]})
+            v = s.get("soldBy")
+            if isinstance(v, dict) and (text(v.get("npcName")) or names["npcs"].get(v.get("npcId"))):
+                rec = {"t": "vendor", "n": text(v.get("npcName")) or names["npcs"][v["npcId"]]}
+                if names["zones"].get(v.get("zoneId")):
+                    rec["z"] = names["zones"][v["zoneId"]]
+                out.append(rec)
+            c = s.get("crafted")
+            if isinstance(c, dict) and c.get("profession") in WS_PROFESSION:
+                out.append({"t": "craft", "n": WS_PROFESSION[c["profession"]]})
+            r = s.get("rep")
+            if isinstance(r, dict) and names["factions"].get(r.get("repFactionId")):
+                level = WS_REP.get(r.get("repLevel"))
+                out.append({"t": "rep", "n": names["factions"][r["repFactionId"]] + (f" ({level})" if level else "")})
+            if isinstance(s.get("pvp"), dict):
+                out.append({"t": "pvp"})
+        if out:
+            src[iid] = out
+    return src
+
+
 def display_ids(cache, download):
     """ItemID -> ItemDisplayInfoID (the 3D model an item uses), via ItemModifiedAppearance ->
     ItemAppearance. Loaded tolerantly outside TABLES: if the Forever build doesn't ship these
@@ -437,13 +587,20 @@ def client_items(cache, download):
     missing = {int(r["ID"]): r for r in T["Item"] if r["ID"] not in sparse_ids
                and num(r.get("ClassID"), int) in (2, 4) and num(r.get("InventoryType"), int) in SLOTS}
 
-    def fill(classic):
+    def fill(classic, wowsims=None):
+        """Add the gear the client has no stats for: wowsims' Forever stats where it has the item
+        (marked ws), else classic's (marked cs). Returns the IDs added."""
         added = []
+        text = lambda sid: spell_text(spells, sid, spell_desc, spell_name)  # noqa: E731
         for iid, it in missing.items():
-            c = classic.get(iid)
-            if not c or iid in items:
+            if iid in items:
                 continue
-            rec = classic_record(c, it, spell_stats, lambda sid: spell_text(spells, sid, spell_desc, spell_name))
+            w, c = (wowsims or {}).get(iid), classic.get(iid) or {}
+            rec = wowsims_record(w, it, text) if w else None
+            if rec:
+                c = {"itemset": w.get("setId")}
+            elif c:
+                rec = classic_record(c, it, spell_stats, text)
             if not rec:
                 continue
             icon = icons.get(num(it.get("IconFileDataID"), int)) or icons.get(app_icons.get(iid, 0))
@@ -451,7 +608,7 @@ def client_items(cache, download):
                 rec["icon"] = icon
             if dids.get(iid):
                 rec["did"] = dids[iid]
-            set_id = str(c.get("itemset") or 0)
+            set_id = str(c.get("itemset") or 0) if type(c.get("itemset")) is int else "0"
             if set_id != "0" and add_set(set_id):
                 rec["set"] = int(set_id)
             items[iid] = rec
@@ -1023,6 +1180,33 @@ def other_items(sqlite_path, gear_ids, classic, max_names=3):
     return out
 
 
+def wowsims_check(items, wsi):
+    """Compare the stats this build worked out from the client tables with wowsims' for the same
+    items: two independent readings of the same game data. Returns (items compared, items that
+    differ, {stat: items differing in it}, a few examples) for the report. Weapon DPS within 0.2
+    counts as the same (rounding)."""
+    keys = set(WS_STAT.values()) | {"dps"}
+    compared = differ = 0
+    by_stat, examples = defaultdict(int), []
+    for iid, rec in sorted(items.items()):
+        if rec.get("ws") or rec.get("cs") or iid not in wsi:
+            continue
+        w = wowsims_record(wsi[iid], {"InventoryType": rec["inv"], "ClassID": rec["cls"], "SubclassID": 0}, lambda sid: "")
+        if not w:
+            continue
+        compared += 1
+        ours = {k: v for k, v in rec["stats"].items() if k in keys and v}
+        bad = sorted(k for k in set(ours) | set(w["stats"]) if ours.get(k) != w["stats"].get(k)
+                     and not (k == "dps" and abs((ours.get(k) or 0) - (w["stats"].get(k) or 0)) <= 0.2))
+        if bad:
+            differ += 1
+            for k in bad:
+                by_stat[k] += 1
+            if len(examples) < 8 and rec["q"] >= 3:
+                examples.append(f"{rec['name']} ({iid}): " + ", ".join(f"{k} {ours.get(k, 0)} here, {w['stats'].get(k, 0)} in wowsims" for k in bad[:3]))
+    return compared, differ, dict(sorted(by_stat.items(), key=lambda kv: -kv[1])), examples
+
+
 def forever_changes(items, classic):
     """Mark items that are new to Forever (no classic item with that ID) or changed from classic
     (item level, quality or required level). Returns (new, changed) counts. Without classic data,
@@ -1053,7 +1237,9 @@ def main():
     ap.add_argument("--download", action="store_true")
     ap.add_argument("--cmangos")
     ap.add_argument("--atlasloot")
-    ap.add_argument("--wowsims-db", help="wowsims/forever assets/database/db.json (MIT), a last fallback for item icons")
+    ap.add_argument("--wowsims-db", help="wowsims/forever assets/database/db.json (MIT): Forever stats and sources for "
+                    "gear the client has no stats for, and a last fallback for item icons")
+    ap.add_argument("--wowsims-leftover", help="wowsims/forever assets/database/leftover_db.json, the rest of its items")
     ap.add_argument("--questie", help="data/questiedb export from tools/refresh_questie_data.sh")
     ap.add_argument("--out", default="gamedata/items.json")
     ap.add_argument("--questie-sqlite", default="data/forever_questdb.sqlite", help="from tools/refresh_questie_data.sh, for non-gear items")
@@ -1068,18 +1254,24 @@ def main():
     items, sets, fill = client_items(a.cache, a.download)
     keep = set(items) | fill.ids
     cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
-    filled = fill(classic)
+    wsi, ws_names = wowsims_items(a.wowsims_db, a.wowsims_leftover)
+    filled = fill(classic, wsi)
     keep = set(items)
+    wsrc = wowsims_sources(wsi, ws_names, keep)
     ws = wowsims_icons(a.wowsims_db)
+    ws.update({k: v for k, v in wowsims_icons(a.wowsims_leftover).items() if k not in ws})
     for iid, rec in items.items():
         if not rec.get("icon") and ws.get(iid):
             rec["icon"] = ws[iid]
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
     qs = questie_sources(a.questie, keep) if a.questie else {}
     jn = journal_sources(a.cache, a.download, keep)
-    no_src = 0
+    no_src = ws_src = 0
     for iid, rec in items.items():
         s = rank_sources(al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
+        if not s and wsrc.get(iid):  # nothing else knows where it comes from
+            s = rank_sources(wsrc[iid])
+            ws_src += 1
         side = pvp_rank_side(rec)
         if side:
             rec["side"] = side
@@ -1120,6 +1312,11 @@ def main():
     by_q = defaultdict(int)
     for r in items.values():
         by_q[r["q"]] += 1
+    compared, differ, by_stat, examples = wowsims_check(items, wsi)
+    check_note = "" if not compared else (
+        f"\nCross-check with wowsims (items both have stats for): {compared} compared, {differ} differ.\n"
+        + "".join(f"- {k}: {n}\n" for k, n in by_stat.items())
+        + ("\nExamples:\n" + "".join(f"- {e}\n" for e in examples) if examples else ""))
     Path(a.report).write_text(
         f"# Gear database\n\nForever client build {FOREVER_BUILD}.\n\n"
         f"- Equippable items: {len(items)} (by quality: {dict(sorted(by_q.items()))})\n"
@@ -1127,11 +1324,14 @@ def main():
         f"- Items with no known source yet: {no_src}\n"
         f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
         f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n"
-        f"- Classic stats only (the client has the item but not its stats): {len(filled)}"
-        f" of {len(fill.ids)} such items\n"
+        f"- Gear the client lists without stats: {len(fill.ids)}. Stats from wowsims: "
+        f"{sum(1 for i in filled if items[i].get('ws'))}; classic stats only: "
+        f"{sum(1 for i in filled if items[i].get('cs'))}; left out (no source has it): {len(fill.ids) - len(filled)}\n"
+        f"- Sources from wowsims (no other database lists one): {ws_src}\n"
         f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}"
         f" ({sum(1 for r in other if r.get('icon'))} with an icon)\n"
-        + ("\nDungeon journal:\n" + "".join(f"- {line}\n" for line in JOURNAL_NOTE) if JOURNAL_NOTE else ""))
+        + ("\nDungeon journal:\n" + "".join(f"- {line}\n" for line in JOURNAL_NOTE) if JOURNAL_NOTE else "")
+        + check_note)
     print(f"{len(items)} items, {len(sets)} sets, {len(items) - no_src} with sources -> {a.out}")
 
 

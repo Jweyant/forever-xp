@@ -32,6 +32,7 @@ const kindName = (t: string) => SRC_LABEL[t] || t;
     <div>
       <h1 class={`q-${q}`}>{it.name}{it.new === 1 && <span class="tag-new">NEW</span>}{it.cs === 1 && <span class="tag-new tag-chg">CLASSIC STATS</span>}</h1>
       {it.cs === 1 && <p class="small">The WoW Forever client has this item but not its stats, so these are classic's stats. Forever may have changed them, so the BIS planner leaves it out by default. <a href="/items/?src=classic">All items with classic stats</a></p>}
+      {it.ws === 1 && <p class="small">The game client lists this item without its stats. These are Forever's stats as read from the game's own data, hotfixes included, by <a href="https://github.com/wowsims/forever" rel="noopener">wowsims/forever</a> (MIT).</p>}
       {it.new === 1 && <p class="small">New in WoW Forever: classic didn't have this item. <a href="/items/?ver=new">All new items</a></p>}
       {Array.isArray(it.chg) && it.chg.length > 0 && <p class="small">Changed in WoW Forever: {it.chg.map(([what, was, now], i) => <>{i ? "; " : ""}{what} {what === "quality" ? `${QNAME[Number(was)] ?? was} to ${QNAME[Number(now)] ?? now}` : `${Number(was)} to ${Number(now)}`}</>)}. <a href="/items/?ver=chg">All changed items</a></p>}
       <p class="muted">{qualityName} {slot.toLowerCase()}{it.type && it.type !== "misc" ? `, ${it.type.replace(/[12]$/, "")}` : ""}. Item level {it.ilvl}{it.req ? `, requires level ${it.req}` : ""}. Item ID {it.id}.</p>
