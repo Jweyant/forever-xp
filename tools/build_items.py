@@ -167,11 +167,12 @@ def wowsims_items(*paths):
     return out, names
 
 
-def wowsims_record(w, it, effect_text):
+def wowsims_record(w, it, effect_text, triggers=None):
     """An item record from wowsims' record w, for gear the Forever client has an Item row (it) for
     but no stats. Slot and type come from the client's row; name, level, quality and stats are
     wowsims', read from the game's hotfix data, so the record is marked ws. effect_text(spell id)
-    gives an effect's tooltip text. Returns None for test items, slots the planner doesn't use and
+    gives an effect's tooltip text; triggers ({spell id: 0 use, 1 equip, 2 chance on hit}) is the
+    client's own word on how each effect fires, where it has one. Returns None for test items, slots the planner doesn't use and
     records that don't hold up (no name, no item level)."""
     name = w.get("name")
     inv = num(it.get("InventoryType"), int)
@@ -208,7 +209,9 @@ def wowsims_record(w, it, effect_text):
             continue
         text = effect_text(str(sid))
         if text:
-            effects.append({"on": "use" if "onUse" in e else "hit" if "proc" in e else "equip", "text": text[:220]})
+            trig = (triggers or {}).get(str(sid))
+            on = ["use", "equip", "hit"][trig] if trig in (0, 1, 2) else "use" if "onUse" in e else "equip"
+            effects.append({"on": on, "text": text[:220]})
     rec = {"id": int(w["id"]), "name": name[:120], "q": int(q), "ilvl": int(ilvl), "req": int(req), "slot": SLOTS[inv],
            "inv": inv, "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc", "cls": cls,
            "stats": stats, "ws": 1}
@@ -596,7 +599,8 @@ def client_items(cache, download):
             if iid in items:
                 continue
             w, c = (wowsims or {}).get(iid), classic.get(iid) or {}
-            rec = wowsims_record(w, it, text) if w else None
+            trig = {e["SpellID"]: num(e.get("TriggerType"), int) for e in item_effects.get(str(iid), [])}
+            rec = wowsims_record(w, it, text, trig) if w else None
             if rec:
                 c = {"itemset": w.get("setId")}
             elif c:
