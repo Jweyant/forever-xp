@@ -258,5 +258,85 @@ class ClassicStats(unittest.TestCase):
         self.assertEqual(r["stats"], {"sta": 15})
 
 
+# wowsims/forever records (assets/database/db.json) for gear the client has an Item row for but no stats.
+WS_WALL = {"id": 1979, "name": "Wall of the Dead", "type": 13, "weaponType": 7, "handType": 3, "reqLvl": 45, "quality": 4,
+           "scalingOptions": {"0": {"ilvl": 50, "stats": {"0": 11, "2": 15, "24": 41, "27": 1937}}},
+           "itemEffects": [{"buffId": 19409, "proc": {}}], "sources": [{"drop": {"difficulty": 1}}]}
+WS_STAFF = {"id": 9449, "name": "Test Staff", "reqLvl": 60, "quality": 3, "weaponSpeed": 2.0, "classAllowlist": [5, 8],
+            "factionRestriction": 2, "itemEffects": [{"buffId": 7, "onUse": {"cooldownMs": 1}}],
+            "scalingOptions": {"0": {"ilvl": 60, "weaponDamageMin": 46, "weaponDamageMax": 70,
+                                     "stats": {"3": 10, "4": 30, "5": 30, "14": 8, "15": 8, "16": 99, "28": 5, "27": 10}}}}
+
+
+class WowsimsStats(unittest.TestCase):
+    def rec(self, w, text=""):
+        return build_items.wowsims_record(w, CLIENT[str(w["id"])], lambda sid: text)
+
+    def test_stats_come_out_in_our_keys_and_the_record_is_marked(self):
+        r = self.rec(WS_WALL, text="Encases the caster in bone.")
+        self.assertEqual((r["ws"], r["slot"], r["type"], r["q"], r["ilvl"], r["req"]), (1, "shield", "shield", 4, 50, 45))
+        self.assertEqual(r["stats"], {"str": 11, "sta": 15, "blockv": 41, "armor": 1937})
+        self.assertEqual(r["fx"], [{"on": "equip", "text": "Encases the caster in bone."}])   # a proc with no client row
+        self.assertNotIn("cs", r)
+        hit = build_items.wowsims_record(WS_WALL, CLIENT["1979"], lambda sid: "Strikes.", {"19409": 2})
+        self.assertEqual(hit["fx"][0]["on"], "hit")                                           # the client says chance on hit
+
+    def test_shared_spell_power_and_attack_power_are_not_counted_twice(self):
+        r = self.rec(dict(WS_STAFF, name="Staff of Might"))
+        # healing == spell damage -> "sp" only; melee == ranged AP -> "ap" only; bonus armor adds to armor;
+        # feral attack power (16) has no key here
+        self.assertEqual(r["stats"], {"int": 10, "sp": 30, "ap": 8, "armor": 15, "dps": 29.0})
+        self.assertEqual(r["weapon"], {"min": 46, "max": 70, "speed": 2.0, "dps": 29.0})
+        self.assertEqual((r["classes"], r["side"]), (16 | 128, "H"))
+        self.assertNotIn("fx", r)                                               # no tooltip text for the effect: left out
+        healer = self.rec(dict(WS_STAFF, name="Staff of Mending", scalingOptions={"0": {"ilvl": 60, "stats": {"4": 30, "5": 10, "15": 9}}}))
+        self.assertEqual(healer["stats"], {"heal": 30, "sp": 10, "rap": 9})
+
+    def test_bad_records_are_refused_or_trimmed(self):
+        self.assertIsNone(self.rec(WS_STAFF))                                   # a test item
+        self.assertIsNone(self.rec(dict(WS_WALL, scalingOptions={})))           # no item level
+        self.assertIsNone(self.rec(dict(WS_WALL, quality="<b>")))
+        self.assertIsNone(self.rec(dict(WS_WALL, name=None)))
+        odd = self.rec(dict(WS_WALL, classAllowlist=[99], factionRestriction=7, itemEffects="x",
+                            scalingOptions={"0": {"ilvl": 50, "stats": {"0": 1e12, "2": "9", "x": 4, "27": float("nan"), "13": 3}}}))
+        self.assertEqual(odd["stats"], {"spi": 3})
+        self.assertNotIn("classes", odd)
+        self.assertNotIn("side", odd)
+
+    def test_reading_the_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b, c = Path(tmp) / "db.json", Path(tmp) / "leftover.json", Path(tmp) / "broken.json"
+            a.write_text(json.dumps({"items": [WS_WALL, {"id": "7"}, "x"], "zones": [{"id": 5, "name": "Stratholme"}],
+                                     "npcs": [{"id": 9, "name": "Baron Rivendare"}], "factions": [{"id": 3, "name": "Argent Dawn"}]}))
+            b.write_text(json.dumps({"items": [dict(WS_WALL, name="Older copy"), WS_STAFF]}))
+            c.write_text("{not json")
+            ws, names = build_items.wowsims_items(a, b, c, Path(tmp) / "missing.json", None)
+        self.assertEqual(sorted(ws), [1979, 9449])
+        self.assertEqual(ws[1979]["name"], "Wall of the Dead")                  # the first file wins
+        self.assertEqual(names["zones"], {5: "Stratholme"})
+
+    def test_sources(self):
+        names = {"zones": {5: "Stratholme"}, "npcs": {9: "Baron Rivendare"}, "factions": {3: "Argent Dawn"}}
+        ws = {1: {"sources": [{"drop": {"difficulty": 1, "npcId": 9, "zoneId": 5}}, {"drop": {"difficulty": 2, "zoneId": 5, "otherName": "Trash"}},
+                              {"drop": {}}, {"quest": {"id": 12, "name": "A Quest"}}, {"quest": {"id": "x", "name": "Bad"}},
+                              {"soldBy": {"npcId": 9, "zoneId": 5}}, {"crafted": {"profession": 2, "spellId": 1}},
+                              {"crafted": {"profession": 77}}, {"rep": {"repFactionId": 3, "repLevel": 7}}, {"pvp": {}}, "junk"]},
+              2: {"sources": "x"}, 3: {}}
+        src = build_items.wowsims_sources(ws, names, {1, 2, 3, 4})
+        self.assertEqual(sorted(src), [1])
+        self.assertEqual(src[1], [
+            {"t": "dungeon", "n": "Baron Rivendare", "z": "Stratholme"}, {"t": "raid", "n": "Trash", "z": "Stratholme"},
+            {"t": "world"}, {"t": "quest", "n": "A Quest", "qid": 12}, {"t": "vendor", "n": "Baron Rivendare", "z": "Stratholme"},
+            {"t": "craft", "n": "Blacksmithing"}, {"t": "rep", "n": "Argent Dawn (Revered)"}, {"t": "pvp"}])
+
+    def test_cross_check_counts_real_differences_only(self):
+        items = {1979: {"id": 1979, "name": "Wall of the Dead", "q": 4, "inv": 14, "cls": 4, "stats": {"str": 10, "sta": 15, "armor": 1937}},
+                 5: {"id": 5, "name": "Filled in", "q": 3, "inv": 14, "cls": 4, "stats": {}, "ws": 1},
+                 6: {"id": 6, "name": "Not in wowsims", "q": 3, "inv": 14, "cls": 4, "stats": {"str": 1}}}
+        compared, differ, by_stat, examples = build_items.wowsims_check(items, {1979: WS_WALL, 5: WS_WALL})
+        self.assertEqual((compared, differ, by_stat), (1, 1, {"blockv": 1, "str": 1}))
+        self.assertIn("Wall of the Dead (1979)", examples[0])
+
+
 if __name__ == "__main__":
     unittest.main()

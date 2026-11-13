@@ -13,6 +13,8 @@ export interface Item {
   new?: 1; chg?: [string, number, number][];
   /** Classic stats: the Forever client has the item but not its stats, so they're classic's and may differ. */
   cs?: 1;
+  /** Stats from wowsims/forever's item data (the game's hotfix data): the client tables have the item but not its stats. */
+  ws?: 1;
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
   src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
