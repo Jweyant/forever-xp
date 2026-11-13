@@ -1,12 +1,12 @@
 # Gear database
 
-Forever client build 1.60.1.70888.
+Forever client build 1.60.1.70938.
 
 - Equippable items: 12364 (by quality: {0: 439, 1: 1195, 2: 5125, 3: 3793, 4: 1789, 5: 13, 6: 10})
 - Item sets: 235
 - Items with a known source: 11094
 - Items with no known source yet: 1270
-- Items with a display id (3D model): 12002
+- Items with a display id (3D model): 12006
 - New in Forever (not in the classic item list): 3120
 - Changed in Forever: 544
 - Gear the client lists without stats: 11203. Stats from wowsims: 5053; classic stats only: 805; left out (no source has it): 5345
@@ -16,19 +16,19 @@ Forever client build 1.60.1.70888.
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Cross-check with wowsims (items both have stats for): 5779 compared, 1155 differ.
+Cross-check with wowsims (items both have stats for): 5779 compared, 1153 differ.
 - armor: 549
 - dps: 278
 - blockv: 121
-- sp: 115
+- sp: 114
 - sta: 68
 - sp_shadow: 51
 - sp_fire: 46
 - sp_frost: 36
-- heal: 32
-- str: 26
+- heal: 31
+- str: 25
 - sp_arcane: 22
-- int: 21
+- int: 20
 - sp_holy: 18
 - spi: 17
 - frost_res: 11
