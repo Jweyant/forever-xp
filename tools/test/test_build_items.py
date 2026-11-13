@@ -276,8 +276,10 @@ class WowsimsStats(unittest.TestCase):
         r = self.rec(WS_WALL, text="Encases the caster in bone.")
         self.assertEqual((r["ws"], r["slot"], r["type"], r["q"], r["ilvl"], r["req"]), (1, "shield", "shield", 4, 50, 45))
         self.assertEqual(r["stats"], {"str": 11, "sta": 15, "blockv": 41, "armor": 1937})
-        self.assertEqual(r["fx"], [{"on": "hit", "text": "Encases the caster in bone."}])
+        self.assertEqual(r["fx"], [{"on": "equip", "text": "Encases the caster in bone."}])   # a proc with no client row
         self.assertNotIn("cs", r)
+        hit = build_items.wowsims_record(WS_WALL, CLIENT["1979"], lambda sid: "Strikes.", {"19409": 2})
+        self.assertEqual(hit["fx"][0]["on"], "hit")                                           # the client says chance on hit
 
     def test_shared_spell_power_and_attack_power_are_not_counted_twice(self):
         r = self.rec(dict(WS_STAFF, name="Staff of Might"))
