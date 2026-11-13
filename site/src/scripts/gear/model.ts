@@ -11,6 +11,8 @@ export interface Item {
   stats: Stats; weapon?: { min: number; max: number; speed: number; dps: number }; fx?: { on: string; text: string }[];
   /** New to Forever (not in the classic item list), or changed from classic: [what, classic value, Forever value]. */
   new?: 1; chg?: [string, number, number][];
+  /** Classic stats: the Forever client has the item but not its stats, so they're classic's and may differ. */
+  cs?: 1;
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
   src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
@@ -239,12 +241,13 @@ export const SOURCE_KINDS = [
   { key: "rep", name: "Reputation" }, { key: "quest", name: "Quests" }, { key: "craft", name: "Crafted" },
   { key: "vendor", name: "Vendors" }, { key: "chest", name: "Chests and objects" }, { key: "drop", name: "Mob drops" }, { key: "world", name: "World drops" },
   { key: "unknown", name: "Source not known yet" },
+  { key: "classic", name: "Classic stats only" },
 ] as const;
 
 /** Sources suggestions use unless the player changes them. Items with no known source are left out:
- *  many are test or unused items no one can get (Alex's Ring of Audacity, say), and the rest fill in
- *  as players log loot. */
-export const DEFAULT_SOURCES = SOURCE_KINDS.map((s) => s.key).filter((k) => k !== "unknown");
+ *  many are test or unused items no one can get (Alex's Ring of Audacity, say). So are items with
+ *  only classic stats, since Forever may have changed them. */
+export const DEFAULT_SOURCES = SOURCE_KINDS.map((s) => s.key).filter((k) => k !== "unknown" && k !== "classic");
 
 // Item level 66 and up is raid tier: Molten Core starts there, while dungeon, quest and crafted
 // pre-raid gear (rare or epic) tops out at 65. Quest rewards for raid tokens or raid reputation (tier
@@ -264,6 +267,12 @@ export function sourceKind(it: Item): string {
   if (!s) return "unknown";
   if (s.t === "drop" && s.boss) return "dungeon";
   return s.t;
+}
+
+/** Whether a plan with these sources may use the item: its source kind is ticked and, for an item with
+ *  only classic stats, so is "classic" (so a classic-stats item with no known source needs both). */
+export function sourceOk(it: Item, sources: ReadonlySet<string>): boolean {
+  return sources.has(sourceKind(it)) && (it.cs !== 1 || sources.has("classic"));
 }
 
 // ---------- hit caps ----------

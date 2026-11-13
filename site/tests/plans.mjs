@@ -2,6 +2,7 @@
 // class and spec, lets it suggest a plan, and fails on picks no player should be shown:
 //   - a Leveling plan with raid drops, PvP rank rewards or raid-tier epics,
 //   - an item with no known source while that source is off (the default),
+//   - an item with only classic stats while that box is off (the default),
 //   - the other faction's PvP or battleground rewards,
 //   - an item above the plan's level, the same ring or trinket twice, or a tank without a shield.
 //
@@ -60,6 +61,7 @@ async function worker() {
       const name = `${slot} ${it.name} (${id})`;
       if (j.g === "level" && endgame(it)) failures.push(`${tag}: endgame item in a Leveling plan: ${name}`);
       if (!(it.src || []).length) failures.push(`${tag}: item with no known source: ${name}`);
+      if (it.cs) failures.push(`${tag}: item with only classic stats: ${name}`);
       if ((it.side && it.side !== j.f) || FOREIGN[j.f].test(it.name)) failures.push(`${tag}: other faction's item: ${name}`);
       if ((it.lvl ?? it.req) > j.l) failures.push(`${tag}: above level ${j.l}: ${name}`);
     }
