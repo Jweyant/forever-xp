@@ -10,18 +10,21 @@
 # (dungeons and raids), and commits the result
 # (to the `data` branch when run on main; see tools/push_data.sh).
 #
-# Runs daily (Questie and the Forever client change often around launch), on demand (Actions > Refresh gear data > Run workflow), and on pushes to
-# branches that change the builder.
+# Runs daily, on demand (Actions > Refresh gear data > Run workflow), and on pushes to branches
+# that change the builder. Every three hours it also checks whether the client build, wowsims'
+# item data or Questie's database changed since the last build (tools/gear_gate.py) and rebuilds
+# only then, so a new build or hotfix reaches the site the same day.
 
 name: Refresh gear data
 
 on:
   schedule:
-    - cron: "17 9 * * *"
+    - cron: "17 9 * * *"     # daily: always rebuilds
+    - cron: "47 1-23/3 * * *"   # every 3 hours, clear of the daily run: rebuilds only when a source changed
   workflow_dispatch:
   push:
     branches-ignore: [main, data, "dependabot/**"]  # Dependabot branches never get data commits
-    paths: ["tools/build_items.py", "tools/build_raids.py", "tools/build_quests.py", "tools/questxp.py", "tools/score_quests.py", "tools/guidegen.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", ".github/workflows/gear-data.yml"]
+    paths: ["tools/build_items.py", "tools/build_raids.py", "tools/build_quests.py", "tools/questxp.py", "tools/score_quests.py", "tools/guidegen.py", "tools/wago.py", "tools/refresh_questie_data.sh", "tools/mysqldump.py", "tools/push_data.sh", "tools/gear_gate.py", ".github/workflows/gear-data.yml"]
 
 permissions:
   contents: write
@@ -32,7 +35,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    name: Has anything changed?
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Compare the sources with the last build
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          if [ "$EVENT" != "schedule" ] || [ "$CRON" = "17 9 * * *" ]; then
+            echo "Daily, manual or branch run: always builds."; echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # The last build's report: the data branch's copy when there is one.
+          report="$RUNNER_TEMP/items-report.md"
+          if git fetch -q --depth 1 origin data 2>/dev/null && git show FETCH_HEAD:gamedata/items-report.md > "$report" 2>/dev/null; then :; else cp gamedata/items-report.md "$report"; fi
+          # If wago.tools can't say what the newest build is, there's nothing to build from either.
+          build=$(python3 -c "import sys; sys.path.insert(0, 'tools'); import wago; print(wago.forever_build()[0])") || {
+            echo "::notice::wago.tools didn't answer; checking again in 3 hours."; echo "run=false" >> "$GITHUB_OUTPUT"; exit 0; }
+          # wowsims' item files: the tree they live in, not the repository's newest commit, which moves many times a day.
+          git init -q "$RUNNER_TEMP/ws"
+          git -C "$RUNNER_TEMP/ws" fetch -q --depth 1 --filter=blob:none https://github.com/wowsims/forever HEAD || true
+          ws=$(git -C "$RUNNER_TEMP/ws" rev-parse -q --verify 'FETCH_HEAD:assets/database' 2>/dev/null || true)
+          questie=$(git ls-remote https://github.com/Questie/QuestieDB.git HEAD | cut -f1 || true)
+          python3 tools/gear_gate.py --report "$report" --build "$build" --head "wowsims-items=$ws" --head "Questie=$questie"
+
   build:
+    needs: check
+    if: needs.check.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,7 +95,7 @@ jobs:
           git -C ext/wowsims fetch -q --depth 1 --filter=blob:none origin HEAD
           git -C ext/wowsims checkout -q FETCH_HEAD
           zcat ext/classic-db/Full_DB/*.sql.gz > ext/cmangos.sql
-          echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD), opendata $(git -C ext/opendata rev-parse --short HEAD), wowsims $(git -C ext/wowsims rev-parse --short HEAD)" > ext/versions.txt
+          echo "cmangos $(git -C ext/classic-db rev-parse --short HEAD), AtlasLoot $(git -C ext/AtlasLootClassic rev-parse --short HEAD), opendata $(git -C ext/opendata rev-parse --short HEAD), wowsims $(git -C ext/wowsims rev-parse --short HEAD), wowsims-items $(git -C ext/wowsims rev-parse --short HEAD:assets/database)" > ext/versions.txt
 
       - name: Export Questie's Forever database
         run: |

@@ -9,7 +9,7 @@ rebuild the data in `gamedata/`, and redeploy the site. Nothing is collected fro
 
 | What | From | How often |
 |---|---|---|
-| Items, quests, dungeon and raid loot | Forever client (wago.tools), wowsims/forever's item data, Questie, cmangos, AtlasLoot | Daily |
+| Items, quests, dungeon and raid loot | Forever client (wago.tools), wowsims/forever's item data, Questie, cmangos, AtlasLoot | Daily, and within 3 hours of a new client build or new item data |
 | Talents | Forever client with Blizzard's hotfixes | Every 3 hours |
 | Blizzard's change notes and news | Official forum staff posts | Hourly |
 | Talent builds and stat weights | Our own sim runs on the wowsims/forever engine | When the engine, builds or setups change |
