@@ -11,8 +11,6 @@ Two sources, used only to fill gaps (Questie's value always wins):
    thing (talk/deliver versus kill/collect). For one quest it is often off by 20% or more, but
    over a zone's worth of quests it lands within about 5%, which is what route level estimates
    need. Estimated values are marked (`xpe`) wherever they're shown.
-
-ForeverScout logs replace both with measured values once players run the routes.
 """
 import json
 import re

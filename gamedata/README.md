@@ -60,5 +60,4 @@ XP and objective text from [opendata](https://github.com/wowlayerup-forever/open
 quest templates (data © its contributors, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/);
 marked `xps: "opendata"`), quest givers from its player observations (`src: "opendata"` on the
 place), and otherwise an estimate from Classic quests of the same level and kind (`xpe: 1`). An
-estimate is often off by 20% for a single quest but close over a zone. ForeverScout logs replace
-all of these with measured values.
+estimate is often off by 20% for a single quest but close over a zone.

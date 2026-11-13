@@ -14,7 +14,6 @@ Suggested channels:
 | #leveling-routes | Forum | Route feedback, faster paths, skip suggestions |
 | #quest-data | Forum | Wrong coordinates, missing quests (feeds Questie fixes) |
 | #site-feedback | Forum | Bugs and ideas for the site |
-| #foreverscout-help | Text | Addon and uploader help |
 
 Turn on **Server Settings > Widget** if you want a live member count; the community page
 already shows one from the invite.
@@ -47,5 +46,4 @@ Launch is November 4, and character creation opens October 27, so the next ten d
   community servers, with a link to that class's filtered changes, for example
   `forever-xp.com/changes/?cls=Warrior`.
 - **Streamers and guides:** offer BIS links for their specs; every plan link shows a preview card.
-- **Addon listing:** ForeverScout on CurseForge (see `docs/curseforge.md`) links back to the site.
 - **Questie:** keep sending fixes; credit in their changelog brings data-minded players.

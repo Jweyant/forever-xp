@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import { SOURCE_KINDS, CLASSES } from "../scripts/gear/model";
 import { ICON } from "../config";
 ---
-<Base image="/og/bis.jpg" title="BIS planner" description="WoW Forever best-in-slot planner: import your character from the game, pick PvE, PvP, leveling or your own stat weights, and see the best item for every slot on an in-game style character sheet.">
+<Base image="/og/bis.jpg" title="BIS planner" description="WoW Forever best-in-slot planner: set your current gear, pick PvE, PvP, leveling or your own stat weights, and see the best item for every slot on an in-game style character sheet.">
   <h1>BIS planner</h1>
   <p class="lede">Your character sheet, with the best item for every slot. Start from the gear you're wearing, pick what you're gearing for, then click any slot to swap it.</p>
 
@@ -52,20 +52,10 @@ import { ICON } from "../config";
           <button type="button" class="btn" id="g-suggest">Suggest best in slot</button>
           <button type="button" class="btn secondary" id="g-keep">Reset plan to current</button>
           <button type="button" class="btn secondary" id="g-copy">Copy plan link</button>
-        <div class="save-plan" data-save-plan="bis" hidden>
-          <form><label class="sr" for="save-name">Name</label><input id="save-name" maxlength="60" placeholder="Name this plan" autocomplete="off" /><button type="submit" class="btn secondary">Save to my account</button></form>
-          <a class="small" data-save-signin hidden>Sign in with Discord to save this plan</a>
-        </div>
         </div>
         <details class="sources">
           <summary>Where items can come from</summary>
           <div class="srcgrid">{SOURCE_KINDS.map((s) => <label><input type="checkbox" data-src={s.key} checked={s.key !== "unknown"} /> {s.name}</label>)}</div>
-        </details>
-        <details class="import">
-          <summary><b>Import your character</b> from the game</summary>
-          <p class="small">In game, type <code>/fscout gear</code>, press Ctrl+C, then paste below. Needs <a href="/scout/">ForeverScout</a> 0.3 or newer.</p>
-          <textarea id="g-import" rows="2" placeholder="FXPG1:WARRIOR:60:Orc.M:H:head=..." aria-label="Gear string from /fscout gear"></textarea>
-          <button type="button" class="btn secondary" id="g-import-go">Import gear</button>
         </details>
       </aside>
     </div>
@@ -119,12 +109,12 @@ import { ICON } from "../config";
     <li>For covered specs the weights come from this site's own simulation runs on the <a href="https://wowsims.com/forever">wowsims</a> engine, with the gear and build the line under the settings names. Specs without a run yet use starting estimates. Pick <b>Custom weights</b> to set your own, and share the link to show your reasoning.</li>
     <li>Set bonuses that give stats count toward your totals once you wear enough pieces.</li>
     <li>Hit counts only up to the cap: 8% for melee and ranged and 17% for spells against raid bosses, 5% and 4% against level 60 targets (the engine's own numbers). Paste your talent build and the hit your talents give comes off what gear has to cover. Dual wielders keep half value past the cap, since white swings miss more.</li>
-    <li>Quest rewards, vendors, chests and mob drops come from Questie's Forever database. Items with no known source are left out of suggestions unless you tick "Source not known yet": some are test items no one can get, and the rest fill in as players running ForeverScout log loot.</li>
+    <li>Quest rewards, vendors, chests and mob drops come from Questie's Forever database. Items with no known source are left out of suggestions unless you tick "Source not known yet": some are test items no one can get, and the rest fill in as the open databases catch up.</li>
     <li><b>Leveling</b> plans leave out raid drops, PvP rank rewards and other gear only raids hand out (rares and epics of item level 66 and up, which covers raid-token quests). At level 60 that makes the Leveling plan your pre-raid best in slot.</li>
   </ul>
-  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0), plus ForeverScout player logs. Stat weights come from this site's own simulation runs on the <a href="https://github.com/wowsims/forever">wowsims/forever</a> engine (MIT). Item and character portrait icons are Blizzard's; the character figure is drawn for this site, and the optional 3D view draws the character with <a href="https://www.wowhead.com/">Wowhead</a>'s model viewer.</p>
+  <p class="small muted">Forever client build <span id="g-build">–</span>. Item sources from <a href="https://github.com/Questie/Questie">Questie</a>'s Forever database (GPLv3), <a href="https://github.com/cmangos/classic-db">cmangos classic-db</a> (GPL-3.0) and <a href="https://github.com/Hoizame/AtlasLootClassic">AtlasLoot Classic</a> (GPL-2.0). Stat weights come from this site's own simulation runs on the <a href="https://github.com/wowsims/forever">wowsims/forever</a> engine (MIT). Item and character portrait icons are Blizzard's; the character figure is drawn for this site, and the optional 3D view draws the character with <a href="https://www.wowhead.com/">Wowhead</a>'s model viewer.</p>
 </Base>
-<script>import "../scripts/gear/planner.ts"; import { mountSave } from "../scripts/saveplan"; mountSave();</script>
+<script>import "../scripts/gear/planner.ts";</script>
 
 <style is:global>
   #gear .classbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.2rem; }
@@ -221,8 +211,6 @@ import { ICON } from "../config";
   #gear .panel summary { cursor: pointer; font-weight: 600; }
   #gear .srcgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.6rem; margin-top: 0.5rem; font-size: 0.92rem; }
   #gear .srcgrid input, #gear .own input { accent-color: var(--xp); }
-  #gear .import p { margin: 0.5rem 0; }
-  #gear .import textarea { width: 100%; font: 0.85rem ui-monospace, Consolas, monospace; margin-bottom: 0.5rem; }
 
   #gear .statsbox h2 { font-size: var(--step-2); margin-top: 1.6rem; }
   #gear .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.8rem; }

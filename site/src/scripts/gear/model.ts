@@ -12,8 +12,7 @@ export interface Item {
   /** New to Forever (not in the classic item list), or changed from classic: [what, classic value, Forever value]. */
   new?: 1; chg?: [string, number, number][];
   classes?: number; side?: "A" | "H"; icon?: string; did?: number; bop?: 1; pvprank?: number; set?: number;
-  /** `seen`: how many different players' ForeverScout logs saw this drop in Forever (tools/build_items.py). */
-  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number; seen?: number; by?: string }[];
+  src?: { t: string; n?: string; z?: string; lv?: number | number[]; ch?: number; boss?: number; qid?: number; qcls?: number; min?: number }[];
 }
 
 export const CRIT_RATING = 14;
@@ -239,7 +238,7 @@ export const SOURCE_KINDS = [
   { key: "raid", name: "Raids" }, { key: "dungeon", name: "Dungeons" }, { key: "pvp", name: "PvP rewards" },
   { key: "rep", name: "Reputation" }, { key: "quest", name: "Quests" }, { key: "craft", name: "Crafted" },
   { key: "vendor", name: "Vendors" }, { key: "chest", name: "Chests and objects" }, { key: "drop", name: "Mob drops" }, { key: "world", name: "World drops" },
-  { key: "logged", name: "Seen by players" }, { key: "unknown", name: "Source not known yet" },
+  { key: "unknown", name: "Source not known yet" },
 ] as const;
 
 /** Sources suggestions use unless the player changes them. Items with no known source are left out:

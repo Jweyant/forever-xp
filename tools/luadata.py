@@ -1,4 +1,4 @@
-"""Read Lua data files (SavedVariables, ForeverScout exports) without running any Lua.
+"""Read Lua data files (SavedVariables, other addons' data files) without running any Lua.
 
 Only literal data is accepted: tables, strings, numbers, true/false/nil, and top-level
 `Name = <value>` assignments. Anything else (function calls, operators, code) is rejected, so a

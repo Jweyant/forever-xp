@@ -1,8 +1,8 @@
 # ForeverXP — Human 10-14, Westfall (Saldean's Farm, Sentinel Hill, the coast, Moonbrook).
 # Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
 # Forever-only quests on the way are included (Harvesting the Harvesters, Alba Fairmoon's Testing the
-# Wells / Murloc Gills / The State of the Mines); their XP is estimated (~ in the report) until
-# ForeverScout logs measure it, so the estimate may be off.
+# Wells / Murloc Gills / The State of the Mines); their XP is estimated (~ in the report),
+# so the estimate may be off.
 # Ends at Sentinel Hill with The Defias Brotherhood, which hands you to Lakeshire for 14-17 Redridge Mountains.
 # Skipped on purpose: 6181/6281/6261/6285 A Swift Message chain (two flights to Stormwind and back),
 # Alba Fairmoon's chain after 92747 Moonbrook Espionage (Stormwind trips, dynamite, then the

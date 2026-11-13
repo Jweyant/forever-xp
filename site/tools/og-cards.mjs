@@ -35,7 +35,6 @@ const cards = [
   { file: "quests", eyebrow: "WoW Forever", title: "Quest database", text: "Every quest with its quest giver, map coordinates, objectives and rewards." },
   { file: "quests-xp", eyebrow: "WoW Forever", title: "Quest XP per minute", text: "Every scored quest ranked by XP per minute, travel included, so you know what to skip." },
   { file: "items", eyebrow: "WoW Forever", title: "Item database", text: "Every equippable item with its stats from the game client and where it drops." },
-  { file: "scout", eyebrow: "Free addon", title: "ForeverScout", text: "Records how long quests really take, so the leveling routes use real numbers." },
   ...talents.classes.map((c) => ({
     file: `talents-${c.slug}`, eyebrow: "WoW Forever talents", title: `${c.name} talents`, accent: CLASS_COLOR[c.slug],
     text: `${list(c.trees.map((t) => t.name))}. Built from the Forever game client, with builds you can share.`,

@@ -10,8 +10,6 @@ import { parseBuild, calcLink, treeNames, talentHit, type Build, type HitFrom } 
 import { loadGear, tooltipHtml, placeTip, srcText, ICON, QUALITY, esc, type ItemSet } from "../items";
 import { drawFigure, type FigItem } from "./figure";
 import { toggle3d, send3d } from "./viewer3d";
-import { afterSignIn } from "../account";
-afterSignIn(); // put back a plan the sign-in round trip dropped from the address
 
 // ---------- state ----------
 type Side = "H" | "A";
@@ -28,7 +26,6 @@ const RACES: Record<string, { name: string; side: Side | "both"; icon?: string }
   tauren: { name: "Tauren", side: "H", icon: "tauren" }, troll: { name: "Troll", side: "H", icon: "troll" },
   skyborne: { name: "Skyborne", side: "both" },
 };
-const RACE_TOKEN: Record<string, string> = { scourge: "undead", undead: "undead", nightelf: "nightelf" };
 // Forever's race/class combinations: vanilla's plus Dwarf Shaman, Gnome Priest, Human Hunter,
 // Orc Mage, Troll Warlock and Undead Paladin. Skyborne plays both sides but is a Mage only on
 // Alliance and a Shaman only on Horde. No Tauren Mage here either.
@@ -138,29 +135,6 @@ function save() {
   const h = encode();
   history.replaceState(null, "", `#${h}`);
   try { localStorage.setItem("fxp-gear", h); } catch { /* storage blocked */ }
-}
-
-// ---------- import from the game ----------
-function importGear(text: string): string {
-  const m = text.trim().match(/^FXPG1:([A-Z]+):(\d+):([A-Za-z]+)(?:\.([MF]))?:([AH]):(.*)$/);
-  if (!m) return "That doesn't look like a ForeverScout gear string. In game, type /fscout gear and copy the whole line.";
-  const [, cls, lvl, raceTok, body, side, rest] = m;
-  if (!has(CLASSES, cls)) return "Unknown class in that gear string.";
-  if (cls !== st.cls) { st.cls = cls; st.spec = SPECS[cls][0].key; st.build = null; }
-  st.level = Math.min(60, Math.max(1, +lvl)); st.side = side as Side;
-  const rk = RACE_TOKEN[raceTok.toLowerCase()] || raceTok.toLowerCase();
-  // The game said so: imports skip canBe(), so a combo this file doesn't know yet still loads.
-  if (has(RACES, rk)) st.race = rk;
-  if (body) st.body = body as "M" | "F";
-  st.cur = {}; let missing = 0, n = 0;
-  for (const part of rest.split(",")) {
-    const [slot, idRaw] = part.split("=");
-    const doll = (PAPERDOLL as readonly string[]).includes(slot) ? (slot as DollSlot) : undefined;
-    const id = parseInt(idRaw, 10);
-    if (doll && id) { st.cur[doll] = id; n++; if (!byId.has(id)) missing++; }
-  }
-  st.plan = { ...st.cur }; view = "cur";
-  return `Imported ${n} items for your level ${st.level} ${RACES[st.race]?.name || ""} ${CLASSES[cls].name}.` + (missing ? ` ${missing} aren't in the gear database yet and count as zero.` : "");
 }
 
 // ---------- suggestions ----------
@@ -567,7 +541,6 @@ function bind() {
     toast(`Suggested ${changed} change${changed === 1 ? "" : "s"} from the sources you allowed.`, { label: "Undo", run: () => { st.plan = before; render(); } });
   });
   $("#g-keep").addEventListener("click", () => { const before = { ...st.plan }; st.plan = { ...st.cur }; render(); toast("Plan reset to your current gear.", { label: "Undo", run: () => { st.plan = before; render(); } }); });
-  $("#g-import-go").addEventListener("click", () => { toast(importGear(($("#g-import") as HTMLTextAreaElement).value)); render(); });
   $("#g-talents").addEventListener("change", (e) => {
     const input = e.target as HTMLInputElement;
     if (!input.value.trim()) { st.build = null; render(); return; }

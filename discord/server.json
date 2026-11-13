@@ -11,8 +11,7 @@
         { "name": "welcome", "type": "text", "readonly": true, "message": "welcome.md", "topic": "Start here: what Forever XP is and where the tools are. Accept the rules to start posting." },
         { "name": "rules", "type": "text", "readonly": true, "message": "rules.md", "topic": "Server rules. Be decent, no spam, no cheating or account selling." },
         { "name": "announcements", "type": "announcement", "readonly": true, "updates": true, "topic": "Forever XP news: new tools, guides and data updates from forever-xp.com. Follow this channel to get them in your own server." },
-        { "name": "forever-announcements", "aliases": ["patch-notes"], "type": "announcement", "readonly": true, "feed": true, "topic": "WoW Forever updates as Blizzard posts them: class and racial changes, development notes and news. Posted automatically. Search every change at https://forever-xp.com/changes/" },
-        { "name": "leaderboard", "type": "announcement", "readonly": true, "report": true, "topic": "The Scout leaderboard: who's timing quests and confirming drops with ForeverScout. Standings update every hour; the Scout report posts every Monday. Full board at https://forever-xp.com/leaderboard/" }
+        { "name": "forever-announcements", "aliases": ["patch-notes"], "type": "announcement", "readonly": true, "feed": true, "topic": "WoW Forever updates as Blizzard posts them: class and racial changes, development notes and news. Posted automatically. Search every change at https://forever-xp.com/changes/" }
       ]
     },
     {
@@ -37,9 +36,7 @@
         { "name": "quest-data", "type": "forum", "topic": "Wrong coordinates, missing quests, new Forever quests. Confirmed fixes go to Questie.",
           "tags": ["Wrong location", "Missing quest", "Wrong reward", "New in Forever", "Fixed"] },
         { "name": "site-feedback", "type": "forum", "topic": "Bugs and ideas for forever-xp.com. Security problems: report privately on GitHub, not here.",
-          "tags": ["Bug", "Idea", "BIS planner", "Quests", "Items", "Talents", "Changes", "Mobile"] },
-        { "name": "foreverscout-help", "type": "text", "topic": "Help with the ForeverScout addon and uploader: https://forever-xp.com/scout/" },
-        { "name": "scouts", "type": "text", "role": "Scout", "topic": "For scouts: players who linked ForeverScout to their forever-xp.com account. Share finds, compare routes and talk about the data. Link yours at https://forever-xp.com/account/" }
+          "tags": ["Bug", "Idea", "BIS planner", "Quests", "Items", "Talents", "Changes", "Mobile"] }
       ]
     },
     {
@@ -59,17 +56,14 @@
     { "name": "Admin", "color": "#E74C3C", "hoist": true },
     { "name": "Moderator", "color": "#3BA55C", "hoist": true },
     { "name": "Contributor", "color": "#E8B92E", "hoist": true },
-    { "name": "ForeverScout tester", "color": "#6B3FC4", "hoist": true },
-    { "name": "Scout", "color": "#2E9FD6", "hoist": true },
     { "name": "Founding Member", "color": "#1ABC9C", "hoist": true }
   ],
-  "_scout_role": "Given hourly to members who linked a ForeverScout install to their forever-xp.com account (and haven't hidden themselves), and taken away when they unlink. Channels with a role are visible to that role only.",
-  "scout_role": "Scout",
   "_founding_members": "The bot gives this role to the earliest members to join (bots and anyone who hasn't accepted the rules are skipped), up to count. Checked hourly. It never removes the role.",
   "founding_members": { "role": "Founding Member", "count": 50 },
   "_retired_roles": "Roles the bot removes from the server if they exist. Only names listed here are ever deleted.",
   "retired_roles": [
     "Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Shaman", "Mage", "Warlock", "Druid",
-    "Horde", "Alliance", "PvP realm", "Normal realm", "RP realm"
+    "Horde", "Alliance", "PvP realm", "Normal realm", "RP realm",
+    "ForeverScout tester", "Scout"
   ]
 }

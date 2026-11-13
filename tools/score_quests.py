@@ -2,7 +2,7 @@
 
 A quest's time is: talk to the giver, run to each objective and do it (kills, loot, objects),
 then run to whoever takes it back, even in another zone. Quest XP is the game's own number;
-time is a model (run speed, seconds per kill, drop rates) until ForeverScout logs measure it.
+time is a model (run speed, seconds per kill, drop rates).
 
 Usage (every quest in the game, both factions):
   python3 tools/score_quests.py --out reports/quest-scores-1-60.csv

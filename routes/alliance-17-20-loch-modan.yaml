@@ -3,7 +3,7 @@
 # Humans, Dwarves and Gnomes come from 14-17 Redridge, Night Elves from 14-17 Darkshore by boat.
 # Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
 # Forever-only quests on the way are included (Banner of the Fallen, Excavation Tools, Spoils of War);
-# their XP is an estimate (~ in the report) until ForeverScout logs measure it.
+# their XP is an estimate (~ in the report).
 # Ends at level 20 in Menethil Harbor, where the Wetlands (Forever adds 25 new quests, 21-34) begin.
 # Humans skip the trogg chain (their 14-17 Redridge guide brings them in at a higher level).
 # Skipped on purpose: 256 WANTED: Chok'sul (elite), 271/531 Vyrin's Revenge (Ol' Sooty is elite),

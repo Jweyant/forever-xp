@@ -5,7 +5,6 @@ itemization (ratings, spell power, removed and added items), so the client is th
 Where items come from comes from open-source projects:
   - cmangos classic-db (GPL-3.0): creature/boss loot, vendors, quest rewards, crafting spells
   - AtlasLoot Classic (GPL-2.0): instance and boss names, PvP and faction reward lists
-  - ForeverScout player logs (out/loot.csv, when present): drops seen in Forever itself
 
 Usage:
   python3 tools/build_items.py --cache .cache/wago --cmangos path/to/ClassicDB.sql \
@@ -789,63 +788,12 @@ def journal_sources(cache, download, keep):
     print(f"dungeon journal: {n} boss drops for {len(src)} items")
     return src
 
-# Player logs are public input: a drop is only published once this many different players saw it.
-MIN_LOGGED_PLAYERS = 2
-# Who first logged a drop ("by"): a linked player's board name, re-checked here (see ingest_logs.BOARD_NAME).
-BY_NAME = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")
-
-
-def read_loot_csv(path):
-    """gamedata/players/loot.csv (tools/ingest_logs.py) -> {item id: [logged source, ...]}.
-    Rows seen by fewer than MIN_LOGGED_PLAYERS players are left out."""
-    logged = defaultdict(list)
-    with Path(path).open() as f:
-        for r in csv.DictReader(f):
-            try:
-                iid, players = int(r.get("item") or 0), int(r.get("players") or 0)
-            except ValueError:
-                continue
-            if iid <= 0 or players < MIN_LOGGED_PLAYERS:
-                continue
-            row = {"t": "logged", "n": str(r.get("source") or "")[:80], "z": str(r.get("zone") or "")[:60],
-                   "seen": players}
-            by = str(r.get("first_by") or "")
-            if BY_NAME.match(by):
-                row["by"] = by
-            logged[iid].append(row)
-    return logged
-
-
-def _norm(s):
-    return re.sub(r"[^a-z0-9]+", " ", str(s or "").lower()).strip()
-
-
-def confirm_sources(logged, known):
-    """Fold player sightings into the sources other databases already list.
-
-    A sighting whose NPC or object name matches a known source confirms it (`seen` = players),
-    which ranks it first. Sightings that match nothing stay as "logged" sources: drops Forever
-    added or changed that no database has yet."""
-    out = [dict(s) for s in known]
-    rest = []
-    for lg in logged:
-        n = _norm(lg.get("n"))
-        hit = [s for s in out if n and _norm(s.get("n")) == n] if n else []
-        if hit:
-            for s in hit:
-                if lg["seen"] >= s.get("seen", 0) and lg.get("by"):
-                    s["by"] = lg["by"]
-                s["seen"] = max(s.get("seen", 0), lg["seen"])
-        else:
-            rest.append(lg)
-    return rest + out
-
 
 def rank_sources(lst):
     order = {"raid": 0, "dungeon": 1, "pvp": 2, "rep": 3, "quest": 4, "craft": 5, "vendor": 6, "chest": 7,
-             "drop": 8, "world": 9, "logged": -1}
+             "drop": 8, "world": 9}
     seen, out = set(), []
-    for s in sorted(lst, key=lambda s: (0 if s.get("seen") else 1, order.get(s["t"], 9), -s.get("ch", 0))):
+    for s in sorted(lst, key=lambda s: (order.get(s["t"], 9), -s.get("ch", 0))):
         key = (s["t"], s.get("n"), s.get("z"))
         if key in seen:
             continue
@@ -1010,15 +958,9 @@ def main():
     cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
     jn = journal_sources(a.cache, a.download, keep)
-    logged = {}
-    loot_csv = Path("out/loot.csv")
-    if not loot_csv.exists():  # published aggregate from the player-data workflow
-        loot_csv = Path("gamedata/players/loot.csv")
-    if loot_csv.exists():
-        logged = read_loot_csv(loot_csv)
     no_src = 0
     for iid, rec in items.items():
-        s = rank_sources(confirm_sources(logged.get(iid, []), al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, [])))
+        s = rank_sources(al.get(iid, []) + jn.get(iid, []) + qs.get(iid, []) + cm.get(iid, []))
         side = pvp_rank_side(rec)
         if side:
             rec["side"] = side

@@ -2,7 +2,6 @@ import guidesJson from "../data/guides.json";
 import questsJson from "../data/quests.json";
 import zonesJson from "../data/zones.json";
 import metaJson from "../data/meta.json";
-import scoutsJson from "../data/scouts.json";
 
 export type Verdict = "do" | "skip" | "optional" | "unknown";
 export interface Quest {
@@ -12,10 +11,7 @@ export interface Quest {
   pre?: number[]; next?: number | null; unlocated?: boolean; source: string;
   guides: string[]; in_route: boolean; verdict: Verdict;
   skip_note?: { note: string; reason: string; guide: string };
-  measured?: { minutes: number | null; xp_per_min: number | null; players: number | null };
-  /** Fewer players than the site needs to trust it: shown, but the model still scores the quest. */
   skip_below?: number | null;
-  early?: { minutes: number | null; xp_per_min: number | null; players: number | null };
   chain?: { name: string; part: number; parts: number; xp: number; minutes: number; xp_per_min: number | null };
 }
 export interface Guide {
@@ -29,29 +25,18 @@ export interface Guide {
 export const guides = guidesJson as Guide[];
 export const quests = questsJson as Quest[];
 export const zones = zonesJson as { name: string; slug: string; quests: number; do: number; skip: number; optional: number; unknown: number; median_xp_per_min: number | null }[];
-export const meta = metaJson as { built: string; skip_fraction: number; measured_quests: number; confirmed_items: number; quests: number; guides: number };
-export interface ScoutRow { handle: string; score: number; quests: number; drops: number; discoveries: number; zones: number; sessions: number }
-/** Contributor leaderboard (tools/site_data.py write_scouts): linked players' board names and counts only. */
-export const scouts = scoutsJson as {
-  updated: number;
-  totals: { scouts: number; linked: number; sessions: number; quests: number; drops: number; discoveries: number };
-  week: { scouts: number; quests: number; drops: number };
-  board: ScoutRow[];
-  week_board: ScoutRow[];
-};
+export const meta = metaJson as { built: string; skip_fraction: number; quests: number; guides: number };
 export const questById = new Map(quests.map((q) => [q.id, q]));
 export const guideBySlug = new Map(guides.map((g) => [g.slug, g]));
 
-export const RELEASES = "https://github.com/Jweyant/forever-xp/releases/latest";
 export const REPO = "https://github.com/Jweyant/forever-xp";
-export const SUBMIT_LOG = "https://github.com/Jweyant/forever-xp/issues/new?template=submit-log.yml";
 
 export const VERDICT_LABEL: Record<Verdict, string> = {
   do: "In route", skip: "Skip", optional: "Optional", unknown: "No data",
 };
 
 export function rateOf(q: Quest) {
-  return q.measured?.xp_per_min ?? q.xp_per_min ?? null;
+  return q.xp_per_min ?? null;
 }
 export function fmtMinutes(m: number | null | undefined) {
   if (m == null) return "–";

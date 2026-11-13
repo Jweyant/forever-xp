@@ -7,9 +7,8 @@ and how it could be abused; before pushing, run the checks below.
 ## Secure development rules
 
 1. **Everything from outside is untrusted**: the address bar (path, query, hash), browser storage,
-   form fields and pasted text (the gear import), uploaded player logs, and third-party data
-   (Questie, the game client, cmangos, AtlasLoot, Blizzard's forum posts, Discord's API), and
-   anything the accounts API stores or returns (plan names and data are shown with textContent).
+   form fields and pasted text, and third-party data (Questie, the game client, cmangos, AtlasLoot,
+   wowsims, Blizzard's forum posts, Discord's API).
 2. **Allow-list, don't block-list.** Check a value against the exact set it may be, using own-key
    checks (`Object.prototype.hasOwnProperty.call`, the planner's `has()`), never a plain
    `obj[key]` truthiness test, which lets `constructor` and `__proto__` through.
@@ -29,10 +28,9 @@ and how it could be abused; before pushing, run the checks below.
    artifacts. Workflows that run on pull requests from forks get none.
 8. **Dependencies**: exact versions, a release at least two weeks old, `npm audit` clean.
    GitHub Actions are pinned to full commit SHAs.
-9. **Player privacy**: never collect names, realms, GUIDs, chat, gold or IP addresses. The one
-   exception is opt-in: a character name the player chooses to show on the leaderboard
-   (`/fscout board`), validated as 2-12 letters and never shown twice.
-   Player logs are parsed as data (`tools/luadata.py`), never executed.
+9. **Player privacy**: the site has no accounts, sign-in or uploads and collects nothing from
+   players. Keep it that way: no names, realms, GUIDs, chat, gold or IP addresses.
+   Other projects' Lua data files are parsed as data (`tools/luadata.py`), never executed.
 10. **Least privilege**: workflows declare only the `permissions` they need; the Cloudflare token
     is scoped to forever-xp.com.
 11. **This repository is public.** Commit messages, pull requests and docs say what changed, briefly.
@@ -45,7 +43,6 @@ and how it could be abused; before pushing, run the checks below.
 cd site
 npm run data && npm run build          # also writes dist/_headers with the CSP
 npm run test:security                  # hostile-input browser test, must pass
-npm run test:api                       # accounts API tests (sessions, CSRF, validation)
 npm audit --audit-level=high           # must be clean
 ```
 
@@ -64,8 +61,7 @@ reviewed pull request with those checks green.
 
 - `site/` Astro site (Cloudflare Pages). `src/scripts/` client code, `tests/security.mjs` hostile-input test,
   `tools/og-cards.mjs` draws the share images in `public/og/`.
-  `site/api/app.js` the accounts API (Pages Function at `/api/*`, D1, Discord sign-in), `site/api/schema.sql`.
-- `server/` upload Worker (Cloudflare). `uploader/` desktop uploader (Go). `addon/` ForeverScout.
+- `viewer/` 3D gear viewer Worker (Cloudflare). `guides/` the generated RestedXP guide files.
 - `tools/` data builders (Python), `tools/csp.mjs` security headers, `tools/push_data.sh` data commits,
   `tools/indexnow.py` tells search engines which pages a deploy changed.
   `tools/build_talents.py` reads Forever's talent trees (trait tables + hotfixes) from wago.tools.

@@ -2,8 +2,8 @@
 # that touches the site or its data. Pull requests get a preview deploy.
 #
 # One-time setup:
-#   1. Reuse the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets from the upload server.
-#      The token also needs Account > Cloudflare Pages > Edit.
+#   1. Set the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets.
+#      The token needs Account > Cloudflare Pages > Edit.
 #   2. After the first deploy, in Cloudflare: Workers & Pages > forever-xp > Custom domains >
 #      add forever-xp.com (and www.forever-xp.com). The DNS records are created for you.
 
@@ -36,7 +36,7 @@ jobs:
         run: |
           git fetch -q origin data || { echo "No data branch yet."; exit 0; }
           for f in gamedata/items.json gamedata/items-report.md gamedata/quests.json gamedata/blizzard-notes.json gamedata/talents.json gamedata/other-items.json \
-                   gamedata/simweights.json gamedata/players/quest_timing.csv gamedata/players/loot.csv gamedata/players/objective_areas.json gamedata/players/scouts.json gamedata/players/encounters.csv gamedata/players/talent_builds.json gamedata/talent-builds.json gamedata/raids.json reports/quest-scores-1-60.csv; do
+                   gamedata/simweights.json gamedata/talent-builds.json gamedata/raids.json reports/quest-scores-1-60.csv; do
             d=$(git log -1 --format=%ct FETCH_HEAD -- "$f" 2>/dev/null); m=$(git log -1 --format=%ct HEAD -- "$f" 2>/dev/null)
             if [ "${d:-0}" -gt "${m:-0}" ]; then mkdir -p "$(dirname "$f")"; git show "FETCH_HEAD:$f" > "$f"; echo "Using $f from the data branch"; fi
           done
@@ -94,7 +94,6 @@ jobs:
           wranglerVersion: "4.149.0"  # exact; v4 of the action defaults to "latest"
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Run from site/ so Pages picks up site/functions (the accounts API at /api/*).
           workingDirectory: site
           preCommands: npx wrangler pages project create forever-xp --production-branch main || true
           command: pages deploy dist --project-name forever-xp --branch ${{ github.head_ref || github.ref_name }}

@@ -8,7 +8,7 @@ name: Site updates
 on:
   push:
     branches: [main]
-    paths: ["site/src/**", "site/public/**", "addon/**", "uploader/**", "routes/**"]
+    paths: ["site/src/**", "site/public/**", "routes/**"]
   workflow_dispatch:
     inputs:
       pr:

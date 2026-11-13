@@ -262,9 +262,3 @@ img[data-broken] { visibility: hidden; }
 @media (max-width: 719px) { .opt { display: none; } }
 /* Items with no known icon show the game's question mark. */
 .ico:empty { background: #0b0b0d url("https://render.worldofwarcraft.com/us/icons/56/inv_misc_questionmark.jpg") center / cover no-repeat; }
-
-/* /send/: paste box for ForeverScout exports */
-#send-page textarea { display: block; width: 100%; font-family: ui-monospace, Consolas, monospace; font-size: var(--step--1); }
-#send-page .actions { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; align-items: center; }
-#send-page [data-status].bad { color: var(--skip); }
-#send-page [data-status]:not(.bad):not(:empty) { color: var(--do); }

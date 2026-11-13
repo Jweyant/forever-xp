@@ -1,6 +1,6 @@
 # Deploys the 3D gear viewer (viewer/) to Cloudflare whenever it changes on main.
 #
-# Uses the same CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets as the upload server,
+# Uses the same CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets as the site deploy,
 # plus one repository variable:
 #   variable VIEWER_HOST   hostname for the viewer, e.g. viewer.yourdomain.com
 # Cloudflare creates the DNS record and HTTPS certificate for VIEWER_HOST automatically.

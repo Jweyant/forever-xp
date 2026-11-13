@@ -33,8 +33,7 @@ SHOWN = {
     509: {"id": 509, "name": "Elixir of Agony", "xp": 2300, "minutes": 5.4},
     513: {"id": 513, "name": "Elixir of Agony", "xp": 1150, "minutes": 4.8},
     517: {"id": 517, "name": "Elixir of Agony", "xp": 1200, "minutes": 6.8},
-    524: {"id": 524, "name": "Elixir of Agony", "xp": 3650, "minutes": 0.3,
-          "measured": {"minutes": 0.5, "xp_per_min": 7300, "players": 2}},
+    524: {"id": 524, "name": "Elixir of Agony", "xp": 3650, "minutes": 0.3},
     100: {"id": 100, "name": "Westfall Stew", "xp": 400, "minutes": 2.0},
     101: {"id": 101, "name": "Westfall Stew", "xp": 600, "minutes": 3.0},
     300: {"id": 300, "name": "The Hunt Continues", "xp": 450, "minutes": 4.0},
@@ -56,9 +55,9 @@ class Chains(unittest.TestCase):
         c = self.out[524]
         self.assertEqual((c["part"], c["parts"], c["name"]), (5, 5, "Elixir of Agony"))
         self.assertEqual(self.out[509]["part"], 1)
-        # totals over the four scored parts, measured minutes preferred
+        # totals over the four scored parts
         self.assertEqual(c["xp"], 2300 + 1150 + 1200 + 3650)
-        self.assertEqual(c["minutes"], round(5.4 + 4.8 + 6.8 + 0.5, 1))
+        self.assertEqual(c["minutes"], round(5.4 + 4.8 + 6.8 + 0.3, 1))
         self.assertEqual(c["xp_per_min"], int(c["xp"] / c["minutes"]))
         self.assertNotIn(515, self.out)  # unscored part carries no chain row
 

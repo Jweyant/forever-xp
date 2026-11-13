@@ -1,13 +1,12 @@
-// Dungeons and raids (gamedata/raids.json, built by tools/build_raids.py from AtlasLoot, cmangos,
-// Questie and ForeverScout player data).
+// Dungeons and raids (gamedata/raids.json, built by tools/build_raids.py from AtlasLoot, cmangos
+// and Questie).
 import raidsJson from "../data/raids.json";
 
 export interface Boss {
   name: string; npc: number; lv?: number; hp?: number; armor?: number; res?: Record<string, number>;
-  /** [item id, drop chance % or null, players who saw it drop in Forever?] */
-  loot: [number, number | null, number?][];
+  /** [item id, drop chance % or null] */
+  loot: [number, number | null][];
   classic_only?: number;
-  seen?: { kills?: number; wipes?: number; median_kill_seconds?: number; groups?: number };
 }
 export interface Instance {
   slug: string; name: string; kind: "dungeon" | "raid"; size?: number; lv?: [number, number]; reset?: number;

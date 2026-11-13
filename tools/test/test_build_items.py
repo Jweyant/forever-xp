@@ -6,7 +6,6 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import build_addon_data  # noqa: E402
 import build_items  # noqa: E402
 import mysqldump  # noqa: E402
 
@@ -105,63 +104,7 @@ class DisplayIds(unittest.TestCase):
 
 
 
-class AddonSources(unittest.TestCase):
-    def test_player_credit_reaches_the_addon_only_in_its_checked_form(self):
-        src = build_addon_data.source
-        self.assertEqual(src({"t": "drop", "n": "Kobold", "seen": 3, "by": "Kinos"}), '{t="drop",n="Kobold",sn=3,by="Kinos"}')
-        for bad in ('<b>x</b>', 'a|cffff0000b', 'x' * 21, '@everyone', 7, None):
-            self.assertNotIn("by=", src({"t": "drop", "n": "Kobold", "seen": 3, "by": bad}), repr(bad))
-        self.assertNotIn("sn=", src({"t": "drop", "n": "Kobold", "seen": True}))      # not a number of players
-        self.assertNotIn("sn=", src({"t": "drop", "n": "Kobold", "seen": 0}))
-
-
-class LoggedSources(unittest.TestCase):
-    """Player loot sightings confirm known sources or add new ones, never below the player threshold."""
-
-    def test_loot_csv_threshold_and_bad_rows(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            p = Path(tmp) / "loot.csv"
-            p.write_text('item,source,zone,players,looted\n'
-                         '100,"Kobold Vermin","Elwynn Forest",3,7\n'
-                         '100,"Chest #99","Elwynn Forest",1,1\n'      # one player: not published
-                         'x,"Bad","",5,5\n'                            # not an item id
-                         '101,"<b>Defias</b>","Westfall",2,2\n')
-            logged = build_items.read_loot_csv(p)
-        self.assertEqual(logged, {100: [{"t": "logged", "n": "Kobold Vermin", "z": "Elwynn Forest", "seen": 3}],
-                                  101: [{"t": "logged", "n": "<b>Defias</b>", "z": "Westfall", "seen": 2}]})
-
-    def test_first_logged_by_is_carried_and_checked(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            p = Path(tmp) / "loot.csv"
-            p.write_text('item,source,zone,players,looted,first_by\n'
-                         '100,"Kobold Vermin","Elwynn Forest",3,7,"Kinos"\n'
-                         '101,"Defias","Westfall",2,2,""\n'                    # unlinked first looter: no credit
-                         '102,"Gnoll","Westfall",2,2,"<img src=x>"\n'           # fails the allow-list: no credit
-                         '103,"Murloc","Westfall",2,2,"@everyone"\n')
-            logged = build_items.read_loot_csv(p)
-        self.assertEqual(logged[100][0]["by"], "Kinos")
-        for iid in (101, 102, 103):
-            self.assertNotIn("by", logged[iid][0], iid)
-        known = [{"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}]
-        out = build_items.confirm_sources(logged[100], known)
-        self.assertEqual([(s["n"], s["seen"], s["by"]) for s in out], [("Kobold Vermin", 3, "Kinos")])
-
-    def test_sighting_confirms_a_known_source_and_ranks_it_first(self):
-        known = [{"t": "vendor", "n": "Smith Argus", "z": "Elwynn Forest"},
-                 {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest", "ch": 1.5}]
-        logged = [{"t": "logged", "n": "kobold vermin", "z": "Elwynn Forest", "seen": 4}]
-        out = build_items.rank_sources(build_items.confirm_sources(logged, known))
-        self.assertEqual(out[0], {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest", "ch": 1.5, "seen": 4})
-        self.assertEqual([s["t"] for s in out], ["drop", "vendor"])  # no duplicate "logged" row
-        self.assertNotIn("seen", known[1])  # inputs untouched
-
-    def test_unmatched_sighting_is_a_new_forever_drop(self):
-        known = [{"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}]
-        logged = [{"t": "logged", "n": "Skyborne Scavenger", "z": "Durotar", "seen": 2}]
-        out = build_items.rank_sources(build_items.confirm_sources(logged, known))
-        self.assertEqual(out, [{"t": "logged", "n": "Skyborne Scavenger", "z": "Durotar", "seen": 2},
-                               {"t": "drop", "n": "Kobold Vermin", "z": "Elwynn Forest"}])
-
+class ClientText(unittest.TestCase):
     def test_client_icons_and_quality(self):
         with tempfile.TemporaryDirectory() as cache:
             d = Path(cache) / build_items.FOREVER_BUILD

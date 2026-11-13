@@ -41,14 +41,6 @@
           {
             "context": "Site security",
             "integration_id": 15368
-          },
-          {
-            "context": "Uploader security",
-            "integration_id": 15368
-          },
-          {
-            "context": "Upload server tests",
-            "integration_id": 15368
           }
         ]
       }

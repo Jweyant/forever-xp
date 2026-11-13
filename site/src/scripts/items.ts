@@ -24,26 +24,13 @@ export function loadGear() {
 
 export const SRC_LABEL: Record<string, string> = {
   chest: "Chest", raid: "Raid", dungeon: "Dungeon", pvp: "PvP", rep: "Reputation", quest: "Quest", craft: "Crafted",
-  vendor: "Vendor", drop: "Drop", world: "World drop", logged: "Seen in Forever",
+  vendor: "Vendor", drop: "Drop", world: "World drop",
 };
-/** "Confirmed in Forever by 3 players": how many different players' logs saw a source drop this item. */
-export function seenText(seen: unknown): string {
-  const n = Math.floor(Number(seen));
-  if (!Number.isFinite(n) || n < 1) return "";
-  return `Confirmed in Forever by ${n} player${n === 1 ? "" : "s"}`;
-}
-/** "First logged by Kinos": the linked player who first looted a drop that others then confirmed. The name
- * comes from player logs and the accounts site, so it must match the board-name allow-list or it's dropped. */
-export function byText(by: unknown): string {
-  return typeof by === "string" && /^[A-Za-z0-9 _'-]{2,20}$/.test(by) ? `First logged by ${by}` : "";
-}
 export function srcText(it: Item) {
   const s = it.src?.[0];
   if (!s) return "Source not known yet";
   const where = [s.n, s.z].filter(Boolean).join(", ");
-  const seen = seenText(s.seen);
-  const by = seen ? byText(s.by) : "";
-  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}${seen ? ` (${seen[0].toLowerCase()}${seen.slice(1)}${by ? `; ${by[0].toLowerCase()}${by.slice(1)}` : ""})` : ""}`;
+  return `${SRC_LABEL[s.t] || s.t}${where ? ": " + where : ""}`;
 }
 /** Dungeon or raid page slug, matching tools/build_raids.py. */
 export const instSlug = (name: string) => name.toLowerCase().replace(/'/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -52,13 +39,10 @@ export function srcHtml(it: Item, instances: Set<string> = new Set()) {
   const s = it.src?.[0];
   if (!s) return esc(srcText(it));
   const label = esc(SRC_LABEL[s.t] || s.t);
-  const seen = seenText(s.seen);
-  const by = seen ? byText(s.by) : "";
-  const tail = seen ? ` (${esc(seen[0].toLowerCase() + seen.slice(1))}${by ? `; ${esc(by[0].toLowerCase() + by.slice(1))}` : ""})` : "";
-  if (s.t === "quest" && num(s.qid) > 0) return `${label}: <a href="/quests/${num(s.qid)}/">${esc(s.n || `Quest ${num(s.qid)}`)}</a>${tail}`;
+  if (s.t === "quest" && num(s.qid) > 0) return `${label}: <a href="/quests/${num(s.qid)}/">${esc(s.n || `Quest ${num(s.qid)}`)}</a>`;
   const slug = s.z ? instSlug(s.z) : "";
   if ((s.t === "raid" || s.t === "dungeon") && slug && instances.has(slug)) {
-    return `${label}: ${s.n ? `${esc(s.n)}, ` : ""}<a href="/raids/${esc(slug)}/">${esc(s.z || "")}</a>${tail}`;
+    return `${label}: ${s.n ? `${esc(s.n)}, ` : ""}<a href="/raids/${esc(slug)}/">${esc(s.z || "")}</a>`;
   }
   return esc(srcText(it));
 }

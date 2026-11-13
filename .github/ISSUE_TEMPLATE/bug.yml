@@ -1,24 +1,24 @@
-name: Addon bug
-description: ForeverScout threw an error or recorded something wrong.
+name: Bug or wrong data
+description: Something on forever-xp.com or in a guide is broken or wrong.
 title: "[bug] "
 labels: ["bug"]
 body:
   - type: input
+    id: where
+    attributes:
+      label: Where
+      description: The page link, or the guide and step number.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      description: What you saw, and what it should be if you know.
+    validations:
+      required: true
+  - type: input
     id: build
     attributes:
-      label: Game build
-      description: Shown at the top of /fscout report, e.g. 1.60.1.69913
-    validations:
-      required: true
-  - type: textarea
-    id: error
-    attributes:
-      label: Error text
-      description: Paste the full error (BugSack/BugGrabber output is best).
-      render: text
-    validations:
-      required: true
-  - type: textarea
-    id: steps
-    attributes:
-      label: What were you doing?
+      label: Game build (optional)
+      description: Shown on the login screen, e.g. 1.60.1.70888

@@ -4,11 +4,8 @@
   python3 tools/discord_bot.py setup [--dry-run]        # apply discord/server.json to the server
                                                          # (and post or update the welcome and rules text)
   python3 tools/discord_bot.py founding-members [--dry-run]   # give the founding role to the first members (hourly)
-  python3 tools/discord_bot.py scout-role IDS.json [--dry-run]  # give the Scout role to players who linked an install (hourly)
   python3 tools/discord_bot.py post-notes OLD.json NEW.json   # post new Blizzard changes and news to the feed channel
   python3 tools/discord_bot.py post-date 2026-10-26 NOTES.json...  # (re)post one day's changes (run by hand)
-  python3 tools/discord_bot.py post-scouts SCOUTS.json [--dry-run]    # weekly Scout report to the report channel
-  python3 tools/discord_bot.py update-scouts SCOUTS.json [--dry-run]  # edit the standings message there in place
 
 Needs DISCORD_BOT_TOKEN (GitHub secret) and DISCORD_GUILD_ID (GitHub variable). The bot never
 deletes anything except roles named in retired_roles, never pings anyone (allowed_mentions is empty on every message), and only
@@ -40,10 +37,9 @@ ROLE_KEYS = {"name", "color", "hoist"}
 MAX_ROLES = 50
 FOUNDING_KEYS = {"role", "count"}
 SNOWFLAKE = re.compile(r"^[0-9]{1,25}$")
-CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "report", "updates", "message", "role"}
+CHANNEL_KEYS = {"name", "type", "topic", "readonly", "tags", "aliases", "feed", "updates", "message", "role"}
 STAFF_ROLES = {"admin", "moderator"}
 USER_ID = re.compile(r"^[0-9]{15,22}$")
-MAX_ROLE_CHANGES = 25     # most Scout roles taken away in one run, so a bad list can't strip everyone
 PRIVATE_KEYS = {"name", "type"}
 MESSAGES = ROOT / "discord" / "messages"
 MESSAGE_FILE_RE = re.compile(r"^[a-z0-9-]{1,40}\.md$")
@@ -60,7 +56,7 @@ def log(msg):
 
 # ---- validation (runs on every pull request, no token) ----------------------------------------
 def validate(cfg):
-    problems, seen, feeds, reports, updates, role_channels = [], set(), [], [], [], []
+    problems, seen, feeds, updates, role_channels = [], set(), [], [], []
     for cat in cfg.get("categories", []):
         if not cat.get("name") or len(cat["name"]) > 90:
             problems.append(f"category name missing or too long: {cat.get('name')!r}")
@@ -86,12 +82,6 @@ def validate(cfg):
                     problems.append(f"{name}: the feed must be a text or announcement channel")
             elif "feed" in ch:
                 problems.append(f"{name}: feed must be true or left out")
-            if ch.get("report") is True:
-                reports.append(name)
-                if kind not in ("text", "announcement"):
-                    problems.append(f"{name}: the report channel must be a text or announcement channel")
-            elif "report" in ch:
-                problems.append(f"{name}: report must be true or left out")
             if ch.get("updates") is True:
                 updates.append(name)
                 if kind not in ("text", "announcement"):
@@ -111,8 +101,6 @@ def validate(cfg):
                 problems.append(f"{name}: at most 20 tags of up to 20 characters")
     if len(feeds) > 1:
         problems.append(f"only one feed channel, not {', '.join(feeds)}")
-    if len(reports) > 1:
-        problems.append(f"only one report channel, not {', '.join(reports)}")
     if len(updates) > 1:
         problems.append(f"only one updates channel, not {', '.join(updates)}")
     private = cfg.get("private_channels", [])
@@ -147,12 +135,6 @@ def validate(cfg):
             problems.append(f"{name}: role must be one of the listed roles")
         elif role.lower() in STAFF_ROLES:
             problems.append(f"{name}: can't limit a channel to a staff role")
-    scout_role = cfg.get("scout_role")
-    if scout_role is not None:
-        if not isinstance(scout_role, str) or scout_role.lower() not in listed:
-            problems.append("scout_role must be one of the listed roles")
-        elif scout_role.lower() in STAFF_ROLES:
-            problems.append("scout_role: can't hand out a staff role")
     founding = cfg.get("founding_members")
     if founding is not None:
         if not isinstance(founding, dict) or set(founding) - FOUNDING_KEYS:
@@ -506,66 +488,6 @@ def founding_members(cfg, d, guild):
     log(f"{conf['role']}: gave it to {len(waiting)}, now {holders + len(waiting)} of {conf['count']}.")
 
 
-# ---- Scout role --------------------------------------------------------------------------------
-def read_discord_ids(path):
-    """The Discord IDs of players who linked a ForeverScout install (forever-xp.com
-    /api/scouts/discord): a set of ID strings, or None when the file is missing or not that shape."""
-    try:
-        doc = json.loads(Path(path).read_text())
-    except (OSError, ValueError):
-        return None
-    ids = doc.get("ids") if isinstance(doc, dict) else None
-    if not isinstance(ids, list):
-        return None
-    return {i for i in ids if isinstance(i, str) and USER_ID.match(i)}
-
-
-def scout_roles(cfg, ids_path, d, guild):
-    """Keep the Scout role in step with the site: members who linked an install (and haven't hidden
-    themselves) get it; members who unlinked or hid lose it. It only touches this one role, never
-    removes more than MAX_ROLE_CHANGES in a run, and leaves everything alone if the list can't be read.
-    Logs counts only: the run log is public, so no names or IDs."""
-    name = cfg.get("scout_role")
-    if not name:
-        log("No scout_role in discord/server.json.")
-        return
-    want = read_discord_ids(ids_path)
-    if want is None:
-        log("The linked-player list isn't available; Scout roles left as they are.")
-        return
-    me = d.call("GET", "/users/@me")
-    roles = d.call("GET", f"/guilds/{guild}/roles")
-    role = next((r for r in roles if r["name"].lower() == name.lower() and not r.get("managed")), None)
-    if not role or not SNOWFLAKE.match(str(role["id"])):
-        log(f"! The {name} role doesn't exist yet; the layout run creates it.")
-        return
-    bot_top = max((r.get("position", 0) for r in roles if (r.get("tags") or {}).get("bot_id") == me["id"]), default=0)
-    if role.get("position", 0) >= bot_top:
-        log(f"! {name} is above the bot's role, so the bot can't give it out.")
-        return
-    members, after = [], "0"
-    for _ in range(50):   # up to 50,000 members
-        page = d.call("GET", f"/guilds/{guild}/members?limit=1000&after={after}", soft=(403,))
-        if page is None:
-            log("! Can't list members. Turn on Server Members Intent: Discord developer portal > Bot > Privileged Gateway Intents.")
-            return
-        members += page
-        if len(page) < 1000:
-            break
-        after = page[-1]["user"]["id"]
-    people = {str(m["user"]["id"]): role["id"] in (m.get("roles") or []) for m in members
-              if isinstance(m.get("user"), dict) and not m["user"].get("bot") and USER_ID.match(str(m["user"].get("id", "")))}
-    give = sorted(i for i in want if people.get(i) is False)
-    take = sorted(i for i, has in people.items() if has and i not in want)[:MAX_ROLE_CHANGES]
-    for uid in give:
-        d.call("PUT", f"/guilds/{guild}/members/{uid}/roles/{role['id']}", write=True)
-        time.sleep(0.5)
-    for uid in take:
-        d.call("DELETE", f"/guilds/{guild}/members/{uid}/roles/{role['id']}", write=True)
-        time.sleep(0.5)
-    log(f"{name}: {len(want)} linked, {sum(1 for i in want if i in people)} on this server; gave it to {len(give)}, took it from {len(take)}.")
-
-
 # ---- patch notes -------------------------------------------------------------------------------
 MD = re.compile(r"([\\*_~`|>#\[\]()])")
 
@@ -797,131 +719,6 @@ def send_feed(cfg, d, guild, new_rows, new_articles, max_messages, max_articles,
         log(f"posted {len(rows)} changes from {url} in {len(embeds)} message(s)")
 
 
-# ---- weekly Scout report ---------------------------------------------------------------------
-SCOUTS_URL = "https://forever-xp.com/leaderboard/"
-SCOUT_HANDLE = re.compile(r"^[A-Za-z0-9 _'-]{2,20}$")  # a linked player's board name
-
-
-def count(v, cap=10_000_000):
-    """A non-negative whole number from data, never more than cap."""
-    try:
-        n = int(v)
-    except (TypeError, ValueError):
-        return 0
-    return max(0, min(n, cap))
-
-
-def scout_rows(rows, n):
-    """Leaderboard rows with an allow-listed handle and numeric counts only."""
-    out = []
-    for r in rows if isinstance(rows, list) else []:
-        if isinstance(r, dict) and isinstance(r.get("handle"), str) and SCOUT_HANDLE.match(r["handle"]):
-            out.append({"handle": r["handle"], **{k: count(r.get(k)) for k in ("score", "quests", "drops", "discoveries")}})
-        if len(out) == n:
-            break
-    return out
-
-
-def plural(n, word):
-    return f"{n:,} {word}{'' if n == 1 else 's'}"
-
-
-def scout_embed(doc, today=None):
-    """The weekly Scout report embed, or None while nobody has sent a log."""
-    doc = doc if isinstance(doc, dict) else {}
-    board = scout_rows(doc.get("board"), 5)
-    if not board:
-        return None
-    week_board = scout_rows(doc.get("week_board"), 10)
-    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
-    week = doc.get("week") if isinstance(doc.get("week"), dict) else {}
-    today = today or time.strftime("%Y-%m-%d", time.gmtime())
-    desc = (f"This week {plural(count(week.get('scouts')), 'scout')} timed {plural(count(week.get('quests')), 'quest')} "
-            f"and logged {plural(count(week.get('drops')), 'drop')}. All time: {plural(count(totals.get('scouts')), 'scout')}, "
-            f"{plural(count(totals.get('quests')), 'quest')} timed, {plural(count(totals.get('drops')), 'drop')} logged, "
-            f"{plural(count(totals.get('discoveries')), 'discovery').replace('discoverys', 'discoveries')}.\n\n"
-            "Every drop two scouts confirm shows on its item page as \"Confirmed in Forever\". "
-            "Run ForeverScout with sharing on to get on the board.")
-    fields = []
-    if week_board:
-        fields.append({"name": "This week", "inline": False, "value": "\n".join(
-            f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')} ({plural(r['quests'], 'quest')}, {plural(r['drops'], 'drop')})"
-            for i, r in enumerate(week_board, 1))})
-    fields.append({"name": "All-time leaders", "inline": False, "value": "\n".join(
-        f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')}" for i, r in enumerate(board, 1))})
-    return {"title": f"Scout report, week of {nice_date(today)}", "url": SCOUTS_URL, "color": BRAND,
-            "description": desc, "fields": fields,
-            "footer": {"text": "Points: 1 per quest timed, 1 per drop logged, 3 per discovery. forever-xp.com/leaderboard"}}
-
-
-STANDINGS_TITLE = "Scout standings"
-
-
-def standings_embed(doc, now=None):
-    """The always-current top 10 for #leaderboard, or None while nobody has sent a log."""
-    doc = doc if isinstance(doc, dict) else {}
-    board = scout_rows(doc.get("board"), 10)
-    if not board:
-        return None
-    week_board = scout_rows(doc.get("week_board"), 3)
-    totals = doc.get("totals") if isinstance(doc.get("totals"), dict) else {}
-    updated = count(doc.get("updated"), cap=4_102_444_800) or int(now or time.time())
-    medal = {1: "\U0001F947", 2: "\U0001F948", 3: "\U0001F949"}
-    lines = [f"{medal.get(i, f'**{i}.**')} `{r['handle']}`: {plural(r['score'], 'pt')} ({plural(r['quests'], 'quest')}, "
-             f"{plural(r['drops'], 'drop')}, {plural(r['discoveries'], 'discovery').replace('discoverys', 'discoveries')})"
-             for i, r in enumerate(board, 1)]
-    fields = [{"name": "All time", "inline": False, "value": "\n".join(lines)}]
-    if week_board:
-        fields.append({"name": "Top this week", "inline": False, "value": "\n".join(
-            f"**{i}.** `{r['handle']}`: {plural(r['score'], 'pt')}" for i, r in enumerate(week_board, 1))})
-    return {"title": STANDINGS_TITLE, "url": SCOUTS_URL, "color": BRAND,
-            "description": (f"{plural(count(totals.get('scouts')), 'scout')} have timed {plural(count(totals.get('quests')), 'quest')} "
-                            f"and logged {plural(count(totals.get('drops')), 'drop')}. Updated <t:{updated}:R>. "
-                            "Run ForeverScout with sharing on to get on the board."),
-            "fields": fields,
-            "footer": {"text": "1 point per quest timed, 1 per drop logged, 3 per discovery. Full board: forever-xp.com/leaderboard"}}
-
-
-def read_scouts(path):
-    try:
-        doc = json.loads(Path(path).read_text())
-    except (OSError, ValueError):
-        doc = {}
-    return doc if isinstance(doc, dict) else {}
-
-
-def update_scouts(cfg, path, d, guild):
-    """Keep one standings message in the report channel: edit the bot's own one, or post it once.
-    Not published to followers (the weekly report is), so it never spams other servers."""
-    embed = standings_embed(read_scouts(path))
-    if embed is None:
-        log("No scouts on the board yet; standings not posted.")
-        return
-    target = feed_target(cfg, d, guild, flag="report")
-    me = d.call("GET", "/users/@me") or {}
-    mine = [m for m in d.call("GET", f"/channels/{target['id']}/messages?limit=50") or []
-            if (m.get("author") or {}).get("id") == me.get("id")
-            and any((e or {}).get("title") == STANDINGS_TITLE for e in m.get("embeds") or [])]
-    body = {"embeds": [embed], "allowed_mentions": {"parse": []}}
-    if mine:
-        d.call("PATCH", f"/channels/{target['id']}/messages/{mine[0]['id']}", body, write=True)
-        log(f"Updated the standings in #{target['name']}.")
-    else:
-        d.call("POST", f"/channels/{target['id']}/messages", body, write=True)
-        log(f"Posted the standings in #{target['name']}.")
-
-
-def post_scouts(cfg, path, d, guild):
-    doc = read_scouts(path)
-    embed = scout_embed(doc)
-    if embed is None:
-        log("No scouts on the board yet; nothing posted.")
-        return
-    target = feed_target(cfg, d, guild, flag="report")
-    post(d, target, embed)
-    log(f"Posted the Scout report to #{target['name']}.")
-
-
 # ---- Site updates ------------------------------------------------------------------------------
 ANNOUNCE_SECTION = re.compile(r"^#{1,3}[ \t]*announce[ \t]*$\n(.*?)(?=^#{1,3}[ \t]|\Z)", re.I | re.M | re.S)
 OTHER_LINKS = re.compile(r"https?://(?!(?:www\.)?forever-xp\.com(?:[/?#\s]|$))\S*", re.I)
@@ -1000,17 +797,8 @@ def main():
     q.add_argument("date")
     q.add_argument("notes", nargs="+")
     q.add_argument("--dry-run", action="store_true")
-    r = sub.add_parser("post-scouts")
-    r.add_argument("scouts")
-    r.add_argument("--dry-run", action="store_true")
     f = sub.add_parser("founding-members")
     f.add_argument("--dry-run", action="store_true")
-    sr = sub.add_parser("scout-role")
-    sr.add_argument("ids")
-    sr.add_argument("--dry-run", action="store_true")
-    u = sub.add_parser("update-scouts")
-    u.add_argument("scouts")
-    u.add_argument("--dry-run", action="store_true")
     w = sub.add_parser("post-update")
     w.add_argument("pr")
     w.add_argument("--dry-run", action="store_true")
@@ -1031,16 +819,10 @@ def main():
         setup(cfg, d, guild)
     elif a.cmd == "founding-members":
         founding_members(cfg, d, guild)
-    elif a.cmd == "scout-role":
-        scout_roles(cfg, a.ids, d, guild)
     elif a.cmd == "post-date":
         post_date(cfg, a.notes, a.date, d, guild)
-    elif a.cmd == "post-scouts":
-        post_scouts(cfg, a.scouts, d, guild)
     elif a.cmd == "post-update":
         post_update(cfg, a.pr, d, guild)
-    elif a.cmd == "update-scouts":
-        update_scouts(cfg, a.scouts, d, guild)
     else:
         post_notes(cfg, a.old, a.new, d, guild)
 

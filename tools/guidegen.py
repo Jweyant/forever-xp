@@ -58,8 +58,7 @@ EVENT_RE = re.compile(r"\bescorts?\b|\bprotect\b|\bto safety\b|\baccompany\b|\bk
 MIN_OBJECTIVE_SEC = 30   # no quest's objectives are faster than this
 DEFAULT_DROP_RATE = 0.5  # unknown drop rates
 QUEST_LOG_MAX = 20
-# Mobs killed while running between objectives (outside towns). An assumption to be replaced
-# by measured values from ForeverScout logs.
+# Mobs killed while running between objectives (outside towns). An assumption.
 TRAVEL_KILLS_PER_100YD = 0.3
 TRAVEL_KILL_MIN_YD = 150
 
@@ -637,8 +636,8 @@ def main():
         (rep_dir / f"{stem}.md").write_text(
             f"# {spec['guide']['name']}\n\nEstimated finish: level {gen.s.level_float:.2f} after "
             f"{gen.s.seconds / 60:.0f} minutes. Quests still in log: {sorted(gen.s.log)}\n\n"
-            "Estimates use Classic XP rules and generic kill/travel times until ForeverScout logs "
-            "replace them with measured values. XP marked ~ is an estimate: the quest is new in Forever "
+            "Estimates use Classic XP rules and generic kill/travel times. "
+            "XP marked ~ is an estimate: the quest is new in Forever "
             "and no source has its XP yet.\n\n"
             "## Issues\n\n" + ("\n".join(f"- {i}" for i in issues) or "_none_") +
             "\n\n## Quests by XP per minute of objective time\n\n" + "\n".join(qrows) +

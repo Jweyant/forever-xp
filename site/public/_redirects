@@ -1,4 +1,12 @@
 /gear /bis/ 301
 /gear/ /bis/ 301
-/scouts /leaderboard/ 301
-/scouts/ /leaderboard/ 301
+/scouts /contribute/ 301
+/scouts/ /contribute/ 301
+/scout /contribute/ 301
+/scout/ /contribute/ 301
+/leaderboard /contribute/ 301
+/leaderboard/ /contribute/ 301
+/send /contribute/ 301
+/send/ /contribute/ 301
+/account / 301
+/account/ / 301

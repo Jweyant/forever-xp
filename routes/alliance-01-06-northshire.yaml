@@ -1,8 +1,8 @@
 # ForeverXP — Human 1-6, Northshire Valley.
 # Order only; tools/guidegen.py fills coordinates, NPCs and checks from Forever Questie data.
 # Skipped on purpose: the Forever-only library chain that starts from the Nibbled-On Book drop
-# (91741 → 91777). It walks you to Goldshire and back with no XP data yet; ForeverScout logs will
-# tell us whether it's worth adding.
+# (91741 → 91777). It walks you to Goldshire and back with no XP data yet, so we can't
+# tell whether it's worth adding.
 guide:
   name: 1-6 Northshire
   display: ForeverXP 1-6 Northshire
