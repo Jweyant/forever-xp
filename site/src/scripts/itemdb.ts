@@ -42,7 +42,7 @@ function filtered(): Row[] {
   if (!cat || cat === "gear") {
     for (const it of all) if (named(it.name, it.id) && (!slot || it.slot === slot)
       && (!type || it.type === type) && it.q >= q2 && (it.req || 1) >= min && (it.req || 1) <= max
-      && (!src || sourceKind(it) === src) && (!stat || (it.stats[stat] || 0) > 0)
+      && (!src || (src === "classic" ? it.cs === 1 : sourceKind(it) === src)) && (!stat || (it.stats[stat] || 0) > 0)
       && (!ver || (ver === "new" ? it.new === 1 : ver === "chg" ? Array.isArray(it.chg) : it.new === 1 || Array.isArray(it.chg)))) rows.push({ g: it });
   }
   // Gear-only filters (slot, type, source, stat, new/changed) leave non-gear items out.
@@ -59,7 +59,7 @@ function filtered(): Row[] {
 function gearRow(it: Item) {
   const q = QUALITY[num(it.q)] || "common";
   const stats = Object.entries(it.stats).filter(([k]) => k !== "armor" && k !== "dps").slice(0, 4).map(([k, v]) => `+${num(v)} ${STAT_LABEL[k] || k}`).join(", ");
-  return `<tr><td><a class="ilink" href="/items/${num(it.id)}/" data-item="${num(it.id)}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span>${it.new === 1 ? `<span class="tag-new">NEW</span>` : Array.isArray(it.chg) ? `<span class="tag-new tag-chg">CHANGED</span>` : ""}<span class="sub">${esc(stats || (it.weapon ? `${it.weapon.dps} DPS` : it.stats.armor ? `${it.stats.armor} armor` : ""))}</span></span></a></td>
+  return `<tr><td><a class="ilink" href="/items/${num(it.id)}/" data-item="${num(it.id)}"><span class="ico sm qb-${q}">${it.icon ? `<img src="${esc(ICON(it.icon, 36))}" alt="" loading="lazy">` : ""}</span><span><span class="iname-t q-${q}">${esc(it.name)}</span>${it.new === 1 ? `<span class="tag-new">NEW</span>` : Array.isArray(it.chg) ? `<span class="tag-new tag-chg">CHANGED</span>` : it.cs === 1 ? `<span class="tag-new tag-chg">CLASSIC STATS</span>` : ""}<span class="sub">${esc(stats || (it.weapon ? `${it.weapon.dps} DPS` : it.stats.armor ? `${it.stats.armor} armor` : ""))}</span></span></a></td>
     <td class="num">${num(it.ilvl)}</td><td class="num opt">${num(it.req) || "–"}</td><td class="opt">${esc(SLOT_NAME[it.slot] || it.slot)}${it.type && it.type !== "misc" ? `<span class="sub">${esc(tname(it.type))}</span>` : ""}</td><td class="opt small">${srcHtml(it, INSTANCES)}</td></tr>`;
 }
 function otherRow(o: Other) {

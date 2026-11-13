@@ -209,5 +209,54 @@ class Faction(unittest.TestCase):
         self.assertFalse(build_items.internal_spell("Dndthing"))
 
 
+# Classic rows (cmangos item_template) for gear the Forever client has an Item row for but no stats.
+WALL = {"entry": 1979, "name": "Wall of the Dead", "class": 4, "subclass": 6, "InventoryType": 14, "Quality": 4,
+        "ItemLevel": 50, "RequiredLevel": 45, "armor": 1937, "block": 34, "bonding": 2, "AllowableClass": -1,
+        "AllowableRace": -1, "stat_type1": 4, "stat_value1": 10, "stat_type2": 7, "stat_value2": 15,
+        "spellid_1": 19409, "spelltrigger_1": 1, "itemset": 0}
+MCP = {"entry": 9449, "name": "Manual Crowd Pummeler", "class": 2, "subclass": 5, "InventoryType": 17, "Quality": 3,
+       "ItemLevel": 34, "RequiredLevel": 29, "delay": 2000, "dmg_min1": 46, "dmg_max1": 70, "bonding": 1,
+       "AllowableClass": -1, "AllowableRace": -1, "stat_type1": 4, "stat_value1": 16, "stat_type2": 3,
+       "stat_value2": 5, "spellid_1": 13494, "spelltrigger_1": 0}
+CLIENT = {"1979": {"ID": "1979", "ClassID": "4", "SubclassID": "6", "InventoryType": "14"},
+          "9449": {"ID": "9449", "ClassID": "2", "SubclassID": "5", "InventoryType": "17"}}
+
+
+class ClassicStats(unittest.TestCase):
+    def rec(self, row, stats=None, text=""):
+        return build_items.classic_record(row, CLIENT[str(row["entry"])], lambda sid: dict((stats or {}).get(sid, {})),
+                                          lambda sid: text)
+
+    def test_shield_gets_classic_stats_and_is_marked(self):
+        r = self.rec(WALL, text="When struck in combat has a 3% chance to encase the caster in bone.")
+        self.assertEqual(r["cs"], 1)
+        self.assertEqual((r["slot"], r["type"], r["q"], r["ilvl"], r["req"]), ("shield", "shield", 4, 50, 45))
+        self.assertEqual(r["stats"], {"str": 10, "sta": 15, "armor": 1937, "blockv": 34})
+        self.assertEqual(r["fx"], [{"on": "equip", "text": "When struck in combat has a 3% chance to encase the caster in bone."}])
+        self.assertNotIn("bop", r)
+
+    def test_weapon_damage_and_use_effect(self):
+        r = self.rec(MCP, text="Increases your attack speed by 50% for 30 sec.")
+        self.assertEqual(r["weapon"], {"min": 46, "max": 70, "speed": 2.0, "dps": 29.0})
+        self.assertEqual(r["stats"]["dps"], 29.0)
+        self.assertEqual((r["slot"], r["type"], r["bop"]), ("twohand", "mace2", 1))
+        self.assertEqual(r["fx"][0]["on"], "use")
+
+    def test_equip_spells_that_give_stats_add_them(self):
+        row = dict(WALL, spellid_1=15464)  # +1% hit
+        r = self.rec(row, stats={"15464": {"hit_pct": 1}}, text="unused")
+        self.assertEqual(r["stats"]["hit_pct"], 1)
+        self.assertNotIn("fx", r)
+
+    def test_test_items_and_other_classes_are_skipped(self):
+        self.assertIsNone(self.rec(dict(WALL, name="Test Shield")))
+        self.assertIsNone(build_items.classic_record(WALL, {"ClassID": "15", "InventoryType": "14"}, dict, str))
+        self.assertIsNone(build_items.classic_record(WALL, {"ClassID": "4", "InventoryType": "4"}, dict, str))  # shirt
+
+    def test_odd_values_from_the_dump_are_ignored(self):
+        r = self.rec(dict(WALL, armor="1937", stat_value1=None, block=-5), text="")
+        self.assertEqual(r["stats"], {"sta": 15})
+
+
 if __name__ == "__main__":
     unittest.main()

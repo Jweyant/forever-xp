@@ -326,8 +326,7 @@ def client_items(cache, download):
             continue
         ilvl, req = num(s["ItemLevel"], int), num(s["RequiredLevel"], int)
         name = s["Display_lang"]
-        if (not name or re.search(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|PH|QA ?test\w*)\b", name, re.I)
-                or re.match(r"^\d+ (Epic|Green|Blue|Rare|Uncommon|Purple) ", name) or name.startswith(("zz", "QA"))):
+        if junk_name(name):
             continue
         stats = {}
         prow = rpp.get(ilvl)
@@ -421,7 +420,125 @@ def client_items(cache, download):
                                     "text": "" if st else spell_text(spells, b["SpellID"], spell_desc)[:200]})
                 sets_out[set_id] = {"name": sets[set_id], "bonuses": bonuses}
         items[int(iid)] = rec
-    return items, sets_out
+
+    def add_set(set_id):
+        if set_id in sets and set_id not in sets_out:
+            bonuses = []
+            for b in sorted(set_bonus.get(set_id, []), key=lambda r: num(r["Threshold"], int)):
+                st = spell_stats(b["SpellID"])
+                bonuses.append({"n": num(b["Threshold"], int), "stats": st,
+                                "text": "" if st else spell_text(spells, b["SpellID"], spell_desc)[:200]})
+            sets_out[set_id] = {"name": sets[set_id], "bonuses": bonuses}
+        return set_id in sets_out
+
+    # Gear the client knows (an Item row) but sends no stats for (no ItemSparse row): Blizzard
+    # holds some items back from the client files. fill() adds them with classic stats, marked cs.
+    sparse_ids = {s["ID"] for s in T["ItemSparse"]}
+    missing = {int(r["ID"]): r for r in T["Item"] if r["ID"] not in sparse_ids
+               and num(r.get("ClassID"), int) in (2, 4) and num(r.get("InventoryType"), int) in SLOTS}
+
+    def fill(classic):
+        added = []
+        for iid, it in missing.items():
+            c = classic.get(iid)
+            if not c or iid in items:
+                continue
+            rec = classic_record(c, it, spell_stats, lambda sid: spell_text(spells, sid, spell_desc, spell_name))
+            if not rec:
+                continue
+            icon = icons.get(num(it.get("IconFileDataID"), int)) or icons.get(app_icons.get(iid, 0))
+            if icon:
+                rec["icon"] = icon
+            if dids.get(iid):
+                rec["did"] = dids[iid]
+            set_id = str(c.get("itemset") or 0)
+            if set_id != "0" and add_set(set_id):
+                rec["set"] = int(set_id)
+            items[iid] = rec
+            added.append(iid)
+        return added
+
+    fill.ids = set(missing)
+    return items, sets_out, fill
+
+
+def junk_name(name):
+    """Test, placeholder and retired items no player can get."""
+    return (not name or bool(re.search(r"\b(test|testing|deprecated|unused|monster|NPC|\[PH\]|PH|QA ?test\w*)\b", name, re.I))
+            or bool(re.match(r"^\d+ (Epic|Green|Blue|Rare|Uncommon|Purple) ", name)) or name.startswith(("zz", "QA")))
+
+
+# Classic item_template stat ids (0-7) and resistance columns -> our stat keys.
+CLASSIC_STAT = {0: "mana", 1: "hp", 3: "agi", 4: "str", 5: "int", 6: "spi", 7: "sta"}
+CLASSIC_RES = ("fire_res", "frost_res", "nature_res", "shadow_res", "arcane_res", "holy_res")
+
+
+def classic_record(c, it, spell_stats, effect_text):
+    """An item record from cmangos' classic item_template row c, for gear the Forever client has an
+    Item row (it) for but no stats. Slot and type come from the client's row; stats, level and
+    quality are classic's and may differ in Forever, so the record is marked cs (classic stats).
+    spell_stats(spell id) gives the stats an equip spell adds; effect_text(spell id) its tooltip text.
+    Returns None for test items and slots the planner doesn't use."""
+    name = c.get("name")
+    inv = num(it.get("InventoryType"), int)
+    cls, sub = num(it.get("ClassID"), int), num(it.get("SubclassID"), int)
+    if not isinstance(name, str) or junk_name(name) or inv not in SLOTS or cls not in (2, 4):
+        return None
+    n = lambda k: c.get(k) if isinstance(c.get(k), (int, float)) else 0  # noqa: E731
+    stats = {}
+    for i in range(1, 11):
+        key, val = CLASSIC_STAT.get(n(f"stat_type{i}")), n(f"stat_value{i}")
+        if key and val:
+            stats[key] = stats.get(key, 0) + val
+    if n("armor") > 0:
+        stats["armor"] = n("armor")
+    if n("block") > 0:
+        stats["blockv"] = n("block")
+    for k in CLASSIC_RES:
+        if n(k):
+            stats[k] = n(k)
+    weapon = None
+    if cls == 2 and n("delay") > 0:
+        lo = sum(n(f"dmg_min{i}") for i in range(1, 6))
+        hi = sum(n(f"dmg_max{i}") for i in range(1, 6))
+        spd = n("delay") / 1000
+        if hi > 0:
+            dps = round((lo + hi) / 2 / spd, 1)
+            weapon = {"min": round(lo), "max": round(hi), "speed": spd, "dps": dps}
+            stats["dps"] = dps
+    effects = []
+    for i in range(1, 6):
+        sid, trig = n(f"spellid_{i}"), n(f"spelltrigger_{i}")
+        if sid <= 0 or trig not in (0, 1, 2):
+            continue
+        add = spell_stats(str(sid)) if trig == 1 else {}
+        if add:
+            for k, v in add.items():
+                stats[k] = stats.get(k, 0) + v
+            continue
+        text = effect_text(str(sid))
+        if text:
+            effects.append({"on": ["use", "equip", "hit"][trig], "text": text[:220]})
+    rec = {"id": int(c["entry"]), "name": name, "q": n("Quality"), "ilvl": n("ItemLevel"), "req": n("RequiredLevel"),
+           "slot": SLOTS[inv], "inv": inv, "type": (ARMOR_SUB.get(sub) if cls == 4 else WEAPON_SUB.get(sub)) or "misc",
+           "cls": cls, "stats": stats, "cs": 1}
+    if weapon:
+        rec["weapon"] = weapon
+    if effects:
+        rec["fx"] = effects
+    ac, ar = n("AllowableClass"), n("AllowableRace")
+    if ac not in (0, -1) and ac & 0x7FF != 0x7FF:
+        rec["classes"] = ac
+    if ar not in (0, -1):
+        if ar & FACTION_RACES["alliance"] and not ar & FACTION_RACES["horde"]:
+            rec["side"] = "A"
+        elif ar & FACTION_RACES["horde"] and not ar & FACTION_RACES["alliance"]:
+            rec["side"] = "H"
+    if n("bonding") == 1:
+        rec["bop"] = 1
+    if n("requiredhonorrank"):
+        rec["pvprank"] = n("requiredhonorrank")
+    return rec
 
 
 INSTANCE_NAMES = {
@@ -948,14 +1065,16 @@ def main():
     FOREVER_BUILD, product = wago.forever_build(a.build)
     print(f"Forever client build {FOREVER_BUILD} ({product})")
 
-    items, sets = client_items(a.cache, a.download)
+    items, sets, fill = client_items(a.cache, a.download)
+    keep = set(items) | fill.ids
+    cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
+    filled = fill(classic)
+    keep = set(items)
     ws = wowsims_icons(a.wowsims_db)
     for iid, rec in items.items():
         if not rec.get("icon") and ws.get(iid):
             rec["icon"] = ws[iid]
-    keep = set(items)
     al = atlasloot(a.atlasloot) if a.atlasloot else {}
-    cm, cm_did, classic = cmangos_sources(a.cmangos, keep) if a.cmangos else ({}, {}, {})
     qs = questie_sources(a.questie, keep) if a.questie else {}
     jn = journal_sources(a.cache, a.download, keep)
     no_src = 0
@@ -1008,6 +1127,8 @@ def main():
         f"- Items with no known source yet: {no_src}\n"
         f"- Items with a display id (3D model): {sum(1 for r in items.values() if r.get('did'))}\n"
         f"- New in Forever (not in the classic item list): {new}\n- Changed in Forever: {changed}\n"
+        f"- Classic stats only (the client has the item but not its stats): {len(filled)}"
+        f" of {len(fill.ids)} such items\n"
         f"- Other items (consumables, trade goods, recipes, quest items...): {len(other)}"
         f" ({sum(1 for r in other if r.get('icon'))} with an icon)\n"
         + ("\nDungeon journal:\n" + "".join(f"- {line}\n" for line in JOURNAL_NOTE) if JOURNAL_NOTE else ""))

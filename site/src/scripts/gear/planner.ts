@@ -2,7 +2,7 @@
 // State lives in the URL hash (shareable) and in localStorage (comes back next visit).
 import {
   CLASSES, SPECS, GOALS, WEIGHT_KEYS, STAT_LABEL, PAPERDOLL, DOLL_LABEL, SOURCE_KINDS, CRIT_RATING, HIT_RATING,
-  weightsFor, canUse, fits, score, sourceKind, canDualWield, simPresets, pawnScale, SIM_SITE, DEFAULT_SOURCES, endgameOnly,
+  weightsFor, canUse, fits, score, sourceOk, canDualWield, simPresets, pawnScale, SIM_SITE, DEFAULT_SOURCES, endgameOnly,
   hitCaps, hitRating, RACE_HIT, DW_MISS,
   type Item, type Stats, type Goal, type DollSlot,
 } from "./model";
@@ -140,7 +140,7 @@ function save() {
 // ---------- suggestions ----------
 function candidates(doll: DollSlot): Item[] {
   return items.filter((it) => it.q >= 1 && (it.lvl ?? it.req) <= st.level && (!it.side || it.side === st.side)
-    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && st.sources.has(sourceKind(it))
+    && canUse(it, st.cls, st.level) && fits(doll, it, st.cls) && sourceOk(it, st.sources)
     && !(st.goal === "level" && endgameOnly(it)));
 }
 /** The best plan once the hit cap is applied: a plain greedy pick stacks hit past the cap, so try a few
