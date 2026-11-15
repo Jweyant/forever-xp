@@ -2,22 +2,22 @@
 
 Forever client build 1.60.1.70938.
 
-- Equippable items: 12426 (by quality: {0: 439, 1: 1196, 2: 5125, 3: 3833, 4: 1810, 5: 13, 6: 10})
+- Equippable items: 12448 (by quality: {0: 439, 1: 1196, 2: 5125, 3: 3841, 4: 1824, 5: 13, 6: 10})
 - Item sets: 235
-- Items with a known source: 11205
+- Items with a known source: 11227
 - Items with no known source yet: 1221
-- Items with a display id (3D model): 12066
-- New in Forever (not in the classic item list): 3182
+- Items with a display id (3D model): 12088
+- New in Forever (not in the classic item list): 3204
 - Changed in Forever: 550
-- Gear the client lists without stats: 11203. Stats from wowsims: 5141; classic stats only: 779; left out (no source has it): 5283
+- Gear the client lists without stats: 11203. Stats from wowsims: 5170; classic stats only: 772; left out (no source has it): 5261
 - Sources from wowsims (no other database lists one): 1422
 - Other items (consumables, trade goods, recipes, quest items...): 10288 (10251 with an icon)
 
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Cross-check with wowsims (items both have stats for): 5779 compared, 1161 differ.
-- armor: 549
+Cross-check with wowsims (items both have stats for): 5796 compared, 1164 differ.
+- armor: 552
 - dps: 278
 - blockv: 121
 - sp: 115
@@ -58,4 +58,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos 09000ea, AtlasLoot 8e99341, opendata 4f68475, wowsims fca3d82, Questie 4dbb824
+Sources: cmangos e4825cf, AtlasLoot 8e99341, opendata 4f68475, wowsims d221304, Questie 4dbb824
