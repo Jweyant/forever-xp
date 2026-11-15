@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-14",
- "blue_seen": "2026-11-14T01:54:07Z",
+ "updated": "2026-11-15",
+ "blue_seen": "2026-11-15T01:18:23Z",
  "sources": [
   {
    "id": 2360696,
@@ -83,6 +83,15 @@
  ],
  "announcements": [
   {
+   "id": 2416343,
+   "date": "2026-11-15",
+   "title": "Player-Level Dungeon XP Adjustment - November 14",
+   "url": "https://us.forums.blizzard.com/en/wow/t/player-level-dungeon-xp-adjustment-november-14/2416343",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "Yesterday, we updated dungeon play so that experience granted by an enemy in an instance is nullified if a high level player is in the group and enemy is trivial to that player. For some dungeons, the new restriction missed the mark because of the overall level range of the enem…"
+  },
+  {
    "id": 2415068,
    "date": "2026-11-14",
    "title": "Lost Training Purchase Refunds - November 13",
@@ -115,7 +124,7 @@
    "url": "https://us.forums.blizzard.com/en/wow/t/dungeon-enemy-xp-increased-november-8/2406595",
    "category": "General Discussion",
    "kind": "Forum post",
-   "excerpt": "At about 11:05 PST today, we deployed a hotfix that increased kill experience in dungeons by 50%, so it feels better to go back in for more runs. Happy dungeon crawling, and good luck with those Deviate Hides!"
+   "excerpt": "At about 11:05 PST today, we deployed a hotfix that increased kill experience in dungeons by 50%, so it feels better to go back in for more runs. Happy…"
   },
   {
    "id": 2404092,
