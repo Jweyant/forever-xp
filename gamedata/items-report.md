@@ -1,52 +1,51 @@
 # Gear database
 
-Forever client build 1.60.1.70938.
+Forever client build 1.60.1.70959.
 
-- Equippable items: 12476 (by quality: {0: 439, 1: 1196, 2: 5125, 3: 3851, 4: 1842, 5: 13, 6: 10})
-- Item sets: 234
-- Items with a known source: 11273
-- Items with no known source yet: 1203
-- Items with a display id (3D model): 12116
-- New in Forever (not in the classic item list): 3232
+- Equippable items: 12491 (by quality: {0: 439, 1: 1196, 2: 5126, 3: 3854, 4: 1853, 5: 13, 6: 10})
+- Item sets: 235
+- Items with a known source: 11284
+- Items with no known source yet: 1207
+- Items with a display id (3D model): 12131
+- New in Forever (not in the classic item list): 3247
 - Changed in Forever: 551
-- Gear the client lists without stats: 11203. Stats from wowsims: 5209; classic stats only: 761; left out (no source has it): 5233
+- Gear the client lists without stats: 11202. Stats from wowsims: 5230; classic stats only: 754; left out (no source has it): 5218
 - Sources from wowsims (no other database lists one): 1422
 - Other items (consumables, trade goods, recipes, quest items...): 10288 (10251 with an icon)
 
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Cross-check with wowsims (items both have stats for): 5783 compared, 1162 differ.
-- armor: 550
-- dps: 278
+Cross-check with wowsims (items both have stats for): 5781 compared, 1134 differ.
+- armor: 549
+- dps: 279
 - blockv: 121
-- sp: 115
-- sta: 69
+- sp: 107
+- sta: 52
 - sp_shadow: 50
 - sp_fire: 46
 - sp_frost: 36
-- heal: 31
-- str: 25
+- heal: 29
+- str: 22
 - sp_arcane: 22
-- int: 20
-- spi: 18
 - sp_holy: 18
-- mp5: 12
+- spi: 17
+- int: 12
+- fire_res: 11
 - frost_res: 11
 - arcane_res: 10
-- fire_res: 10
 - nature_res: 10
 - shadow_res: 10
 - sp_nature: 6
-- def: 5
+- def: 6
+- mp5: 6
+- agi: 5
 - block: 4
-- agi: 4
 - ap: 4
 - crit: 3
+- parry: 2
 - rap: 2
 - spen: 2
-- parry: 1
-- hit: 1
 
 Examples:
 - Green Iron Hauberk (3844): armor 238 here, 358 in wowsims
@@ -58,4 +57,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos e4825cf, AtlasLoot 8e99341, opendata 4f68475, wowsims 6f5ff14, Questie e1652ce
+Sources: cmangos e4825cf, AtlasLoot 8e99341, opendata 4f68475, wowsims b912896, Questie e1652ce
