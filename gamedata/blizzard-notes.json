@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-17",
- "blue_seen": "2026-11-17T02:17:43Z",
+ "blue_seen": "2026-11-17T18:38:11Z",
  "sources": [
   {
    "id": 2360696,
@@ -31,7 +31,7 @@
    "title": "Class Tuning Incoming - November 10",
    "url": "https://us.forums.blizzard.com/en/wow/t/class-tuning-incoming-november-10/2404092",
    "kind": "Development notes",
-   "updated": "2026-11-16",
+   "updated": "2026-11-17",
    "rows": 3
   },
   {
@@ -82,6 +82,15 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2419757,
+   "date": "2026-11-17",
+   "title": "Actions For Blackmaw Hold Abuse - November 17",
+   "url": "https://us.forums.blizzard.com/en/wow/t/actions-for-blackmaw-hold-abuse-november-17/2419757",
+   "category": "General Discussion",
+   "kind": "Forum post",
+   "excerpt": "As players continue their journey into WoW Forever’s higher-level content, we are closely monitoring the game economy to ensure that gold sources and costs are well balanced. Finding efficient farming spots has always been part of the game, and is how most players have earned th…"
+  },
   {
    "id": 2416343,
    "date": "2026-11-15",
