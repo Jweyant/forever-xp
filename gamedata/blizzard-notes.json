@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-19",
- "blue_seen": "2026-11-18T03:24:08Z",
+ "blue_seen": "2026-11-19T17:35:02Z",
  "sources": [
   {
    "id": 2360696,
@@ -82,6 +82,14 @@
   }
  ],
  "announcements": [
+  {
+   "id": 2422535,
+   "date": "2026-11-19",
+   "title": "The WoW Forever Podcast: Episode 8 - Catching Up On Classes",
+   "url": "https://us.forums.blizzard.com/en/wow/t/the-wow-forever-podcast-episode-8-catching-up-on-classes/2422535",
+   "category": "General Discussion",
+   "kind": "Forum post"
+  },
   {
    "id": 2419757,
    "date": "2026-11-17",
