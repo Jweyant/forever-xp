@@ -108,9 +108,16 @@ jobs:
             -configs "$GITHUB_WORKSPACE/gamedata/simconfigs" \
             -out "$GITHUB_WORKSPACE/gamedata/simweights.json" -iterations 5000
 
+      # The talent step rewrote talents.json and the setups' talents lines for this run only. Set every
+      # tracked file but the new weights back, so a rebase onto a newer data commit (another data
+      # run may push to the branch first) isn't stopped by those edits.
       - name: Commit if changed
         id: commit
-        run: bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json
+        run: |
+          cp gamedata/simweights.json "$RUNNER_TEMP/simweights.json"
+          git checkout -q -- .
+          cp "$RUNNER_TEMP/simweights.json" gamedata/simweights.json
+          bash tools/push_data.sh "Refresh stat weights from our sim runs" gamedata/simweights.json
 
       # Pushes made with GITHUB_TOKEN don't trigger other workflows, so start the deploy here. The
       # talent pages' build lists (ours, wowsims', the community's) come from talent-builds.yml.
