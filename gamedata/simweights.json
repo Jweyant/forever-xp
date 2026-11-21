@@ -4,7 +4,7 @@
   "specs": 2
  },
  "source": {
-  "commit": "376a6aa2886b",
+  "commit": "60c78e95916f",
   "engine": "wowsims/forever (MIT)",
   "license": "MIT",
   "name": "forever-xp sim runs",
@@ -16,32 +16,32 @@
    {
     "label": "Planner BIS · weave build",
     "w": {
-     "agi": 4.4911,
-     "ap": 0.7524,
-     "crit": 3.8812,
-     "dps": 8.9836,
-     "expertise": 2.7989,
-     "haste": 2.4911,
-     "hit": 1.293,
-     "int": 1.949,
+     "agi": 3.7541,
+     "ap": 0.3504,
+     "crit": 2.484,
+     "dps": 8.6836,
+     "expertise": 1.2231,
+     "haste": 0.707,
+     "hit": 0.551,
+     "int": 1.4994,
      "rap": 1,
-     "str": 0.8277
+     "str": 0.3854
     },
     "note": "Our own sim run: the planner's suggested gear on the default weave build, full raid buffs, a 180 s raid boss. Ranged weapon DPS stands in for all weapon DPS."
    },
    {
     "label": "Community PvP · 20 s burst",
     "w": {
-     "agi": 3.6004,
-     "ap": 0.2262,
-     "crit": 2.9047,
-     "dps": 10.138,
-     "expertise": 0.9091,
-     "haste": 0.9571,
-     "hit": 0.2288,
-     "int": 1.3915,
+     "agi": 3.442,
+     "ap": 0.1511,
+     "crit": 2.252,
+     "dps": 8.7793,
+     "expertise": 0.6644,
+     "haste": 0.2807,
+     "hit": 0.1516,
+     "int": 1.2861,
      "rap": 1,
-     "str": 0.2488
+     "str": 0.1662
     },
     "note": "Our own sim run: the community Survival PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent."
    }
@@ -50,12 +50,12 @@
    {
     "label": "Planner BIS · Arms",
     "w": {
-     "agi": 2.4052,
+     "agi": 2.3376,
      "ap": 1,
-     "crit": 3.1717,
-     "dps": 19.2122,
-     "expertise": 5.7415,
-     "haste": 2.6186,
+     "crit": 3.0802,
+     "dps": 19.0046,
+     "expertise": 5.5137,
+     "haste": 1.9585,
      "str": 2.2
     },
     "note": "Our own sim run: the planner's suggested gear (a two-hander, so the Arms build) with full raid buffs on a 180 s raid boss."
@@ -63,15 +63,15 @@
    {
     "label": "Community PvP · 20 s burst",
     "w": {
-     "agi": 2.0699,
+     "agi": 1.8893,
      "ap": 1,
-     "crit": 2.6662,
-     "dps": 15.4924,
-     "expertise": 4.8223,
-     "haste": 14.4383,
+     "crit": 2.47,
+     "dps": 15.4417,
+     "expertise": 5.0715,
+     "haste": 14.3922,
      "str": 2.2
     },
-    "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT) on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent."
+    "note": "Our own sim run: the community Arms PvP build (WoW Forever Builds, MIT), remapped to the Nov 3 trees, on a 20-second burst against a level-60 player-like target with 3,100 armor. Burst weights for PvP gearing; it does not model a real opponent."
    }
   ]
  }
