@@ -1143,12 +1143,15 @@ def other_items(sqlite_path, gear_ids, classic, max_names=3):
         return []
     db = sqlite3.connect(sqlite_path)
     zones = dict(db.execute("SELECT id, name FROM zones"))
-    npcs = {i: (n, z) for i, n, z in db.execute("SELECT id, name, zone_id FROM npcs")}
-    objects = {i: n for i, n in db.execute("SELECT id, name FROM objects")}
+    # Questie's Forever data has some npcs, objects and quests with no name (Nov 20 on); they'd
+    # break the sorts below and show as blank sources, so they're left out.
+    npcs = {i: (n, z) for i, n, z in db.execute("SELECT id, name, zone_id FROM npcs") if n}
+    objects = {i: n for i, n in db.execute("SELECT id, name FROM objects") if n}
     quests = {}
     used_by = defaultdict(set)
     for qid, name, raw in db.execute("SELECT id, name, json FROM quests"):
-        quests[qid] = name
+        if name:
+            quests[qid] = name
         q = json.loads(raw)
         objs = q.get("objectives") or []
         groups = [objs.get(k) for k in ("1", "2", "3")] if isinstance(objs, dict) else (objs if isinstance(objs, list) else [])
