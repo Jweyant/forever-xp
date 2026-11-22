@@ -1,36 +1,36 @@
 # Gear database
 
-Forever client build 1.60.1.70888.
+Forever client build 1.60.1.71037.
 
-- Equippable items: 12364 (by quality: {0: 439, 1: 1195, 2: 5125, 3: 3793, 4: 1789, 5: 13, 6: 10})
+- Equippable items: 12568 (by quality: {0: 439, 1: 1196, 2: 5125, 3: 3894, 4: 1891, 5: 13, 6: 10})
 - Item sets: 235
-- Items with a known source: 11094
-- Items with no known source yet: 1270
-- Items with a display id (3D model): 12002
-- New in Forever (not in the classic item list): 3120
-- Changed in Forever: 544
-- Gear the client lists without stats: 11203. Stats from wowsims: 5053; classic stats only: 805; left out (no source has it): 5345
-- Sources from wowsims (no other database lists one): 1422
-- Other items (consumables, trade goods, recipes, quest items...): 10288 (10251 with an icon)
+- Items with a known source: 11380
+- Items with no known source yet: 1188
+- Items with a display id (3D model): 12207
+- New in Forever (not in the classic item list): 3324
+- Changed in Forever: 556
+- Gear the client lists without stats: 11130. Stats from wowsims: 5237; classic stats only: 752; left out (no source has it): 5141
+- Sources from wowsims (no other database lists one): 1424
+- Other items (consumables, trade goods, recipes, quest items...): 10207 (10170 with an icon)
 
 Dungeon journal:
 - JournalInstance: unavailable (HTTP Error 400: Bad Request)
 
-Cross-check with wowsims (items both have stats for): 5779 compared, 1155 differ.
-- armor: 549
+Cross-check with wowsims (items both have stats for): 5781 compared, 1002 differ.
+- armor: 419
 - dps: 278
 - blockv: 121
-- sp: 115
-- sta: 68
-- sp_shadow: 51
+- sp: 107
+- sta: 51
+- sp_shadow: 50
 - sp_fire: 46
 - sp_frost: 36
-- heal: 32
-- str: 26
+- heal: 29
 - sp_arcane: 22
-- int: 21
+- str: 21
 - sp_holy: 18
 - spi: 17
+- int: 12
 - frost_res: 11
 - arcane_res: 10
 - fire_res: 10
@@ -57,4 +57,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos c33f90b, AtlasLoot 8e99341, opendata 4f68475, wowsims e855db5, Questie 90ab55b
+Sources: cmangos 13e9337, AtlasLoot 8e99341, opendata 4f68475, wowsims 5647317, Questie e3c3bc4
