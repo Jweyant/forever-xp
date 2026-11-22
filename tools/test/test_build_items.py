@@ -92,6 +92,25 @@ class DisplayIds(unittest.TestCase):
         self.assertEqual(out, [{"id": 750, "n": "Tough Wolf Meat", "q": 1, "c": "Quest item",
                                 "d": [["Young Wolf", "Elwynn Forest"]], "qu": [[33, "Wolves Across the Border"]]}])
 
+    def test_other_items_skips_nameless_sources(self):
+        # Questie's Forever data has npcs, objects and quests with no name; they're left out, not sorted.
+        import sqlite3
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "q.sqlite"
+            db = sqlite3.connect(path)
+            db.executescript("CREATE TABLE zones (id INTEGER, name TEXT); CREATE TABLE npcs (id INTEGER, name TEXT, zone_id INTEGER);"
+                             "CREATE TABLE objects (id INTEGER, name TEXT); CREATE TABLE quests (id INTEGER, name TEXT, json TEXT);"
+                             "CREATE TABLE items (id INTEGER, name TEXT, json TEXT);")
+            db.executemany("INSERT INTO npcs VALUES (?,?,?)", [(1, "Vendor", 0), (2, None, 0)])
+            db.executemany("INSERT INTO objects VALUES (?,?)", [(10, "Chest"), (11, None), (12, "")])
+            db.executemany("INSERT INTO quests VALUES (?,?,?)", [(33, None, "{}"), (34, "A Quest", "{}")])
+            db.execute("INSERT INTO items VALUES (750, 'Meat', ?)",
+                       (json.dumps({"class": 12, "vendors": [1, 2], "objectDrops": [10, 11, 12], "questRewards": [33, 34]}),))
+            db.commit()
+            out = build_items.other_items(path, set(), {})
+        self.assertEqual(out, [{"id": 750, "n": "Meat", "q": 1, "c": "Quest item",
+                                "v": ["Vendor"], "o": ["Chest"], "qr": [[34, "A Quest"]]}])
+
     def test_wowsims_icons(self):
         with tempfile.TemporaryDirectory() as tmp:
             f = Path(tmp) / "db.json"
