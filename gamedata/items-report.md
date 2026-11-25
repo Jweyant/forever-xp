@@ -9,7 +9,7 @@ Forever client build 1.60.1.71091.
 - Items with a display id (3D model): 12207
 - New in Forever (not in the classic item list): 3324
 - Changed in Forever: 556
-- Gear the client lists without stats: 11130. Stats from wowsims: 5238; classic stats only: 751; left out (no source has it): 5141
+- Gear the client lists without stats: 11130. Stats from wowsims: 5237; classic stats only: 752; left out (no source has it): 5141
 - Sources from wowsims (no other database lists one): 1424
 - Other items (consumables, trade goods, recipes, quest items...): 10207 (10170 with an icon)
 
@@ -57,4 +57,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos 13e9337, AtlasLoot 8e99341, opendata 4f68475, wowsims fed3794, Questie 4377c98
+Sources: cmangos 13e9337, AtlasLoot 8e99341, opendata 4f68475, wowsims 59b8622, Questie 7a05d45
