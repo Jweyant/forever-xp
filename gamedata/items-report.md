@@ -1,6 +1,6 @@
 # Gear database
 
-Forever client build 1.60.1.71091.
+Forever client build 1.60.1.71139.
 
 - Equippable items: 12568 (by quality: {0: 439, 1: 1196, 2: 5125, 3: 3894, 4: 1891, 5: 13, 6: 10})
 - Item sets: 235
@@ -9,7 +9,7 @@ Forever client build 1.60.1.71091.
 - Items with a display id (3D model): 12207
 - New in Forever (not in the classic item list): 3324
 - Changed in Forever: 556
-- Gear the client lists without stats: 11130. Stats from wowsims: 5237; classic stats only: 752; left out (no source has it): 5141
+- Gear the client lists without stats: 11131. Stats from wowsims: 5237; classic stats only: 752; left out (no source has it): 5142
 - Sources from wowsims (no other database lists one): 1424
 - Other items (consumables, trade goods, recipes, quest items...): 10207 (10170 with an icon)
 
@@ -57,4 +57,4 @@ Examples:
 - Icefury Wand (7514): sp_frost 0 here, 9 in wowsims
 - Phantom Blade (7961): dps 32.9 here, 32.5 in wowsims
 
-Sources: cmangos 13e9337, AtlasLoot 8e99341, opendata 4f68475, wowsims 59b8622, Questie 7a05d45
+Sources: cmangos 13e9337, AtlasLoot 8e99341, opendata 4f68475, wowsims 6400c44, Questie 661d7ff
